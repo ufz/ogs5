@@ -1,0 +1,3 @@
+[submodule "ThirdParty/cvode"]
+	path = ThirdParty/cvode
+	url = https://github.com/ufz/cvode.git

@@ -1,0 +1,31 @@
+#language: python # a lie because shippable doesn't support c/c++
+#build_image: shippableimages/buntu1404_base
+cache: true
+notifications:
+  email:
+    on_success: change
+    on_failure: always
+install:
+  - sudo add-apt-repository --yes ppa:boost-latest
+  - sudo apt-get -qq -y update
+  - sudo apt-get install cmake libboost-thread1.55-dev
+script:
+  - rm build_* -f -R
+  - CASE=OGS_FEM CMAKE_ARGS="-D${CASE}=ON"
+  - mkdir build_${CASE} && cd build_${CASE} && cmake $CMAKE_ARGS .. && make && cd ..
+  - CASE=OGS_FEM_SP CMAKE_ARGS="-D${CASE}=ON"
+  - mkdir build_${CASE} && cd build_${CASE} && cmake $CMAKE_ARGS .. && make && cd ..
+  - CASE=OGS_FEM_PQC CMAKE_ARGS="-D${CASE}=ON"
+  - mkdir build_${CASE} && cd build_${CASE} && cmake $CMAKE_ARGS .. && make && cd ..
+  - CASE=OGS_FEM_IPQC CMAKE_ARGS="-D${CASE}=ON"
+  - mkdir build_${CASE} && cd build_${CASE} && cmake $CMAKE_ARGS .. && make && cd ..
+  - CASE=OGS_FEM_GEMS CMAKE_ARGS="-D${CASE}=ON"
+  - mkdir build_${CASE} && cd build_${CASE} && cmake $CMAKE_ARGS .. && make && cd ..
+# the followings are not supported yet
+#  - CASE=OGS_FEM_BRNS CMAKE_ARGS="-D${CASE}=ON"
+#  - CASE=OGS_FEM_CHEMAPP CMAKE_ARGS="-D${CASE}=ON"
+#  - CASE=OGS_FEM_CAP CMAKE_ARGS="-D${CASE}=ON"
+#  - CASE=OGS_FEM_LIS CMAKE_ARGS="-D${CASE}=ON"
+#  - CASE=OGS_FEM_MPI CMAKE_ARGS="-D${CASE}=ON"
+#  - CASE=OGS_FEM_PETSC CMAKE_ARGS="-D${CASE}=ON"
+  

@@ -1,0 +1,186 @@
+EXTRA_DIST=\
+	fwrap2.cpp\
+	fwrap3.cpp\
+	fwrap4.cpp\
+	fwrap5.cpp\
+	fwrap6.cpp\
+	fwrap7.cpp\
+	fwrap8.cpp\
+	phreeqcpp/ChartHandler.cpp\
+	phreeqcpp/ChartHandler.h\
+	phreeqcpp/ChartObject.cpp\
+	phreeqcpp/ChartObject.h\
+	phreeqcpp/CurveObject.cpp\
+	phreeqcpp/CurveObject.h\
+	phreeqcpp/Form1.h\
+	phreeqcpp/Form1.resX\
+	phreeqcpp/ZedGraph.dll	
+
+AM_CPPFLAGS=-I$(top_srcdir)/src -I$(top_srcdir)/src/phreeqcpp
+
+AM_LDFLAGS=-release 3.1.2
+
+# libtool libraries to build
+lib_LTLIBRARIES=libiphreeqc.la
+
+# library sources for libiphreeqc.la
+libiphreeqc_la_SOURCES=\
+	CSelectedOutput.cpp\
+	CSelectedOutput.hxx\
+	CVar.hxx\
+	Debug.h\
+	ErrorReporter.hxx\
+	IPhreeqc.cpp\
+	IPhreeqcLib.cpp\
+	phreeqcpp/advection.cpp\
+	phreeqcpp/basicsubs.cpp\
+	phreeqcpp/cl1.cpp\
+	phreeqcpp/cvdense.cpp\
+	phreeqcpp/cvdense.h\
+	phreeqcpp/cvode.cpp\
+	phreeqcpp/cvode.h\
+	phreeqcpp/cxxKinetics.cxx\
+	phreeqcpp/cxxKinetics.h\
+	phreeqcpp/cxxMix.cxx\
+	phreeqcpp/cxxMix.h\
+	phreeqcpp/dense.cpp\
+	phreeqcpp/dense.h\
+	phreeqcpp/dumper.cpp\
+	phreeqcpp/dumper.h\
+	phreeqcpp/dw.cpp\
+	phreeqcpp/Exchange.cxx\
+	phreeqcpp/Exchange.h\
+	phreeqcpp/ExchComp.cxx\
+	phreeqcpp/ExchComp.h\
+	phreeqcpp/GasComp.cxx\
+	phreeqcpp/GasComp.h\
+	phreeqcpp/gases.cpp\
+	phreeqcpp/GasPhase.cxx\
+	phreeqcpp/GasPhase.h\
+	phreeqcpp/global_structures.h\
+	phreeqcpp/input.cpp\
+	phreeqcpp/integrate.cpp\
+	phreeqcpp/inverse.cpp\
+	phreeqcpp/ISolution.cxx\
+	phreeqcpp/ISolution.h\
+	phreeqcpp/ISolutionComp.cxx\
+	phreeqcpp/ISolutionComp.h\
+	phreeqcpp/isotopes.cpp\
+	phreeqcpp/Keywords.cpp\
+	phreeqcpp/Keywords.h\
+	phreeqcpp/kinetics.cpp\
+	phreeqcpp/KineticsComp.cxx\
+	phreeqcpp/KineticsComp.h\
+	phreeqcpp/mainsubs.cpp\
+	phreeqcpp/model.cpp\
+	phreeqcpp/NA.h\
+	phreeqcpp/NameDouble.cxx\
+	phreeqcpp/NameDouble.h\
+	phreeqcpp/NumKeyword.cxx\
+	phreeqcpp/NumKeyword.h\
+	phreeqcpp/nvector.cpp\
+	phreeqcpp/nvector.h\
+	phreeqcpp/nvector_serial.cpp\
+	phreeqcpp/nvector_serial.h\
+	phreeqcpp/parse.cpp\
+	phreeqcpp/Parser.cxx\
+	phreeqcpp/Parser.h\
+	phreeqcpp/PBasic.cpp\
+	phreeqcpp/PBasic.h\
+	phreeqcpp/phqalloc.cpp\
+	phreeqcpp/phqalloc.h\
+	phreeqcpp/Phreeqc.cpp\
+	phreeqcpp/Phreeqc.h\
+	phreeqcpp/PHRQ_base.cxx\
+	phreeqcpp/PHRQ_base.h\
+	phreeqcpp/PHRQ_io.cpp\
+	phreeqcpp/PHRQ_io.h\
+	phreeqcpp/PHRQ_io_output.cpp\
+	phreeqcpp/phrqtype.h\
+	phreeqcpp/pitzer.cpp\
+	phreeqcpp/pitzer_structures.cpp\
+	phreeqcpp/PPassemblage.cxx\
+	phreeqcpp/PPassemblage.h\
+	phreeqcpp/PPassemblageComp.cxx\
+	phreeqcpp/PPassemblageComp.h\
+	phreeqcpp/prep.cpp\
+	phreeqcpp/Pressure.cxx\
+	phreeqcpp/Pressure.h\
+	phreeqcpp/print.cpp\
+	phreeqcpp/Reaction.cxx\
+	phreeqcpp/Reaction.h\
+	phreeqcpp/read.cpp\
+	phreeqcpp/ReadClass.cxx\
+	phreeqcpp/readtr.cpp\
+	phreeqcpp/runner.cpp\
+	phreeqcpp/runner.h\
+	phreeqcpp/SelectedOutput.cpp\
+	phreeqcpp/SelectedOutput.h\
+	phreeqcpp/sit.cpp\
+	phreeqcpp/smalldense.cpp\
+	phreeqcpp/smalldense.h\
+	phreeqcpp/Solution.cxx\
+	phreeqcpp/Solution.h\
+	phreeqcpp/SolutionIsotope.cxx\
+	phreeqcpp/SolutionIsotope.h\
+	phreeqcpp/spread.cpp\
+	phreeqcpp/SS.cxx\
+	phreeqcpp/SS.h\
+	phreeqcpp/SSassemblage.cxx\
+	phreeqcpp/SSassemblage.h\
+	phreeqcpp/SScomp.cxx\
+	phreeqcpp/SScomp.h\
+	phreeqcpp/step.cpp\
+	phreeqcpp/StorageBin.cxx\
+	phreeqcpp/StorageBin.h\
+	phreeqcpp/StorageBinList.cpp\
+	phreeqcpp/StorageBinList.h\
+	phreeqcpp/structures.cpp\
+	phreeqcpp/sundialsmath.cpp\
+	phreeqcpp/sundialsmath.h\
+	phreeqcpp/sundialstypes.h\
+	phreeqcpp/Surface.cxx\
+	phreeqcpp/Surface.h\
+	phreeqcpp/SurfaceCharge.cxx\
+	phreeqcpp/SurfaceCharge.h\
+	phreeqcpp/SurfaceComp.cxx\
+	phreeqcpp/SurfaceComp.h\
+	phreeqcpp/System.cxx\
+	phreeqcpp/System.h\
+	phreeqcpp/tally.cpp\
+	phreeqcpp/Temperature.cxx\
+	phreeqcpp/Temperature.h\
+	phreeqcpp/tidy.cpp\
+	phreeqcpp/transport.cpp\
+	phreeqcpp/Use.cpp\
+	phreeqcpp/Use.h\
+	phreeqcpp/UserPunch.cpp\
+	phreeqcpp/UserPunch.h\
+	phreeqcpp/utilities.cpp\
+	phreeqcpp/Utils.cxx\
+	phreeqcpp/Utils.h\
+	thread.h\
+	Var.c\
+	Version.h
+
+include_HEADERS=\
+	$(top_srcdir)/src/IPhreeqc.h\
+	$(top_srcdir)/src/IPhreeqc.hpp\
+	$(top_srcdir)/src/IPhreeqcCallbacks.h\
+	$(top_srcdir)/src/Var.h\
+	$(top_srcdir)/src/phreeqcpp/PHRQ_io.h\
+	$(top_srcdir)/src/phreeqcpp/Keywords.h
+
+
+if BUILD_FORTRAN
+
+libiphreeqc_la_SOURCES+=\
+	fwrap.h\
+	fwrap.cpp\
+	IPhreeqcF.f
+
+include_HEADERS+=\
+	$(top_srcdir)/src/IPhreeqc.f90.inc\
+	$(top_srcdir)/src/IPhreeqc.f.inc
+
+endif

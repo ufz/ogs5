@@ -1,0 +1,14 @@
+#FLUID_PROPERTIES                                                          
+ $FLUID_TYPE                                                               
+  LIQUID                                                                   
+ $PCS_TYPE                                                                 
+  PRESSURE1                                                                
+ $DENSITY                                                                  
+  1 1000.0                                                                 
+ $VISCOSITY                                                                
+  1 0.0                                                                    
+ $SPECIFIC_HEAT_CAPACITY                                                   
+  1 0.0                                                                    
+ $HEAT_CONDUCTIVITY                                                        
+  1 0.0                                                                    
+#STOP

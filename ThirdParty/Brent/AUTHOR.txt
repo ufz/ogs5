@@ -1,0 +1,3 @@
+Original FORTRAN77 version by Richard Brent; C++ version by John Burkardt; Modifications by John Denker.
+
+http://people.sc.fsu.edu/~jburkardt/cpp_src/brent/brent.html
