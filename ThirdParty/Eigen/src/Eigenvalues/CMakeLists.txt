@@ -1,0 +1,6 @@
+file(GLOB Eigen_EIGENVALUES_SRCS "*.h")
+
+install(FILES
+  ${Eigen_EIGENVALUES_SRCS}
+  DESTINATION ${INCLUDE_INSTALL_DIR}/Eigen/src/Eigenvalues COMPONENT Devel
+  )

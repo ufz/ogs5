@@ -1,0 +1,7 @@
+#NUMERICS
+ $PCS_TYPE
+  HEAT_TRANSPORT
+ $LINEAR_SOLVER
+; method error_tolerance max_iterations theta precond storage
+  2      1 1.e-012       1000           0.5   100       4
+#STOP

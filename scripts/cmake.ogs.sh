@@ -1,0 +1,1 @@
+exec cmake $@ -DCMAKE_CMD_ARGS:STRING="${@}"

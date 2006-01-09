@@ -1,0 +1,2 @@
+*.h hooks.style
+*.cpp hooks.style
