@@ -37,3 +37,13 @@ endif () # OGS_BUILD_INFO
 
 # This is for Configure.h which is generated later
 include_directories( ${PROJECT_BINARY_DIR}/Base )
+
+# Check for number of processors
+include(ProcessorCount)
+ProcessorCount(PROCESSOR_COUNT)
+if(PROCESSOR_COUNT EQUAL 0)
+	message(WARNING "Processor count could not be detected. Setting to one processor.")
+	set(PROCESSOR_COUNT 1)
+else()
+	message(STATUS "Number of processors: ${PROCESSOR_COUNT}")
+endif()

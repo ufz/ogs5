@@ -51,14 +51,13 @@ endif()
 ### General project setup ###
 include(scripts/cmake/GeneralProjectSetup.cmake)
 
+include(scripts/cmake/test/Test.cmake)
+
 # Set default configuration when no other config is given
 if (NOT (OGS_FEM OR OGS_FEM_SP OR OGS_FEM_GEMS OR OGS_FEM_PETSC_GEMS OR OGS_FEM_PQC OR OGS_FEM_IPQC OR OGS_FEM_BRNS OR OGS_FEM_CHEMAPP OR OGS_FEM_LIS OR OGS_FEM_MKL OR OGS_FEM_MPI OR OGS_FEM_PETSC OR OGS_FEM_CAP))
 	message (STATUS "No configuration specified. Default confuguration is used.")
-	set (OGS_FEM ON)
+	set (OGS_FEM ON CACHE BOOL "" FORCE)
 endif ()
-
-# Check if a valid OGS configuration is given (see Macros.cmake)
-CHECK_CONFIG()
 
 # Additional options
 option(OGS_PYTHON "Enable python scripting interface" OFF)
@@ -97,15 +96,6 @@ set (OGS_VERSION "${OGS_VERSION_MAJOR}.${OGS_VERSION_MINOR}(${OGS_RELEASE_PERSON
 # should we use ISO dates: 2010-12-31 ?
 set (OGS_DATE "07.07.2015")
 
-# Check for number of processors
-include(ProcessorCount)
-ProcessorCount(PROCESSOR_COUNT)
-if(PROCESSOR_COUNT EQUAL 0)
-	message(WARNING "Processor count could not be detected. Setting to one processor.")
-	set(PROCESSOR_COUNT 1)
-else()
-	message(STATUS "Number of processors: ${PROCESSOR_COUNT}")
-endif() # PROCESSOR_COUNT
 
 ###################
 ### Fem configs ###
@@ -320,10 +310,6 @@ add_subdirectory( OGS )
 configure_file (Base/Configure.h.in ${PROJECT_BINARY_DIR}/Base/Configure.h)
 configure_file (Base/BuildInfo.h.in ${PROJECT_BINARY_DIR}/Base/BuildInfo.h)
 
-if (BENCHMARK_DIR_FOUND OR GTEST_FOUND)
-	enable_testing()
-endif ()
-
 if (EXAMPLEDATA_DIR_FOUND)
 	install (DIRECTORY ${EXAMPLEDATA_DIR_FOUND} DESTINATION . PATTERN .svn EXCLUDE)
 endif ()
@@ -337,22 +323,6 @@ include( scripts/cmake/packaging/Pack.cmake)
 if (OGS_CMAKE_DEBUG)
 	include(ListAllCMakeVariableValues)
 	list_all_cmake_variable_values()
-endif ()
-
-if (BENCHMARK_DIR_FOUND)
-	set(BENCHMARK_TIMEOUT 1800) # in s, 30 minutes timeout on normal benchmarks
-	set(EXCEEDING_BENCHMARK_TIMEOUT 86400) # 1 day timeout on exceeding benchmarks
-	string (COMPARE EQUAL "$ENV{HOSTNAME}" "dev2.intern.ufz.de" HOST_IS_DEV2)
-	if (${HOST_IS_DEV2})
-		message (STATUS "On dev2: file comparing enabled")
-	endif ()
-
-	file (GLOB BENCHMARK_CONFIGS "${PROJECT_SOURCE_DIR}/../benchmarks/*.cmake")
-	foreach (BENCHMARK_CONFIG ${BENCHMARK_CONFIGS})
-		include ("${BENCHMARK_CONFIG}")
-	endforeach()
-
-	unset (COPY_BENCHMARKS_TO_REF CACHE)
 endif ()
 
 if (OGS_BUILD_UTILITIES)
