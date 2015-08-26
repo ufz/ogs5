@@ -1,5 +1,7 @@
 set(BENCHMARK_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/benchmarks/${benchmarkDir})
-execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${BENCHMARK_OUTPUT_DIRECTORY})
+foreach(OUTPUT_FILE ${OUTPUT_FILES})
+	execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${BENCHMARK_OUTPUT_DIRECTORY}/${OUTPUT_FILE})
+endforeach()
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${BENCHMARK_OUTPUT_DIRECTORY})
 
 if (WIN32)
@@ -53,10 +55,19 @@ if(EXIT_CODE GREATER 0)
 	message(FATAL_ERROR "Benchmark exited with code: ${EXIT_CODE}")
 endif()
 
-# Simple file compare with CMake
+# file comparison with numdiff or cmake
+if(NUMDIFF_TOOL_PATH)
+	set(TESTER_COMMAND ${NUMDIFF_TOOL_PATH} --statistics --absolute-tolerance=1e-5 --relative-tolerance=1e-4)
+	message("Using numdiff")
+else()
+	set(TESTER_COMMAND ${CMAKE_COMMAND} -E compare_files)
+	message("Using cmake diff")
+endif()
+
+separate_arguments(OUTPUT_FILES) # reconstruct list
 foreach(OUTPUT_FILE ${OUTPUT_FILES})
-	execute_process(COMMAND ${CMAKE_COMMAND} -E compare_files
-		${PROJECT_SOURCE_DIR}/../benchmarks/${benchmarkDir}/${OUTPUT_FILE}
+	execute_process(COMMAND ${TESTER_COMMAND}
+		${BENCHMARK_REF_DIR}/${benchmarkDir}/${OUTPUT_FILE}
 		${BENCHMARK_OUTPUT_DIRECTORY}/${OUTPUT_FILE}
 		RESULT_VARIABLE EXIT_CODE)
 

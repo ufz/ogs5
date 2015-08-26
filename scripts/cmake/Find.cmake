@@ -1,24 +1,9 @@
-############################
-### Find OGS directories ###
-############################
-
-if(DEFINED BENCHMARK_DIR)
-	find_path (BENCHMARK_DIR_FOUND copy.py ${BENCHMARK_DIR})
-else()
-	find_path (BENCHMARK_DIR_FOUND copy.py ${PROJECT_SOURCE_DIR}/../benchmarks)
-endif()
-
 if(DEFINED EXAMPLEDATA_DIR)
 	find_path (EXAMPLEDATA_DIR_FOUND points.gli ${EXAMPLEDATA_DIR})
 else()
 	find_path (EXAMPLEDATA_DIR_FOUND points.gli ${PROJECT_SOURCE_DIR}/../ExampleData)
 endif()
 
-if(DEFINED TESTDATA_DIR)
-	find_path(TESTDATA_DIR_FOUND testdata.dummy ${TESTDATA_DIR})
-else()
-	find_path(TESTDATA_DIR_FOUND testdata.dummy ${PROJECT_SOURCE_DIR}/../testdata)
-endif()
 
 # Check if we have a git repository
 set(SCM_IS_GIT OFF CACHE INTERNAL "")
