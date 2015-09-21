@@ -2027,7 +2027,7 @@ double unitfactor_l = 1, unitfactor_s = 1;
 
 // precision output file
 	out_file->setf(ios::scientific,ios::floatfield);
-	out_file->precision(12);
+	out_file->precision(16);
 
 /* zeilenweise lesen */
 	while(!pqc_infile.eof())
