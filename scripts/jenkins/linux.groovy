@@ -36,7 +36,7 @@ def runLinux() {
 		def buildDir = 'build_' + configName
 		buildTasks[configName] = {
 			build buildDir, '-DOGS_' + configName +  '=ON ' + cmakeOptions, target
-			if(artifacts)
+			if(artifacts && env.BRANCH_NAME == 'master')
 				archive buildDir + '/' + artifacts
 		}
 	}
