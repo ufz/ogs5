@@ -3,11 +3,11 @@ start /stage:/
 
 # CMake
 warning /CMake Warning/
-error /CMake Error/
+# error /CMake Error/
 
 # CTest
 warning \\[WARNING\]\
-error \[*][*][*]Failed\
+error \[*]{3}Failed\
 
 # Clang
 warning /: warning:/

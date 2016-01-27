@@ -93,7 +93,7 @@ foreach(OUTPUT_FILE ${OUTPUT_FILES})
 			file(APPEND ${NUMDIFF_OUTPUT_FILE} "### Numdiff output ###\n${NUMDIFF_OUT}\n\n")
 		endif()
 		set(SCRIPT_EXIT_CODE 1)
-		message(WARNING "Benchmark file compare of ${OUTPUT_FILE} failed.")
+		message(STATUS "Benchmark file compare of ${OUTPUT_FILE} failed.")
 	endif()
 endforeach()
 
