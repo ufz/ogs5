@@ -51,8 +51,6 @@ endif()
 ### General project setup ###
 include(scripts/cmake/GeneralProjectSetup.cmake)
 
-include(scripts/cmake/test/Test.cmake)
-
 # Set default configuration when no other config is given
 if (NOT (OGS_FEM OR OGS_FEM_SP OR OGS_FEM_GEMS OR OGS_FEM_PETSC_GEMS OR OGS_FEM_PQC OR OGS_FEM_IPQC OR OGS_FEM_BRNS OR OGS_FEM_CHEMAPP OR OGS_FEM_LIS OR OGS_FEM_MKL OR OGS_FEM_MPI OR OGS_FEM_PETSC OR OGS_FEM_CAP))
 	message (STATUS "No configuration specified. Default confuguration is used.")
@@ -314,6 +312,7 @@ if (EXAMPLEDATA_DIR_FOUND)
 	install (DIRECTORY ${EXAMPLEDATA_DIR_FOUND} DESTINATION . PATTERN .svn EXCLUDE)
 endif ()
 
+include(scripts/cmake/test/Test.cmake)
 if (OGS_BUILD_TESTS)
 	add_subdirectory(tests)
 endif ()
