@@ -163,6 +163,22 @@ Benchmark(AUTHOR WW
 )
 
 Benchmark(AUTHOR WW
+	PATH PETSc/hm_tri/hm_tri
+	REQUIRED_CMAKE_OPTIONS OGS_FEM_PETSC
+	NUM_PROCESSORS 4
+	RUNTIME 200
+	OUTPUT_FILES
+		hm_tri_domain_DEFORMATION_tri_0.tec
+		hm_tri_domain_DEFORMATION_tri_1.tec
+		hm_tri_domain_DEFORMATION_tri_2.tec
+		hm_tri_domain_DEFORMATION_tri_3.tec
+		hm_tri_domain_LIQUID_FLOW_tri_0.tec
+		hm_tri_domain_LIQUID_FLOW_tri_1.tec
+		hm_tri_domain_LIQUID_FLOW_tri_2.tec
+		hm_tri_domain_LIQUID_FLOW_tri_3.tec
+)
+
+Benchmark(AUTHOR WW
 	PATH PETSc/KueperProblem-PS/kueper
 	REQUIRED_CMAKE_OPTIONS OGS_FEM_PETSC
 	NUM_PROCESSORS 3
