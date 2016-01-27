@@ -70,6 +70,9 @@ nice -n 5 make benchmarks-short-normal-long"""
 		}
 	}
 	parallel benchmarkTasks
+
+	step([$class: 'LogParserPublisher', failBuildOnError: true, unstableOnWarning: true,
+			projectRulePath: 'ogs/scripts/jenkins/log-parser.rules', useProjectRule: true])
 }
 
 // Builds target with cmakeOptions in buildDir
