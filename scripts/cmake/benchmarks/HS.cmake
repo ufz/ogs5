@@ -14,19 +14,21 @@ Benchmark(AUTHOR HS
 	OUTPUT_FILES 2d_1_domain_tri.tec
 )
 
-Benchmark(AUTHOR HS
-	PATH C/1d_xylene_degradation/h2_line
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
-	RUNTIME 9
-	OUTPUT_FILES h2_line_domain_NO_PCS_line.tec
-)
+# TODO ODE solver
+#Benchmark(AUTHOR HS
+#	PATH C/1d_xylene_degradation/h2_line
+#	REQUIRED_CMAKE_OPTIONS OGS_FEM
+#	RUNTIME 9
+#	OUTPUT_FILES h2_line_domain_NO_PCS_line.tec
+#)
 
-Benchmark(AUTHOR HS
-	PATH C/1d_TCEaufEisen/1d_TCE_Ion
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
-	RUNTIME 104
-	OUTPUT_FILES 1d_TCE_Ion_domain_line.tec
-)
+# TODO ODE solver
+#Benchmark(AUTHOR HS
+#	PATH C/1d_TCEaufEisen/1d_TCE_Ion
+#	REQUIRED_CMAKE_OPTIONS OGS_FEM
+#	RUNTIME 104
+#	OUTPUT_FILES 1d_TCE_Ion_domain_line.tec
+#)
 
 Benchmark(AUTHOR HS
 	PATH C/decay/HC_decay_1Du
