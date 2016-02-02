@@ -4,13 +4,6 @@ else()
 	find_path (EXAMPLEDATA_DIR_FOUND points.gli ${PROJECT_SOURCE_DIR}/../ExampleData)
 endif()
 
-
-# Check if we have a git repository
-set(SCM_IS_GIT OFF CACHE INTERNAL "")
-if(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/.git)
-	set(SCM_IS_GIT ON CACHE INTERNAL "")
-endif()
-
 ######################
 ### Find tools     ###
 ######################

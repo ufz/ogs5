@@ -4,9 +4,8 @@
 
 - General homepage: http://www.opengeosys.org
 - Wiki: https://svn.ufz.de/ogs
-- Build instructions: http://devguide.opengeosys.org
-- Jenkins(trunk): https://svn.ufz.de:8443/job/OGS-5/
-- Jenkins(develop): https://svn.ufz.de:8443/job/OGS-5-GitHub/
+- Build instructions: https://docs.opengeosys.org/docs/devguide5/getting-started/introduction
+- Jenkins: https://svn.ufz.de:8443/job/OGS-5/
 
 ## Quickstart ##
 
@@ -14,7 +13,7 @@
 cd [source-directory]
 mkdir build
 cd build
-cmake .. -DOGS_FEM=ON
+cmake ..
 ```
 
 Open the Visual Studio solution which was created in the build-directory or just type `make` on Linux.
@@ -35,6 +34,3 @@ Once the development branch is ready to release a new version (this can also be 
 1. merge the development branch into master
 2. push all new commits in master to the SVN repository using `git svn dcommit`
 
-## Enable the Git to Subversion connection ##
-
-See [this wiki-page](https://github.com/envinf/ogs5-trunk/wiki) for instructions.

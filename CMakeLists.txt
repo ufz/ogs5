@@ -10,54 +10,36 @@ project(OGS)
 ### Options ###
 ###############
 # Configurations
-option(OGS_FEM "Default configuration" OFF)
-option(OGS_FEM_SP "Sparse matrix configuration" OFF)
-option(OGS_FEM_JFNK "Jacobi free Newton-Krylov method for H2M problem" OFF)
-option(OGS_FEM_PETSC "Use PETSc parallel solver" OFF)
-option(OGS_FEM_PETSC_GEMS "GEMS with PETSc parallel solver" OFF)
-option(OGS_FEM_GEMS "GEMS configuration" OFF)
-option(OGS_FEM_IPQC "IPhreeqc configuration" OFF)
-option(OGS_FEM_PQC "Phreeqc configuration" OFF)
-option(OGS_FEM_BRNS "BRNS configuration" OFF)
-option(OGS_FEM_CHEMAPP "CHEMAPP configuration" OFF)
-option(OGS_FEM_LIS "Library of Iterative Solvers for Linear Systems configuration" OFF)
-option(OGS_FEM_CAP "CAP configuration" OFF)
-option(OGS_FEM_MKL "Math kernel library configuration" OFF)
-option(BLUE_G "Blue/G optimization" OFF)
+set(OGS_CONFIG "FEM" CACHE STRING "OpenGeoSys configuration")
+set_property(CACHE OGS_CONFIG PROPERTY STRINGS
+	FEM # Default
+	SP
+	JFNK
+	PETSC
+	PETSC_GEMS
+	IPQC
+	PQC
+	BRNS
+	LIS
+	CAP
+	MKL
+	MPI
+)
 
-# supported on Linux and Windows
-option(OGS_FEM_MPI "Message passing interface configuration" OFF)
 # needs to be set of MPI and GEMS is used
-option(PARALLEL_USE_MPI "Message passing interface configuration also for GEMS coupling" OFF)
-option(PARALLEL_USE_OPENMP "Use OpenMP" OFF)
-option(OGS_USE_CVODE "Use sundials cvode for TNEQ/TES" OFF)
+#option(PARALLEL_USE_MPI "Message passing interface configuration also for GEMS coupling" OFF)
+#option(PARALLEL_USE_OPENMP "Use OpenMP" OFF)
 
-set(OGS_CPU_ARCHITECTURE "native" CACHE STRING "Processor architecture, defaults to native.")
-
-### CMake setup ###
 include(scripts/cmake/CMakeSetup.cmake)
-
-### Compiler setup ###
 include(scripts/cmake/CompilerSetup.cmake)
-
-### Find directories and libraries ###
 include (scripts/cmake/Find.cmake)
-
-### Automatically setup git submodules
-if(GIT_FOUND AND SCM_IS_GIT)
-	include(scripts/cmake/SubmoduleSetup.cmake)
-endif()
-
-### General project setup ###
+include(scripts/cmake/SubmoduleSetup.cmake)
 include(scripts/cmake/GeneralProjectSetup.cmake)
 
-# Set default configuration when no other config is given
-if (NOT (OGS_FEM OR OGS_FEM_SP OR OGS_FEM_GEMS OR OGS_FEM_PETSC_GEMS OR OGS_FEM_PQC OR OGS_FEM_IPQC OR OGS_FEM_BRNS OR OGS_FEM_CHEMAPP OR OGS_FEM_LIS OR OGS_FEM_MKL OR OGS_FEM_MPI OR OGS_FEM_PETSC OR OGS_FEM_CAP))
-	message (STATUS "No configuration specified. Default confuguration is used.")
-	set (OGS_FEM ON CACHE BOOL "" FORCE)
-endif ()
-
 # Additional options
+option(BLUE_G "Blue/G optimization" OFF)
+option(OGS_USE_CVODE "Use sundials cvode for TNEQ/TES" OFF)
+set(OGS_CPU_ARCHITECTURE "native" CACHE STRING "Processor architecture, defaults to native.")
 option(OGS_PYTHON "Enable python scripting interface" OFF)
 option(OGS_BUILD_UTILITIES "Build additional utility programs?" OFF)
 option(OGS_CMAKE_DEBUG "Show additional cmake debug information" OFF)
@@ -75,8 +57,7 @@ if(GCC)
 	OPTION_REQUIRES(OGS_COVERAGE "Enables code coverage measurements with gcov/lcov." OGS_BUILD_TESTS)
 endif() # GCC
 option (OGS_BUILD_TESTS "Enables building of tests." OFF)
-option (OGS_NO_EXTERNAL_LIBS "Builds OGS without any external dependencies."
-OFF)
+option (OGS_NO_EXTERNAL_LIBS "Builds OGS without any external dependencies." OFF)
 option (OGS_DELETE_EDGES_AFTER_INIT "Delete mesh edges after initialization if possible" OFF)
 option (OGS_OUTPUT_TIME_ALLPCS "Output clock time for all processes" OFF)
 
@@ -98,25 +79,19 @@ set (OGS_DATE "07.07.2015")
 ###################
 ### Fem configs ###
 ###################
-if(OGS_FEM)
-	message (STATUS	"Configuring for FEM command line" )
+message (STATUS	"OGS_CONFIG: ${OGS_CONFIG}" )
+if(OGS_CONFIG STREQUAL FEM)
 	set(SOLVER_PKG_NAME "Default")
-endif()
 
-if(OGS_FEM_SP)
-	message (STATUS	"Configuring for FEM command line with new sparse matrix" )
+elseif(OGS_CONFIG STREQUAL SP)
 	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
 	set(SOLVER_PKG_NAME "Alternative linear solver package (NEW_EQS)")
-endif()
 
-if(OGS_FEM_JFNK)
-	message (STATUS "Configuring for Jacobi free Newton-Krylov method for H2M problem" )
+elseif(OGS_CONFIG STREQUAL JFNK)
 	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
 	add_definitions(-DJFNK_H2M)
-endif()
 
-if(OGS_FEM_PETSC)
-	message (STATUS "Configuring for PETSc" )
+elseif(OGS_CONFIG STREQUAL PETSC)
 	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/scripts/cmake/cmake/findPETSC)
 
 	find_package(PETSc REQUIRED QUIET)
@@ -128,10 +103,8 @@ if(OGS_FEM_PETSC)
 	endif()
 	include_directories( ${PETSC_INCLUDES} )
 	set(SOLVER_PKG_NAME "PETSc linear solver package")
-endif()
 
-if(OGS_FEM_PETSC_GEMS)
-	message (STATUS "Configuring for GEMS with PETSc" )
+elseif(OGS_CONFIG STREQUAL PETSC_GEMS)
 	include_directories( ${Boost_INCLUDE_DIR} )
 	link_directories( ${Boost_LIBRARY_DIR} )
 	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/scripts/cmake/cmake/findPETSC)
@@ -149,23 +122,18 @@ if(OGS_FEM_PETSC_GEMS)
 		set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
 		set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 	endif ()
-endif()
 
-if(OGS_FEM_MPI)
-	message (STATUS "Configuring for FEM command line with MPI" )
+elseif(OGS_CONFIG STREQUAL MPI)
 	set(PARALLEL_USE_MPI ON CACHE INTERNAL "Use Message Passing Interface")
 	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
 	set(SOLVER_PKG_NAME "Parallel linear solver package (MPI)")
-endif()
 
-if(OGS_FEM_MPI_KRC)
+elseif(OGS_CONFIG STREQUAL MPI_KRC)
 	add_definitions(-DUSE_MPI_KRC)
 	set(PARALLEL_USE_MPI ON CACHE INTERNAL "Use Message Passing Interface")
 	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
-endif()
 
-if(OGS_FEM_GEMS)
-	message (STATUS	"Configuring for FEM command line with GEMS" )
+elseif(OGS_CONFIG STREQUAL GEMS)
 	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
 	add_definitions(-DNO_ERROR_CONTROL -DGEM_REACT -DGEMlib -DIPMGEMPLUGIN )
 	if (MSVC)
@@ -179,28 +147,21 @@ if(OGS_FEM_GEMS)
 	if(PARALLEL_USE_MPI)
 		add_definitions(-DUSE_MPI_GEMS)
 	endif()
-endif()
 
-if(OGS_FEM_IPQC)
-	message (STATUS "Configuring for FEM command line with IPQC" )
+elseif(OGS_CONFIG STREQUAL IPQC)
 	add_definitions( -DOGS_FEM_IPQC )
 	if(PARALLEL_USE_MPI)
 		set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
 	endif()
-endif()
 
-if(OGS_FEM_PQC)
-	message (STATUS "Configuring for FEM command line with PQC" )
-	message (STATUS "Configuration: g++ and LIBPHREEQC")
+elseif(OGS_CONFIG STREQUAL PQC)
 	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
 	add_definitions(-DLIBPHREEQC -D_POSIX_SOURCE -DNO_ERROR_CONTROL)
 	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 		add_definitions ( "-DMDL_DEBUG" )
 	endif() # Debug
-endif()
 
-if(OGS_FEM_BRNS)
-	message (STATUS	"Configuring for FEM command line with BRNS" )
+elseif(OGS_CONFIG STREQUAL BRNS)
 	if (UNIX)
 		find_package(LAPACK)
 	endif()
@@ -209,19 +170,15 @@ if(OGS_FEM_BRNS)
 	if(PARALLEL_USE_MPI)
 		add_definitions(-DUSE_MPI_BRNS)
 	endif()
-endif()
 
-if(OGS_FEM_LIS)
-	message (STATUS "Configuring for FEM command line with LIS" )
+elseif(OGS_CONFIG STREQUAL LIS)
 	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
 	add_definitions(-DIPMGEMPLUGIN -DLIS)
 	set(PARALLEL_USE_OPENMP ON CACHE INTERNAL "Use Open Multi-Processing")
 	set(LIS ON CACHE INTERNAL "Use Library of Iterative Solvers")
 	set(SOLVER_PKG_NAME "LIS linear solver package")
-endif()
 
-if(OGS_FEM_MKL)
-	message (STATUS	"Configuring for FEM command line with MKL" )
+elseif(OGS_CONFIG STREQUAL MKL)
 	set(OGS_USE_NEW_EQS ON BOOL)
 	add_definitions(-DNO_ERROR_CONTROL -DMKL -DLIS)
 	set(PARALLEL_USE_OPENMP ON CACHE INTERNAL "Use Open Multi-Processing")
@@ -229,21 +186,15 @@ if(OGS_FEM_MKL)
 	set(MKL ON INTERNAL "Use Math Kernel Library")
 	mark_as_advanced(LIS MKL)
 	set(SOLVER_PKG_NAME "MKL direct linear solver package")
-endif()
 
-if(OGS_FEM_CHEMAPP)
-	message (STATUS	"Configuring for FEM command line with CHEMAPP" )
-	add_definitions(-DCHEMAPP)
-endif()
-
-if(OGS_FEM_CAP)
-	message (STATUS  "Configuring for FEM command line with CAP" )
+elseif(OGS_CONFIG STREQUAL CAP)
 	set( PRJ_EXT "-CAP" )
 	add_definitions(-DOGS_FEM_CAP)
 	if (UNIX) # Only supported on Linux
 		include_directories(/usr/lib64)
 		link_directories(/usr/lib64)
 	endif ()
+
 endif()
 
 ### End fem configs ###
@@ -297,7 +248,7 @@ add_subdirectory( MSH )
 add_subdirectory( MSHGEOTOOLS )
 add_subdirectory( FEM )
 add_subdirectory( GCC )
-if (OGS_FEM_CAP)
+if (OGS_CONFIG STREQUAL CAP)
 	add_subdirectory( CMP )
 endif ()
 add_subdirectory( FileIO )
