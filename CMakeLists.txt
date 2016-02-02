@@ -36,7 +36,7 @@ include (scripts/cmake/Find.cmake)
 include(scripts/cmake/SubmoduleSetup.cmake)
 include(scripts/cmake/GeneralProjectSetup.cmake)
 
-# Additional options
+# Options
 option(BLUE_G "Blue/G optimization" OFF)
 option(OGS_USE_CVODE "Use sundials cvode for TNEQ/TES" OFF)
 set(OGS_CPU_ARCHITECTURE "native" CACHE STRING "Processor architecture, defaults to native.")
@@ -179,7 +179,7 @@ elseif(OGS_CONFIG STREQUAL LIS)
 	set(SOLVER_PKG_NAME "LIS linear solver package")
 
 elseif(OGS_CONFIG STREQUAL MKL)
-	set(OGS_USE_NEW_EQS ON BOOL)
+	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
 	add_definitions(-DNO_ERROR_CONTROL -DMKL -DLIS)
 	set(PARALLEL_USE_OPENMP ON CACHE INTERNAL "Use Open Multi-Processing")
 	set(LIS ON INTERNAL "Use Library of Iterative Solvers")

@@ -13,16 +13,16 @@ node('envinf1')
 def runLinux() {
 	def configs = [
 		[name:"FEM", cmakeOptions:"-DOGS_NO_EXTERNAL_LIBS=ON -DOGS_PACKAGING=ON -DCMAKE_BUILD_TYPE=Release", target:"package", artifacts:"*.tar.gz"],
-		[name:"FEM_SP"],
-		[name:"FEM_GEMS"],
-		[name:"FEM_PQC"],
-		[name:"FEM_IPQC"],
-		[name:"FEM_BRNS"],
-		[name:"FEM_MKL", cmakeOptions:"-DMKL_DIR=/opt/intel/mkl"],
-		[name:"FEM_LIS"],
-		[name:"FEM_MPI"],
-		[name:"FEM_PETSC"],
-		[name:"FEM_PETSC_GEMS"]
+		[name:"SP"],
+		[name:"GEMS"],
+		[name:"PQC"],
+		[name:"IPQC"],
+		[name:"BRNS"],
+		[name:"MKL", cmakeOptions:"-DMKL_DIR=/opt/intel/mkl"],
+		[name:"LIS"],
+		[name:"MPI"],
+		[name:"PETSC"],
+		[name:"PETSC_GEMS"]
 	]
 
 	stage 'Building'
@@ -35,7 +35,7 @@ def runLinux() {
 		def artifacts = configs[i].artifacts
 		def buildDir = 'build_' + configName
 		buildTasks[configName] = {
-			build buildDir, '-DOGS_' + configName +  '=ON ' + cmakeOptions, target
+			build buildDir, '-DOGS_CONFIG=' + configName + ' ' + cmakeOptions, target
 			if(artifacts && env.BRANCH_NAME == 'master')
 				archive buildDir + '/' + artifacts
 		}

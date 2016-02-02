@@ -1,52 +1,42 @@
 #
-# AddTest
+# Benchmark
 # -------
 #
-# Creates application test runs. Order of arguments can be arbitrary.
+# Creates a benchmark test run. Order of arguments can be arbitrary.
 #
-# AddTest(
-#   NAME <name of the the test>
-#   PATH <working directory> # relative to SourceDir/Tests/Data
-#   EXECUTABLE <executable target> # optional, defaults to ogs
-#   EXECUTABLE_ARGS <arguments> # files referenced in the DATA argument can be used here
-#   WRAPPER <time|memcheck|callgrind> # optional, defaults to time
-#   TESTER <diff|memcheck> # optional
-#   DATA <list of all required data files, white-space separated, have to be in PATH>
+# Benchmark(
+#   AUTHOR <short name of the responsible benchmark author>
+#   PATH <working directory> # relative to bencharks-directory
+#   CONFIG <ogs configuration> # defaults to FEM
+#   REQUIRED_CMAKE_OPTIONS <cmake options> # optional
+#   OUTPUT_FILES <files> # output files which should be compared to references
+#   RUNTIME <seconds> # the average runtime of this benchmarks in seconds
 # )
-#
-# Conditional arguments:
-#
-#   diff-tester
-#     - DIFF_DATA <list of files to diff>
-#       # the given file is compared to [filename]_expected.[extension]
-#
-#   numdiff-tester
-#     - DIFF_DATA <list of files to numdiff>
-#       # the given file is compared to [filename]_expected.[extension]
-#
-#   vtkdiff-tester
-#     - DIFF_DATA <vtk file> <data array a name> <data array b name>
-#       # the given data arrays in the vtk file are compared
 #
 
 function(Benchmark)
 
 	# parse arguments
 	set(options NONE)
-	set(oneValueArgs AUTHOR PATH NUM_PROCESSORS TIMEOUT)
+	set(oneValueArgs AUTHOR PATH NUM_PROCESSORS TIMEOUT CONFIG)
 	set(multiValueArgs REQUIRED_CMAKE_OPTIONS OUTPUT_FILES)
 	cmake_parse_arguments(Benchmark "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
 	# set defaults
+	if(NOT Benchmark_CONFIG)
+		set(Benchmark_CONFIG FEM)
+	endif()
 	if(NOT Benchmark_NUM_PROCESSORS)
 		set(Benchmark_NUM_PROCESSORS 1)
 	endif()
-
 	if(NOT Benchmark_TIMEOUT)
 		set(Benchmark_TIMEOUT ${BENCHMARK_TIMEOUT})
 	endif()
 
 	# Check required CMake configuration
+	if(NOT Benchmark_CONFIG STREQUAL OGS_CONFIG)
+		return()
+	endif()
 	foreach(REQUIRED_CMAKE_OPTION ${Benchmark_REQUIRED_CMAKE_OPTIONS})
 		if(NOT ${REQUIRED_CMAKE_OPTION})
 			return()
