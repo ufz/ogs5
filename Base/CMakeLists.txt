@@ -1,7 +1,7 @@
 set( HEADERS
 	binarySearch.h
 	break.h
-	Configure.h.in
+	BuildInfo.h
 	DateTools.h
 	display.h
 	FileFinder.h
@@ -21,6 +21,7 @@ set( HEADERS
 set( SOURCES
 	binarySearch.cpp
 	break.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/BuildInfo.cpp
 	DateTools.cpp
 	display.cpp
 	FileTools.cpp

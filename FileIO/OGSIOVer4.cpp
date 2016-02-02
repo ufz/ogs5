@@ -13,8 +13,6 @@
 #include <iomanip>
 #include <sstream>
 
-#include "Configure.h"
-
 // FileIO
 #include "OGSIOVer4.h"
 

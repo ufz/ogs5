@@ -10,7 +10,6 @@
  */
 
 // ** INCLUDES **
-#include "Configure.h"
 #include "gtest.h"
 
 #include <string>
@@ -28,7 +27,7 @@
 TEST(GEO, PointInPolygon)
 {
 	GEOLIB::GEOObjects* _geo (new GEOLIB::GEOObjects);
-	std::string fname(TESTDATAPATH);
+	std::string fname(BuildInfo::TESTDATAPATH);
 	fname += "/input/SimplePolygon.gli";
 	std::vector<std::string> errors;
 	std::string unique_name;

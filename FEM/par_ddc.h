@@ -18,8 +18,6 @@
 
 #define par_dd_INC
 
-#include "Configure.h"
-
 // C++ STL
 #include <fstream>
 #include <list>
@@ -218,7 +216,7 @@ extern void DOMCreate();
 extern char t_fname[3];
 extern double time_ele_paral;
 
-//#include <mpi.h> 
+//#include <mpi.h>
 //extern MPI_Comm comm_DDC;
 
 #endif

@@ -45,7 +45,6 @@ option(OGS_BUILD_UTILITIES "Build additional utility programs?" OFF)
 option(OGS_CMAKE_DEBUG "Show additional cmake debug information" OFF)
 option(OGS_ONE_BIG_GTEST "Should all gtests be collected to one ctest" ON)
 option(OGS_BUILD_INFO "Should build information be generated" ON)
-option(CMAKE_CMD_ARGS "Build ogs5 storing the CMake command line args (hint: use cmake.ogs.sh" OFF )
 if(GCC)
 	if(GPROF_PATH)
 		option(OGS_PROFILE "Enables compiling with flags set for profiling with gprof." OFF)
@@ -256,8 +255,7 @@ add_subdirectory( OGS )
 
 
 # Create Configure.h
-configure_file (Base/Configure.h.in ${PROJECT_BINARY_DIR}/Base/Configure.h)
-configure_file (Base/BuildInfo.h.in ${PROJECT_BINARY_DIR}/Base/BuildInfo.h)
+configure_file (Base/BuildInfo.cpp.in ${PROJECT_BINARY_DIR}/Base/BuildInfo.cpp)
 
 if (EXAMPLEDATA_DIR_FOUND)
 	install (DIRECTORY ${EXAMPLEDATA_DIR_FOUND} DESTINATION . PATTERN .svn EXCLUDE)

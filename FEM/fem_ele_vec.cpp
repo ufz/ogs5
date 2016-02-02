@@ -12,8 +12,6 @@
    Designed and programmed by WW, 06/2004
  */
 
-#include "Configure.h"
-
 #include <cfloat>
 //#include "makros.h"
 //#include <iostream>
@@ -1367,7 +1365,7 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 				if (idxm[ki] == 0)
 					idxm[ki] = -9999;
 				// If local size is used to build up matrix, idxn should
-                // be processed in the same way. 
+                // be processed in the same way.
 			}
 		}
 	}

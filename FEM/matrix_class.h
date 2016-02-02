@@ -19,8 +19,6 @@
 #ifndef matrix_class_INC
 #define matrix_class_INC
 
-#include "Configure.h"
-
 #include <cstdlib>
 #include <fstream>
 #include <iostream>

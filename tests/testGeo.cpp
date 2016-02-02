@@ -25,12 +25,10 @@
 // FileIO
 #include "OGSIOVer4.h"
 
-#include "Configure.h"
-
 TEST(GEO, PointInPolygon)
 {
 	GEOLIB::GEOObjects* _geo (new GEOLIB::GEOObjects);
-	std::string fname(SOURCEPATH);
+	std::string fname(BuildInfo::SOURCEPATH);
 	fname += "/tests/data/GEO/TestDataPointInPolygon.gli";
 	FileIO::readGLIFileV4(fname, _geo);
 	const std::vector<GEOLIB::Polyline*>* plys(_geo->getPolylineVec(fname));

@@ -15,7 +15,6 @@
 #define FPD_NACHKOMMA  14
 
 /* Andere oeffentlich benutzte Module */
-#include "Configure.h"
 #include <cstdio>
 #include <string>
 //#include <fstream>

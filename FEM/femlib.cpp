@@ -26,18 +26,7 @@
    03/2003     RK           Quellcode bereinigt, Globalvariablen entfernt
 
 **************************************************************************/
-#include "Configure.h"
-
-//#include <iostream>
-//#include "makros.h"
 #include "femlib.h"
-//#include "mathlib.h"
-//#include "rf_pcs.h" //OK_MOD"
-#ifndef NEW_EQS                                   //WW. 11.2008
-//#include "matrix_routines.h"
-#endif
-//#include "rf_mmp_new.h"
-//#include "rf_num_new.h"
 
 /***************************************************************************
    ROCKFLOW - Funktion: MXPGaussPktTri

@@ -26,7 +26,7 @@
 /**
  * the preprocessor directive RFW_FRACTURE is only useable until version 4.11 of OGS
  * */
-#include "Configure.h"
+#include "BuildInfo.h"
 
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) || \
         defined(USE_MPI_GEMS) || defined(USE_MPI_KRC)
@@ -37,8 +37,6 @@
 #include "lis.h"
 #include <omp.h>
 #endif
-
-#include "BuildInfo.h"
 
 /* Preprozessor-Definitionen */
 #include "makros.h"
@@ -132,25 +130,15 @@ int main ( int argc, char* argv[] )
 		}
 		if( anArg == "--build-info" || anArg == "-b" )
 		{
-			std::cout << "ogs version: " << OGS_VERSION << "\n"
-			          << "ogs date: " << OGS_DATE << "\n";
-#ifdef CMAKE_CMD_ARGS
-			std::cout << "cmake command line arguments: " << CMAKE_CMD_ARGS << "\n";
-#endif // CMAKE_CMD_ARGS
-#ifdef GIT_COMMIT_INFO
-			std::cout << "git commit info: " << GIT_COMMIT_INFO << "\n";
-#endif // GIT_COMMIT_INFO
-#ifdef SVN_REVISION
-			std::cout << "subversion info: " << SVN_REVISION << "\n";
-#endif // SVN_REVISION
-#ifdef BUILD_TIMESTAMP
-			std::cout << "build timestamp: " << BUILD_TIMESTAMP << "\n";
-#endif // BUILD_TIMESTAMP
+			std::cout << "ogs version: " << BuildInfo::OGS_VERSION << "\n"
+			          << "ogs date: " << BuildInfo::OGS_DATE << "\n";
+			std::cout << "git commit info: " << BuildInfo::GIT_COMMIT_INFO << "\n";
+			std::cout << "build timestamp: " << BuildInfo::BUILD_TIMESTAMP << "\n";
 			continue;
 		}
 		if( anArg == "--version" )
 		{
-			std::cout << OGS_VERSION << "\n";
+			std::cout << BuildInfo::OGS_VERSION << "\n";
 			continue;
 		}
 		if( anArg == "--model-root" || anArg == "-m" )
@@ -191,7 +179,7 @@ int main ( int argc, char* argv[] )
 	if( argc > 1 && modelRoot == "" ) // non-interactive mode and no model given
 		exit(0);             // e.g. just wanted the build info
 
-	std::string solver_pkg_name = SOLVER_PACKAGE_NAME;
+	std::string solver_pkg_name = BuildInfo::SOLVER_PACKAGE_NAME;
 	// No default linear solver package is in use.
 	if(solver_pkg_name.find("Default") == std::string::npos)
 	{
@@ -232,7 +220,7 @@ int main ( int argc, char* argv[] )
 	elapsed_time_mpi = -MPI_Wtime(); // 12.09.2007 WW
 	bool splitcomm_flag;
 	int np;
-	MPI_Comm_size(MPI_COMM_WORLD, &np);	
+	MPI_Comm_size(MPI_COMM_WORLD, &np);
 	splitcomm_flag = SplitMPI_Communicator::CreateCommunicator(MPI_COMM_WORLD, np, nb_ddc);
 	time_ele_paral = 0.0;
 #endif

@@ -18,8 +18,6 @@
 #ifndef femlib_INC
 #define femlib_INC
 
-#include "Configure.h"
-
 extern void CalcElementsGeometry(void);
 extern void InitElementGeometry(long index);
 extern void CalcElementJacobiMatrix(long number, double* vec, double* dj);

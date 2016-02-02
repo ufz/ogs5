@@ -21,7 +21,6 @@
                           Ausnahmen: DisplayStartMsg/DisplayEndMsg                                                  */
 /**************************************************************************/
 #include "display.h"
-#include "Configure.h"
 #include "makros.h"
 
 extern FILE* OpenMsgFile(void);
