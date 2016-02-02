@@ -26,12 +26,6 @@ set_property(CACHE OGS_CONFIG PROPERTY STRINGS
 	MPI
 )
 
-include(scripts/cmake/CMakeSetup.cmake)
-include(scripts/cmake/CompilerSetup.cmake)
-include (scripts/cmake/Find.cmake)
-include(scripts/cmake/SubmoduleSetup.cmake)
-include(scripts/cmake/GeneralProjectSetup.cmake)
-
 # Options
 option(BLUE_G "Blue/G optimization" OFF)
 option(OGS_USE_CVODE "Use sundials cvode for TNEQ/TES" OFF)
@@ -41,20 +35,27 @@ option(OGS_BUILD_UTILITIES "Build additional utility programs?" OFF)
 option(OGS_CMAKE_DEBUG "Show additional cmake debug information" OFF)
 option(OGS_ONE_BIG_GTEST "Should all gtests be collected to one ctest" ON)
 option(OGS_BUILD_INFO "Should build information be generated" ON)
+option (OGS_BUILD_TESTS "Enables building of tests." OFF)
+option (OGS_NO_EXTERNAL_LIBS "Builds OGS without any external dependencies." OFF)
+option (OGS_DELETE_EDGES_AFTER_INIT "Delete mesh edges after initialization if possible" OFF)
+option (OGS_OUTPUT_TIME_ALLPCS "Output clock time for all processes" OFF)
+
+include(scripts/cmake/CMakeSetup.cmake)
+include(scripts/cmake/CompilerSetup.cmake)
+include (scripts/cmake/Find.cmake)
+include(scripts/cmake/SubmoduleSetup.cmake)
+include(scripts/cmake/GeneralProjectSetup.cmake)
+
 if(GCC)
 	if(GPROF_PATH)
 		option(OGS_PROFILE "Enables compiling with flags set for profiling with gprof." OFF)
 		if(OGS_PROFILE AND DOT_TOOL_PATH)
 			option(OGS_OUTPUT_PROFILE "Enables pdf output of profiling results." OFF)
-		endif() # OGS_PROFILE AND DOT_TOOL_PATH
-	endif() # GPROF_PATH
+		endif()
+	endif()
 
 	OPTION_REQUIRES(OGS_COVERAGE "Enables code coverage measurements with gcov/lcov." OGS_BUILD_TESTS)
-endif() # GCC
-option (OGS_BUILD_TESTS "Enables building of tests." OFF)
-option (OGS_NO_EXTERNAL_LIBS "Builds OGS without any external dependencies." OFF)
-option (OGS_DELETE_EDGES_AFTER_INIT "Delete mesh edges after initialization if possible" OFF)
-option (OGS_OUTPUT_TIME_ALLPCS "Output clock time for all processes" OFF)
+endif()
 
 mark_as_advanced(FORCE OGS_PYTHON OGS_CMAKE_DEBUG OGS_ONE_BIG_GTEST OGS_BUILD_INFO CMAKE_CMD_ARGS OGS_DELETE_EDGES_AFTER_INIT)
 
