@@ -26,10 +26,6 @@ set_property(CACHE OGS_CONFIG PROPERTY STRINGS
 	MPI
 )
 
-# needs to be set of MPI and GEMS is used
-#option(PARALLEL_USE_MPI "Message passing interface configuration also for GEMS coupling" OFF)
-#option(PARALLEL_USE_OPENMP "Use OpenMP" OFF)
-
 include(scripts/cmake/CMakeSetup.cmake)
 include(scripts/cmake/CompilerSetup.cmake)
 include (scripts/cmake/Find.cmake)
@@ -172,14 +168,14 @@ elseif(OGS_CONFIG STREQUAL BRNS)
 
 elseif(OGS_CONFIG STREQUAL LIS)
 	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
-	add_definitions(-DIPMGEMPLUGIN -DLIS)
+	add_definitions(-DIPMGEMPLUGIN -DLIS -o3)
 	set(PARALLEL_USE_OPENMP ON CACHE INTERNAL "Use Open Multi-Processing")
 	set(LIS ON CACHE INTERNAL "Use Library of Iterative Solvers")
 	set(SOLVER_PKG_NAME "LIS linear solver package")
 
 elseif(OGS_CONFIG STREQUAL MKL)
 	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
-	add_definitions(-DNO_ERROR_CONTROL -DMKL -DLIS)
+	add_definitions(-DNO_ERROR_CONTROL -DMKL -DLIS -o3 -DIPMGEMPLUGIN)
 	set(PARALLEL_USE_OPENMP ON CACHE INTERNAL "Use Open Multi-Processing")
 	set(LIS ON INTERNAL "Use Library of Iterative Solvers")
 	set(MKL ON INTERNAL "Use Math Kernel Library")
@@ -216,10 +212,6 @@ if(PARALLEL_USE_OPENMP)
 	set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}" )
 	set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgomp" )
 endif()
-
-if(MSVC)
-	add_definitions(-DMSVC)
-endif() # MSVC
 
 if(OGS_DELETE_EDGES_AFTER_INIT)
 	add_definitions(-DOGS_DELETE_EDGES_AFTER_INIT)
@@ -267,11 +259,6 @@ if (OGS_BUILD_TESTS)
 endif ()
 
 include( scripts/cmake/packaging/Pack.cmake)
-
-if (OGS_CMAKE_DEBUG)
-	include(ListAllCMakeVariableValues)
-	list_all_cmake_variable_values()
-endif ()
 
 if (OGS_BUILD_UTILITIES)
 	add_subdirectory (UTL/MSHGEOTOOLS/)

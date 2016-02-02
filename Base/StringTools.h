@@ -101,12 +101,6 @@ std::string copyPathToFileName(const std::string &file_name, const std::string &
  */
 void extractPath (std::string const& fname, std::string& path);
 
-
-
 } // end namespace BaseLib
-
-#ifdef MSVC
-void correctScientificNotation(std::string filename, size_t precision = 0);
-#endif
 
 #endif //STRINGTOOLS_H

@@ -30,17 +30,6 @@ if (WIN32)
 		set(GCC OFF)
 
 		DisableCompilerFlag(DEBUG /RTC1)
-
-		# Set $PATH to Visual Studio bin directory. Needed for finding dumpbin.exe
-		if(MSVC80)
-			set(ENV{PATH} "$ENV{PATH};$ENV{VS80COMNTOOLS}..\\..\\VC\\bin")
-		endif ()
-		if(MSVC90)
-			set(ENV{PATH} "$ENV{PATH};$ENV{VS90COMNTOOLS}..\\..\\VC\\bin")
-		endif ()
-		if(MSVC10)
-			set(ENV{PATH} "$ENV{PATH};$ENV{VS100COMNTOOLS}..\\..\\VC\\bin")
-		endif ()
 	endif ()
 endif ()
 
@@ -63,7 +52,6 @@ if(COMPILER_IS_GCC)
 	  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-local-typedefs") # suppress warnings in Eigen
 	endif()
 
-	# would be cool: -Woverloaded-virtual, would be overkill: -Weffc++
 	add_definitions(-DGCC)
 
 	if (OGS_PROFILE)

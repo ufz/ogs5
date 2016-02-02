@@ -8,64 +8,32 @@ endif()
 ### Find tools     ###
 ######################
 
-# Find Python interpreter
 find_package (PythonInterp)
-
-# Find Subversion
 find_package(Subversion)
-
-# Find Git
 find_package(Git)
 
-# msysGit on Windows
 if(WIN32 AND GIT_FOUND)
 	find_package(MsysGit)
 endif() # WIN32 AND GIT_FOUND
 
-# Find Bash
 find_program(BASH_TOOL_PATH bash DOC "The bash executable")
-
-# Find dot tool from graphviz
 find_program(DOT_TOOL_PATH dot DOC "Dot tool from graphviz")
-
-# Find doxygen
 find_package(Doxygen)
-
-# Find gnu profiler gprof
 find_program(GPROF_PATH gprof DOC "GNU profiler gprof")
-
 find_package(cppcheck)
 
 # Find Exuberant ctags or BBEdit for code completion
 find_program(CTAGS_TOOL_PATH ctags DOC "Exuberant ctags")
-find_program(BBEDIT_TOOL_PATH bbedit DOC "BBEdit Editor")
-if(BBEDIT_TOOL_PATH)
+if(CTAGS_TOOL_PATH)
 	add_custom_target(ctags
-		bbedit --maketags
+		ctags -R --fields=+iamS -f ${CMAKE_SOURCES_DIR}/../tags
 		WORKING_DIRECTORY ${CMAKE_SOURCES_DIR}
 		COMMENT "Creating tags..." VERBATIM
 	)
-	add_custom_command(TARGET ctags POST_BUILD
-		COMMAND mv -f tags ../tags
-		WORKING_DIRECTORY ${CMAKE_SOURCES_DIR}
-		COMMENT "Moving tags..." VERBATIM
-	)
-else()
-	if(CTAGS_TOOL_PATH)
-		add_custom_target(ctags
-			ctags -R --fields=+iamS -f ${CMAKE_SOURCES_DIR}/../tags
-			WORKING_DIRECTORY ${CMAKE_SOURCES_DIR}
-			COMMENT "Creating tags..." VERBATIM
-		)
-	endif()
 endif()
 
-## Unix tools ##
-# Date
 find_program(DATE_TOOL_PATH date PATHS ${MSYSGIT_BIN_DIR})
-# Grep
 find_program(GREP_TOOL_PATH grep PATHS ${MSYSGIT_BIN_DIR})
-# Unzip
 find_program(UNZIP_TOOL_PATH unzip PATHS ${MSYSGIT_BIN_DIR})
 
 # Hide these variables for the CMake user
@@ -130,17 +98,10 @@ option(Boost_USE_MULTITHREADED "" ON)
 option(Boost_USE_STATIC_RUNTIME "" ON)
 mark_as_advanced(Boost_USE_STATIC_LIBS Boost_USE_MULTITHREADED Boost_USE_STATIC_RUNTIME)
 
-if(NOT OGS_CONFIG STREQUAL GEMS AND NOT OGS_CONFIG STREQUAL PETSC_GEMS)
-	if(NOT OGS_DONT_USE_BOOST)
-		find_package( Boost 1.50.0 COMPONENTS filesystem system regex)
-	endif()
-else()
-	# Boost with threads is required for GEMS
+if(OGS_CONFIG STREQUAL GEMS OR OGS_CONFIG STREQUAL PETSC_GEMS)
 	find_package(Boost 1.50.0 COMPONENTS system thread REQUIRED)
-	message(STATUS "** Boost root: ${BOOST_ROOT}")
-	message(STATUS "** Boost include: ${Boost_INCLUDE_DIR}")
-	message(STATUS "** Boost libraries: ${Boost_LIBRARY_DIRS}")
-	message(STATUS "** Boost libraries: ${Boost_LIBRARIES}")
+elseif(NOT OGS_DONT_USE_BOOST)
+	find_package( Boost 1.50.0 COMPONENTS filesystem system regex)
 endif()
 
 # Find Math Kernel Library (MKL)
@@ -165,11 +126,5 @@ if(OGS_CONFIG STREQUAL MKL)
 endif()
 
 if(OGS_CONFIG STREQUAL LIS OR OGS_CONFIG STREQUAL MKL)
-	# Find LISlib
 	find_package( LIS REQUIRED )
-	set (NEW_EQS ON)
-	add_definitions(
-		-o3
-		-DIPMGEMPLUGIN
-	)
 endif()
