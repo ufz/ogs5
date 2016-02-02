@@ -1,5 +1,5 @@
 /**
- * \file BuildInfo.h.in
+ * \file BuildInfo.h
  * 24/08/2010 LB Initial implementation
  * #defines which gets set through CMake
  */

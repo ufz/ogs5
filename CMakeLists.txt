@@ -14,6 +14,7 @@ set(OGS_CONFIG "FEM" CACHE STRING "OpenGeoSys configuration")
 set_property(CACHE OGS_CONFIG PROPERTY STRINGS
 	FEM # Default
 	SP
+	GEMS
 	JFNK
 	PETSC
 	PETSC_GEMS
