@@ -38,8 +38,7 @@
    03/2003     RK         Quellcode bereinigt, Globalvariablen entfernt
  */
 /**************************************************************************/
-#include "Configure.h"
-//#include <iostream>
+
 #include "display.h"
 #include "memory.h"
 //#include "makros.h"

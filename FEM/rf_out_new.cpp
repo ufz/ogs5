@@ -14,7 +14,6 @@
    06/2004 OK Implementation
    last modified:
 **************************************************************************/
-#include "Configure.h"
 #include "makros.h"
 // C++ STL
 #include <cfloat>
@@ -27,6 +26,7 @@
 using namespace std;
 
 // Base
+#include "BuildInfo.h"
 #include "StringTools.h"
 // Math
 #include "matrix_class.h" //JOD 2014-11-10
@@ -117,7 +117,7 @@ bool OUTRead(const std::string& file_base_name,
 	MPI_Comm communicator = PETSC_COMM_WORLD;
 #elif defined(USE_MPI)
 	MPI_Comm communicator = comm_DDC;
-#endif 
+#endif
 
 #if defined(USE_PETSC) || defined(USE_MPI) //|| defined(other parallel libs)//03.3012. WW
 	int rank , msize;
@@ -166,7 +166,7 @@ bool OUTRead(const std::string& file_base_name,
 
 			if(output_version) //// 02.2011. WW
 			{
-				std::string VersionStr = OGS_VERSION; //02.2011 WX
+				std::string VersionStr = BuildInfo::OGS_VERSION; //02.2011 WX
 				int curPos = 0;
 				int pos = 0;
 				while((pos = VersionStr.find("/",curPos)) != -1)

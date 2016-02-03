@@ -18,7 +18,6 @@ using namespace std;
 #define NWARNING
 #define NERROR
 #include "logging.h"
-#include "Configure.h"
 
 #include "gtest.h"
 
@@ -34,16 +33,9 @@ using namespace std;
 #include <dirent.h>    // for opendir()
 #include <errno.h>
 
-//#cmakedefine OGS_EXECUTABLE;
-
-//char tmpChar[] = ( OGS_EXECUTABLE );
-#ifndef PUT_TMP_DIR_IN
-exit(1) // fail
-#endif
-
 namespace {
 
-char tmpChar[] = OGS_EXECUTABLE;
+char tmpChar[] = BuildInfo::OGS_EXECUTABLE;
 std::string tmpStr = tmpChar; // path passed by CMakeLists.txt
 
 class MinBMTest : public ::testing::Test {
@@ -72,8 +64,8 @@ protected:
 	exit(1);
       }
 
-    TmpDirectory.append( PUT_TMP_DIR_IN ); // passed by CMakeLists.txt
-    PRINT_DEBUG( PUT_TMP_DIR_IN )
+    TmpDirectory.append( BuildInfo::PUT_TMP_DIR_IN ); // passed by CMakeLists.txt
+    PRINT_DEBUG( BuildInfo::PUT_TMP_DIR_IN )
     // TODO: put this somewhere configurable
     TmpDirectory.append( "data/tmpTestOutput_XXXXXX" );
     // convert to char * for mkdtemp()
@@ -266,7 +258,7 @@ protected:
   {
     // setup the model for running
 	char result[256];
-	strcpy(result,SOURCEPATH);
+	strcpy(result,BuildInfo::SOURCEPATH);
 	strcat(result,"/tests/data/bmskel");
     copyModelToTmpDir( result );
 

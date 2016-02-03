@@ -11,7 +11,6 @@
 #define OGS_CL_TESTS_H
 
 #include "gtest.h"
-#include "Configure.h"
 
 #include <cstdlib>
 #include <sstream>
@@ -21,7 +20,7 @@
 
 namespace {
 
-std::string tmpStr = ( OGS_EXECUTABLE ); // passed by CMakeLists.txt
+std::string tmpStr = ( BuildInfo::OGS_EXECUTABLE ); // passed by CMakeLists.txt
 
 // The fixture for testing class Ogs.
 class OgsTest : public ::testing::Test {

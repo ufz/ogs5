@@ -11,8 +11,6 @@
    The members of class Element definitions.
  */
 
-#include "Configure.h"
-
 // C++ STL
 #include <cfloat>
 //#include <iostream>
@@ -1748,9 +1746,9 @@ double CFiniteElementStd::CalCoefMass()
     	    arg[1]=interpolate(NodalValC1);  // T
 			drho_dp_rho=FluidProp->drhodP(arg)/rhow;
          }
-		 else 
+		 else
 			drho_dp_rho=FluidProp->drho_dp;
-		
+
 		// Storativity
 		val = MediaProp->StorageFunction(Index,unit,pcs->m_num->ls_theta) * Sw;
 
@@ -10482,7 +10480,7 @@ void CFiniteElementStd::Assemble_RHS_T_MPhaseFlow()
 						        dshapefct[k * nnodes +
 						                  i] * dshapefct[k * nnodes + j]
 						        * (NodalValC1[j] + PhysicalConstant::CelsiusZeroInKelvin);
-			}			        
+			}
 		}
 	}
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//03~04.3012. WW

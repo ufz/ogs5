@@ -2,7 +2,7 @@ include(test/Benchmark)
 
 Benchmark(AUTHOR UJG
 	PATH HM/hm_tri
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	 2
 	OUTPUT_FILES
 		hm_tri_domain_DEFORMATION_FLOW_tri.tec
@@ -12,7 +12,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH HM/hm_foot_tri
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 3
 	OUTPUT_FILES
 		hm_foot_tri_domain_DEFORMATION_FLOW_tri.tec
@@ -22,7 +22,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH HM/hm_cc_tri_s
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 2
 	OUTPUT_FILES
 		HM/hm_cc_tri_s_domain_DEFORMATION_FLOW_tri.tec
@@ -31,7 +31,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH HM/hm_dyn_tri
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 4
 	OUTPUT_FILES
 		hm_dyn_tri_domain_DEFORMATION_FLOW_tri.tec
@@ -41,7 +41,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH HM/hm_unsat
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 4
 	OUTPUT_FILES
 		hm_unsat_domain_quad.tec
@@ -51,7 +51,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/m_cc_tri_s
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 127
 	OUTPUT_FILES
 		m_cc_tri_s_domain_tri.tec
@@ -61,7 +61,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/m_cc_quad_s
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 88
 	OUTPUT_FILES
 		m_cc_quad_s_domain_quad.tec
@@ -70,7 +70,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/m_ssy_quad
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 2
 	OUTPUT_FILES
 		m_ssy_quad_domain_quad.tec
@@ -80,7 +80,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/m_brick_l
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 3
 	OUTPUT_FILES
 		m_brick_l_domain_DEFORMATION_tet.tec
@@ -89,7 +89,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/m_sdc
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 29
 	OUTPUT_FILES
 		m_sdc_domain_tri.tec
@@ -99,7 +99,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/m_excav
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 5
 	OUTPUT_FILES
 		m_excav_domain_tri.tec
@@ -119,7 +119,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/m_drift_init
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 1
 	OUTPUT_FILES
 		m_drift_init_domain_tri.tec
@@ -131,7 +131,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/m_mises
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 6
 	OUTPUT_FILES
 		m_mises_domain_tri.tec
@@ -141,7 +141,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/m_e_transiso_2D
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME1
 	OUTPUT_FILES
 		m_e_transiso_2D_domain_quad.tec
@@ -153,7 +153,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/creep/m_crp_tri
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 3
 	OUTPUT_FILES
 		creep/m_crp_tri_domain_tri.tec
@@ -162,7 +162,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/elasticity/m_e_transiso_3D
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 2
 	OUTPUT_FILES
 		m_e_transiso_3D_domain_hex.tec
@@ -176,7 +176,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH HM/hm_foot_tet
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 63
 	OUTPUT_FILES 32
 		hm_foot_tet_domain_DEFORMATION_FLOW_tet.tec
@@ -185,7 +185,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/m_drift
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 72
 	OUTPUT_FILES
 		m_drift_domain_quad.tec
@@ -197,7 +197,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/m_triax_lubby1
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 72
 	OUTPUT_FILES
 		m_triax_lubby1_domain_DEFORMATION_tri.tec
@@ -209,7 +209,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/creep/m_crp_bgr
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 800
 	OUTPUT_FILES
 		m_crp_bgr_domain_tri.tec
@@ -218,7 +218,7 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/creep/uc_creep01
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 305
 	OUTPUT_FILES
 		uc_creep01_domain_tri.tec
@@ -227,19 +227,19 @@ Benchmark(AUTHOR UJG
 
 Benchmark(AUTHOR UJG
 	PATH M/elasticity/M_e_displacement_3Du
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 55
 	OUTPUT_FILES M_e_displacement_3Du_domain_hex.tec)
 
 Benchmark(AUTHOR UJG
 	PATH M/elasticity/M_e_stress_3Du
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 55
 	OUTPUT_FILES M_e_stress_3Du_domain_hex.tec)
 
 Benchmark(AUTHOR UJG
 	PATH M/creep/m_triax_lubby2
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 174
 	OUTPUT_FILES
 		m_triax_lubby2_domain_DEFORMATION_tri.tec

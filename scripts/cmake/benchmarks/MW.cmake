@@ -2,7 +2,7 @@ include(test/Benchmark)
 
 Benchmark(AUTHOR MW
 	PATH H_us/Darcy/unconf_WO_rch/unconf
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 16
 	OUTPUT_FILES
 		unconf_2.vtu
@@ -11,7 +11,7 @@ Benchmark(AUTHOR MW
 
 Benchmark(AUTHOR MW
 	PATH H_us/Darcy/unconf_W_rch/unconf
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 11
 	OUTPUT_FILES
 		unconf_2.vtu
@@ -20,7 +20,7 @@ Benchmark(AUTHOR MW
 
 Benchmark(AUTHOR MW
 	PATH DENSITY-DEPENDENT_FLOW/goswami-clement/constrBC_PressAsHead_tri/HM
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 361
 	OUTPUT_FILES
 		HM_47.vtu
@@ -30,7 +30,7 @@ Benchmark(AUTHOR MW
 
 Benchmark(AUTHOR MW
 	PATH DENSITY-DEPENDENT_FLOW/goswami-clement/wholeBC_PressAsHead_tri/HM
-	REQUIRED_CMAKE_OPTIONS OGS_FEM
+	CONFIG FEM
 	RUNTIME 373
 	OUTPUT_FILES
 		HM_42.vtu

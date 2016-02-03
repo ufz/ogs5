@@ -9,13 +9,12 @@
 
 #include "ogs_display.h"
 
+#include "BuildInfo.h"
+
 #include <cstdarg>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
-
-#include "Configure.h"
-
 
 /**************************************************************************/
 /* ROCKFLOW - Funktion: DisplayStartMsg
@@ -57,7 +56,7 @@ void DisplayStartMsg ( void )
 
 	//align the version information to center of the line
 	printf("          ## ");
-	sprintf(buf, "Version %s  Date %s", OGS_VERSION, OGS_DATE);
+	sprintf(buf, "Version %s  Date %s", BuildInfo::OGS_VERSION.c_str(), BuildInfo::OGS_DATE.c_str());
 	pad_len = 45 - (int)strlen(buf);
 	for (i = 0; i < pad_len / 2; i++)
 		printf(" ");

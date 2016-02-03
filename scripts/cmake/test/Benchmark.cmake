@@ -7,7 +7,8 @@
 # Benchmark(
 #   AUTHOR <Author short code>
 #   PATH <benchmark path incl. name>  # relative to the Benchmarks folder
-#   REQUIRED_CMAKE_OPTIONS <0..N CMake options> # Pass e.g. the CMake config (OGS_FEM)
+#   CONFIG <ogs configuration> # defaults to FEM
+#   REQUIRED_CMAKE_OPTIONS <0..N CMake options> # optional
 #   OUTPUT_FILES <0..N names of result files to compare>
 #   NUM_PROCESSORS <number of processors to run this test on> # Is passed to mpirun
 #   TIMEOUT <Time in minutes> # Build is aborted if timeout is exceeded
@@ -18,7 +19,7 @@
 #
 # Benchmark(AUTHOR YS
 #   PATH RWPT/Forchheimer/forchheimer_rwpt
-#   REQUIRED_CMAKE_OPTIONS OGS_FEM
+#   CONFIG FEM
 #   OUTPUT_FILES
 #     forchheimer_rwpt_GROUNDWATER_FLOW60.vtu
 #     forchheimer_rwpt_domain_ele_GROUNDWATER_FLOW.tec
@@ -30,24 +31,28 @@ function(Benchmark)
 
 	# parse arguments
 	set(options NONE)
-	set(oneValueArgs AUTHOR PATH NUM_PROCESSORS TIMEOUT RUNTIME)
+	set(oneValueArgs AUTHOR PATH NUM_PROCESSORS TIMEOUT RUNTIME CONFIG)
 	set(multiValueArgs REQUIRED_CMAKE_OPTIONS OUTPUT_FILES)
 	cmake_parse_arguments(Benchmark "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
 	# set defaults
+	if(NOT Benchmark_CONFIG)
+		set(Benchmark_CONFIG FEM)
+	endif()
 	if(NOT Benchmark_NUM_PROCESSORS)
 		set(Benchmark_NUM_PROCESSORS 1)
 	endif()
-
 	if(NOT Benchmark_TIMEOUT)
 		set(Benchmark_TIMEOUT ${BENCHMARK_TIMEOUT})
 	endif()
-
 	if(NOT Benchmark_RUNTIME)
 		set(Benchmark_RUNTIME 1)
 	endif()
 
 	# Check required CMake configuration
+	if(NOT Benchmark_CONFIG STREQUAL OGS_CONFIG)
+		return()
+	endif()
 	foreach(REQUIRED_CMAKE_OPTION ${Benchmark_REQUIRED_CMAKE_OPTIONS})
 		if(NOT ${REQUIRED_CMAKE_OPTION})
 			return()

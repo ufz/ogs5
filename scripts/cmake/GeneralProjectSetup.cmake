@@ -10,22 +10,10 @@ endif ()
 # Collect build information such as revision/commit and timestamp
 if (OGS_BUILD_INFO)
 	if(GIT_FOUND)
-		# Get git commit
-		execute_process(
-			COMMAND ${GIT_EXECUTABLE} "log" "--name-status" "HEAD^..HEAD"
-			COMMAND ${GREP_TOOL_PATH} "-m" "1" "commit"
-			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-			OUTPUT_VARIABLE GIT_COMMIT_INFO
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
-	endif() # GIT_FOUND
-
-	find_path(HIDDEN_SVN_DIR entries ${CMAKE_SOURCE_DIR}/.svn)
-	if(Subversion_FOUND AND HIDDEN_SVN_DIR)
-		Subversion_WC_INFO(${PROJECT_SOURCE_DIR} Project)
-		set(SVN_REVISION ${Project_WC_REVISION})
-	endif() # Subversion_FOUND AND HIDDEN_SVN_DIR
-	unset(HIDDEN_SVN_DIR)
+		include(GetGitRevisionDescription)
+		GET_GIT_HEAD_REVISION(GIT_REFSPEC GIT_SHA1)
+		string(SUBSTRING ${GIT_SHA1} 0 8 GIT_SHA1_SHORT)
+	endif()
 
 	execute_process(
 		COMMAND ${DATE_TOOL_PATH} "+%Y-%m-%d" # %H:%M:%S"

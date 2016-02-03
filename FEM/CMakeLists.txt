@@ -103,14 +103,14 @@ set( SOURCES
 	vtk.cpp
 )
 
-if(OGS_FEM_PETSC OR OGS_FEM_PETSC_GEMS)
+if(OGS_CONFIG STREQUAL PETSC OR OGS_CONFIG STREQUAL PETSC_GEMS)
 	set( SOURCES ${SOURCES} rf_pcs1.cpp fct_mpi.h fct_mpi.cpp)
 else()
 	set( SOURCES ${SOURCES} par_ddc.h par_ddc.cpp)
 	## New sparse class. WW
 	if(OGS_USE_NEW_EQS)
 		set( SOURCES ${SOURCES} equation_class.h equation_class.cpp )
-		if(OGS_FEM_JFNK)
+		if(OGS_CONFIG STREQUAL JFNK)
 			set( SOURCES ${SOURCES} rf_pcs1.cpp )
 		endif()
 	else()
@@ -118,14 +118,13 @@ else()
 	endif()
 endif()
 
-if(OGS_FEM_BRNS)
+if(OGS_CONFIG STREQUAL BRNS)
 	set( SOURCES ${SOURCES} rf_REACT_BRNS.h rf_REACT_BRNS.cpp )
 endif()
 
-if(OGS_FEM_GEMS OR OGS_FEM_PETSC_GEMS)
+if(OGS_CONFIG STREQUAL GEMS OR OGS_CONFIG STREQUAL PETSC_GEMS)
 	set( SOURCES ${SOURCES} rf_REACT_GEM.h rf_REACT_GEM.cpp )
 endif()
-
 
 include_directories(
 	${CMAKE_SOURCE_DIR}/Base
@@ -140,22 +139,6 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/MSH
 )
 
-if (LIS)
-	include_directories(${LIS_INCLUDE_DIR})
-endif ()
-
-if (MKL)
-	include_directories(${MKL_INCLUDES})
-endif ()
-
-if(OGS_FEM_PQC)
-	include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/PQC)
-endif ()
-
-if(OGS_FEM_IPQC)
-	include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/IPQC/src)
-endif ()
-
 # Create the library
 add_library( FEM STATIC ${HEADERS} ${SOURCES} )
 
@@ -167,36 +150,46 @@ target_link_libraries(FEM
 	MSH
 )
 
-if(OGS_FEM_PQC)
+if(LIS)
+	include_directories(${LIS_INCLUDE_DIR})
+endif()
+
+if(MKL)
+	include_directories(${MKL_INCLUDES})
+endif()
+
+if(OGS_CONFIG STREQUAL PQC)
+	include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/PQC)
 	target_link_libraries(FEM PQC)
 endif()
+
+if(OGS_CONFIG STREQUAL IPQC)
+	include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/IPQC/src)
+endif ()
 
 if(PARALLEL_USE_MPI)
 	target_link_libraries(FEM ${MPI_CXX_LIBRARIES})
 endif()
 
-if(OGS_FEM_MKL)
+if(OGS_CONFIG STREQUAL MKL)
 	target_link_libraries( FEM ${MKL_LIBRARIES} )
 endif()
 
 if (WIN32)
-	if (OGS_FEM_GEMS)
+	if (OGS_CONFIG STREQUAL GEMS)
 		target_link_libraries( FEM GEM )
 	endif ()
 	if (LIS)
 		target_link_libraries( FEM ${LIS_LIBRARIES} )
 		set_target_properties( FEM PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt" )
 	endif ()
-	if (OGS_FEM_BRNS)
+	if (OGS_CONFIG STREQUAL BRNS)
 		target_link_libraries( FEM BrnsDll )
-	endif ()
-	if (OGS_FEM_CHEMAPP)
-		target_link_libraries( FEM ca_vc_e )
 	endif ()
 endif ()
 
 if (UNIX)
-	if (OGS_FEM_BRNS)
+	if (OGS_CONFIG STREQUAL BRNS)
 		target_link_libraries( FEM ${CMAKE_DL_LIBS} ${LAPACK_LIBRARIES} )
 	endif ()
 
@@ -205,13 +198,7 @@ if (UNIX)
 	endif ()
 endif ()
 
-if (OGS_FEM_CHEMAPP)
-	include_directories ( ${CMAKE_SOURCE_DIR}/EQL )
-	target_link_libraries ( FEM EQL )
-endif ()
-
-
-if (OGS_FEM_CAP)
+if (OGS_CONFIG STREQUAL CAP)
 	include_directories (  ${CMAKE_SOURCE_DIR}/CMP )
 	target_link_libraries (
 		FEM

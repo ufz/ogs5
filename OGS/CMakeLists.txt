@@ -20,14 +20,6 @@ if (LIS)
 	include_directories(${LIS_INCLUDE_DIR})
 endif ()
 
-
-if(OGS_FEM_PETSC OR OGS_FEM_PETSC_GEMS)
-	include_directories(${CMAKE_SOURCE_DIR}/MathLib/PETSC)
-endif()
-if(OGS_FEM_IPQC)
-	include_directories(${CMAKE_SOURCE_DIR}/IPQC/src)
-endif ()
-
 if (Shapelib_FOUND)
 	include_directories(${Shapelib_INCLUDE_DIR})
 endif ()
@@ -51,7 +43,7 @@ if(PARALLEL_USE_MPI)
 	target_link_libraries(ogs ${MPI_CXX_LIBRARIES})
 endif()
 
-if (OGS_FEM_GEMS OR OGS_FEM_PETSC_GEMS)
+if (OGS_CONFIG STREQUAL GEMS OR OGS_CONFIG STREQUAL PETSC_GEMS)
 	target_link_libraries( ogs
 		GEM
 		${Boost_LIBRARIES}
@@ -59,15 +51,17 @@ if (OGS_FEM_GEMS OR OGS_FEM_PETSC_GEMS)
 	)
 endif ()
 
-if (OGS_FEM_PETSC_GEMS OR OGS_FEM_PETSC)
+if (OGS_CONFIG STREQUAL PETSC_GEMS OR OGS_CONFIG STREQUAL PETSC)
+	include_directories(${CMAKE_SOURCE_DIR}/MathLib/PETSC)
 	target_link_libraries( ogs ${PETSC_LIBRARIES} )
 endif ()
 
-if(OGS_FEM_IPQC)
+if(OGS_CONFIG STREQUAL IPQC)
+	include_directories(${CMAKE_SOURCE_DIR}/IPQC/src)
 	target_link_libraries(ogs iphreeqc)
 endif ()
 
-if(OGS_FEM_MKL)
+if(OGS_CONFIG STREQUAL MKL)
 	target_link_libraries(ogs ${MKL_LIBRARIES})
 	 # Hack, see http://webpages.charter.net/ppluzhnikov/linker.html
 	target_link_libraries(ogs ${MKL_LIBRARIES})

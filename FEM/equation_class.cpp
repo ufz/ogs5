@@ -26,7 +26,6 @@
 #include "SplitMPI_Communicator.h"
 #endif
 
-#include "Configure.h"
 #include "makros.h"
 
 #include <cfloat>
