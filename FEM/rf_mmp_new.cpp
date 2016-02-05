@@ -2639,7 +2639,8 @@ double* CMediumProperties::HeatConductivityTensor(int number)
 				FLOW = true;
 		if (FLOW)                 //WW
 		{
-			if (Fem_Ele_Std->cpl_pcs->type == 1212) // Multi-phase WW
+			CRFProcess const* cpl_pcs = Fem_Ele_Std->cpl_pcs;
+			if (cpl_pcs && cpl_pcs->type == 1212) // Multi-phase WW
 			{
 				double PG = Fem_Ele_Std->interpolate(
 				        Fem_Ele_Std->NodalValC1); // Capillary pressure
@@ -2673,7 +2674,7 @@ double* CMediumProperties::HeatConductivityTensor(int number)
 					        = Fem_Ele_Std->FluidProp->HeatConductivity();
 				Sw = 1;
 
-				if (Fem_Ele_Std->cpl_pcs->type != 1)
+				if (cpl_pcs && cpl_pcs->type != 1)
 				{
 					double PG = Fem_Ele_Std->interpolate(
 					        Fem_Ele_Std->NodalValC1); // Capillary pressure
