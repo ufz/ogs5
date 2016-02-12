@@ -556,53 +556,6 @@ void CRFProcess::AllocateMemGPoint()
 		ele_gp_value.push_back(new ElementValue(this, m_msh->ele_vector[i]));
 }
 
-
-/**************************************************************************
-   FEMLib-Method:
-   Task:    This function is a part of the monolithic scheme
-         and it is used to assign pcs name to IC, ST, BC, TIM and OUT. object
-   Programing:
-   07/2005 WW Implementation
-   10/2010 TF cody style improvements
-**************************************************************************/
-void CRFProcess::SetOBJNames()
-{
-	// IC
-	const size_t ic_vector_size(ic_vector.size());
-	for (size_t i = 0; i < ic_vector_size; i++)
-		ic_vector[i]->setProcessType(this->getProcessType());
-
-	// BC
-	std::list<CBoundaryCondition*>::const_iterator p_bc = bc_list.begin();
-	while (p_bc != bc_list.end())
-	{
-		(*p_bc)->setProcessType(this->getProcessType());
-		++p_bc;
-	}
-
-	// ST
-	const size_t st_vector_size (st_vector.size());
-	for (size_t i = 0; i < st_vector_size; i++)
-		st_vector[i]->setProcessType(this->getProcessType());
-
-	// TIM
-	const size_t time_vector_size (time_vector.size());
-	for (size_t i = 0; i < time_vector_size; i++)
-		//		Tim = time_vector[i];
-		//		Tim->pcs_type_name = _pcs_type_name;
-		time_vector[i]->pcs_type_name = convertProcessTypeToString (this->getProcessType());
-
-	// OUT
-	// OK4216
-	const size_t out_vector_size (out_vector.size());
-	for (size_t i = 0; i < out_vector_size; i++)
-		//		m_out = out_vector[i];
-		//		m_out->_pcs_type_name = _pcs_type_name;
-		out_vector[i]->setProcessType(this->getProcessType());
-	//m_out->pcs_pv_name = pcs_primary_function_name[0];//CMCD
-	//string temp = pcs_primary_function_name[0];
-}
-
 /**************************************************************************
    PCSLib-Method:
    10/2002 OK Implementation
@@ -3164,11 +3117,7 @@ void CRFProcess::ConfigDeformation()
 		norm_u_JFNK = new double[2];
 #endif
 	}
-
-	if(type / 10 == 4)
-		SetOBJNames();            //if(type==41) SetOBJNames(); //OK->WW please put to Config()
 }
-
 
 /**************************************************************************
    FEMLib-Method: Static problems

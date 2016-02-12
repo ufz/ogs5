@@ -729,10 +729,6 @@ public:
 	void DDCAssembleGlobalMatrix();
 #endif
 	virtual void AssembleSystemMatrixNew(void);
-	// This function is a part of the monolithic scheme
-	//  and it is related to ST, BC, IC, TIM and OUT. WW
-	void SetOBJNames();
-
 
 	//MW
 	int getFirstNodeBelowGWL(size_t i);
