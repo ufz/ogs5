@@ -14,10 +14,12 @@
    07/2005 PCH Implementation
 **************************************************************************/
 
+#include "rf_random_walk.h"
+
+#include "FileTools.h"
 #include "Output.h"
 #include "matrix_class.h"
 #include "rf_fluid_momentum.h"
-#include "rf_random_walk.h"
 #include "rf_tim_new.h"
 #include "rfmat_cp.h"
 
@@ -5978,11 +5980,10 @@ void DATWriteParticleFile(int current_time_step)
 	sprintf(now, "%i", current_time_step);
 	string nowstr = now;
 
-	string vtk_file_name = FileName + "_RWPT_";
-	vtk_file_name += nowstr;
-	vtk_file_name += ".particles.vtk";
-	fstream vtk_file(vtk_file_name.data(), ios::out);
-	vtk_file.setf(ios::scientific, ios::floatfield);
+	string vtk_file_name =  pathJoin(defaultOutputPath, FileName);
+	vtk_file_name += "_RWPT_" + nowstr + ".particles.vtk";
+	fstream vtk_file (vtk_file_name.data(),ios::out);
+	vtk_file.setf(ios::scientific,ios::floatfield);
 	vtk_file.precision(12);
 	if (!vtk_file.good())
 		return;
