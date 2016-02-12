@@ -1236,7 +1236,7 @@ void CRFProcess:: WriteSolution()
 		return;
 
 	std::string pcs_type_name (convertProcessTypeToString(this->getProcessType()));
-#if defined(USE_PETSC) || defined(USE_MPI) //|| defined(other parallel libs)//03.3012. WW
+#if defined(USE_PETSC) //|| defined(other parallel libs)//03.3012. WW
 	int rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	std::string m_file_name = FileName + "_" + pcs_type_name + "_"
@@ -1286,7 +1286,7 @@ void CRFProcess:: WriteSolution()
 void CRFProcess:: ReadSolution()
 {
 	std::string pcs_type_name (convertProcessTypeToString(this->getProcessType()));
-#if defined(USE_PETSC) || defined(USE_MPI)
+#if defined(USE_PETSC)
 	int rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	std::string m_file_name = FileName + "_" + pcs_type_name + "_"
