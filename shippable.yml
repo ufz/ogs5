@@ -11,7 +11,7 @@ install:
   - sudo apt-get install cmake libboost-thread1.55-dev
 script:
   - rm build_* -f -R
-  - CASE=FEM`
+  - CASE=FEM
   - mkdir build_${CASE} && cd build_${CASE} && cmake -DOGS_CONFIG=${CASE} .. && make && cd ..
   - CASE=SP
   - mkdir build_${CASE} && cd build_${CASE} && cmake $CMAKE_ARGS .. && make && cd ..
