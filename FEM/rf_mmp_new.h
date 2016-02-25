@@ -316,7 +316,7 @@ public:
 class CMediumPropertiesGroup                      //YD
 {
    public:
-      CMediumPropertiesGroup() {OrigSize=0;}
+      CMediumPropertiesGroup() : m_msh(NULL), OrigSize(0) {}
       void Set(CRFProcess* m_pcs);
       std::string pcs_name;
       std::string pcs_type_name;
