@@ -24,6 +24,7 @@
 #include "makros.h"
 #include "rf_mmp_new.h"
 #include "FileTools.h"
+#include "OutputTools.h"
 
 using namespace std;
 
@@ -1321,5 +1322,110 @@ bool CVTK::WriteElementValue(std::fstream &fin,
 		if (!useBinary || !output_data)
 			WriteDataArrayFooter(fin);
 	}
+
+	//MMP
+	if(out->mmp_value_vector.size() > 0)
+	{
+		for (size_t i_mmp=0; i_mmp<out->mmp_value_vector.size(); i_mmp++) {
+			const std::string &mmp_name = out->mmp_value_vector[i_mmp];
+			int mmp_id = ELEMENT_MMP_VALUES::getMMPIndex(mmp_name);
+			if (mmp_id<0) continue;
+
+			if (!useBinary || !output_data)
+				WriteDataArrayHeader(fin, this->type_Double, mmp_name, 0, str_format, offset);
+
+			if (output_data)
+			{
+				if (m_pcs==NULL) {
+					m_pcs = PCSGetFlow();
+				}
+
+				if (!this->useBinary)
+				{
+					fin << "          ";
+					for(long i_e = 0; i_e < (long)msh->ele_vector.size(); i_e++)
+					{
+						ele = msh->ele_vector[i_e];
+						double mat_value = getElementMMP(mmp_id, ele, m_pcs);
+						fin << mat_value << " ";
+					}
+					fin << "\n";
+				}
+				else
+				{
+					//OK411
+					write_value_binary<unsigned int>(fin, sizeof(int) * (long)msh->ele_vector.size());
+					for (long i_e = 0; i_e < (long)msh->ele_vector.size(); i_e++) {
+						ele = msh->ele_vector[i_e];
+						double mat_value = getElementMMP(mmp_id, ele, m_pcs);
+						write_value_binary(fin, mat_value);
+					}
+				}
+			} else {
+				offset += (long)msh->ele_vector.size() * sizeof(double) + SIZE_OF_BLOCK_LENGTH_TAG;
+			}
+
+			if (!useBinary || !output_data)
+				WriteDataArrayFooter(fin);
+		}
+	}
+
+	//MFP
+	if(out->mfp_value_vector.size() > 0)
+	{
+		for (size_t i_mfp=0; i_mfp<out->mfp_value_vector.size(); i_mfp++) {
+			const std::string &mfp_name = out->mfp_value_vector[i_mfp];
+			int mfp_id = ELEMENT_MFP_VALUES::getMFPIndex(mfp_name);
+			if (mfp_id<0) continue;
+
+			if (!useBinary || !output_data)
+				WriteDataArrayHeader(fin, this->type_Double, mfp_name, 0, str_format, offset);
+
+			if (output_data)
+			{
+				if (m_pcs==NULL) {
+					m_pcs = PCSGetFlow();
+				}
+
+				if (!this->useBinary)
+				{
+					fin << "          ";
+					int gp_r, gp_s, gp_t;
+					for(long i_e = 0; i_e < (long)msh->ele_vector.size(); i_e++)
+					{
+						ele = msh->ele_vector[i_e];
+						ele->SetOrder(false);
+						CFiniteElementStd* fem = m_pcs->GetAssember();
+						fem->ConfigElement(ele, m_pcs->m_num->ele_gauss_points, false);
+						fem->Config();
+						fem->SetGaussPoint(0, gp_r, gp_s, gp_t);
+						fem->ComputeShapefct(1);
+						CFluidProperties* mfp = mfp_vector[0];
+						mfp->SetFemEleStd(fem);
+						double mat_value = ELEMENT_MFP_VALUES::getValue(mfp, mfp_id);
+						fin << mat_value << " ";
+					}
+					fin << "\n";
+				}
+				else
+				{
+					//OK411
+					write_value_binary<unsigned int>(fin, sizeof(int) * (long)msh->ele_vector.size());
+					for (long i_e = 0; i_e < (long)msh->ele_vector.size(); i_e++) {
+						ele = msh->ele_vector[i_e];
+						CFluidProperties* mfp = mfp_vector[0];
+						double mat_value = ELEMENT_MFP_VALUES::getValue(mfp, mfp_id);
+						write_value_binary(fin, mat_value);
+					}
+				}
+			} else {
+				offset += (long)msh->ele_vector.size() * sizeof(double) + SIZE_OF_BLOCK_LENGTH_TAG;
+			}
+
+			if (!useBinary || !output_data)
+				WriteDataArrayFooter(fin);
+		}
+	}
+
 	return true;
 }

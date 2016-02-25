@@ -286,7 +286,9 @@ private:
 	// Primary as water head
 	bool HEAD_Flag;
 	//
+public:
 	void Config();
+protected:
 	//
 	double CalCoefMass();
 	// 25.2.2007 WW

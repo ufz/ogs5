@@ -48,6 +48,7 @@ set( HEADERS
 	Stiff_Bulirsch-Stoer.h
 	tools.h
 	vtk.h
+	OutputTools.h
 )
 
 set( SOURCES

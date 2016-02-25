@@ -123,6 +123,7 @@ public:
 	double phi_r_dd (double rho, double T) const;
 	double phi_0_tt (double T) const;
 	double EffectiveDiffusionCoef(int CIndex, double* variables = NULL); //AKS
+	void SetFemEleStd(FiniteElement::CFiniteElementStd* fem) { Fem_Ele_Std = fem;}
 
 private:
 	int fluid_id;                         // specification of substance (NB JUN 09)
