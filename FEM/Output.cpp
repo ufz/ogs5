@@ -1517,6 +1517,10 @@ double COutput::NODWritePLYDataTEC(int number)
 		return 0.0;
 	}
 
+	const bool is_TECPLOT = (dat_type_name.compare("TECPLOT") == 0);
+	const bool is_GNUPLOT = (dat_type_name.compare("GNUPLOT") == 0);
+	const bool is_CSV = (dat_type_name.compare("CSV") == 0);
+
 	// File handling
 	std::string tec_file_name = file_base_name + "_ply_" + geo_name + "_t"
 	                            + number2str<size_t> (_id); //OK4709
@@ -1524,7 +1528,10 @@ double COutput::NODWritePLYDataTEC(int number)
 		tec_file_name += "_" + convertProcessTypeToString(getProcessType());
 	if (msh_type_name.size() > 0)
 		tec_file_name += "_" + msh_type_name;
-	tec_file_name += TEC_FILE_EXTENSION;
+	if (is_TECPLOT || is_GNUPLOT)
+		tec_file_name += TEC_FILE_EXTENSION;
+	if (is_CSV)
+		tec_file_name += CSV_FILE_EXTENSION;
 	if (!_new_file_opened)
 		remove(tec_file_name.c_str());  //WW
 
@@ -1619,17 +1626,21 @@ double COutput::NODWritePLYDataTEC(int number)
 	// Write header
 	if (number == 0 || number == 1)       //WW if(number==1)
 	{
-		//project_title;
-		std::string project_title_string = "Profiles along polylines";
+		if (is_TECPLOT) {
+			//project_title;
+			std::string project_title_string = "Profiles along polylines";
 
-	    if (dat_type_name.compare("GNUPLOT") != 0) // 5.3.07 JOD
-		   tec_file << " TITLE = \"" << project_title_string
-		         << "\"" << "\n";
-		else
-		   tec_file << "# ";
+			if (dat_type_name.compare("GNUPLOT") != 0) // 5.3.07 JOD
+				tec_file << " TITLE = \"" << project_title_string
+					 << "\"" << "\n";
+			else
+				tec_file << "# ";
+			tec_file << " VARIABLES = ";
+		}
 
-
-		tec_file << " VARIABLES = \"DIST\" ";
+		if (is_CSV)
+			tec_file << "\"TIME\" ";
+		tec_file << "\"DIST\" ";
 		for (size_t k = 0; k < no_variables; k++)
 		{
 			tec_file << "\"" << _nod_value_vector[k] << "\" ";
@@ -1678,8 +1689,10 @@ double COutput::NODWritePLYDataTEC(int number)
 	}
 	//......................................................................
 	// , I=" << NodeListLength << ", J=1, K=1, F=POINT" << "\n";
-	if (dat_type_name.compare("GNUPLOT") == 0) // 6/2012 JOD
+	if (is_GNUPLOT) // 6/2012 JOD
 		tec_file << "# ";
+	if (is_TECPLOT || is_GNUPLOT)
+		tec_file << " ZONE T=\"TIME=" << _time << "\"" << "\n";
 
 	tec_file << " ZONE T=\"TIME=" << _time << "\"" << "\n";
 	//----------------------------------------------------------------------
@@ -1706,6 +1719,8 @@ double COutput::NODWritePLYDataTEC(int number)
 	//bool b_specified_pcs = (m_pcs != NULL); //NW m_pcs = PCSGet(pcs_type_name);
 	for (size_t j(0); j < nodes_vector.size(); j++)
 	{
+		if (is_CSV)
+			tec_file << aktuelle_zeit << " ";
 //		tec_file << m_ply->getSBuffer()[j] << " ";
 		tec_file << interpolation_points[j] << " ";
 		//WW
@@ -1808,10 +1823,17 @@ void COutput::NODWritePNTDataTEC(double time_current,int time_step_number)
 			break;
 		}
 
+	//......................................................................
+	const bool is_TECPLOT = (dat_type_name.compare("TECPLOT") == 0);
+	const bool is_GNUPLOT = (dat_type_name.compare("GNUPLOT") == 0);
+	const bool is_CSV = (dat_type_name.compare("CSV") == 0);
+
 	// File handling
 	std::string tec_file_name(file_base_name + "_time_");
-	addInfoToFileName(tec_file_name, true, true, true);
-
+	if (is_TECPLOT || is_GNUPLOT)
+		addInfoToFileName(tec_file_name, true, true, true);
+	else if (is_CSV)
+		addInfoToFileName(tec_file_name, true, true, true, CSV_FILE_EXTENSION);
 	if (!_new_file_opened)
 		remove(tec_file_name.c_str());  //WW
 	//......................................................................
@@ -1852,14 +1874,16 @@ void COutput::NODWritePNTDataTEC(double time_current,int time_step_number)
 	// Write header
 	if (time_step_number == 0)            //WW  Old: if(time_step_number==1)
 	{
-		//project_title;
-		if (dat_type_name.compare("GNUPLOT") != 0) { // 6/2012 JOD
+		if (is_TECPLOT) {
 			const std::string project_title_string ("Time curves in points");
 			tec_file << " TITLE = \"" << project_title_string << "\"" << "\n";
-		} else
-					tec_file << "# ";
+		} else if (is_GNUPLOT) {
+			tec_file << "# ";
+		}
 
-		tec_file << " VARIABLES = \"TIME \" ";
+		if (is_TECPLOT || is_GNUPLOT)
+			tec_file << " VARIABLES = ";
+		tec_file << "\"TIME\" ";
 
 		//    if(pcs_type_name.compare("RANDOM_WALK")==0)
 		if (getProcessType() == FiniteElement::RANDOM_WALK)
@@ -1894,16 +1918,17 @@ void COutput::NODWritePNTDataTEC(double time_current,int time_step_number)
 			         << " Effective_Strain";
 		tec_file << "\n";
 
-		if (dat_type_name.compare("GNUPLOT") == 0) // 5.3.07 JOD
+		if (is_GNUPLOT) // 5.3.07 JOD
 		  tec_file << "# "; // comment
-
-		if (geo_name.find("POINT") == std::string::npos)
-			tec_file << " ZONE T=\"POINT="
-			//, I=" << anz_zeitschritte << ", J=1, K=1, F=POINT" << "\n";
+		if (is_TECPLOT) {
+			if (geo_name.find("POINT") == std::string::npos)
+				tec_file << " ZONE T=\"POINT="
+				//, I=" << anz_zeitschritte << ", J=1, K=1, F=POINT" << "\n";
 			         << getGeoTypeAsString() << geo_name << "\"" << "\n";
-		else
-			tec_file << " ZONE T=\"POINT=" << geo_name << "\""
+			else
+				tec_file << " ZONE T=\"POINT=" << geo_name << "\""
 			         << "\n";  //, I=" << anz_zeitschritte << ", J=1, K=1, F=POINT" << "\n";
+		}
 	}
 
 	// For deformation
@@ -3673,7 +3698,7 @@ void COutput::setInternalVarialbeNames(CFEMesh *msh)
 #endif
 }
 
-void COutput::addInfoToFileName (std::string& file_name, bool geo, bool process, bool mesh) const
+void COutput::addInfoToFileName (std::string& file_name, bool geo, bool process, bool mesh, const std::string &ext) const
 {
 	// add geo type name
 	if (geo)
@@ -3689,7 +3714,7 @@ void COutput::addInfoToFileName (std::string& file_name, bool geo, bool process,
 		file_name += "_" + msh_type_name;
 
 	// finally add file extension
-	file_name += TEC_FILE_EXTENSION;
+	file_name += ext;
 }
 
 
