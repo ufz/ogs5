@@ -12,15 +12,15 @@ install:
 script:
   - rm build_* -f -R
   - CASE=FEM
-  - mkdir build_${CASE} && cd build_${CASE} && cmake -DOGS_CONFIG=${CASE} .. && make && cd ..
+  - mkdir build_${CASE} && cd build_${CASE} && cmake -DOGS_CONFIG=${CASE} -DOGS_CPU_ARCHITECTURE=generic .. && make && cd ..
   - CASE=SP
-  - mkdir build_${CASE} && cd build_${CASE} && cmake $CMAKE_ARGS .. && make && cd ..
+  - mkdir build_${CASE} && cd build_${CASE} && cmake -DOGS_CONFIG=${CASE} -DOGS_CPU_ARCHITECTURE=generic .. && make && cd ..
   - CASE=PQC
-  - mkdir build_${CASE} && cd build_${CASE} && cmake $CMAKE_ARGS .. && make && cd ..
+  - mkdir build_${CASE} && cd build_${CASE} && cmake -DOGS_CONFIG=${CASE} -DOGS_CPU_ARCHITECTURE=generic .. && make && cd ..
   - CASE=IPQC
-  - mkdir build_${CASE} && cd build_${CASE} && cmake $CMAKE_ARGS .. && make && cd ..
-  - CASE=GEMS 
-  - mkdir build_${CASE} && cd build_${CASE} && cmake $CMAKE_ARGS .. && make && cd ..
+  - mkdir build_${CASE} && cd build_${CASE} && cmake -DOGS_CONFIG=${CASE} -DOGS_CPU_ARCHITECTURE=generic .. && make && cd ..
+  - CASE=GEMS
+  - mkdir build_${CASE} && cd build_${CASE} && cmake -DOGS_CONFIG=${CASE} -DOGS_CPU_ARCHITECTURE=generic .. && make && cd ..
 # the followings are not supported yet
 #  - CASE=OGS_FEM_BRNS CMAKE_ARGS="-D${CASE}=ON"
 #  - CASE=OGS_FEM_CHEMAPP CMAKE_ARGS="-D${CASE}=ON"
