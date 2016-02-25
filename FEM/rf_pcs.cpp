@@ -551,6 +551,7 @@ void CRFProcess::AllocateMemGPoint()
 {
 	//	if (_pcs_type_name.find("FLOW") == 0)
 	//		return;
+	if (!ele_gp_value.empty()) return;
 	const size_t mesh_ele_vector_size (m_msh->ele_vector.size());
 	for (size_t i = 0; i < mesh_ele_vector_size; i++)
 		ele_gp_value.push_back(new ElementValue(this, m_msh->ele_vector[i]));
