@@ -936,6 +936,10 @@ private:
 			 double const & time_fac = 1, double const & fac = 1);
 
 	double evaluteSwitchBC(CBoundaryCondition const & bc, CBoundaryConditionNode const & bc_node, double time_fac, double fac);
+
+	int _pcs_constant_model;
+	double _pcs_constant_value;
+	int _pcs_constant_curve;
 };
 
 //========================================================================
