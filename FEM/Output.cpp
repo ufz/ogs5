@@ -278,7 +278,7 @@ ios::pos_type COutput::Read(std::ifstream& in_str,
 			while (ok)
 			{
 				position_line = in_str.tellg();
-				in_str >> line_string;
+				line_string = GetLineFromFile1(&in_str);
 				if (SubKeyword(line_string))
 				{
 					in_str.seekg(position_line, ios::beg);
@@ -288,7 +288,6 @@ ios::pos_type COutput::Read(std::ifstream& in_str,
 				if (Keyword(line_string))
 					return position;
 				_ele_value_vector.push_back(line_string);
-				in_str.ignore(MAX_ZEILE, '\n');
 			}
 			/*
 			   // Commented by WW
@@ -449,7 +448,7 @@ ios::pos_type COutput::Read(std::ifstream& in_str,
 			while (ok)
 			{
 				position_line = in_str.tellg();
-				in_str >> line_string;
+				line_string = GetLineFromFile1(&in_str);
 				if (SubKeyword(line_string))
 				{
 					in_str.seekg(position_line, ios::beg);
@@ -459,7 +458,6 @@ ios::pos_type COutput::Read(std::ifstream& in_str,
 				if (Keyword(line_string))
 					return position;
 				mmp_value_vector.push_back(line_string);
-				in_str.ignore(MAX_ZEILE, '\n');
 			}
 			continue;
 		}
@@ -471,7 +469,7 @@ ios::pos_type COutput::Read(std::ifstream& in_str,
 			while (ok)
 			{
 				position_line = in_str.tellg();
-				in_str >> line_string;
+				line_string = GetLineFromFile1(&in_str);
 				if (SubKeyword(line_string))
 				{
 					in_str.seekg(position_line, ios::beg);
@@ -481,7 +479,6 @@ ios::pos_type COutput::Read(std::ifstream& in_str,
 				if (Keyword(line_string))
 					return position;
 				mfp_value_vector.push_back(line_string);
-				in_str.ignore(MAX_ZEILE, '\n');
 			}
 
 			continue;
