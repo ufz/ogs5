@@ -1115,8 +1115,9 @@ bool CVTK::WriteElementValue(std::fstream &fin,
 			{
 				fin << "          ";
 				for (long j = 0; j < (long) msh->ele_vector.size(); j++)
-					fin << m_pcs->GetElementValue(j, ele_value_index_vector[i])
-					    << " ";
+					if (ele_value_index_vector[i]>=0)
+						fin << m_pcs->GetElementValue(j, ele_value_index_vector[i])
+						    << " ";
 				fin << "\n";
 			}
 			else
@@ -1124,9 +1125,9 @@ bool CVTK::WriteElementValue(std::fstream &fin,
 				write_value_binary<unsigned int> (fin, sizeof(double)
 				                                  * (long) msh->ele_vector.size()); //OK411
 				for (long j = 0; j < (long) msh->ele_vector.size(); j++)
-					write_value_binary(fin, m_pcs->GetElementValue(j,
-					                                               ele_value_index_vector
-					                                               [i]));
+					if (ele_value_index_vector[i]>=0)
+						write_value_binary(fin,
+						                   m_pcs->GetElementValue(j,ele_value_index_vector[i]));
 			}
 		}
 		else
