@@ -383,6 +383,9 @@ CRFProcess::CRFProcess(void) :
 	eqs_x = NULL;
 	_hasConstrainedBC=false;
 	_hasConstrainedST = false;
+	_pcs_constant_model = 0;
+	_pcs_constant_value = .0;
+	_pcs_constant_curve = 0;
 }
 
 
@@ -2144,6 +2147,27 @@ std::ios::pos_type CRFProcess::Read(std::ifstream* pcs_file)
 		if(line_string.find("$UPDATE_INI_STATE")==0)//WX:10.2011
 		{
 			*pcs_file >> UpdateIniState;
+			continue;
+		}
+		if (line_string.find("$CONSTANT") == 0)
+		{
+			*pcs_file >> _pcs_constant_model;
+			switch (_pcs_constant_model)
+			{
+			case 0:
+				break;
+			case 1:
+				*pcs_file >> _pcs_constant_value;
+				break;
+			case 2:
+				*pcs_file >> _pcs_constant_curve;
+				break;
+			default:
+				std::cout << "-> invalid CONSTANT model " << _pcs_constant_model << std::endl;
+				break;
+			}
+			if (_pcs_constant_model > 0)
+				std::cout << "-> CONSTAT is activated." << std::endl;
 			continue;
 		}
 		//....................................................................
@@ -4638,6 +4662,26 @@ double CRFProcess::Execute()
 
 	pcs_error = DBL_MAX;
 	g_nnodes = m_msh->GetNodesNumber(false);
+
+	// if const, set node values directly
+	if (_pcs_constant_model > 0)
+	{
+		double const_val = _pcs_constant_value;
+		if (_pcs_constant_model == 2)
+		{
+			int valid;
+			const_val = GetCurveValue(_pcs_constant_curve, 0, aktuelle_zeit, &valid);
+		}
+		std::cout << "-> set given constant value. no need to solve a linear system.\n";
+		for (int ii = 0; ii < pcs_number_of_primary_nvals; ii++) {
+			nidx1 = GetNodeValueIndex(pcs_primary_function_name[ii]) + 1;
+			for (j = 0; j < g_nnodes; j++) {
+				k = m_msh->Eqs2Global_NodeIndex[j];
+				SetNodeValue(k, nidx1, const_val);
+			}
+		}
+		return .0;
+	}
 
 #if !defined(USE_PETSC) // || defined(other parallel libs)//03.3012. WW
        double implicit_lim = 1.0 - DBL_EPSILON;
