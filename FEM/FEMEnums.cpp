@@ -583,7 +583,7 @@ IterationType::type convertIterationType(const std::string& str)
 {
 	if (str.find("LINEAR")!=std::string::npos)
 		return IterationType::LINEAR;
-	else if (str.find("NONLINEAR")!=std::string::npos)
+	else if (str.find("NONLIN")!=std::string::npos)
 		return IterationType::NONLINEAR;
 	else if (str.find("COUPLED")!=std::string::npos)
 		return IterationType::COUPLED;
