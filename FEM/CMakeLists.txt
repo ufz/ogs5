@@ -119,6 +119,13 @@ else()
 	endif()
 endif()
 
+if(OGS_CONFIG STREQUAL IPQC)
+	if (PARALLEL_USE_MPI)
+		set(HEADERS ${HEADERS} SplitMPI_Communicator.h )
+		set(SOURCES ${SOURCES} SplitMPI_Communicator.cpp )
+	endif ()
+endif()
+
 if(OGS_CONFIG STREQUAL BRNS)
 	set( SOURCES ${SOURCES} rf_REACT_BRNS.h rf_REACT_BRNS.cpp )
 endif()
