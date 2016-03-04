@@ -87,7 +87,7 @@ public:
 	int CGS(double* xg, const long n);
 	double GetCPUtime() const { return cpu_time;  }
 #else
-#ifdef LIS                                  //NW
+#if defined(LIS) || defined(MKL)                                  //NW
 	int Solver(CNumerics* num = NULL);
 #else
 	int Solver();

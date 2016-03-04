@@ -556,7 +556,7 @@ public:
 		DOF = dof_n;
 	}
 	long Size() const {return rows; }
-#ifdef LIS                                  // These two pointers are in need for Compressed Row Storage
+#if defined(LIS) || defined(MKL)                                  // These two pointers are in need for Compressed Row Storage
 	int nnz() const                       // PCH
 	{
 		return DOF * DOF * size_entry_column;

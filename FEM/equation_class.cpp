@@ -514,7 +514,7 @@ int Linear_EQS::Solver(double* xg, const long n)
 }
 
 #else // if defined(USE_MPI)
-#ifdef LIS                                     // PCH 02.2008
+#if defined(LIS) || defined(MKL)                                     // PCH 02.2008
 //NW 01.2010 Use configuration in NUM file
 int Linear_EQS::Solver(CNumerics* num)
 {
@@ -724,6 +724,7 @@ int Linear_EQS::Solver(CNumerics* num)
 	}
 	else                                  // LIS parallel solver
 	{
+#ifdef LIS
 		std::cout <<
 		"------------------------------------------------------------------" <<
 		"\n";
@@ -851,6 +852,7 @@ int Linear_EQS::Solver(CNumerics* num)
 		std::cout <<
 		"------------------------------------------------------------------" <<
 		"\n";
+#endif
 	}
 
 	return -1;                            // This right now is meaningless.

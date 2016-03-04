@@ -711,7 +711,7 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 			//21.12.2007
 			dom->eqsH->Solver(eqs_new->x, global_eqs_dim);
 #else
-#ifdef LIS
+#if defined(LIS) || defined(MKL)
 			eqs_new->Solver(this->m_num); //NW
 #else
 			eqs_new->Solver(); //27.11.2007

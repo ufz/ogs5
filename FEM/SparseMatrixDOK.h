@@ -111,7 +111,7 @@ public:
 	void Write(std::ostream &os = std::cout, int format = 0);
 	bool IsSymmetry();
 
-#ifdef LIS                                  // These two pointers are in need for Compressed Row Storage
+#if defined(LIS) || defined(MKL)  // These two pointers are in need for Compressed Row Storage
 	int* ptr;
 	int* col_idx;
 	int* entry_index;
