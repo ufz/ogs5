@@ -3535,6 +3535,71 @@ void COutput::WriteTECNodePCONData(fstream &tec_file)
 	}
 }
 
+void COutput::WritePetrelElementData(int time_step_number)
+{
+	size_t no_ele_values = _ele_value_vector.size();
+	if (no_ele_values==0) return;
+	std::cout << "->write results into Peterel file." << std::endl;
+
+	if (m_pcs==NULL) {
+		m_pcs = PCSGet(_ele_value_vector[0], true);
+		if (m_pcs==0) m_pcs = pcs_vector[0];
+	}
+	const size_t n_e = m_msh->ele_vector.size();
+
+	std::vector<std::string> vec_ele_val_list;
+	std::vector<std::vector<double> > vec_ele_vals;
+	std::vector<double> temp_nodal_val;
+	for (size_t j = 0; j < no_ele_values; j++) {
+		int nod_var_id = m_pcs->GetNodeValueIndex(_ele_value_vector[j]);
+		if (nod_var_id<0) continue;
+
+		vec_ele_val_list.push_back(_ele_value_vector[j]);
+		vec_ele_vals.resize(vec_ele_val_list.size());
+		std::vector<double> &vec_ele_val = vec_ele_vals.back();
+		vec_ele_val.resize(n_e);
+		for (size_t i_e=0; i_e<n_e; i_e++) {
+			MeshLib::CElem* e = m_msh->ele_vector[i_e];
+			// get nodal values
+			temp_nodal_val.resize(e->GetNodesNumber(false));
+			for (size_t k=0; k<temp_nodal_val.size(); k++) {
+				temp_nodal_val[k] = m_pcs->GetNodeValue(e->GetNodeIndex(k), nod_var_id);
+			}
+			// average
+			double ele_val = .0;
+			for (size_t k=0; k<temp_nodal_val.size(); k++) {
+				ele_val += temp_nodal_val[k];
+			}
+			ele_val /= (double) temp_nodal_val.size();
+			// set
+			vec_ele_val[i_e] = ele_val;
+		}
+	}
+
+	std::stringstream stm;
+	stm << time_step_number;
+
+	for (size_t j = 0; j < vec_ele_val_list.size(); j++) {
+		std::string tec_file_name = file_base_name + "_" + vec_ele_val_list[j] + "_";
+		tec_file_name += stm.str() + ".pet";
+
+		fstream dat_file(tec_file_name.c_str(), std::ios::out);
+		dat_file.setf(std::ios::scientific,std::ios::floatfield);
+		dat_file.precision(12);
+		if (!dat_file.good()) continue;
+
+		for (size_t i=0; i<n_e; i++) {
+			dat_file << i << " ";
+			for (size_t j = 0; j < vec_ele_val_list.size(); j++)
+				dat_file << vec_ele_vals[j][i] << " ";
+			dat_file << std::endl;
+		}
+
+		dat_file.close();
+	}
+
+}
+
 void COutput::checkConsistency ()
 {
 	if (!_nod_value_vector.empty())
