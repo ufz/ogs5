@@ -581,11 +581,11 @@ std::string convertTimTypeToString(TimType::type type)
 
 IterationType::type convertIterationType(const std::string& str)
 {
-	if (str.find("LINEAR")!=std::string::npos)
+	if (str.compare("LINEAR")==0)
 		return IterationType::LINEAR;
-	else if (str.find("NONLINEAR")!=std::string::npos)
+	else if (str.compare("NONLINEAR")==0)
 		return IterationType::NONLINEAR;
-	else if (str.find("COUPLED")!=std::string::npos)
+	else if (str.compare("COUPLED")==0)
 		return IterationType::COUPLED;
 	else
 		return IterationType::INVALID;
