@@ -3537,7 +3537,7 @@ void COutput::WriteTECNodePCONData(fstream &tec_file)
 
 void COutput::WritePetrelElementData(int time_step_number)
 {
-	size_t no_ele_values = _ele_value_vector.size();
+	const size_t no_ele_values = _ele_value_vector.size();
 	if (no_ele_values==0) return;
 	std::cout << "->write results into Peterel file." << std::endl;
 
