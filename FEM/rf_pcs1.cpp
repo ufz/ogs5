@@ -329,7 +329,7 @@ void CRFProcess:: Jacobian_Multi_Vector_JFNK(double* v, double* Jv)
 				continue;
 			SetNodeValue(bc_entry.bc_node, bc_entry.var_idx, bc_entry.bc_value0);
 		}
-		GlobalAssembly_std();
+		GlobalAssembly_std(true);
 
 		///2. For the PDE of deformation
 		if(HM)
