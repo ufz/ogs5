@@ -19,8 +19,8 @@ env:
 
 before_install:
   # -- External package sources --
-  - if [[ "$CASE" == "PETSC" ]]; then travis_retry sudo add-apt-repository --yes ppa:feelpp/petsc; fi
   - if [[ "$CASE" == "GEMS" ]]; then travis_retry sudo add-apt-repository --yes ppa:boost-latest; fi
+  - if [[ "$CASE" == "PETSC" ]]; then travis_retry sudo add-apt-repository --yes ppa:feelpp/petsc; fi
   - travis_retry sudo apt-get update -qq;
 
 install:
@@ -31,13 +31,16 @@ install:
   - if [[ "$CASE" == "LIS" ]]; then wget https://github.com/norihiro-w/lis-cmake/archive/master.zip; fi
   - if [[ "$CASE" == "LIS" ]]; then unzip master.zip && cd lis-cmake-master; fi
   - if [[ "$CASE" == "LIS" ]]; then mkdir build && cd build && cmake .. && make && cd ../..; fi
-  # PetSc
+  # MPI
+  - if [[ "$CASE" == "MPI" ]]; then travis_retry sudo apt-get install -qq openmpi-bin openmpi-dev; fi
+  # PETSC
   - if [[ "$CASE" == "PETSC" ]]; then travis_retry sudo apt-get install -qq libpetsc3.4.2-dev; fi
 
 script:
   - mkdir build
   - cd build
-  - cmake -DOGS_CONFIG=${CASE} $CMAKE_ARGS ..
+  - cmake -DOGS_CONFIG=${CASE} $CMAKE_ARGS -DOGS_CPU_ARCHITECTURE=generic ..
+  - cmake ..
   - make
 
 notifications:
