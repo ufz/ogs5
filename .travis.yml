@@ -1,0 +1,47 @@
+language: cpp
+#dist: trusty
+compiler:
+  - gcc
+os:
+- linux
+cache:
+  - apt
+
+env:
+  - CASE=FEM
+  - CASE=SP
+  - CASE=PQC
+  - CASE=IPQC
+  - CASE=GEMS
+  - CASE=LIS CMAKE_ARGS="-DLIS_INCLUDE_DIR=$TRAVIS_BUILD_DIR/lis-cmake-master/include -DLIS_LIBRARIES=$TRAVIS_BUILD_DIR/lis-cmake-master/build/lib/liblis.a"
+  - CASE=MPI
+  - CASE=PETSC CMAKE_ARGS="-DPETSC_DIR=/usr/lib/petscdir/3.4.2/"
+
+before_install:
+  # -- External package sources --
+  - if [[ "$CASE" == "PETSC" ]]; then travis_retry sudo add-apt-repository --yes ppa:feelpp/petsc; fi
+  - if [[ "$CASE" == "GEMS" ]]; then travis_retry sudo add-apt-repository --yes ppa:boost-latest; fi
+  - travis_retry sudo apt-get update -qq;
+
+install:
+  # GEMS
+  - if [[ "$CASE" == "GEMS" ]]; then travis_retry sudo apt-get install -qq libboost-thread1.55-dev; fi
+  # Lis
+  - if [[ "$CASE" == "LIS" ]]; then sudo apt-get install -qq gfortran; fi
+  - if [[ "$CASE" == "LIS" ]]; then wget https://github.com/norihiro-w/lis-cmake/archive/master.zip; fi
+  - if [[ "$CASE" == "LIS" ]]; then unzip master.zip && cd lis-cmake-master; fi
+  - if [[ "$CASE" == "LIS" ]]; then mkdir build && cd build && cmake .. && make && cd ../..; fi
+  # PetSc
+  - if [[ "$CASE" == "PETSC" ]]; then travis_retry sudo apt-get install -qq libpetsc3.4.2-dev; fi
+
+script:
+  - mkdir build
+  - cd build
+  - cmake -DOGS_CONFIG=${CASE} $CMAKE_ARGS ..
+  - make
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
+
