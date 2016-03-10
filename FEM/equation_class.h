@@ -26,6 +26,7 @@
 #ifdef LIS
 #include "lis.h"
 #endif
+#include "matrix_class.h"
 class CNumerics;
 class CRFProcess;
 namespace process

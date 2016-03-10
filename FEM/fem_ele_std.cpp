@@ -7651,7 +7651,7 @@ void CFiniteElementStd::AssembleParabolicEquation()
 		/// Save diagnal entry for Jacobi preconditioner. 02.2011. WW
 		if(pcs->JFNK_precond)
 		{
-			if(PcsType == V)
+			if(PcsType == EPT_MULTIPHASE_FLOW)
 			{
 				int jj_sh;
 				long j_sh = 0;
@@ -7665,7 +7665,7 @@ void CFiniteElementStd::AssembleParabolicEquation()
 						jj_sh = jj * nnodes;
 						for(int i = 0; i < nnodes; i++)
 						{
-							kk = i_sh + eqs_number[i];
+							long kk = i_sh + eqs_number[i];
 							for(int j = 0; j < nnodes; j++)
 							{
 #ifdef _OPENMP      //13.11.2008. WW
@@ -7688,7 +7688,7 @@ void CFiniteElementStd::AssembleParabolicEquation()
 				cshift += NodeShift[dm_shift]; //WW 05.01.07
 				for(int i = 0; i < nnodes; i++)
 				{
-					kk = cshift + eqs_number[i];
+					long kk = cshift + eqs_number[i];
 					for(int j = 0; j < nnodes; j++)
 					{
 #ifdef _OPENMP            //13.11.2008. WW
