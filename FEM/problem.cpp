@@ -1424,16 +1424,22 @@ bool Problem::CouplingLoop()
 				max_outer_error = MMax(max_outer_error,a_pcs->cpl_max_relative_error);
 
 				// Reapply BCs if constrained BC
-#if defined(USE_MPI)
-				bool has_constrained_bc_i = a_pcs->hasConstrainedBC();
-				bool has_constrained_bc = false;
-				MPI_Allreduce(&has_constrained_bc_i, &has_constrained_bc, 1, MPI_C_BOOL, MPI_LOR, comm_DDC);
-				if(has_constrained_bc)
-#elif defined (USE_PETSC)
+#if defined(USE_MPI) || defined (USE_PETSC)
+				int has_constrained_bc_i = a_pcs->hasConstrainedBC() ? 1 : 0;
+				int n_has_constrained_bc = 0;
+#ifdef USE_PETSC
+				MPI_Comm comm = MPI_COMM_WORLD;
+#else
+				MPI_Comm comm = comm_DDC;
+#endif
+				MPI_Allreduce(&has_constrained_bc_i, &n_has_constrained_bc, 1, MPI_INT, MPI_SUM, comm);
+				if(n_has_constrained_bc > 0)
+				/* Commented out the following codes because MPI_C_BOOL is supported from the MPI 2.2
 				bool has_constrained_bc_i = a_pcs->hasConstrainedBC();
 				bool has_constrained_bc = false;
 				MPI_Allreduce(&has_constrained_bc_i, &has_constrained_bc, 1, MPI_C_BOOL, MPI_LOR, MPI_COMM_WORLD);
-				if(has_constrained_bc)
+				if(has_constrained_bc > 0)
+				*/
 #else
 				if(a_pcs->hasConstrainedBC())
 #endif
