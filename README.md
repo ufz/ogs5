@@ -1,3 +1,6 @@
+[![Tag](https://img.shields.io/github/tag/ufz/ogs5.svg?style=flat-square)](https://github.com/ufz/ogs5/releases)
+[![BSD License (modified)](http://img.shields.io/badge/license-BSD-blue.svg?style=flat-square)](https://github.com/ufz/ogs5/blob/master/LICENSE.txt)
+[![Travis](https://img.shields.io/travis/ufz/ogs5.svg?style=flat-square)](https://travis-ci.org/ufz/ogs5)
 [![Shippable](https://api.shippable.com/projects/553ff718edd7f2c052d6b180/badge?branchName=develop)](https://app.shippable.com/projects/553ff718edd7f2c052d6b180/builds/latest)
 
 # OGS-5 #
