@@ -37,7 +37,7 @@ install:
 script:
   - mkdir build
   - cd build
-  - cmake -DOGS_CONFIG=${CASE} $CMAKE_ARGS ..
+  - cmake -DOGS_CONFIG=${CASE} $CMAKE_ARGS -DOGS_CPU_ARCHITECTURE=generic ..
   - make
 
 notifications:
