@@ -4,14 +4,14 @@ if(OGS_USE_CVODE)
 	set_target_properties(sundials_cvode_shared sundials_nvecserial_shared PROPERTIES MACOSX_RPATH ON)
 endif()
 
-if(OGS_CONFIG STREQUAL IPQC)
+if(OGS_CHEMSOLVER STREQUAL IPQC)
 	add_subdirectory(IPQC)
 endif()
 
-if(OGS_CONFIG STREQUAL GEMS OR OGS_CONFIG STREQUAL PETSC_GEMS)
+if(OGS_CHEMSOLVER STREQUAL GEMS)
 	add_subdirectory(GEM)
 endif()
 
-if(OGS_CONFIG STREQUAL PQC)
+if(OGS_CHEMSOLVER STREQUAL PQC)
 	add_subdirectory ( PQC )
 endif()

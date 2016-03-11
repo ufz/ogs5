@@ -43,7 +43,12 @@ if(PARALLEL_USE_MPI)
 	target_link_libraries(ogs ${MPI_CXX_LIBRARIES})
 endif()
 
-if (OGS_CONFIG STREQUAL GEMS OR OGS_CONFIG STREQUAL PETSC_GEMS)
+if (OGS_LSOLVER STREQUAL PETSC)
+	include_directories(${CMAKE_SOURCE_DIR}/MathLib/PETSC)
+	target_link_libraries( ogs ${PETSC_LIBRARIES} )
+endif ()
+
+if (OGS_CHEMSOLVER STREQUAL GEMS)
 	target_link_libraries( ogs
 		GEM
 		${Boost_LIBRARIES}
@@ -51,17 +56,12 @@ if (OGS_CONFIG STREQUAL GEMS OR OGS_CONFIG STREQUAL PETSC_GEMS)
 	)
 endif ()
 
-if (OGS_CONFIG STREQUAL PETSC_GEMS OR OGS_CONFIG STREQUAL PETSC)
-	include_directories(${CMAKE_SOURCE_DIR}/MathLib/PETSC)
-	target_link_libraries( ogs ${PETSC_LIBRARIES} )
-endif ()
-
-if(OGS_CONFIG STREQUAL IPQC)
+if(OGS_CHEMSOLVER STREQUAL IPQC)
 	include_directories(${CMAKE_SOURCE_DIR}/IPQC/src)
 	target_link_libraries(ogs iphreeqc)
 endif ()
 
-if(OGS_CONFIG STREQUAL MKL)
+if(MKL)
 	target_link_libraries(ogs ${MKL_LIBRARIES})
 	 # Hack, see http://webpages.charter.net/ppluzhnikov/linker.html
 	target_link_libraries(ogs ${MKL_LIBRARIES})

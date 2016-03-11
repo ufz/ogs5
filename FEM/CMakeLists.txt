@@ -104,33 +104,37 @@ set( SOURCES
 	vtk.cpp
 )
 
-if(OGS_CONFIG STREQUAL PETSC OR OGS_CONFIG STREQUAL PETSC_GEMS)
-	set( SOURCES ${SOURCES} rf_pcs1.cpp fct_mpi.h fct_mpi.cpp)
-else()
+if(NOT OGS_LSOLVER STREQUAL PETSC)
 	set( SOURCES ${SOURCES} par_ddc.h par_ddc.cpp)
-	## New sparse class. WW
-	if(OGS_USE_NEW_EQS)
-		set( SOURCES ${SOURCES} equation_class.h equation_class.cpp )
-		if(OGS_CONFIG STREQUAL JFNK)
-			set( SOURCES ${SOURCES} rf_pcs1.cpp )
-		endif()
-	else()
-		set( SOURCES ${SOURCES} solver.h matrix_routines.h solver.cpp matrix_routines.cpp)
-	endif()
 endif()
 
-if(OGS_CONFIG STREQUAL IPQC)
+
+
+if(OGS_LSOLVER STREQUAL RF)
+	set( HEADERS ${HEADERS} solver.h matrix_routines.h)
+	set( SOURCES ${SOURCES} solver.cpp matrix_routines.cpp)
+elseif(OGS_LSOLVER STREQUAL PETSC)
+	set( SOURCES ${SOURCES} rf_pcs1.cpp fct_mpi.h fct_mpi.cpp)
+elseif(OGS_LSOLVER STREQUAL SP)
+	set( SOURCES ${SOURCES} equation_class.h equation_class.cpp )
+endif()
+
+if(OGS_CONFIG STREQUAL JFNK)
+	set( SOURCES ${SOURCES} rf_pcs1.cpp )
+endif()
+
+if(OGS_CHEMSOLVER STREQUAL IPQC)
 	if (PARALLEL_USE_MPI)
 		set(HEADERS ${HEADERS} SplitMPI_Communicator.h )
 		set(SOURCES ${SOURCES} SplitMPI_Communicator.cpp )
 	endif ()
 endif()
 
-if(OGS_CONFIG STREQUAL BRNS)
+if(OGS_CHEMSOLVER STREQUAL BRNS)
 	set( SOURCES ${SOURCES} rf_REACT_BRNS.h rf_REACT_BRNS.cpp )
 endif()
 
-if(OGS_CONFIG STREQUAL GEMS OR OGS_CONFIG STREQUAL PETSC_GEMS)
+if(OGS_CHEMSOLVER STREQUAL GEMS)
 	set( SOURCES ${SOURCES} rf_REACT_GEM.h rf_REACT_GEM.cpp )
 endif()
 
@@ -160,18 +164,23 @@ target_link_libraries(FEM
 
 if(LIS)
 	include_directories(${LIS_INCLUDE_DIR})
+	target_link_libraries( FEM ${LIS_LIBRARIES} )
+	if (WIN32)
+		set_target_properties( FEM PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt" )
+	endif()
 endif()
 
 if(MKL)
 	include_directories(${MKL_INCLUDES})
+	target_link_libraries( FEM ${MKL_LIBRARIES} )
 endif()
 
-if(OGS_CONFIG STREQUAL PQC)
+if(OGS_CHEMSOLVER STREQUAL PQC)
 	include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/PQC)
 	target_link_libraries(FEM PQC)
 endif()
 
-if(OGS_CONFIG STREQUAL IPQC)
+if(OGS_CHEMSOLVER STREQUAL IPQC)
 	include_directories(${CMAKE_SOURCE_DIR}/ThirdParty/IPQC/src)
 endif ()
 
@@ -179,34 +188,22 @@ if(PARALLEL_USE_MPI)
 	target_link_libraries(FEM ${MPI_CXX_LIBRARIES})
 endif()
 
-if(OGS_CONFIG STREQUAL MKL)
-	target_link_libraries( FEM ${MKL_LIBRARIES} )
-endif()
-
 if (WIN32)
-	if (OGS_CONFIG STREQUAL GEMS)
+	if (OGS_CHEMSOLVER STREQUAL GEMS)
 		target_link_libraries( FEM GEM )
 	endif ()
-	if (LIS)
-		target_link_libraries( FEM ${LIS_LIBRARIES} )
-		set_target_properties( FEM PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt" )
-	endif ()
-	if (OGS_CONFIG STREQUAL BRNS)
+	if (OGS_CHEMSOLVER STREQUAL BRNS)
 		target_link_libraries( FEM BrnsDll )
 	endif ()
 endif ()
 
 if (UNIX)
-	if (OGS_CONFIG STREQUAL BRNS)
+	if (OGS_CHEMSOLVER STREQUAL BRNS)
 		target_link_libraries( FEM ${CMAKE_DL_LIBS} ${LAPACK_LIBRARIES} )
-	endif ()
-
-	if (LIS)
-		target_link_libraries( FEM ${LIS_LIBRARIES} )
 	endif ()
 endif ()
 
-if (OGS_CONFIG STREQUAL CAP)
+if (OGS_CHEMSOLVER STREQUAL CAP)
 	include_directories (  ${CMAKE_SOURCE_DIR}/CMP )
 	target_link_libraries (
 		FEM
