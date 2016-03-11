@@ -9,26 +9,34 @@ project(OGS)
 ###############
 ### Options ###
 ###############
-# Configurations
-set(OGS_CONFIG "FEM" CACHE STRING "OpenGeoSys configuration")
-set_property(CACHE OGS_CONFIG PROPERTY STRINGS
-	FEM # Default
-	SP
+
+# Chemical solver
+set(OGS_CHEMSOLVER "DEFAULT" CACHE STRING "OpenGeoSys geochemical solver")
+set_property(CACHE OGS_CHEMSOLVER PROPERTY STRINGS
+	DEFAULT # Default
+	NONE
 	GEMS
-	JFNK
-	PETSC
-	PETSC_GEMS
 	IPQC
 	PQC
 	BRNS
-	LIS
 	CAP
-	MKL
-	MPI
 )
 
-# Options
+# Linear solver
+set(OGS_LSOLVER "DEFAULT" CACHE STRING "OpenGeoSys linear solver type")
+set_property(CACHE OGS_LSOLVER PROPERTY STRINGS
+	DEFAULT # Default
+	RF      # RF
+	SP      # New sparse solver 
+	PETSC   # PETSc
+)
+
+# Other options
 option(BLUE_G "Blue/G optimization" OFF)
+option(PARALLEL_USE_MPI "Use MPI parallization" OFF)
+option(OGS_USE_JFNK "Use Jacobain free method for solving H2M" OFF)
+option(OGS_USE_LIS "Use Lis solver" OFF)
+option(OGS_USE_MKL "Use PARDISO in MKL" OFF)
 option(OGS_USE_CVODE "Use sundials cvode for TNEQ/TES" OFF)
 set(OGS_CPU_ARCHITECTURE "native" CACHE STRING "Processor architecture, defaults to native.")
 option(OGS_PYTHON "Enable python scripting interface" OFF)
@@ -36,14 +44,94 @@ option(OGS_BUILD_UTILITIES "Build additional utility programs?" OFF)
 option(OGS_CMAKE_DEBUG "Show additional cmake debug information" OFF)
 option(OGS_ONE_BIG_GTEST "Should all gtests be collected to one ctest" ON)
 option(OGS_BUILD_INFO "Should build information be generated" ON)
-option (OGS_BUILD_TESTS "Enables building of tests." OFF)
-option (OGS_NO_EXTERNAL_LIBS "Builds OGS without any external dependencies." OFF)
-option (OGS_DELETE_EDGES_AFTER_INIT "Delete mesh edges after initialization if possible" OFF)
-option (OGS_OUTPUT_TIME_ALLPCS "Output clock time for all processes" OFF)
+option(OGS_BUILD_TESTS "Enables building of tests." OFF)
+option(OGS_NO_EXTERNAL_LIBS "Builds OGS without any external dependencies." OFF)
+option(OGS_DELETE_EDGES_AFTER_INIT "Delete mesh edges after initialization if possible" OFF)
+option(OGS_OUTPUT_TIME_ALLPCS "Output clock time for all processes" OFF)
+
+##########################
+### Configuration type ###
+##########################
+set(OGS_CONFIG "FEM" CACHE STRING "OpenGeoSys configuration")
+set_property(CACHE OGS_CONFIG PROPERTY STRINGS
+	FEM  # RF
+	SP   # SP
+	JFNK # SP + JFNK
+	GEMS # SP + GEMS
+	IPQC # RF + IPQC 
+	PQC  # SP + PQC
+	BRNS # SP + BRNS
+	CAP  # RF + CAP
+	LIS  # SP + LIS
+	MKL  # SP + LIS + MKL
+	MPI  # SP(MPI)
+	PETSC # PETSC(MPI)
+)
+
+# default setting for each configuration
+set(OGS_CONFIG_DEFAULT_LSOLVER RF)
+set(OGS_CONFIG_DEFAULT_CHEMSOLVER NONE)
+
+if (OGS_CONFIG STREQUAL SP)
+	set(OGS_CONFIG_DEFAULT_LSOLVER SP)
+elseif (OGS_CONFIG STREQUAL JFNK)
+	set(OGS_CONFIG_DEFAULT_LSOLVER SP)
+elseif (OGS_CONFIG STREQUAL GEMS)
+	set(OGS_CONFIG_DEFAULT_LSOLVER SP)
+	set(OGS_CONFIG_DEFAULT_CHEMSOLVER GEMS)
+elseif (OGS_CONFIG STREQUAL IPQC)
+	set(OGS_CONFIG_DEFAULT_CHEMSOLVER IPQC)
+elseif (OGS_CONFIG STREQUAL PQC)
+	set(OGS_CONFIG_DEFAULT_LSOLVER SP)
+	set(OGS_CONFIG_DEFAULT_CHEMSOLVER PQC)
+elseif (OGS_CONFIG STREQUAL BRNS)
+	set(OGS_CONFIG_DEFAULT_LSOLVER SP)
+	set(OGS_CONFIG_DEFAULT_CHEMSOLVER BRNS)
+elseif (OGS_CONFIG STREQUAL CAP)
+	set(OGS_CONFIG_DEFAULT_CHEMSOLVER CAP)
+elseif (OGS_CONFIG STREQUAL LIS)
+	set(OGS_CONFIG_DEFAULT_LSOLVER SP)
+elseif (OGS_CONFIG STREQUAL MKL)
+	set(OGS_CONFIG_DEFAULT_LSOLVER SP)
+elseif (OGS_CONFIG STREQUAL MPI)
+	set(OGS_CONFIG_DEFAULT_LSOLVER SP)
+elseif (OGS_CONFIG STREQUAL PETSC)
+	set(OGS_CONFIG_DEFAULT_LSOLVER PETSC)
+endif()
+
+# overwrite options if necessary
+if (OGS_LSOLVER STREQUAL DEFAULT)
+	set(OGS_LSOLVER ${OGS_CONFIG_DEFAULT_LSOLVER} CACHE STRING "" FORCE)
+endif()
+if (OGS_CHEMSOLVER STREQUAL DEFAULT)
+	set(OGS_CHEMSOLVER ${OGS_CONFIG_DEFAULT_CHEMSOLVER} CACHE STRING "" FORCE)
+endif()
+
+if (OGS_CONFIG STREQUAL JFNK)
+	set(OGS_USE_JFNK ON)
+elseif (OGS_CONFIG STREQUAL LIS)
+	set(OGS_USE_LIS ON)
+elseif (OGS_CONFIG STREQUAL MKL)
+	set(OGS_USE_LIS ON)
+	set(OGS_USE_MKL ON)
+elseif (OGS_CONFIG STREQUAL MPI)
+	set(PARALLEL_USE_MPI ON)
+elseif (OGS_CONFIG STREQUAL PETSC)
+	set(PARALLEL_USE_MPI ON)
+endif()
+
+#########################
+### Finding libraries ###
+#########################
+
+if (OGS_CHEMSOLVER STREQUAL GEMS)
+	# need to set this before Find.cmake
+	set(OGS_USE_BOOST ON CACHE INTERNAL "Use Boost library")
+endif()
 
 include(scripts/cmake/CMakeSetup.cmake)
 include(scripts/cmake/CompilerSetup.cmake)
-include (scripts/cmake/Find.cmake)
+include(scripts/cmake/Find.cmake)
 include(scripts/cmake/SubmoduleSetup.cmake)
 include(scripts/cmake/GeneralProjectSetup.cmake)
 
@@ -77,18 +165,76 @@ set (OGS_DATE "07.07.2015")
 ### Fem configs ###
 ###################
 message (STATUS	"OGS_CONFIG: ${OGS_CONFIG}" )
-if(OGS_CONFIG STREQUAL FEM)
+message (STATUS	"OGS_CHEMSOLVER: ${OGS_CHEMSOLVER}" )
+message (STATUS	"OGS_LSOLVER: ${OGS_LSOLVER}" )
+
+# chemical solvers
+if(OGS_CHEMSOLVER STREQUAL GEMS)
+	add_definitions(-DNO_ERROR_CONTROL -DGEM_REACT -DGEMlib -DIPMGEMPLUGIN )
+	if (MSVC)
+		set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+		set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+	endif ()
+
+	include_directories( ${Boost_INCLUDE_DIR} )
+	link_directories( ${Boost_LIBRARY_DIR} )
+
+elseif(OGS_CHEMSOLVER STREQUAL IPQC)
+	add_definitions( -DOGS_FEM_IPQC )
+
+elseif(OGS_CHEMSOLVER STREQUAL PQC)
+	add_definitions(-DLIBPHREEQC -D_POSIX_SOURCE -DNO_ERROR_CONTROL)
+	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+		add_definitions ( "-DMDL_DEBUG" )
+	endif() # Debug
+
+elseif(OGS_CHEMSOLVER STREQUAL BRNS)
+	if (UNIX)
+		find_package(LAPACK)
+	endif()
+	add_definitions(-DBRNS -DNO_ERROR_CONTROL -D_POSIX_SOURCE)
+
+elseif(OGS_CHEMSOLVER STREQUAL CAP)
+	set( PRJ_EXT "-CAP" )
+	add_definitions(-DOGS_FEM_CAP)
+	if (UNIX) # Only supported on Linux
+		include_directories(/usr/lib64)
+		link_directories(/usr/lib64)
+	endif ()
+
+endif()
+
+# linear solvers
+if(OGS_USE_JFNK)
+	set(OGS_LSOLVER "SP")
+	add_definitions(-DJFNK_H2M)
+endif()
+
+if(OGS_USE_LIS)
+	set(OGS_LSOLVER "SP")
+	add_definitions(-DIPMGEMPLUGIN -DLIS -o3)
+	set(PARALLEL_USE_OPENMP ON CACHE INTERNAL "Use Open Multi-Processing")
+	set(LIS ON CACHE INTERNAL "Use Library of Iterative Solvers")
+endif()
+
+if(OGS_USE_MKL)
+	set(OGS_LSOLVER "SP")
+	add_definitions(-DNO_ERROR_CONTROL -DMKL -o3 -DIPMGEMPLUGIN)
+	set(PARALLEL_USE_OPENMP ON CACHE INTERNAL "Use Open Multi-Processing")
+	set(MKL ON INTERNAL "Use Math Kernel Library")
+endif()
+
+if(OGS_LSOLVER STREQUAL RF)
 	set(SOLVER_PKG_NAME "Default")
 
-elseif(OGS_CONFIG STREQUAL SP)
-	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
+elseif(OGS_LSOLVER STREQUAL SP)
+	add_definitions(-DNEW_EQS)
+	if(PARALLEL_USE_MPI)
+		add_definitions(-DUSE_MPI)
+	endif()
 	set(SOLVER_PKG_NAME "Alternative linear solver package (NEW_EQS)")
 
-elseif(OGS_CONFIG STREQUAL JFNK)
-	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
-	add_definitions(-DJFNK_H2M)
-
-elseif(OGS_CONFIG STREQUAL PETSC)
+elseif(OGS_LSOLVER STREQUAL PETSC)
 	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/scripts/cmake/cmake/findPETSC)
 
 	find_package(PETSc REQUIRED QUIET)
@@ -100,111 +246,13 @@ elseif(OGS_CONFIG STREQUAL PETSC)
 	endif()
 	include_directories( ${PETSC_INCLUDES} )
 	set(SOLVER_PKG_NAME "PETSc linear solver package")
-
-elseif(OGS_CONFIG STREQUAL PETSC_GEMS)
-	include_directories( ${Boost_INCLUDE_DIR} )
-	link_directories( ${Boost_LIBRARY_DIR} )
-	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/scripts/cmake/cmake/findPETSC)
-
-	find_package(PETSc REQUIRED QUIET)
-	if(PETSC_VERSION VERSION_GREATER 3.3)
-		add_definitions(-DUSEPETSC34 -DUSE_PETSC -DNO_ERROR_CONTROL -DGEM_REACT -DGEMlib -DIPMGEMPLUGIN)
-		message(STATUS "found version greater 3.3, version is ${PETSC_VERSION}")
-	else()
-		add_definitions(-DUSE_PETSC -DNO_ERROR_CONTROL -DGEM_REACT -DGEMlib -DIPMGEMPLUGIN)
-	endif()
-	include_directories( ${PETSC_INCLUDES} )
-
-	if (MSVC)
-		set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
-		set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-	endif ()
-
-elseif(OGS_CONFIG STREQUAL MPI)
-	set(PARALLEL_USE_MPI ON CACHE INTERNAL "Use Message Passing Interface")
-	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
-	set(SOLVER_PKG_NAME "Parallel linear solver package (MPI)")
-
-elseif(OGS_CONFIG STREQUAL MPI_KRC)
-	add_definitions(-DUSE_MPI_KRC)
-	set(PARALLEL_USE_MPI ON CACHE INTERNAL "Use Message Passing Interface")
-	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
-
-elseif(OGS_CONFIG STREQUAL GEMS)
-	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
-	add_definitions(-DNO_ERROR_CONTROL -DGEM_REACT -DGEMlib -DIPMGEMPLUGIN )
-	if (MSVC)
-		set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
-		set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-	endif ()
-
-	include_directories( ${Boost_INCLUDE_DIR} )
-	link_directories( ${Boost_LIBRARY_DIR} )
-
-	if(PARALLEL_USE_MPI)
-		add_definitions(-DUSE_MPI_GEMS)
-	endif()
-
-elseif(OGS_CONFIG STREQUAL IPQC)
-	add_definitions( -DOGS_FEM_IPQC )
-	if(PARALLEL_USE_MPI)
-		set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
-	endif()
-
-elseif(OGS_CONFIG STREQUAL PQC)
-	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
-	add_definitions(-DLIBPHREEQC -D_POSIX_SOURCE -DNO_ERROR_CONTROL)
-	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		add_definitions ( "-DMDL_DEBUG" )
-	endif() # Debug
-
-elseif(OGS_CONFIG STREQUAL BRNS)
-	if (UNIX)
-		find_package(LAPACK)
-	endif()
-	set(OGS_USE_NEW_EQS ON BOOL)
-	add_definitions(-DBRNS -DNO_ERROR_CONTROL -D_POSIX_SOURCE)
-	if(PARALLEL_USE_MPI)
-		add_definitions(-DUSE_MPI_BRNS)
-	endif()
-
-elseif(OGS_CONFIG STREQUAL LIS)
-	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
-	add_definitions(-DIPMGEMPLUGIN -DLIS -o3)
-	set(PARALLEL_USE_OPENMP ON CACHE INTERNAL "Use Open Multi-Processing")
-	set(LIS ON CACHE INTERNAL "Use Library of Iterative Solvers")
-	set(SOLVER_PKG_NAME "LIS linear solver package")
-
-elseif(OGS_CONFIG STREQUAL MKL)
-	set(OGS_USE_NEW_EQS ON CACHE INTERNAL "")
-	add_definitions(-DNO_ERROR_CONTROL -DMKL -DLIS -o3 -DIPMGEMPLUGIN)
-	set(PARALLEL_USE_OPENMP ON CACHE INTERNAL "Use Open Multi-Processing")
-	set(LIS ON INTERNAL "Use Library of Iterative Solvers")
-	set(MKL ON INTERNAL "Use Math Kernel Library")
-	mark_as_advanced(LIS MKL)
-	set(SOLVER_PKG_NAME "MKL direct linear solver package")
-
-elseif(OGS_CONFIG STREQUAL CAP)
-	set( PRJ_EXT "-CAP" )
-	add_definitions(-DOGS_FEM_CAP)
-	if (UNIX) # Only supported on Linux
-		include_directories(/usr/lib64)
-		link_directories(/usr/lib64)
-	endif ()
-
 endif()
 
 ### End fem configs ###
 
-if(OGS_USE_NEW_EQS)
-	message(STATUS "Use New EQS class")
-	add_definitions(-DNEW_EQS)
-endif()
-
 if(PARALLEL_USE_MPI)
 	message(STATUS "Enabling MPI")
 	find_package(MPI REQUIRED)
-	add_definitions(-DUSE_MPI)
 	include_directories(${MPI_CXX_INCLUDE_PATH})
 endif()
 

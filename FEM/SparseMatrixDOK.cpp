@@ -33,7 +33,7 @@ SparseMatrixDOK::SparseMatrixDOK(size_t _nrows, size_t _ncols)
 	dummy_zero = 0.0;
 	non_zero_entry_size = 0;
 	is_constructed = false;
-#ifdef LIS
+#if defined(LIS) || defined(MKL)
 	ptr = NULL;
 	col_idx = NULL;
 	entry_index = NULL;
@@ -52,7 +52,7 @@ SparseMatrixDOK::SparseMatrixDOK(size_t dim) //:Matrix(0)
 	dummy_zero = 0.0;
 	non_zero_entry_size = 0;
 	is_constructed = false;
-#ifdef LIS
+#if defined(LIS) || defined(MKL)
 	ptr = NULL;
 	col_idx = NULL;
 	entry_index = NULL;
@@ -71,7 +71,7 @@ SparseMatrixDOK::SparseMatrixDOK() //:Matrix(0)
 	dummy_zero = 0.0;
 	non_zero_entry_size = 0;
 	is_constructed = false;
-#ifdef LIS
+#if defined(LIS) || defined(MKL)
 	ptr = NULL;
 	col_idx = NULL;
 	entry_index = NULL;
@@ -80,7 +80,7 @@ SparseMatrixDOK::SparseMatrixDOK() //:Matrix(0)
 
 SparseMatrixDOK::~SparseMatrixDOK()
 {
-#ifdef LIS
+#if defined(LIS) || defined(MKL)
 	if (ptr) delete [] ptr;
 	ptr = NULL;
 	if (col_idx) delete [] col_idx;
@@ -103,7 +103,7 @@ SparseMatrixDOK::SparseMatrixDOK(const SparseMatrixDOK& m)
 	//for(int i=0; i<size; i++) data[i] = 0.0;
 	dummy_zero = 0.0;
 	non_zero_entry_size = m.non_zero_entry_size;
-#ifdef LIS
+#if defined(LIS) || defined(MKL)
 	ptr = m.ptr;
 	col_idx = m.col_idx;
 	entry_index = m.entry_index;
@@ -524,7 +524,7 @@ void SparseMatrixDOK::ConstructSortedColumnID()
 }
 #endif
 
-#ifdef LIS
+#if defined(LIS) || defined(MKL)
 void SparseMatrixDOK::ConstructCRSstructure()
 {
 	//

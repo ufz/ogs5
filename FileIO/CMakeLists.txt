@@ -25,7 +25,7 @@ set( SOURCES
 	XmlIO/RapidXMLInterface.cpp
 )
 
-if(OGS_CONFIG STREQUAL GEMS OR OGS_CONFIG STREQUAL PETSC_GEMS)
+if(OGS_USE_BOOST)
 	include_directories(${Boost_INCLUDE_DIR})
 endif()
 

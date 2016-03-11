@@ -1075,7 +1075,7 @@ CSparseMatrix::CSparseMatrix(const SparseTable &sparse_table, const int dof)
 	entry[dof * dof * size_entry_column] = 0.;
 	zero_e = 0.;
 	//
-#ifdef LIS                         // PCH
+#if defined(LIS) || defined(MKL)                         // PCH
 	int counter, counter_ptr = 0, counter_col_idx = 0;
 	int i,k,ii,jj,J,K;
 	int row_in_sparse_table;
@@ -1129,7 +1129,7 @@ CSparseMatrix::~CSparseMatrix()
 	delete [] entry;
 	entry = NULL;
 
-#ifdef LIS                         // PCH
+#if defined(LIS) || defined(MKL)                         // PCH
 	delete [] ptr;
 	ptr = NULL;
 	delete [] col_idx;
@@ -1822,7 +1822,7 @@ void CSparseMatrix::DiagonalEntries(double* diag_e)
 }
 #endif                                // USE_MPI
 
-#ifdef LIS
+#if defined(LIS) || defined(MKL)
 /********************************************************************
    Get sparse matrix values in compressed row storage
    Programm:

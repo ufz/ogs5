@@ -4792,7 +4792,7 @@ double CRFProcess::Execute()
 	//21.12.2007
 	iter_lin = dom->eqs->Solver(eqs_new->x, global_eqs_dim);
 #else
-#ifdef LIS
+#if defined(LIS) || defined(MKL)
 	iter_lin = eqs_new->Solver(this->m_num); //NW
 #else
 	iter_lin = eqs_new->Solver();
@@ -4897,7 +4897,7 @@ double CRFProcess::Execute()
 		//21.12.2007
 		dom->eqs->Solver(eqs_new->x, global_eqs_dim);
 #else
-#ifdef LIS
+#if defined(LIS) || defined(MKL)
 		eqs_new->Solver(this->m_num); //NW
 #else
 		eqs_new->Solver();
