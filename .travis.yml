@@ -9,8 +9,8 @@ cache:
 
 env:
   - CASE=FEM
-  - CASE=SP
-  - CASE=PQC
+#  - CASE=SP
+#  - CASE=PQC
   - CASE=IPQC
   - CASE=GEMS
   - CASE=LIS CMAKE_ARGS="-DLIS_INCLUDE_DIR=$TRAVIS_BUILD_DIR/lis-cmake-master/include -DLIS_LIBRARIES=$TRAVIS_BUILD_DIR/lis-cmake-master/build/lib/liblis.a"
