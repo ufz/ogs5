@@ -1,0 +1,25 @@
+---
+Language:        Cpp
+BasedOnStyle:    Google
+
+AccessModifierOffset: -4
+AlignTrailingComments: false
+AllowShortBlocksOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+BreakBeforeBinaryOperators: true
+BreakBeforeBraces: Allman
+ColumnLimit: 120
+ConstructorInitializerAllOnOneLineOrOnePerLine : false
+DerivePointerAlignment: false
+ExperimentalAutoDetectBinPacking: true
+IndentWidth:     4
+PointerAlignment: Left
+Standard:        Cpp03
+SpacesBeforeTrailingComments: 1
+TabWidth:        4
+UseTab:          ForIndentation
+
+# ACTIVATE IF VERSION >= 3.8
+#SortIncludes:    false
