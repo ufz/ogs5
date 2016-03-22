@@ -1,9 +1,14 @@
+
+#include "SplitMPI_Communicator.h"
+
 #include <iostream>
 #include <stdlib.h>
 #include <sstream>
-#include "SplitMPI_Communicator.h"
+
 #include "makros.h"
 #include "rf_react.h"
+
+MPI_Comm comm_DDC;
 
 bool SplitMPI_Communicator::CreateCommunicator(MPI_Comm comm_world, int np, int nb_ddc)
 {
@@ -11,6 +16,7 @@ bool SplitMPI_Communicator::CreateCommunicator(MPI_Comm comm_world, int np, int 
 	bool splitcomm;
 
 	if ((nb_ddc > 0) && (nb_ddc < np)){ //if the number of total cores is larger than the number of DDCs is the same, two new MPI groups will be generated will be generated
+#ifdef OGS_FEM_IPQC
 		splitcomm = true;
 		n_DDC = nb_ddc; //number of ddc
 
@@ -43,11 +49,12 @@ bool SplitMPI_Communicator::CreateCommunicator(MPI_Comm comm_world, int np, int 
 		
 		if (myrank_IPQC != MPI_UNDEFINED) // ranks of group_IPQC will call to IPhreeqc		
 		  Call_IPhreeqc();
+#endif
 
 	}
 	else { //if no -ddc is specified or the number of ddc is incorrect, make ddc = np, no new MPI groups willnot be generated;
 		splitcomm = false;
-		n_DDC= np; 
+		n_DDC = np;
 		comm_DDC = comm_world;
 		MPI_Comm_size(comm_DDC,&mysize);
 		MPI_Comm_rank(comm_DDC,&myrank);
@@ -57,6 +64,7 @@ bool SplitMPI_Communicator::CreateCommunicator(MPI_Comm comm_world, int np, int 
 	return splitcomm;
 }
 
+#ifdef OGS_FEM_IPQC
 void SplitMPI_Communicator::Call_IPhreeqc(void)
 {
 	int signal = 1;
@@ -90,5 +98,5 @@ void SplitMPI_Communicator::Call_IPhreeqc(void)
 	//terminate the MPI environment for ranks of group_IPQC
 	MPI_Finalize();
 	exit(0);
- }
-
+}
+#endif
