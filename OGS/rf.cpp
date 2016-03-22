@@ -67,10 +67,7 @@ void ShowSwitches ( void );
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) || \
         defined(USE_MPI_GEMS) || defined(USE_MPI_KRC)
 double elapsed_time_mpi;
-MPI_Comm comm_DDC;
-#ifdef OGS_FEM_IPQC
 #include "SplitMPI_Communicator.h"
-#endif
 // ------
 #endif
 
@@ -114,9 +111,7 @@ int main ( int argc, char* argv[] )
 	std::string modelRoot;
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) || \
 	defined(USE_MPI_GEMS) || defined(USE_MPI_KRC)
-#ifdef OGS_FEM_IPQC
-		int nb_ddc=0; //number of cores for DDC related processes
-#endif
+	int nb_ddc=0; //number of cores for DDC related processes
 #endif
 
 	for( int i = 1; i < argc; i++ )
@@ -167,7 +162,6 @@ int main ( int argc, char* argv[] )
 		}
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) || \
 	defined(USE_MPI_GEMS) || defined(USE_MPI_KRC)
-#ifdef OGS_FEM_IPQC
 		std::string decompositions;
 		if( anArg == "--domain-decomposition" || anArg == "-ddc" )
 		{
@@ -175,7 +169,6 @@ int main ( int argc, char* argv[] )
 			nb_ddc = atoi(decompositions.c_str());
 			continue;
 		}
-#endif
 #endif
 		// anything left over must be the model root, unless already found
 		if ( modelRoot == "" )
@@ -224,15 +217,11 @@ int main ( int argc, char* argv[] )
 #endif
 	MPI_Barrier (MPI_COMM_WORLD); // 12.09.2007 WW
 	elapsed_time_mpi = -MPI_Wtime(); // 12.09.2007 WW
-#ifdef OGS_FEM_IPQC
 	bool splitcomm_flag;
 	int np;
 	MPI_Comm_size(MPI_COMM_WORLD, &np);
 	splitcomm_flag = SplitMPI_Communicator::CreateCommunicator(MPI_COMM_WORLD, np, nb_ddc);
 	time_ele_paral = 0.0;
-#else
-	comm_DDC= MPI_COMM_WORLD;
-#endif
 #endif
 /*---------- MPI Initialization ----------------------------------*/
 
@@ -341,18 +330,18 @@ int main ( int argc, char* argv[] )
 	delete aproblem;
 	aproblem = NULL;
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS)  || defined(USE_MPI_KRC)
-	  }
+	}
 
-#ifdef OGS_FEM_IPQC
 	//sending killing signals to ranks of group_IPQC, only when the group exists
 	if (splitcomm_flag == true){
+#ifdef  OGS_FEM_IPQC
 		int signal = -1, rank_IPQC, mysize_IPQC = np - nb_ddc;
 		for (int i=0; i< mysize_IPQC; i++){
 			rank_IPQC = mysize + i;
 			MPI_Send(&signal, 1, MPI_INT, rank_IPQC, 0, MPI_COMM_WORLD);
 		}
- 	  }
 #endif
+	}
 
 #endif
 

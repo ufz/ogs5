@@ -117,17 +117,14 @@ elseif(OGS_LSOLVER STREQUAL PETSC)
 	set( SOURCES ${SOURCES} rf_pcs1.cpp fct_mpi.h fct_mpi.cpp)
 elseif(OGS_LSOLVER STREQUAL SP)
 	set( SOURCES ${SOURCES} equation_class.h equation_class.cpp )
-endif()
-
-if(OGS_CONFIG STREQUAL JFNK)
-	set( SOURCES ${SOURCES} rf_pcs1.cpp )
-endif()
-
-if(OGS_CHEMSOLVER STREQUAL IPQC)
 	if (PARALLEL_USE_MPI)
 		set(HEADERS ${HEADERS} SplitMPI_Communicator.h )
 		set(SOURCES ${SOURCES} SplitMPI_Communicator.cpp )
 	endif ()
+endif()
+
+if(OGS_CONFIG STREQUAL JFNK)
+	set( SOURCES ${SOURCES} rf_pcs1.cpp )
 endif()
 
 if(OGS_CHEMSOLVER STREQUAL BRNS)
