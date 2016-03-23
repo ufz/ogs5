@@ -26,6 +26,9 @@
 /*--------------------- MPI Parallel  -------------------*/
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL)
 #include <mpi.h>
+#if defined (USE_MPI)
+#include "SplitMPI_Communicator.h"
+#endif
 #endif
 /*--------------------- MPI Parallel  -------------------*/
 
@@ -8049,8 +8052,21 @@ double CRFProcess::evaluteSwitchBC(CBoundaryCondition const & bc, CBoundaryCondi
 
 					for (std::size_t temp_i(0); temp_i < m_st->getNumberOfConstrainedSTs(); temp_i++)
 					{
-						if (st_vector[cnodev->getSTVectorGroup()]->isCompleteConstrainST(temp_i)
+						int st_conditionst = (st_vector[cnodev->getSTVectorGroup()]->isCompleteConstrainST(temp_i)
 							&& st_vector[cnodev->getSTVectorGroup()]->getCompleteConstrainedSTStateOff(temp_i))
+							? 1 : 0;
+
+#if defined(USE_MPI) || defined (USE_PETSC)
+						int int_buff = 0;
+#ifdef USE_PETSC
+						MPI_Comm comm = MPI_COMM_WORLD;
+#else
+						MPI_Comm comm = comm_DDC;
+#endif
+						MPI_Allreduce(&st_conditionst, &int_buff, 1, MPI_INT, MPI_SUM, comm);
+						st_conditionst = int_buff;
+#endif
+						if (st_conditionst > 0)
 						{
 							continue_bool = true;
 							break;
