@@ -626,6 +626,28 @@ void OUTData(double time_current, int time_step_number, bool force_output)
 				break;
 			}
 		}
+		else if (m_out->dat_type_name.find("PETREL") != string::npos)
+		{
+			if (m_out->getGeoType()==GEOLIB::GEODOMAIN)
+			{
+				if (OutputBySteps) {
+					OutputBySteps = false;
+					m_out->WritePetrelElementData(time_step_number);
+					if (!m_out->_new_file_opened)
+						m_out->_new_file_opened = true;
+				} else  {
+					for (size_t j = 0; j < no_times; j++) {
+						if (time_current >= m_out->time_vector[j]) {
+							m_out->WritePetrelElementData(time_step_number);
+							m_out->time_vector.erase(m_out->time_vector.begin() + j);
+							if (!m_out->_new_file_opened)
+								m_out->_new_file_opened = true;
+							break;
+						}
+					}
+				}
+			}
+		}
 		else if (m_out->dat_type_name.compare("TOTAL_FLUX") == 0)
 			m_out->NODWriteTotalFlux(time_current, time_step_number); // 6/2012 JOD, MW
 		else if (m_out->dat_type_name.compare("COMBINE_POINTS") == 0) m_out->NODWritePointsCombined(time_current);	// 6/2012 for calibration JOD

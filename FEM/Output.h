@@ -160,6 +160,7 @@ public:
 	/// Binary output for parallel computing. 01.2014. WW
 	void NODDomainWriteBinary();
 #endif
+	void WritePetrelElementData(int timestepnumber);
 
 	void setTime (double time) { _time = time; }
 	/**
