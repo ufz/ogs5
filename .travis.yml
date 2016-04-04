@@ -15,15 +15,15 @@ matrix:
     - env: TRAVIS_EMPTY_JOB_WORKAROUND=true
 
   include:
-    # check coding style
-    - env: CASE=codingstyle
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-precise-3.7
-            - ubuntu-toolchain-r-test
-          packages:
-            - clang-format-3.7
+#    # check coding style
+#    - env: CASE=codingstyle
+#      addons:
+#        apt:
+#          sources:
+#            - llvm-toolchain-precise-3.7
+#            - ubuntu-toolchain-r-test
+#          packages:
+#            - clang-format-3.7
     # check typical OGS builds
     - env: CASE=FEM
     - env: CASE=IPQC
@@ -55,7 +55,7 @@ install:
 script:
   - if [[ "$CASE" != "codingstyle" ]]; then mkdir build && cd build && cmake -DOGS_CONFIG=${CASE} $CMAKE_ARGS -DOGS_CPU_ARCHITECTURE=generic .. && cmake ..; fi
   - if [[ "$CASE" != "codingstyle" ]]; then make; fi
-  - if [[ "$CASE" == "codingstyle" ]]; then chmod +x ./scripts/ci/check_code_format.sh && ./scripts/ci/check_code_format.sh; fi
+#  - if [[ "$CASE" == "codingstyle" ]]; then chmod +x ./scripts/ci/check_code_format.sh && ./scripts/ci/check_code_format.sh; fi
 
 notifications:
   email:
