@@ -24,13 +24,13 @@
 #include <signal.h>
 
 /* Deklarationen */
-extern void NoBreak ( void );
+extern void NoBreak(void);
 /* schaltet Ctrl-C aus */
-extern void StandardBreak ( void );
+extern void StandardBreak(void);
 /* schaltet Ctrl-C - interpretation auf Standard */
-extern void SaveBreak ( void );
+extern void SaveBreak(void);
 /* speichert eventuelles Ctrl-C in abbruch */
-extern void ClearBreak ( void );
+extern void ClearBreak(void);
 /* setzt abbruch auf 0 */
 
 /* Weitere externe Objekte */

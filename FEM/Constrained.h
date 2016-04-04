@@ -12,7 +12,8 @@
 
 #include "FEMEnums.h"
 
-struct Constrained {
+struct Constrained
+{
 	double constrainedValue;
 	FiniteElement::ProcessType constrainedProcessType;
 	FiniteElement::PrimaryVariable constrainedPrimVar;
@@ -20,22 +21,18 @@ struct Constrained {
 	ConstrainedVariable::type constrainedVariable;
 	bool _isCompleteConstrained;
 	bool _completeConstrainedStateOff;
-	std::vector<bool>_constrainedNodes;
+	std::vector<bool> _constrainedNodes;
 	bool _isConstrainedVelStable;
 	bool _isSeepageBC;
 
-	Constrained () :
-		constrainedValue(0.0),
-		constrainedProcessType(FiniteElement::INVALID_PROCESS),
-		constrainedPrimVar(FiniteElement::INVALID_PV),
-		constrainedDirection(ConstrainedType::INVALID_CONSTRAINED_TYPE),
-		constrainedVariable(ConstrainedVariable::INVALID_CONSTRAINED_VARIABLE),
-		_isCompleteConstrained(false),
-		_completeConstrainedStateOff(false),
-		_isConstrainedVelStable(false),
-		_isSeepageBC(false)
-	{}
-
+	Constrained()
+	    : constrainedValue(0.0), constrainedProcessType(FiniteElement::INVALID_PROCESS),
+	      constrainedPrimVar(FiniteElement::INVALID_PV),
+	      constrainedDirection(ConstrainedType::INVALID_CONSTRAINED_TYPE),
+	      constrainedVariable(ConstrainedVariable::INVALID_CONSTRAINED_VARIABLE), _isCompleteConstrained(false),
+	      _completeConstrainedStateOff(false), _isConstrainedVelStable(false), _isSeepageBC(false)
+	{
+	}
 };
 
 #endif

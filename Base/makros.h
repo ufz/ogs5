@@ -40,7 +40,7 @@
 #define SWITCHES
 /* Ausgabe der Schalterstellungen zu Beginn des Programms */
 #ifdef MSVCPP6
-#pragma warning (disable:4786)
+#pragma warning(disable : 4786)
 #endif
 
 /* Laufzeitausgaben */
@@ -52,7 +52,7 @@
 /**********************************************************************/
 /* Speicher */
 
-#ifndef NO_ERROR_CONTROL                          /* Wird ggf. im Makefile gesetzt */
+#ifndef NO_ERROR_CONTROL /* Wird ggf. im Makefile gesetzt */
 #define ERROR_CONTROL
 /* Fehlertests (Feldgrenzen, Existenz o.ae.), die bei sauberen Netzen und
    einwandfrei funktionierendem Programm nichts bringen und nur Laufzeit
@@ -71,11 +71,11 @@
 #define noMEMORY_ALLOCATION_TEST_SUCCESS
 /*  Prueft, ob eine Speicheranforderung erfolgreich absolviert wurde */
 
-#define noMEMORY_TEST_IN_TIME                     /* fuer Versions-Speichertest */
+#define noMEMORY_TEST_IN_TIME /* fuer Versions-Speichertest */
 /* Erstellt waehrend der Laufzeit eine Bilanz des allockierten
    und wieder freigegebenen Speichers. Sehr Zeitintensiv !!! */
 
-#define noMEMORY_STR                              /* fuer Versions-Speichertest */
+#define noMEMORY_STR /* fuer Versions-Speichertest */
 /* Gibt Informationen bei Memory-Funktionen zur
    Aufrufstellenlokalisation. Funktioniert nur zusammen mit
    MEMORY_TEST_IN_TIME. Sehr Speicherintensiv!!! */
@@ -99,9 +99,9 @@
 #endif
 
 #ifdef MEMORY_STR
-#define Malloc(a)    MAlloc(a,__FILE__,__LINE__)
-#define Free(a)      FRee(a,__FILE__,__LINE__)
-#define Realloc(a,b) REalloc(a,b,__FILE__,__LINE__)
+#define Malloc(a) MAlloc(a, __FILE__, __LINE__)
+#define Free(a) FRee(a, __FILE__, __LINE__)
+#define Realloc(a, b) REalloc(a, b, __FILE__, __LINE__)
 /* Ersetzt Malloc, Free und Realloc in allen *.c-Dateien durch den
    erweiterten Aufruf mit Dateiname und Zeilennummer */
 #endif
@@ -113,24 +113,24 @@
 /* Listen, Baeumen, etc sind dann moeglich */
 
 /* Definitionen der Feldgroessen */
-#define ELEM_START_SIZE     200l
+#define ELEM_START_SIZE 200l
 /* Minimale Groesse des Elementverzeichnisses */
-#define ELEM_INC_SIZE       1000l
+#define ELEM_INC_SIZE 1000l
 /* Bei Erreichen von ELEM_START_SIZE wird das Elementverzeichnis
    automatisch um ELEM_INC_SIZE vergroessert */
-#define NODE_START_SIZE     200l
+#define NODE_START_SIZE 200l
 /* Minimale Groesse des Knotenverzeichnisses */
-#define NODE_INC_SIZE       1000l
+#define NODE_INC_SIZE 1000l
 /* Bei Erreichen von NODE_START_SIZE wird das Knotenverzeichnis
    automatisch um NODE_INC_SIZE vergroessert */
-#define EDGE_START_SIZE     0l
+#define EDGE_START_SIZE 0l
 /* Minimale Groesse des Kantenverzeichnisses */
-#define EDGE_INC_SIZE       1000l
+#define EDGE_INC_SIZE 1000l
 /* Bei Erreichen von EDGE_START_SIZE wird das Kantenverzeichnis
    automatisch um EDGE_INC_SIZE vergroessert */
-#define PLAIN_START_SIZE     0l
+#define PLAIN_START_SIZE 0l
 /* Minimale Groesse des Flaechenverzeichnisses */
-#define PLAIN_INC_SIZE       1000l
+#define PLAIN_INC_SIZE 1000l
 /* Bei Erreichen von PLAIN_START_SIZE wird das Flaechenverzeichnis
    automatisch um PLAIN_INC_SIZE vergroessert */
 
@@ -138,34 +138,34 @@
 /* Protokolle */
 
 /* Definitionen der Dateinamen-Erweiterungen */
-#define TEXT_EXTENSION            ".rfd"
+#define TEXT_EXTENSION ".rfd"
 /* Dateinamen-Erweiterung fuer Text-Eingabedatei */
-#define PROTOCOL_EXTENSION        ".rfe"
+#define PROTOCOL_EXTENSION ".rfe"
 /* Dateinamen-Erweiterung fuer Text-Protokolldatei */
-#define RF_INPUT_EXTENSION        ".rfi"
+#define RF_INPUT_EXTENSION ".rfi"
 /* Dateinamen-Erweiterung fuer RF-Input-Dateien */
-#define RF_OUTPUT_EXTENSION       ".rfo"
+#define RF_OUTPUT_EXTENSION ".rfo"
 /* Dateinamen-Erweiterung fuer RF-Output-Dateien */
-#define RF_MESSAGE_EXTENSION      ".msg"
+#define RF_MESSAGE_EXTENSION ".msg"
 /* Dateinamen-Erweiterung fuer RF-Output-Dateien */
-#define RF_SAVE_EXTENSION1        ".sv1"
+#define RF_SAVE_EXTENSION1 ".sv1"
 /* Dateinamen-Erweiterung fuer RF-Sicherheitskopien */
-#define RF_SAVE_EXTENSION2        ".sv2"
+#define RF_SAVE_EXTENSION2 ".sv2"
 /* Dateinamen-Erweiterung fuer RF-Sicherheitskopien */
-#define MESH_GENERATOR_EXTENSION    ".rfm"
+#define MESH_GENERATOR_EXTENSION ".rfm"
 /* Dateinamen-Erweiterung fuer Text-Eingabedatei (Netzgenerator) */
-#define MESH_GENERATOR_PROTOCOL_EXTENSION  ".rfg"
+#define MESH_GENERATOR_PROTOCOL_EXTENSION ".rfg"
 /* Dateinamen-Erweiterung fuer Text-Protokolldatei (Netzgenerator) */
-#define INVERSE_EXTENSION         ".rfv"          /* ah inv */
+#define INVERSE_EXTENSION ".rfv" /* ah inv */
 /* Dateinamen-Erweiterung fuer Text-Eingabedatei (Inverses Modellieren) */
-#define INVERSE_PROTOCOL_EXTENSION  ".rfp"
+#define INVERSE_PROTOCOL_EXTENSION ".rfp"
 /* Dateinamen-Erweiterung fuer Text-Eingabedatei (Inverses Modellieren) */
-#define CHEM_REACTION_EXTENSION  ".pqc"
+#define CHEM_REACTION_EXTENSION ".pqc"
 /* Dateinamen-Erweiterung fuer Text-Eingabedatei (Chemical reaction) */
-#define CHEMAPP_REACTION_EXTENSION  ".chm"
+#define CHEMAPP_REACTION_EXTENSION ".chm"
 #define REACTION_EXTENSION_CHEMAPP ".cap" // DL/SB 11.2008
 #define TEC_FILE_EXTENSION ".tec"
-#define VTK_FILE_EXTENSION ".vtk"                 //GK
+#define VTK_FILE_EXTENSION ".vtk" // GK
 #define CSV_FILE_EXTENSION ".csv"
 
 #define noTESTFILES
@@ -181,8 +181,8 @@
 
 /* Format der Double-Ausgabe ueber FilePrintDouble --> txtinout */
 #define FORMAT_DOUBLE
-#define FPD_GESAMT     4
-#define FPD_NACHKOMMA  14
+#define FPD_GESAMT 4
+#define FPD_NACHKOMMA 14
 
 /**********************************************************************/
 /* C1.2 Numerik */
@@ -254,7 +254,7 @@
 /**********************************************************************/
 /* Parallelization */
 #define noPARALLEL
-#define noCHEMAPP                                 //MX
+#define noCHEMAPP // MX
 #define noREACTION_ELEMENT
 #define noSX
 #define noMPI
@@ -274,10 +274,10 @@
 #endif
 
 /* Feste Zahlen fuer Genauigkeitspruefungen etc. */
-#define Mdrittel  (1.0 / 3.0)
+#define Mdrittel (1.0 / 3.0)
 #define MKleinsteZahl DBL_EPSILON
 #define MFastNull DBL_MIN
-#define MSqrt2Over3  sqrt(2.0 / 3.0)
+#define MSqrt2Over3 sqrt(2.0 / 3.0)
 
 /* CBLAS oder MKL_CBLAS verwenden? Wenn ja, wo? */
 #define noCBLAS
@@ -309,7 +309,7 @@
 #endif
 
 // min und max
-#define Max(A,B) ((A) > (B) ? (A) : (B))
+#define Max(A, B) ((A) > (B) ? (A) : (B))
 
 /*
    #ifndef min
@@ -322,17 +322,17 @@
 #define MAX_ZEILE 2048
 /* max. Laenge einer UCD-Zeile; bei Leseproblemen vergroessern */
 
-//enum DIS_TYPES {CONSTANT,LINEAR};
+// enum DIS_TYPES {CONSTANT,LINEAR};
 
 extern std::string FileName;
-extern std::string FilePath;                      //WW
+extern std::string FilePath; // WW
 
-#define RESET_4410                                // H2_ELE test
+#define RESET_4410 // H2_ELE test
 
 //---- MPI Parallel --------------
-#if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) || \
-        defined(USE_MPI_GEMS) || defined(USE_MPI_BRNS) || defined(USE_MPI_KRC) || defined(USE_PETSC)
-extern int mysize;                                //WW
+#if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS) \
+    || defined(USE_MPI_BRNS) || defined(USE_MPI_KRC) || defined(USE_PETSC)
+extern int mysize; // WW
 extern int myrank;
 #endif
 //---- MPI Parallel --------------

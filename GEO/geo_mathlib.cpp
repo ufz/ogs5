@@ -37,9 +37,9 @@
    09/1997     AH         Einbau der Funktion
  */
 /**************************************************************************/
-double EuklVek3dDist ( double* x, double* y)
+double EuklVek3dDist(double* x, double* y)
 {
-	return EuklVek3dDistCoor(x[0],x[1],x[2],y[0],y[1],y[2]);
+	return EuklVek3dDistCoor(x[0], x[1], x[2], y[0], y[1], y[2]);
 }
 
 /**************************************************************************/
@@ -62,8 +62,7 @@ double EuklVek3dDist ( double* x, double* y)
  */
 /**************************************************************************/
 
-double EuklVek3dDistCoor ( double x1, double y1, double z1, \
-                           double x2, double y2, double z2 )
+double EuklVek3dDistCoor(double x1, double y1, double z1, double x2, double y2, double z2)
 {
 	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1));
 }
@@ -86,28 +85,28 @@ double EuklVek3dDistCoor ( double x1, double y1, double z1, \
    08/1998     AH         Einbau der Funktion
  */
 /**************************************************************************/
-double Vek3dDistCoor ( double x1, double y1, double z1, \
-                       double x2, double y2, double z2, int norm )
+double Vek3dDistCoor(double x1, double y1, double z1, double x2, double y2, double z2, int norm)
 {
 	double d;
 
 	switch (norm)
 	{
-	case 0:
-		d = fabs(x2 - x1);
-		if ( fabs(y2 - y1) > d )
-			d = fabs(y2 - y1);
-		if ( fabs(z2 - z1) > d )
-			d = fabs(z2 - z1);
-		return d;
+		case 0:
+			d = fabs(x2 - x1);
+			if (fabs(y2 - y1) > d)
+				d = fabs(y2 - y1);
+			if (fabs(z2 - z1) > d)
+				d = fabs(z2 - z1);
+			return d;
 
-	case 1:
-		return fabs(x2 - x1) + fabs(y2 - y1) + fabs(z2 - z1);
+		case 1:
+			return fabs(x2 - x1) + fabs(y2 - y1) + fabs(z2 - z1);
 
-	case 2:
-		return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1));
+		case 2:
+			return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1));
 
-	default: return -1.;
+		default:
+			return -1.;
 	}
 }
 /**************************************************************************
@@ -162,7 +161,7 @@ double MSkalarprodukt(double* vec1, double* vec2, long g)
 #else
 	return cblas_ddot(g, vec1, 1, vec2, 1);
 #endif
-}                               /* extern double MSkalarprodukt */
+} /* extern double MSkalarprodukt */
 /***************************************************************************
    GEO MathLib - Funktion: M4Determinante
    Aufgabe:
@@ -179,7 +178,7 @@ double MSkalarprodukt(double* vec1, double* vec2, long g)
 double M4Determinante(double* m)
 {
 	double determinante = 0.0;
-	double A11[9],A12[9],A13[9],A14[9];
+	double A11[9], A12[9], A13[9], A14[9];
 
 	A11[0] = m[5];
 	A11[1] = m[6];
@@ -221,26 +220,24 @@ double M4Determinante(double* m)
 	A14[7] = m[10];
 	A14[8] = m[11];
 
-	determinante = +1.0 * M3Determinante(A11) \
-	               - 1.0 * M3Determinante(A12) \
-	               + 1.0 * M3Determinante(A13) \
+	determinante = +1.0 * M3Determinante(A11) - 1.0 * M3Determinante(A12) + 1.0 * M3Determinante(A13)
 	               - 1.0 * M3Determinante(A14);
 
 	return determinante;
 }
-double CalcTetraederVolume(double* x,double* y,double* z)
+double CalcTetraederVolume(double* x, double* y, double* z)
 {
 	static double mat4x4[16];
-	mat4x4[0]  = 1.0;
-	mat4x4[1]  = x[0];
-	mat4x4[2]  = y[0];
-	mat4x4[3]  = z[0];
-	mat4x4[4]  = 1.0;
-	mat4x4[5]  = x[1];
-	mat4x4[6]  = y[1];
-	mat4x4[7]  = z[1];
-	mat4x4[8]  = 1.0;
-	mat4x4[9]  = x[2];
+	mat4x4[0] = 1.0;
+	mat4x4[1] = x[0];
+	mat4x4[2] = y[0];
+	mat4x4[3] = z[0];
+	mat4x4[4] = 1.0;
+	mat4x4[5] = x[1];
+	mat4x4[6] = y[1];
+	mat4x4[7] = z[1];
+	mat4x4[8] = 1.0;
+	mat4x4[9] = x[2];
 	mat4x4[10] = y[2];
 	mat4x4[11] = z[2];
 	mat4x4[12] = 1.0;
@@ -249,19 +246,19 @@ double CalcTetraederVolume(double* x,double* y,double* z)
 	mat4x4[15] = z[3];
 	return fabs(M4Determinante(mat4x4)) / 6.;
 }
-double CalcPyramidVolume(double* x,double* y,double* z)
+double CalcPyramidVolume(double* x, double* y, double* z)
 {
-/*
-   x[0]=1.0; y[0]=-1.0; z[0]=0.0;
-   x[1]=1.0; y[1]=1.0; z[1]=0.0;
-   x[2]=-1.0; y[2]=1.0; z[2]=0.0;
-   x[3]=-1.0; y[3]=-1.0; z[3]=0.0;
-   x[4]=0.0; y[4]=0.0; z[4]=1.0;
- */
-	//double hight
+	/*
+	   x[0]=1.0; y[0]=-1.0; z[0]=0.0;
+	   x[1]=1.0; y[1]=1.0; z[1]=0.0;
+	   x[2]=-1.0; y[2]=1.0; z[2]=0.0;
+	   x[3]=-1.0; y[3]=-1.0; z[3]=0.0;
+	   x[4]=0.0; y[4]=0.0; z[4]=1.0;
+	 */
+	// double hight
 	double volume;
 
-	double p1[3],p2[3],p3[3],p5[3],proj[3];
+	double p1[3], p2[3], p3[3], p5[3], proj[3];
 	//--------------------------------------------------------------
 	// tet version
 	p1[0] = x[0];
@@ -277,10 +274,10 @@ double CalcPyramidVolume(double* x,double* y,double* z)
 	p5[1] = y[4];
 	p5[2] = z[4];
 
-	//WW hight =
-	MCalcProjectionOfPointOnPlane(p5,p1,p2,p3,proj);
-	double xt[4],yt[4],zt[4];
-	double volume1,volume2,volume3,volume4;
+	// WW hight =
+	MCalcProjectionOfPointOnPlane(p5, p1, p2, p3, proj);
+	double xt[4], yt[4], zt[4];
+	double volume1, volume2, volume3, volume4;
 	xt[0] = x[0];
 	xt[1] = x[1];
 	xt[2] = x[4];
@@ -293,7 +290,7 @@ double CalcPyramidVolume(double* x,double* y,double* z)
 	zt[1] = z[1];
 	zt[2] = z[4];
 	zt[3] = proj[2];
-	volume1 = CalcTetraederVolume(xt,yt,zt);
+	volume1 = CalcTetraederVolume(xt, yt, zt);
 	xt[0] = x[1];
 	xt[1] = x[2];
 	xt[2] = x[4];
@@ -306,7 +303,7 @@ double CalcPyramidVolume(double* x,double* y,double* z)
 	zt[1] = z[2];
 	zt[2] = z[4];
 	zt[3] = proj[2];
-	volume2 = CalcTetraederVolume(xt,yt,zt);
+	volume2 = CalcTetraederVolume(xt, yt, zt);
 	xt[0] = x[2];
 	xt[1] = x[3];
 	xt[2] = x[4];
@@ -319,7 +316,7 @@ double CalcPyramidVolume(double* x,double* y,double* z)
 	zt[1] = z[3];
 	zt[2] = z[4];
 	zt[3] = proj[2];
-	volume3 = CalcTetraederVolume(xt,yt,zt);
+	volume3 = CalcTetraederVolume(xt, yt, zt);
 	xt[0] = x[3];
 	xt[1] = x[0];
 	xt[2] = x[4];
@@ -332,24 +329,24 @@ double CalcPyramidVolume(double* x,double* y,double* z)
 	zt[1] = z[0];
 	zt[2] = z[4];
 	zt[3] = proj[2];
-	volume4 = CalcTetraederVolume(xt,yt,zt);
+	volume4 = CalcTetraederVolume(xt, yt, zt);
 	volume = fabs(volume1) + fabs(volume2) + fabs(volume3) + fabs(volume4);
 	return volume;
 }
-double CalcPrismVolume(double* x,double* y,double* z)
+double CalcPrismVolume(double* x, double* y, double* z)
 {
-	double tet1,tet2,tet3,prism;
+	double tet1, tet2, tet3, prism;
 	double mat4x4[16];
-	mat4x4[0]  = 1.0;
-	mat4x4[1]  = x[0];
-	mat4x4[2]  = y[0];
-	mat4x4[3]  = z[0];
-	mat4x4[4]  = 1.0;
-	mat4x4[5]  = x[1];
-	mat4x4[6]  = y[1];
-	mat4x4[7]  = z[1];
-	mat4x4[8]  = 1.0;
-	mat4x4[9]  = x[2];
+	mat4x4[0] = 1.0;
+	mat4x4[1] = x[0];
+	mat4x4[2] = y[0];
+	mat4x4[3] = z[0];
+	mat4x4[4] = 1.0;
+	mat4x4[5] = x[1];
+	mat4x4[6] = y[1];
+	mat4x4[7] = z[1];
+	mat4x4[8] = 1.0;
+	mat4x4[9] = x[2];
 	mat4x4[10] = y[2];
 	mat4x4[11] = z[2];
 	mat4x4[12] = 1.0;
@@ -357,16 +354,16 @@ double CalcPrismVolume(double* x,double* y,double* z)
 	mat4x4[14] = y[3];
 	mat4x4[15] = z[3];
 	tet1 = fabs(M4Determinante(mat4x4)) / 6.;
-	mat4x4[0]  = 1.0;
-	mat4x4[1]  = x[1];
-	mat4x4[2]  = y[1];
-	mat4x4[3]  = z[1];
-	mat4x4[4]  = 1.0;
-	mat4x4[5]  = x[2];
-	mat4x4[6]  = y[2];
-	mat4x4[7]  = z[2];
-	mat4x4[8]  = 1.0;
-	mat4x4[9]  = x[3];
+	mat4x4[0] = 1.0;
+	mat4x4[1] = x[1];
+	mat4x4[2] = y[1];
+	mat4x4[3] = z[1];
+	mat4x4[4] = 1.0;
+	mat4x4[5] = x[2];
+	mat4x4[6] = y[2];
+	mat4x4[7] = z[2];
+	mat4x4[8] = 1.0;
+	mat4x4[9] = x[3];
 	mat4x4[10] = y[3];
 	mat4x4[11] = z[3];
 	mat4x4[12] = 1.0;
@@ -374,16 +371,16 @@ double CalcPrismVolume(double* x,double* y,double* z)
 	mat4x4[14] = y[4];
 	mat4x4[15] = z[4];
 	tet2 = fabs(M4Determinante(mat4x4)) / 6.;
-	mat4x4[0]  = 1.0;
-	mat4x4[1]  = x[2];
-	mat4x4[2]  = y[2];
-	mat4x4[3]  = z[2];
-	mat4x4[4]  = 1.0;
-	mat4x4[5]  = x[3];
-	mat4x4[6]  = y[3];
-	mat4x4[7]  = z[3];
-	mat4x4[8]  = 1.0;
-	mat4x4[9]  = x[4];
+	mat4x4[0] = 1.0;
+	mat4x4[1] = x[2];
+	mat4x4[2] = y[2];
+	mat4x4[3] = z[2];
+	mat4x4[4] = 1.0;
+	mat4x4[5] = x[3];
+	mat4x4[6] = y[3];
+	mat4x4[7] = z[3];
+	mat4x4[8] = 1.0;
+	mat4x4[9] = x[4];
 	mat4x4[10] = y[4];
 	mat4x4[11] = z[4];
 	mat4x4[12] = 1.0;
@@ -419,15 +416,15 @@ double MCalcProjectionOfPointOnPlane(double* pt, double* e1, double* e2, double*
 	double vec1[3], vec2[3], vec3[3], normal[3], abstand, volume, area;
 
 	/* 1. Ebenen-Vektor  */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec1[i] = e2[i] - e1[i];
 
 	/* 2. Ebenen-Vektor  */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec2[i] = e3[i] - e1[i];
 
 	/* Ebene-Punkt-Vektor  */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec3[i] = pt[i] - e1[i];
 
 	/* Normalenvektor */
@@ -451,14 +448,14 @@ double MCalcProjectionOfPointOnPlane(double* pt, double* e1, double* e2, double*
 	abstand = volume / (area + MKleinsteZahlen);
 
 	/* Normierter Normalen-Vektor  */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		normal[i] /= (area + MKleinsteZahlen);
 
 	if (MSkalarprodukt(normal, vec3, 3) > 0.)
-		for(i = 0; i < 3; i++)
+		for (i = 0; i < 3; i++)
 			proj[i] = pt[i] - fabs(abstand) * normal[i];
 	else
-		for(i = 0; i < 3; i++)
+		for (i = 0; i < 3; i++)
 			proj[i] = pt[i] + fabs(abstand) * normal[i];
 
 	return abstand;
@@ -479,11 +476,11 @@ double MCalcProjectionOfPointOnPlane(double* pt, double* e1, double* e2, double*
 
 double M3Determinante(double* m)
 {
-	return m[0] * m[4] * m[8] + m[1] * m[5] * m[6] + m[2] * m[3] * m[7]
-	       - m[2] * m[4] * m[6] - m[0] * m[5] * m[7] - m[1] * m[3] * m[8];
+	return m[0] * m[4] * m[8] + m[1] * m[5] * m[6] + m[2] * m[3] * m[7] - m[2] * m[4] * m[6] - m[0] * m[5] * m[7]
+	       - m[1] * m[3] * m[8];
 }
 
-double MCalcDistancePointToPoint(double* pt1,double* pt2)
+double MCalcDistancePointToPoint(double* pt1, double* pt2)
 {
 	double vec[3];
 
@@ -491,7 +488,7 @@ double MCalcDistancePointToPoint(double* pt1,double* pt2)
 	vec[1] = pt1[1] - pt2[1];
 	vec[2] = pt1[2] - pt2[2];
 
-	return MBtrgVec(vec,3);
+	return MBtrgVec(vec, 3);
 }
 
 /**************************************************************************
@@ -517,11 +514,12 @@ long* TOLSortNodes1(long* nodes, double* criterium, int anz)
 	long tempnode;
 	double temp;
 
-	do  {
+	do
+	{
 		flag = 0;
 		nummer++;
 		for (i = 0; i < (anz - nummer); i++)
-			if ( criterium[i] < criterium[i + 1])
+			if (criterium[i] < criterium[i + 1])
 			{
 				flag = 1;
 				tempnode = nodes[i];
@@ -583,29 +581,28 @@ int MPhi2D(double* vf, double r, double s)
    Programmaenderungen:
    05/2005 RFW Implementierung
  ***************************************************************************/
-bool LineSegmentIntersection(vector<double> xline1, vector<double> yline1,
-                             vector<double> xline2, vector<double> yline2,
+bool LineSegmentIntersection(vector<double> xline1, vector<double> yline1, vector<double> xline2, vector<double> yline2,
                              vector<double>& intercept)
 {
-	double determinant, t1; //WW, t2;
+	double determinant, t1; // WW, t2;
 	bool crosses = false;
 
-	determinant = (  (yline2[1] - yline2[0]) * (xline1[1] - xline1[0])
-	                 -  (xline2[1] - xline2[0]) * (yline1[1] - yline1[0]) );
-	if(determinant == 0)
+	determinant
+	    = ((yline2[1] - yline2[0]) * (xline1[1] - xline1[0]) - (xline2[1] - xline2[0]) * (yline1[1] - yline1[0]));
+	if (determinant == 0)
 		crosses = false;
 	else
 	{
-		t1 =  (  (xline2[1] - xline2[0]) * (yline1[0] - yline2[0])
-		         -  (yline2[1] - yline2[0]) * (xline1[0] - xline2[0]) ) / determinant;
+		t1 = ((xline2[1] - xline2[0]) * (yline1[0] - yline2[0]) - (yline2[1] - yline2[0]) * (xline1[0] - xline2[0]))
+		     / determinant;
 
-		if(t1 < 0 || t1 > 1)
+		if (t1 < 0 || t1 > 1)
 			crosses = false;
 		else
 		{
 			crosses = true;
-			intercept.push_back(  xline1[0] + t1 * (xline1[1] - xline1[0])  );
-			intercept.push_back(  yline1[0] + t1 * (yline1[1] - yline1[0])  );
+			intercept.push_back(xline1[0] + t1 * (xline1[1] - xline1[0]));
+			intercept.push_back(yline1[0] + t1 * (yline1[1] - yline1[0]));
 		}
 	}
 

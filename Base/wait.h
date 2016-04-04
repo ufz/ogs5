@@ -23,9 +23,8 @@ void wait(int seconds)
 	do
 	{
 		time(&cur_time);
-	}
-	while((cur_time - start_time) < seconds);
+	} while ((cur_time - start_time) < seconds);
 }
 } // end namespace BASELIB
 
-#endif //WAIT_H
+#endif // WAIT_H

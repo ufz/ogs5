@@ -42,7 +42,7 @@ public:
 	GridAdapter(const MeshLib::CFEMesh* mesh);
 
 	/// Constructor using a MSH-file as source
-	GridAdapter(const std::string &filename);
+	GridAdapter(const std::string& filename);
 
 	/// Copy Constructor
 	GridAdapter(const GridAdapter* grid = NULL);
@@ -51,19 +51,15 @@ public:
 
 	/// Adds a node to the grid
 	void addNode(GEOLIB::Point* node) { _nodes->push_back(node); };
-
 	/// Adds an element to the grid
 	void addElement(Element* element) { _elems->push_back(element); };
-
 	/// Returns the total number of unique material IDs.
 	size_t getNumberOfMaterials() const;
 
 	/// Returns the vector of nodes.
 	const std::vector<GEOLIB::Point*>* getNodes() const { return _nodes; }
-
 	/// Returns the vector of elements.
 	const std::vector<Element*>* getElements() const { return _elems; }
-
 	/// Return a vector of elements for one material group only.
 	const std::vector<Element*>* getElements(size_t matID) const;
 
@@ -75,25 +71,21 @@ public:
 
 	/// Returns the name of the mesh.
 	std::string getName() const { return _name; }
-
 	/// Sets the element vector of the grid
-	void setElements(std::vector<Element*> *elements) { _elems=elements; };
-
+	void setElements(std::vector<Element*>* elements) { _elems = elements; };
 	/// Sets the name for the mesh.
-	void setName(const std::string &name) { _name = name; }
-
+	void setName(const std::string& name) { _name = name; }
 	/// Sets the node vector of the grid
-	void setNodeVector(std::vector<GEOLIB::Point*> *nodes) { _nodes=nodes; };
-
+	void setNodeVector(std::vector<GEOLIB::Point*>* nodes) { _nodes = nodes; };
 private:
 	/// Converts an FEM Mesh to a list of nodes and elements.
 	int convertCFEMesh(const MeshLib::CFEMesh* mesh);
 
 	/// Reads a MSH file into a list of nodes and elements.
-	int readMeshFromFile(const std::string &filename);
+	int readMeshFromFile(const std::string& filename);
 
 	/// Converts a string to a MshElemType
-	MshElemType::type getElementType(const std::string &t) const;
+	MshElemType::type getElementType(const std::string& t) const;
 
 	/// Converts a GridAdapter into an CFEMesh.
 	const MeshLib::CFEMesh* toCFEMesh() const;

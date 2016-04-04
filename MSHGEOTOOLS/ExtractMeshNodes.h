@@ -48,9 +48,7 @@ public:
 	 * @param gli_out output stream for points
 	 * @param polygon the polygon that have to be located in the x-y-plane (z=0)
 	 */
-	void writeMeshNodeIDs (std::ostream& os,
-	                       std::ostream& gli_out,
-	                       const GEOLIB::Polygon& polygon);
+	void writeMeshNodeIDs(std::ostream& os, std::ostream& gli_out, const GEOLIB::Polygon& polygon);
 	/**
 	 * This method first projects all mesh nodes into the x-y-plane (z=0).
 	 * Then it checks if mesh nodes are within the given polygon
@@ -64,13 +62,9 @@ public:
 	 * @param gli_out output stream for points
 	 * @param polygon the polygon that have to be located in the x-y-plane (z=0)
 	 */
-	void writeTopSurfaceMeshNodeIDs (std::ostream& os,
-	                                 std::ostream& gli_out,
-	                                 const GEOLIB::Polygon& polygon);
+	void writeTopSurfaceMeshNodeIDs(std::ostream& os, std::ostream& gli_out, const GEOLIB::Polygon& polygon);
 
-	void writeMesh2DNodeIDAndArea (std::ostream& os,
-	                               std::ostream& gli_out,
-	                               const GEOLIB::Polygon& polygon);
+	void writeMesh2DNodeIDAndArea(std::ostream& os, std::ostream& gli_out, const GEOLIB::Polygon& polygon);
 
 	/**
 	 * Method computes the ids of mesh nodes that are inside the bounding polygon
@@ -80,14 +74,12 @@ public:
 	 * @param bounding_polygon the bounding polygon (all mesh nodes inside this polygon are candidates)
 	 * @param holes mesh nodes insides these polygons are excluded from the output
 	 */
-	void writeMesh2DNodeIDAndArea (std::ostream& os,
-	                               std::ostream& gli_out,
-	                               const GEOLIB::Polygon& bounding_polygon,
-	                               std::vector<GEOLIB::Polygon*> const& holes);
+	void writeMesh2DNodeIDAndArea(std::ostream& os,
+	                              std::ostream& gli_out,
+	                              const GEOLIB::Polygon& bounding_polygon,
+	                              std::vector<GEOLIB::Polygon*> const& holes);
 
-	void writeNearestMeshNodeToPoint (std::ostream& os,
-	                                  std::ostream& gli_out,
-	                                  GEOLIB::Point const & pnt);
+	void writeNearestMeshNodeToPoint(std::ostream& os, std::ostream& gli_out, GEOLIB::Point const& pnt);
 
 	/**
 	 * computes the mesh nodes along a polyline belonging to the bottom surface
@@ -95,16 +87,15 @@ public:
 	 * @param bottom_points the bottom mesh nodes as points
 	 */
 	void getBottomMeshNodesAlongPolylineAsPoints(const GEOLIB::Polyline& ply,
-					std::vector<GEOLIB::Point*>& bottom_points) const;
+	                                             std::vector<GEOLIB::Point*>& bottom_points) const;
 
 	/**
 	 * computes the mesh nodes along a polyline belonging to the top surface
 	 * @param polyline computation along the polyline ply
 	 * @param top_points the top mesh nodes as points
 	 */
-	void getTopMeshNodesAlongPolylineAsPoints(
-	        const GEOLIB::Polyline& polyline,
-	        std::vector<GEOLIB::Point*>& top_points) const;
+	void getTopMeshNodesAlongPolylineAsPoints(const GEOLIB::Polyline& polyline,
+	                                          std::vector<GEOLIB::Point*>& top_points) const;
 
 	/**
 	 * Method computes the polygon to a given polyline that is consisting of the projection
@@ -116,9 +107,8 @@ public:
 	 * @param polygon pointer to the resulting polygon
 	 *      warning: the pointer to an already existing polygon will be destroyed
 	 */
-	void getPolygonFromPolyline(const GEOLIB::Polyline& polyline,
-	                            GEOLIB::GEOObjects* geo_obj, std::string const& name,
-	                            GEOLIB::Polygon* &polygon) const;
+	void getPolygonFromPolyline(const GEOLIB::Polyline& polyline, GEOLIB::GEOObjects* geo_obj, std::string const& name,
+	                            GEOLIB::Polygon*& polygon) const;
 
 	/**
 	 * get a polyline that is projected to the appropriate "layer" into the mesh
@@ -129,9 +119,8 @@ public:
 	 * the z-coordinate is set from the layer
 	 * @param layer "layer" of the mesh
 	 */
-	void getProjectedPolylineFromPolyline(GEOLIB::Polyline const& ply_in,
-					GEOLIB::GEOObjects* geo_obj, std::string const& name,
-                    GEOLIB::Polyline* &ply_out, size_t layer = 0) const;
+	void getProjectedPolylineFromPolyline(GEOLIB::Polyline const& ply_in, GEOLIB::GEOObjects* geo_obj,
+	                                      std::string const& name, GEOLIB::Polyline*& ply_out, size_t layer = 0) const;
 
 	/**
 	 * Method searchs the mesh nodes within a given volume described by a
@@ -142,8 +131,8 @@ public:
 	 * @param node_ids [output] the ids of the mesh nodes which \f$x\f$ and \f$y\f$
 	 * coordinates are inside the boundary polygon
 	 */
-	void getMeshNodeIDsWithinPolygon(GEOLIB::Polygon const& polygon,
-					std::vector<size_t> & node_ids) const;
+	void getMeshNodeIDsWithinPolygon(GEOLIB::Polygon const& polygon, std::vector<size_t>& node_ids) const;
+
 private:
 	/**
 	 * This method searchs all mesh nodes with the same x and y coordinates
@@ -153,9 +142,8 @@ private:
 	 * @param polyline the "defining" polyline
 	 * @param nodes_as_points vector of GEOLIB::Point objects
 	 */
-	void getOrthogonalProjectedMeshNodesAlongPolyline (
-	        GEOLIB::Polyline const& polyline,
-	        std::vector<GEOLIB::PointWithID>& nodes_as_points) const;
+	void getOrthogonalProjectedMeshNodesAlongPolyline(GEOLIB::Polyline const& polyline,
+	                                                  std::vector<GEOLIB::PointWithID>& nodes_as_points) const;
 	const CFEMesh* _msh;
 	/**
 	 * offset for gli point index

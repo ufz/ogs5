@@ -21,6 +21,6 @@
  * @param in the input stream
  * @return read line into a string
  */
-std::string readNonBlankLineFromInputStream(std::istream & in);
+std::string readNonBlankLineFromInputStream(std::istream& in);
 
 #endif /* READNONBLANKLINEFROMINPUTSTREAM_H_ */

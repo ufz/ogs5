@@ -23,7 +23,8 @@ namespace GEOLIB
  *
  * Instances are classes PolylineVec and SurfaceVec.
  * */
-template <class T> class TemplateVec
+template <class T>
+class TemplateVec
 {
 public:
 	/**
@@ -37,17 +38,18 @@ public:
 	 * the data_vec.
 
 	 */
-	TemplateVec (const std::string &name, std::vector<T*>* data_vec,
-	             std::map<std::string, size_t>* elem_name_map = NULL) :
-		_name(name), _data_vec(data_vec), _name_id_map (elem_name_map)
-	{}
+	TemplateVec(const std::string& name, std::vector<T*>* data_vec, std::map<std::string, size_t>* elem_name_map = NULL)
+	    : _name(name), _data_vec(data_vec), _name_id_map(elem_name_map)
+	{
+	}
 
 	/**
 	 * destructor, deletes all data elements
 	 */
-	virtual ~TemplateVec ()
+	virtual ~TemplateVec()
 	{
-		for (size_t k(0); k < size(); k++) delete (*_data_vec)[k];
+		for (size_t k(0); k < size(); k++)
+			delete (*_data_vec)[k];
 		delete _data_vec;
 		delete _name_id_map;
 	}
@@ -55,47 +57,45 @@ public:
 	/** sets the name of the vector of geometric objects
 	 * the data elements belonging to
 	 * \param n the name as standard string */
-	void setName (const std::string & n) { _name = n; }
+	void setName(const std::string& n) { _name = n; }
 	/**
 	 * the name, the data element belonging to
 	 * @return the name of the object
 	 */
-	std::string getName () const { return _name; }
-
+	std::string getName() const { return _name; }
 	/**
 	 * @return the number of data elements
 	 */
-	size_t size () const { return _data_vec->size(); }
-
+	size_t size() const { return _data_vec->size(); }
 	/**
 	 * get a pointer to a standard vector containing the data elements
 	 * @return the data elements
 	 */
-	const std::vector<T*>* getVector () const { return _data_vec; }
-
+	const std::vector<T*>* getVector() const { return _data_vec; }
 	/**
 	 * search the vector of names for the ID of the geometric element with the given name
 	 * @param name the name of the geometric element
 	 * @param id the id of the geometric element
 	 * @return
 	 */
-	bool getElementIDByName (const std::string& name, size_t &id) const
+	bool getElementIDByName(const std::string& name, size_t& id) const
 	{
-		std::map<std::string,size_t>::const_iterator it (_name_id_map->find (name));
+		std::map<std::string, size_t>::const_iterator it(_name_id_map->find(name));
 
 		if (it != _name_id_map->end())
 		{
 			id = it->second;
 			return true;
 		}
-		else return false;
+		else
+			return false;
 	}
 
 	/// Returns an element with the given name.
-	const T* getElementByName (const std::string& name) const
+	const T* getElementByName(const std::string& name) const
 	{
 		size_t id;
-		bool ret (getElementIDByName (name, id));
+		bool ret(getElementIDByName(name, id));
 		if (ret)
 			return (*_data_vec)[id];
 		else
@@ -111,11 +111,12 @@ public:
 	 * @return if there is name associated with the given id:
 	 * true, else false
 	 */
-	bool getNameOfElementByID (size_t id, std::string& element_name) const
+	bool getNameOfElementByID(size_t id, std::string& element_name) const
 	{
-		if (!_name_id_map) return false;
+		if (!_name_id_map)
+			return false;
 		// search in map for id
-		std::map<std::string,size_t>::const_iterator it (_name_id_map->begin());
+		std::map<std::string, size_t>::const_iterator it(_name_id_map->begin());
 		while (it != _name_id_map->end())
 		{
 			if (it->second == id)
@@ -129,10 +130,11 @@ public:
 	}
 
 	/// Return the name of an element based on its ID.
-	void setNameOfElementByID (size_t id, std::string& element_name)
+	void setNameOfElementByID(size_t id, std::string& element_name)
 	{
-		if (!_name_id_map) return;
-		_name_id_map->insert( std::pair<std::string, size_t>(element_name, id) );
+		if (!_name_id_map)
+			return;
+		_name_id_map->insert(std::pair<std::string, size_t>(element_name, id));
 	}
 
 	/**
@@ -143,25 +145,26 @@ public:
 	 * found and the data element has a name)
 	 * @return if element is found and has a name: true, else false
 	 */
-	bool getNameOfElement (const T* data, std::string& name) const
+	bool getNameOfElement(const T* data, std::string& name) const
 	{
 		for (size_t k(0); k < _data_vec->size(); k++)
 			if ((*_data_vec)[k] == data)
-				return getNameOfElementByID (k, name);
+				return getNameOfElementByID(k, name);
 
 		return false;
 	}
 
 	/// Adds a new element to the vector.
-	virtual void push_back (T* data_element, std::string const* const name = NULL)
+	virtual void push_back(T* data_element, std::string const* const name = NULL)
 	{
-		_data_vec->push_back (data_element);
-		if (name == NULL) return;
+		_data_vec->push_back(data_element);
+		if (name == NULL)
+			return;
 		if (!name->empty())
 		{
 			if (_name_id_map == NULL)
-				_name_id_map = new std::map <std::string, size_t>;
-			_name_id_map->insert (std::pair<std::string,size_t>(*name, _data_vec->size() - 1));
+				_name_id_map = new std::map<std::string, size_t>;
+			_name_id_map->insert(std::pair<std::string, size_t>(*name, _data_vec->size() - 1));
 		}
 	}
 
@@ -171,17 +174,18 @@ public:
 		if (_name_id_map == NULL)
 			_name_id_map = new std::map<std::string, size_t>;
 
-		if ( !_name_id_map->empty())
+		if (!_name_id_map->empty())
 		{
 			for (std::map<std::string, size_t>::iterator it = _name_id_map->begin(); it != _name_id_map->end(); ++it)
 				if (it->second == id)
 				{
-					_name_id_map->erase(it); //check if old name already exists and delete it
+					_name_id_map->erase(it); // check if old name already exists and delete it
 					break;
 				}
 		}
-		if (!name.empty()) {
-			//insert new or revised name
+		if (!name.empty())
+		{
+			// insert new or revised name
 			_name_id_map->insert(std::pair<std::string, size_t>(name, id));
 		}
 	}
@@ -189,10 +193,10 @@ public:
 protected:
 	/** copy constructor doesn't have an implementation */
 	// compiler does not create a (possible unwanted) copy constructor
-	TemplateVec (const TemplateVec &);
+	TemplateVec(const TemplateVec&);
 	/** assignment operator doesn't have an implementation */
 	// this way the compiler does not create a (possible unwanted) assignment operator
-	TemplateVec& operator= (const TemplateVec& rhs);
+	TemplateVec& operator=(const TemplateVec& rhs);
 
 	/** the name of the object */
 	std::string _name;
@@ -200,7 +204,7 @@ protected:
 	/**
 	 * pointer to a vector of data elements
 	 */
-	std::vector <T*>* _data_vec;
+	std::vector<T*>* _data_vec;
 	/**
 	 * store names associated with the element ids
 	 */

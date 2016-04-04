@@ -13,22 +13,21 @@
 #include "msh_mesh.h"
 #include "GridAdapter.h"
 
-
-void MshEditor::getNodeAreas(const MeshLib::CFEMesh* mesh, std::vector<double> &node_area_vec)
+void MshEditor::getNodeAreas(const MeshLib::CFEMesh* mesh, std::vector<double>& node_area_vec)
 {
-	double total_area (0);
+	double total_area(0);
 
 	// for each node, a vector containing all the element idget every element
-	const size_t nNodes ( mesh->nod_vector.size() );
-	for (size_t n=0; n<nNodes; n++)
+	const size_t nNodes(mesh->nod_vector.size());
+	for (size_t n = 0; n < nNodes; n++)
 	{
-		double node_area (0);
+		double node_area(0);
 
-		std::vector<size_t> connected_elements (mesh->nod_vector[n]->getConnectedElementIDs());
+		std::vector<size_t> connected_elements(mesh->nod_vector[n]->getConnectedElementIDs());
 
-		for (size_t i=0; i<connected_elements.size();i++)
+		for (size_t i = 0; i < connected_elements.size(); i++)
 		{
-			MeshLib::CElem *Element (mesh->ele_vector[connected_elements[i]]);
+			MeshLib::CElem* Element(mesh->ele_vector[connected_elements[i]]);
 
 			// get nodes of this element
 			std::vector<MeshLib::CNode*> ElementNodes;
@@ -37,36 +36,38 @@ void MshEditor::getNodeAreas(const MeshLib::CFEMesh* mesh, std::vector<double> &
 			// get area of this Element
 			// first, get coordinates for each node
 
-			GEOLIB::Point A (ElementNodes[0]->getData());
-			GEOLIB::Point B (ElementNodes[1]->getData());
-			GEOLIB::Point C (ElementNodes[2]->getData());
+			GEOLIB::Point A(ElementNodes[0]->getData());
+			GEOLIB::Point B(ElementNodes[1]->getData());
+			GEOLIB::Point C(ElementNodes[2]->getData());
 
 			// distances of AB, BC, and AC
-			const double a = sqrt((A[0]-B[0])*(A[0]-B[0]) + (A[1]-B[1])*(A[1]-B[1]) + (A[2]-B[2])*(A[2]-B[2]));
-			const double b = sqrt((C[0]-B[0])*(C[0]-B[0]) + (C[1]-B[1])*(C[1]-B[1]) + (C[2]-B[2])*(C[2]-B[2]));
-			const double c2= (A[0]-C[0])*(A[0]-C[0]) + (A[1]-C[1])*(A[1]-C[1]) + (A[2]-C[2])*(A[2]-C[2]);
+			const double a
+			    = sqrt((A[0] - B[0]) * (A[0] - B[0]) + (A[1] - B[1]) * (A[1] - B[1]) + (A[2] - B[2]) * (A[2] - B[2]));
+			const double b
+			    = sqrt((C[0] - B[0]) * (C[0] - B[0]) + (C[1] - B[1]) * (C[1] - B[1]) + (C[2] - B[2]) * (C[2] - B[2]));
+			const double c2
+			    = (A[0] - C[0]) * (A[0] - C[0]) + (A[1] - C[1]) * (A[1] - C[1]) + (A[2] - C[2]) * (A[2] - C[2]);
 
 			// angle AC-BC
-			const double cos_gamma = (c2-a*a-b*b)/(-2*a*b);
+			const double cos_gamma = (c2 - a * a - b * b) / (-2 * a * b);
 
 			// Area of tri-element
-			const double Area = 0.5*a*b*sin(acos(cos_gamma));
+			const double Area = 0.5 * a * b * sin(acos(cos_gamma));
 
-			node_area += Area/3.0; // the third part of the area of each connected element adds up to the nodal area of n
-			total_area += Area/3.0;
+			node_area
+			    += Area / 3.0; // the third part of the area of each connected element adds up to the nodal area of n
+			total_area += Area / 3.0;
 		}
 
 		node_area_vec.push_back(node_area);
 	}
 
-	std::cout<< "Total surface Area: " << total_area << "\n";
+	std::cout << "Total surface Area: " << total_area << "\n";
 }
 
-
-MeshLib::CFEMesh* MshEditor::removeMeshNodes(MeshLib::CFEMesh* mesh,
-                                             const std::vector<size_t> &nodes)
+MeshLib::CFEMesh* MshEditor::removeMeshNodes(MeshLib::CFEMesh* mesh, const std::vector<size_t>& nodes)
 {
-	MeshLib::CFEMesh* new_mesh (new MeshLib::CFEMesh(*mesh));
+	MeshLib::CFEMesh* new_mesh(new MeshLib::CFEMesh(*mesh));
 
 	// delete nodes and their connected elements and replace them with null pointers
 	size_t delNodes = nodes.size();
@@ -100,8 +101,7 @@ MeshLib::CFEMesh* MshEditor::removeMeshNodes(MeshLib::CFEMesh* mesh,
 	}
 
 	// erase null pointers from node- and element vectors
-	for (std::vector<MeshLib::CElem*>::iterator it = new_mesh->ele_vector.begin();
-	     it != new_mesh->ele_vector.end(); )
+	for (std::vector<MeshLib::CElem*>::iterator it = new_mesh->ele_vector.begin(); it != new_mesh->ele_vector.end();)
 	{
 		if (*it)
 			++it;
@@ -109,8 +109,7 @@ MeshLib::CFEMesh* MshEditor::removeMeshNodes(MeshLib::CFEMesh* mesh,
 			it = new_mesh->ele_vector.erase(it);
 	}
 
-	for (std::vector<MeshLib::CNode*>::iterator it = new_mesh->nod_vector.begin();
-	     it != new_mesh->nod_vector.end(); )
+	for (std::vector<MeshLib::CNode*>::iterator it = new_mesh->nod_vector.begin(); it != new_mesh->nod_vector.end();)
 	{
 		if (*it)
 			++it;
@@ -131,108 +130,106 @@ MeshLib::CFEMesh* MshEditor::removeMeshNodes(MeshLib::CFEMesh* mesh,
 	return new_mesh;
 }
 
-std::vector<GEOLIB::PointWithID*> MshEditor::getSurfaceNodes(const MeshLib::CFEMesh &mesh)
+std::vector<GEOLIB::PointWithID*> MshEditor::getSurfaceNodes(const MeshLib::CFEMesh& mesh)
 {
-	std::cout << "Extracting surface nodes..." << "\n";
+	std::cout << "Extracting surface nodes..."
+	          << "\n";
 	// Sort points lexicographically
-	size_t nNodes (mesh.nod_vector.size());
+	size_t nNodes(mesh.nod_vector.size());
 	std::vector<GEOLIB::PointWithID*> nodes;
 	std::vector<size_t> perm;
-	for (size_t j(0); j<nNodes; j++)
+	for (size_t j(0); j < nNodes; j++)
 	{
 		nodes.push_back(new GEOLIB::PointWithID(mesh.nod_vector[j]->getData(), j));
 		perm.push_back(j);
 	}
-	Quicksort<GEOLIB::PointWithID*> (nodes, 0, nodes.size(), perm);
+	Quicksort<GEOLIB::PointWithID*>(nodes, 0, nodes.size(), perm);
 
 	// Extract surface points
-	double eps (std::numeric_limits<double>::epsilon());
+	double eps(std::numeric_limits<double>::epsilon());
 	std::vector<GEOLIB::PointWithID*> surface_pnts;
 	for (size_t k(1); k < nNodes; k++)
 	{
-		const GEOLIB::PointWithID& p0 (*(nodes[k - 1]));
-		const GEOLIB::PointWithID& p1 (*(nodes[k]));
-		if (fabs (p0[0] - p1[0]) > eps || fabs (p0[1] - p1[1]) > eps)
-			surface_pnts.push_back (nodes[k - 1]);
+		const GEOLIB::PointWithID& p0(*(nodes[k - 1]));
+		const GEOLIB::PointWithID& p1(*(nodes[k]));
+		if (fabs(p0[0] - p1[0]) > eps || fabs(p0[1] - p1[1]) > eps)
+			surface_pnts.push_back(nodes[k - 1]);
 	}
 	// Add last point
-	surface_pnts.push_back (nodes[nNodes - 1]);
+	surface_pnts.push_back(nodes[nNodes - 1]);
 
 	return surface_pnts;
 }
 
-
-void MshEditor::sortNodesLexicographically(MeshLib::CFEMesh *mesh)
+void MshEditor::sortNodesLexicographically(MeshLib::CFEMesh* mesh)
 {
-
-	if(mesh->nodes_are_sorted)
+	if (mesh->nodes_are_sorted)
 		return;
 
-	const std::vector<MeshLib::CNode*> &mesh_nodes(mesh->getNodeVector());
+	const std::vector<MeshLib::CNode*>& mesh_nodes(mesh->getNodeVector());
 
-	const size_t nNodes (mesh_nodes.size());
+	const size_t nNodes(mesh_nodes.size());
 	std::vector<GEOLIB::PointWithID*> nodes;
 	std::vector<size_t> perm;
-	for (size_t j(0); j<nNodes; j++)
+	for (size_t j(0); j < nNodes; j++)
 	{
 		nodes.push_back(new GEOLIB::PointWithID(mesh_nodes[j]->getData(), mesh_nodes[j]->GetIndex()));
 		perm.push_back(j);
 	}
 
-	Quicksort<GEOLIB::PointWithID*> (nodes, 0, nodes.size(), perm);
+	Quicksort<GEOLIB::PointWithID*>(nodes, 0, nodes.size(), perm);
 
-	std::vector<size_t>test;
-	for (size_t j(0); j<nNodes; j++)
+	std::vector<size_t> test;
+	for (size_t j(0); j < nNodes; j++)
 	{
 		mesh->sorted_nodes.push_back(nodes[j]->getID());
 	}
 
 	// get x-y-coordinate intervals
-	const double eps (std::numeric_limits<double>::epsilon());
-	mesh->xy_change.push_back(-1);		//virtual last top node for reference to first bottom node
+	const double eps(std::numeric_limits<double>::epsilon());
+	mesh->xy_change.push_back(-1); // virtual last top node for reference to first bottom node
 	for (size_t k(1); k < nNodes; k++)
 	{
-		const GEOLIB::PointWithID& p0 (*(nodes[k - 1]));
-		const GEOLIB::PointWithID& p1 (*(nodes[k]));
-		if (fabs (p0[0] - p1[0]) > eps || fabs (p0[1] - p1[1]) > eps)
+		const GEOLIB::PointWithID& p0(*(nodes[k - 1]));
+		const GEOLIB::PointWithID& p1(*(nodes[k]));
+		if (fabs(p0[0] - p1[0]) > eps || fabs(p0[1] - p1[1]) > eps)
 			mesh->xy_change.push_back(k - 1);
 	}
 	// Add last point
 	mesh->xy_change.push_back(nNodes - 1);
 
-	mesh->nodes_are_sorted=true;
+	mesh->nodes_are_sorted = true;
 
 	const std::size_t size(nodes.size());
-	for (std::size_t j(0); j<size; ++j)
-	    delete nodes[j];
-
+	for (std::size_t j(0); j < size; ++j)
+		delete nodes[j];
 }
 
-
-MeshLib::CFEMesh* MshEditor::getMeshSurface(const MeshLib::CFEMesh &mesh)
+MeshLib::CFEMesh* MshEditor::getMeshSurface(const MeshLib::CFEMesh& mesh)
 {
-	std::cout << "Extracting mesh surface..." << "\n";
+	std::cout << "Extracting mesh surface..."
+	          << "\n";
 	GridAdapter surface;
 	const std::vector<GEOLIB::PointWithID*> sfc_points = MshEditor::getSurfaceNodes(mesh);
-	const size_t nSurfacePoints (sfc_points.size());
+	const size_t nSurfacePoints(sfc_points.size());
 
-	std::vector<GridAdapter::Element*> *elements = new std::vector<GridAdapter::Element*>;
+	std::vector<GridAdapter::Element*>* elements = new std::vector<GridAdapter::Element*>;
 
 	const size_t nElements = mesh.ele_vector.size();
-	for (size_t j=0; j<nElements; j++)
+	for (size_t j = 0; j < nElements; j++)
 	{
-		MeshLib::CElem* elem (mesh.ele_vector[j]);
+		MeshLib::CElem* elem(mesh.ele_vector[j]);
 		std::vector<size_t> elem_nodes;
-		bool is_surface (true);
-		for (size_t i=0; i<4; i++)
+		bool is_surface(true);
+		for (size_t i = 0; i < 4; i++)
 		{
 			size_t node_index = elem->GetNodeIndex(i);
 			bool node_found(false), one_node(true);
-			for (size_t k=0; k<nSurfacePoints; k++)
+			for (size_t k = 0; k < nSurfacePoints; k++)
 			{
 				if (sfc_points[k]->getID() == node_index)
 				{
-					node_found=true;
+					node_found = true;
 					elem_nodes.push_back(k);
 					break;
 				}
@@ -258,8 +255,8 @@ MeshLib::CFEMesh* MshEditor::getMeshSurface(const MeshLib::CFEMesh &mesh)
 		}
 	}
 
-	std::vector<GEOLIB::Point*> *nodes = new std::vector<GEOLIB::Point*>(nSurfacePoints);
-	for (size_t j=0; j<nSurfacePoints; j++)
+	std::vector<GEOLIB::Point*>* nodes = new std::vector<GEOLIB::Point*>(nSurfacePoints);
+	for (size_t j = 0; j < nSurfacePoints; j++)
 		//(*nodes)[sfc_points[j]->getID()]=sfc_points[j];
 		(*nodes)[j] = sfc_points[j];
 
@@ -269,4 +266,3 @@ MeshLib::CFEMesh* MshEditor::getMeshSurface(const MeshLib::CFEMesh &mesh)
 	MeshLib::CFEMesh* sfc_mesh = new MeshLib::CFEMesh(*surface.getCFEMesh());
 	return sfc_mesh;
 }
-

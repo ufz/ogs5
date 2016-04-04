@@ -39,14 +39,14 @@ public:
 	/// @brief Sets the mesh.
 	void setMesh(MeshLib::CFEMesh const* mesh);
 
-	void writeMeshNodesAsGLIPnts (std::vector<size_t> const& mesh_node_ids, std::ostream & os);
+	void writeMeshNodesAsGLIPnts(std::vector<size_t> const& mesh_node_ids, std::ostream& os);
 
 protected:
 	/// @brief Write functionality.
-	int write(std::ostream &out);
+	int write(std::ostream& out);
 
 private:
-	void writeElementsExceptLines (std::vector<MeshLib::CElem*> const& ele_vec, std::ostream &out);
+	void writeElementsExceptLines(std::vector<MeshLib::CElem*> const& ele_vec, std::ostream& out);
 
 	MeshLib::CFEMesh const* _mesh;
 };

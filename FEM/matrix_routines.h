@@ -62,10 +62,10 @@
 /* Deklarationen */
 
 /* allgemeine Funktionen */
-extern void* MXSetupMatrix (long, long, long);
+extern void* MXSetupMatrix(long, long, long);
 /* Erstellt eine Matrix und initialisiert alle noetigen Pointer */
 
-extern void MXSetMatrixPointer ( void* matrix_pointer );
+extern void MXSetMatrixPointer(void* matrix_pointer);
 /* Setzt den internen Matrix-Wurzelzeiger auf die angegebene Matrix-Wurzel.
    Alle folgenden Aufrufe der MX-Funktionen beziehen sich dann auf die
    gewaehlte Matrix. Dadurch entfaellt die Parameteruebergabe des
@@ -74,14 +74,14 @@ extern void MXSetMatrixPointer ( void* matrix_pointer );
    Setzt auch die MX-Funktionszeiger auf die entsprechenden Funktionen des
    angegebenen Speichermodells! */
 
-extern void* MXGetMatrixPointer ( void );
+extern void* MXGetMatrixPointer(void);
 /* Liefert einen Zeiger auf die gerade aktive Matrix */
 
-extern long MXGetDim ( void );
+extern long MXGetDim(void);
 /* liefert Dimension der zuvor mit MXSetMatrixPointer angegebenen
    Matrix-Struktur. */
 
-extern void MXDumpGLS ( const char*, int, double*, double*);
+extern void MXDumpGLS(const char*, int, double*, double*);
 /* Schreibt das durch die zuvor mit MXSetMatrixPointer angegebene
    Matrix und den Vektor gegebene GLeichungssystem eine Datei "GLS" */
 
@@ -89,7 +89,7 @@ extern void MXEstimateStartVector(double*, double*);
 /* Versucht mit Hilfe eines Zeilen-Masslumpings eine gute
    Startloseung fuer den Gleichungsloeser zu finden */
 
-extern void MXRandbed (long, double, double*);
+extern void MXRandbed(long, double, double*);
 /* Einarbeiten einer Randbedingung in Matrix und Rechte Seite */
 extern void MXEliminateIrrNode(long index, int anz_nachbarn, long* nachbarn_index, double* rechts);
 /* Elimieren irr. Knoten aus dem Gesamtsystem */
@@ -99,56 +99,56 @@ extern void MXResiduum(double* x, double* b, double* ergebnis);
    komplett ueberschrieben; der Speicher muss bereits allokiert sein. */
 
 /* MX-Funktionszeiger (Typen) */
-typedef void*(*MXPCreateMatrix)( long param1, long param2, long param3 );
+typedef void* (*MXPCreateMatrix)(long param1, long param2, long param3);
 /* Erzeugen einer neuen Matrix-Struktur im zuvor mit MXSetFunctionPointers
    implizit angegebenen Speichermodell. Das Ergebnis ist der
    Matrix-Wurzelzeiger. Die Parameter werden abhaengig vom Speichermodell
    unterschiedlich benutzt (z.B. fuer Bandbreite etc.). */
 
-typedef void* (*MXPDestroyMatrix)( void );
+typedef void* (*MXPDestroyMatrix)(void);
 /* Freigeben der zuvor mit MXSetMatrixPointer angegebenen Matrix-Struktur;
    Ergebnis ist immer NULL. */
-typedef void (*MXPResizeMatrix)( long dimension );
+typedef void (*MXPResizeMatrix)(long dimension);
 /* Veraendern der Groesse der zuvor mit MXSetMatrixPointer angegebenen
    Matrix-Struktur. Der Wurzelzeiger bleibt erhalten, die bisher
    eingetragenen Werte nicht. Die Matrix wird nur vergroessert, nie
    verkleinert. */
-typedef void (*MXPInitMatrix)( void );
+typedef void (*MXPInitMatrix)(void);
 /* Initialisieren (A[i,j] = 0.0) aller Elemente der zuvor mit
    MXSetMatrixPointer angegebenen Matrix-Struktur. */
-typedef int (*MXPSet)( long i, long j, double aij );
+typedef int (*MXPSet)(long i, long j, double aij);
 /* Setzen des Wertes aij als Matrixwert A[i,j] der zuvor mit
    MXSetMatrixPointer angegebenen Matrix-Struktur. */
-typedef int (*MXPInc)( long i, long j, double aij_inc );
+typedef int (*MXPInc)(long i, long j, double aij_inc);
 /* Inkrementieren des Matrixwertes A[i,j] der zuvor mit
    MXSetMatrixPointer angegebenen Matrix-Struktur um den Wert aij_inc. */
-typedef int (*MXPDec)( long i, long j, double aij_dec );
+typedef int (*MXPDec)(long i, long j, double aij_dec);
 /* Dekrementieren des Matrixwertes A[i,j] der zuvor mit
    MXSetMatrixPointer angegebenen Matrix-Struktur um den Wert aij_dec. */
-typedef int (*MXPMul)( long i, long j, double aij_mul );
+typedef int (*MXPMul)(long i, long j, double aij_mul);
 /* Multiplizieren des Matrixwertes A[i,j] der zuvor mit
    MXSetMatrixPointer angegebenen Matrix-Struktur mit dem Wert aij_mul. */
-typedef int (*MXPDiv)( long i, long j, double aij_div );
+typedef int (*MXPDiv)(long i, long j, double aij_div);
 /* Dividieren des Matrixwertes A[i,j] der zuvor mit
    MXSetMatrixPointer angegebenen Matrix-Struktur durch den Wert aij_div. */
-typedef double (*MXPGet)( long i, long j );
+typedef double (*MXPGet)(long i, long j);
 /* Ergebnis ist der Matrixwert A[i,j] der zuvor mit MXSetMatrixPointer
    angegebenen Matrix-Struktur. */
-typedef void (*MXPTrans)( long i, long j, long ii, long jj );
+typedef void (*MXPTrans)(long i, long j, long ii, long jj);
 /* Fuehrt in der zuvor mit MXSetMatrixPointer angegebenen Matrix-Struktur
    folgende Operation durch: A[i,j] = A[ii,jj] */
-typedef void (*MXPMatVek)( double* vektor, double* ergebnis );
+typedef void (*MXPMatVek)(double* vektor, double* ergebnis);
 /* Ausf hren des Matrix-Vektor-Produktes "A * vektor = ergebnis" mit der
    zuvor mit MXSetMatrixPointer angegebenen Matrix-Struktur. "ergebnis"
    wird komplett ueberschrieben; der Speicher muss bereits allokiert sein. */
-typedef void (*MXPMatTVek)( double* vektor, double* ergebnis );
+typedef void (*MXPMatTVek)(double* vektor, double* ergebnis);
 /* Ausfuehren des Matrix-Vektor-Produktes "A^T * vektor = ergebnis" mit der
    zuvor mit MXSetMatrixPointer angegebenen Matrix-Struktur. "ergebnis"
    wird komplett ueberschrieben; der Speicher muss bereits allokiert sein. */
-typedef void (*MXPVorkond)( int aufgabe, double* x, double* b);
+typedef void (*MXPVorkond)(int aufgabe, double* x, double* b);
 /* Vorkonditionierer nach dem mit vorkond gewaehlten Verfahren */
-typedef int (*MXPCopyToAMG1R5Structure)( double* A, int* IA, int* JA, int NDA, int NDIA, int NDJA,
-                                         double*, double*, double*, double*);
+typedef int (*MXPCopyToAMG1R5Structure)(double* A, int* IA, int* JA, int NDA, int NDIA, int NDJA, double*, double*,
+                                        double*, double*);
 /* Umkopieren einer Matrix auf AMG1R5-Speicherstruktur */
 
 /* zugehoerige MX-Funktionszeiger */

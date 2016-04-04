@@ -23,34 +23,33 @@
 
 namespace GEOLIB
 {
-Surface::Surface (const std::vector<Point*> &pnt_vec) :
-	GeoObject(), _sfc_pnts(pnt_vec), _bv(), _sfc_grid(NULL)
-{}
+Surface::Surface(const std::vector<Point*>& pnt_vec) : GeoObject(), _sfc_pnts(pnt_vec), _bv(), _sfc_grid(NULL)
+{
+}
 
-Surface::~Surface ()
+Surface::~Surface()
 {
 	delete _sfc_grid;
 	for (size_t k(0); k < _sfc_triangles.size(); k++)
 		delete _sfc_triangles[k];
 }
 
-void Surface::addTriangle (size_t pnt_a, size_t pnt_b, size_t pnt_c)
+void Surface::addTriangle(size_t pnt_a, size_t pnt_b, size_t pnt_c)
 {
-	assert (pnt_a < _sfc_pnts.size() && pnt_b < _sfc_pnts.size() && pnt_c < _sfc_pnts.size());
-	_sfc_triangles.push_back (new Triangle(_sfc_pnts, pnt_a, pnt_b, pnt_c));
-	_bv.update (*_sfc_pnts[pnt_a]);
-	_bv.update (*_sfc_pnts[pnt_b]);
-	_bv.update (*_sfc_pnts[pnt_c]);
+	assert(pnt_a < _sfc_pnts.size() && pnt_b < _sfc_pnts.size() && pnt_c < _sfc_pnts.size());
+	_sfc_triangles.push_back(new Triangle(_sfc_pnts, pnt_a, pnt_b, pnt_c));
+	_bv.update(*_sfc_pnts[pnt_a]);
+	_bv.update(*_sfc_pnts[pnt_b]);
+	_bv.update(*_sfc_pnts[pnt_c]);
 	delete _sfc_grid;
-	_sfc_grid=NULL;
+	_sfc_grid = NULL;
 }
 
-Surface* Surface::createSurface(const Polyline &ply)
+Surface* Surface::createSurface(const Polyline& ply)
 {
 	if (!ply.isClosed())
 	{
-		std::cout << "Error in Surface::createSurface() - Polyline is not closed..." <<
-		std::endl;
+		std::cout << "Error in Surface::createSurface() - Polyline is not closed..." << std::endl;
 		return NULL;
 	}
 
@@ -59,26 +58,26 @@ Surface* Surface::createSurface(const Polyline &ply)
 		// create empty surface
 		Surface* sfc(new Surface(ply.getPointsVec()));
 
-		Polygon* polygon (new Polygon (ply));
-		polygon->computeListOfSimplePolygons ();
+		Polygon* polygon(new Polygon(ply));
+		polygon->computeListOfSimplePolygons();
 
 		// create surfaces from simple polygons
-		const std::list<GEOLIB::Polygon*>& list_of_simple_polygons (
-		        polygon->getListOfSimplePolygons());
-		for (std::list<GEOLIB::Polygon*>::const_iterator simple_polygon_it (
-		             list_of_simple_polygons.begin());
-		     simple_polygon_it != list_of_simple_polygons.end(); ++simple_polygon_it)
+		const std::list<GEOLIB::Polygon*>& list_of_simple_polygons(polygon->getListOfSimplePolygons());
+		for (std::list<GEOLIB::Polygon*>::const_iterator simple_polygon_it(list_of_simple_polygons.begin());
+		     simple_polygon_it != list_of_simple_polygons.end();
+		     ++simple_polygon_it)
 		{
 			std::list<GEOLIB::Triangle> triangles;
 			std::cout << "triangulation of surface: ... " << std::flush;
 			MathLib::EarClippingTriangulation(*simple_polygon_it, triangles);
-			std::cout << "done - " << triangles.size () << " triangles " << "\n";
+			std::cout << "done - " << triangles.size() << " triangles "
+			          << "\n";
 
 			// add Triangles to Surface
-			std::list<GEOLIB::Triangle>::const_iterator it (triangles.begin());
+			std::list<GEOLIB::Triangle>::const_iterator it(triangles.begin());
 			while (it != triangles.end())
 			{
-				sfc->addTriangle ((*it)[0], (*it)[1], (*it)[2]);
+				sfc->addTriangle((*it)[0], (*it)[1], (*it)[2]);
 				it++;
 			}
 		}
@@ -87,37 +86,38 @@ Surface* Surface::createSurface(const Polyline &ply)
 	}
 	else
 	{
-		std::cout <<
-		"Error in Surface::createSurface() - Polyline consists of less than three points and therefore cannot be triangulated..."
+		std::cout << "Error in Surface::createSurface() - Polyline consists of less than three points and therefore "
+		             "cannot be triangulated..."
 		          << std::endl;
 		return NULL;
 	}
 }
 
-size_t Surface::getNTriangles () const
+size_t Surface::getNTriangles() const
 {
 	return _sfc_triangles.size();
 }
 
-const Triangle* Surface::operator[] (size_t i) const
+const Triangle* Surface::operator[](size_t i) const
 {
-	assert (i < _sfc_triangles.size());
+	assert(i < _sfc_triangles.size());
 	return _sfc_triangles[i];
 }
 
-bool Surface::isPntInBV (const double* pnt, double eps) const
+bool Surface::isPntInBV(const double* pnt, double eps) const
 {
-	return _bv.containsPoint (pnt, eps);
+	return _bv.containsPoint(pnt, eps);
 }
 
 void Surface::initSurfaceGrid()
 {
-	if (_sfc_grid == NULL) {
+	if (_sfc_grid == NULL)
+	{
 		_sfc_grid = new SurfaceGrid(this);
 	}
 }
 
-bool Surface::isPntInSfc (const double* pnt, double eps) const
+bool Surface::isPntInSfc(const double* pnt, double eps) const
 {
 	return _sfc_grid->isPntInSurface(pnt, eps);
 }
@@ -139,11 +139,10 @@ int Surface::getTriangleIDOfPoint(const double* pnt) const
 {
 	for (std::size_t i = 0; i < this->_sfc_triangles.size(); i++)
 	{
-		if (_sfc_triangles[i]->containsPoint(pnt,0.1))
+		if (_sfc_triangles[i]->containsPoint(pnt, 0.1))
 			return i;
 	}
 	return -1;
 }
-
 
 } // end namespace

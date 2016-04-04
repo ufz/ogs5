@@ -19,9 +19,9 @@
 
 namespace MathLib
 {
-double normEuklid (double const* const vec, size_t n)
+double normEuklid(double const* const vec, size_t n)
 {
-	return sqrt (scpr (vec, vec, n));
+	return sqrt(scpr(vec, vec, n));
 }
 } // end namespace MathLib
 

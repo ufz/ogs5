@@ -40,7 +40,7 @@ std::string date2string(double ddate);
  * \param s String containing the date, the expected format is "dd.mm.yyyy".
  * \return A number representing the date as dd.mm.yyyy.
  */
-int strDate2int(const std::string &s);
+int strDate2int(const std::string& s);
 
 /**
  * Converts a string containing a date into a double.
@@ -48,6 +48,6 @@ int strDate2int(const std::string &s);
  * \param s String containing the date, the expected format is conform to the xml date type, i.e. "yyyy-mm-dd".
  * \return A number representing the date as yyyymmdd.
  */
-int xmlDate2int(const std::string &s);
+int xmlDate2int(const std::string& s);
 
-#endif //DATETOOLS_H
+#endif // DATETOOLS_H

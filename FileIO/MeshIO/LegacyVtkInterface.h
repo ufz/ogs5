@@ -36,9 +36,12 @@ class LegacyVtkInterface
 {
 public:
 	LegacyVtkInterface(MeshLib::CFEMesh* mesh,
-	                   std::vector<std::string> pointArrayNames,
-	                   std::vector<std::string> cellArrayNames,
-	                   std::vector<std::string> materialPropertyArrayNames,
+	                   std::vector<std::string>
+	                       pointArrayNames,
+	                   std::vector<std::string>
+	                       cellArrayNames,
+	                   std::vector<std::string>
+	                       materialPropertyArrayNames,
 	                   std::string meshTypeName,
 	                   ProcessInfo* processInfo);
 	virtual ~LegacyVtkInterface();
@@ -48,22 +51,23 @@ public:
 	void WriteDataVTKPETSC(int number, double simulation_time, std::string baseFilename) const;
 #endif
 	double RoundDoubleVTK(double MyZahl);
+
 protected:
 	void WriteVTKHeader(std::fstream&, int, double) const;
 	void WriteVTKPointData(std::fstream&) const;
 	void WriteVTKCellData(std::fstream&) const;
 	void WriteVTKDataArrays(std::fstream&) const;
-	void WriteELEVelocity(std::fstream &vtk_file) const;
+	void WriteELEVelocity(std::fstream& vtk_file) const;
 #if defined(USE_PETSC)
 	void WriteVTKPointDataPETSC(PetscViewer) const;
 	void WriteVTKCellDataPETSC(PetscViewer) const;
 	void WriteVTKDataArraysPETSC(PetscViewer) const;
 #endif
 
-    void printScalarArray(std::string arrayName, std::fstream &vtk_file) const;
+	void printScalarArray(std::string arrayName, std::fstream& vtk_file) const;
 
 	// Copied from COutput
-	CRFProcess* GetPCS_ELE(const std::string &var_name) const;
+	CRFProcess* GetPCS_ELE(const std::string& var_name) const;
 
 	MeshLib::CFEMesh* _mesh;
 	std::string _processType;

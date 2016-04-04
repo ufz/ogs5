@@ -14,8 +14,9 @@
 #include <cstddef>
 #include <vector>
 
-namespace GEOLIB {
-	class PointWithID;
+namespace GEOLIB
+{
+class PointWithID;
 }
 
 namespace MeshLib
@@ -33,24 +34,22 @@ class MshEditor
 public:
 	MshEditor() {}
 	~MshEditor() {}
-
 	/// Returns the area assigned to each node on a surface mesh.
-	static void getNodeAreas(const MeshLib::CFEMesh* mesh, std::vector<double> &node_area_vec);
+	static void getNodeAreas(const MeshLib::CFEMesh* mesh, std::vector<double>& node_area_vec);
 
 	/// Removes the mesh nodes (and connected elements) given in the nodes-list from the mesh.
-	static MeshLib::CFEMesh* removeMeshNodes(MeshLib::CFEMesh* mesh,
-	                                         const std::vector<size_t> &nodes);
+	static MeshLib::CFEMesh* removeMeshNodes(MeshLib::CFEMesh* mesh, const std::vector<size_t>& nodes);
 
 	/// Returns the surface nodes of a layered mesh.
-	static std::vector<GEOLIB::PointWithID*> getSurfaceNodes(const MeshLib::CFEMesh &mesh);
+	static std::vector<GEOLIB::PointWithID*> getSurfaceNodes(const MeshLib::CFEMesh& mesh);
 
 	/// MW: populate sort nodes vector
-	static void sortNodesLexicographically(MeshLib::CFEMesh *mesh);
+	static void sortNodesLexicographically(MeshLib::CFEMesh* mesh);
 
 	/// Returns the 2d-element mesh representing the surface of the given layered mesh.
-	static MeshLib::CFEMesh* getMeshSurface(const MeshLib::CFEMesh &mesh);
+	static MeshLib::CFEMesh* getMeshSurface(const MeshLib::CFEMesh& mesh);
 
 private:
 };
 
-#endif //MSHEDITOR_H
+#endif // MSHEDITOR_H

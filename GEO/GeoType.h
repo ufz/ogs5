@@ -21,7 +21,8 @@ namespace GEOLIB
  * \ingroup GEOLIB
  */
 
-enum GEOTYPE {
+enum GEOTYPE
+{
 	INVALID = 0,
 	POINT, //!< POINT
 	POLYLINE, //!< POLYLINE
@@ -30,9 +31,9 @@ enum GEOTYPE {
 	GEODOMAIN //!< GEODOMAIN
 };
 
-GEOTYPE convertGeoType (const std::string& geo_type_str);
+GEOTYPE convertGeoType(const std::string& geo_type_str);
 
-std::string convertGeoTypeToString (GEOTYPE geo_type);
+std::string convertGeoTypeToString(GEOTYPE geo_type);
 } // end namespace GEOLIB
 
 #endif /* GEOTYPE_H_ */

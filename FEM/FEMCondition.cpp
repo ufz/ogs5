@@ -15,8 +15,8 @@
 #include "GEOObjects.h" //for SourceTerm
 #include "GridAdapter.h"
 
-FEMCondition::FEMCondition(const std::string &geometry_name, CondType t)
-	: _type(t), _geoName("[unspecified]"), _associated_geometry(geometry_name)
+FEMCondition::FEMCondition(const std::string& geometry_name, CondType t)
+    : _type(t), _geoName("[unspecified]"), _associated_geometry(geometry_name)
 {
 	this->setProcessType(FiniteElement::INVALID_PROCESS);
 	this->setProcessPrimaryVariable(FiniteElement::INVALID_PV);
@@ -24,23 +24,19 @@ FEMCondition::FEMCondition(const std::string &geometry_name, CondType t)
 	this->setProcessDistributionType(FiniteElement::INVALID_DIS_TYPE);
 }
 
-FEMCondition::FEMCondition(const std::string &geometry_name, FiniteElement::ProcessType pt,
-				FiniteElement::PrimaryVariable pv, GEOLIB::GEOTYPE gt, const std::string &gn,
-				FiniteElement::DistributionType dt, CondType ct)
-	: ProcessInfo(pt, pv, NULL),  GeoInfo(gt, NULL), DistributionInfo(dt), _type(ct),
-	  _geoName(gn), _associated_geometry(geometry_name)
+FEMCondition::FEMCondition(const std::string& geometry_name, FiniteElement::ProcessType pt,
+                           FiniteElement::PrimaryVariable pv, GEOLIB::GEOTYPE gt, const std::string& gn,
+                           FiniteElement::DistributionType dt, CondType ct)
+    : ProcessInfo(pt, pv, NULL), GeoInfo(gt, NULL), DistributionInfo(dt), _type(ct), _geoName(gn),
+      _associated_geometry(geometry_name)
 {
 }
 
-FEMCondition::FEMCondition(const FEMCondition &cond, CondType t)
-	: ProcessInfo(cond.getProcessType(), cond.getProcessPrimaryVariable(), NULL),
-	  GeoInfo(cond.getGeoType(), cond.getGeoObj()),
-	  DistributionInfo(cond.getProcessDistributionType()),
-	  _type(t),
-	  _geoName(cond.getGeoName()),
-	  _disNodes(cond.getDisNodes()),
-	  _disValues(cond.getDisValues()),
-	  _associated_geometry(cond.getAssociatedGeometryName())
+FEMCondition::FEMCondition(const FEMCondition& cond, CondType t)
+    : ProcessInfo(cond.getProcessType(), cond.getProcessPrimaryVariable(), NULL),
+      GeoInfo(cond.getGeoType(), cond.getGeoObj()), DistributionInfo(cond.getProcessDistributionType()), _type(t),
+      _geoName(cond.getGeoName()), _disNodes(cond.getDisNodes()), _disValues(cond.getDisValues()),
+      _associated_geometry(cond.getAssociatedGeometryName())
 {
 }
 
@@ -56,7 +52,7 @@ std::string FEMCondition::condTypeToString(CondType type)
 		return "Unspecified";
 }
 
-void FEMCondition::setDisValues(const std::vector< std::pair<size_t, double> > &dis_values)
+void FEMCondition::setDisValues(const std::vector<std::pair<size_t, double> >& dis_values)
 {
 	std::vector<size_t> nodes;
 	std::vector<double> values;
@@ -65,6 +61,6 @@ void FEMCondition::setDisValues(const std::vector< std::pair<size_t, double> > &
 		nodes.push_back(dis_values[i].first);
 		values.push_back(dis_values[i].second);
 	}
-	this->_disNodes=nodes;
-	this->_disValues=values;
+	this->_disNodes = nodes;
+	this->_disValues = values;
 }

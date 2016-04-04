@@ -60,7 +60,7 @@ const double Water = 0.018016; ///< kg mol^-1
  *
  * According to the IUPAC report the molar mass of N is in the range [14.006 43, 14.007 28] g/mol
  */
-const double N2    = 0.028013; ///< kg mol^-1
+const double N2 = 0.028013; ///< kg mol^-1
 
 /**
  * O_2
@@ -70,7 +70,7 @@ const double N2    = 0.028013; ///< kg mol^-1
  *
  * According to the IUPAC report the molar mass of O is in the range [15.999 03, 15.999 77] g/mol
  */
-const double O2    = 0.032;    ///< kg mol^-1
+const double O2 = 0.032; ///< kg mol^-1
 
 /**
  * Air
@@ -78,7 +78,7 @@ const double O2    = 0.032;    ///< kg mol^-1
  * Source:       http://www.engineeringtoolbox.com/molecular-mass-air-d_679.html
  *
  */
-const double Air    = 0.02897;    ///< kg mol^-1
+const double Air = 0.02897; ///< kg mol^-1
 }
 
 /**
@@ -93,4 +93,4 @@ namespace SpecificGasConstant
 const double WaterVapour = IdealGasConstant / MolarMass::Water; //=461.504;
 }
 }
-#endif //OGS_CONSTANTS_H
+#endif // OGS_CONSTANTS_H

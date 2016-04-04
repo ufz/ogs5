@@ -24,7 +24,7 @@
 // #error to indicate a fatal error.  Users can either #undef
 // the names before including mpi.h or include mpi.h *before* stdio.h
 // or iostream.
-#ifdef USE_MPI                                    //WW
+#ifdef USE_MPI // WW
 #include "mpi.h"
 #include "par_ddc.h"
 //#undef SEEK_SET
@@ -49,7 +49,7 @@
 #include "makros.h"
 // GeoSys-GeoLib
 // GeoSys-FEMLib
-#ifndef NEW_EQS                                   //WW. 06.11.2008
+#ifndef NEW_EQS // WW. 06.11.2008
 #include "matrix_routines.h"
 #endif
 #include "StringTools.h"
@@ -60,11 +60,11 @@
 
 using namespace std;
 
-extern std::ios::pos_type GetNextSubKeyword(ifstream* file,string* line, bool* keyword);
-extern size_t max_dim;                            //OK411 todo
+extern std::ios::pos_type GetNextSubKeyword(ifstream* file, string* line, bool* keyword);
+extern size_t max_dim; // OK411 todo
 
 //==========================================================================
-vector<CNumerics*>num_vector;
+vector<CNumerics*> num_vector;
 /**************************************************************************
    FEMLib-Method:
    Task: constructor
@@ -75,62 +75,62 @@ vector<CNumerics*>num_vector;
 **************************************************************************/
 CNumerics::CNumerics(string name)
 {
-	pcs_type_name = name;                 //OK
+	pcs_type_name = name; // OK
 	// GLOBAL
 	renumber_method = 0;
 	//
 	// LS - Linear Solver
-	ls_method = 2;                        //OK41
+	ls_method = 2; // OK41
 	ls_max_iterations = 1000;
 	ls_error_method = 1;
 	ls_error_tolerance = 1e-12;
 	ls_theta = 1.0;
 	ls_precond = 1;
-	ls_storage_method = 2;					//OK41
-	m_cols = 5;								// 06.2010. WW
-	ls_extra_arg = ""; //NW
+	ls_storage_method = 2; // OK41
+	m_cols = 5; // 06.2010. WW
+	ls_extra_arg = ""; // NW
 	//
 	// NLS - Nonlinear Solver
 	nls_method_name = "PICARD";
-	nls_method = -1;						//Default linear, 0: Picard. 1: Newton. 2:JFNK
-	nls_error_method = 1;					//JT2012
-	nls_max_iterations = 1;					//OK
+	nls_method = -1; // Default linear, 0: Picard. 1: Newton. 2:JFNK
+	nls_error_method = 1; // JT2012
+	nls_max_iterations = 1; // OK
 	nls_relaxation = 0.0;
-	for(size_t i=0; i<DOF_NUMBER_MAX; i++)	//JT2012
-		nls_error_tolerance[i] = -1.0;		//JT2012: should not default this. Should always be entered by user!
+	for (size_t i = 0; i < DOF_NUMBER_MAX; i++) // JT2012
+		nls_error_tolerance[i] = -1.0; // JT2012: should not default this. Should always be entered by user!
 	//
 	// CPL - Coupled processes
 	cpl_error_specified = false;
 	cpl_master_process = false;
-	cpl_process = "INVALID_PROCESS";		//JT2012: do not couple with any process, unless indicated
+	cpl_process = "INVALID_PROCESS"; // JT2012: do not couple with any process, unless indicated
 	cpl_variable = "NONE";
 	cpl_variable_JOD = "FLUX";
-	cpl_max_iterations = 1;					//OK
-	cpl_min_iterations = 1;					//JT2012
-    //Local picard1                                //NW
-    local_picard1_tolerance = 1.0e-3;
-    local_picard1_max_iterations = 1;
-    update_velocity_within_nonlinear = 0;
+	cpl_max_iterations = 1; // OK
+	cpl_min_iterations = 1; // JT2012
+	// Local picard1                                //NW
+	local_picard1_tolerance = 1.0e-3;
+	local_picard1_max_iterations = 1;
+	update_velocity_within_nonlinear = 0;
 
-	for(size_t i=0; i<DOF_NUMBER_MAX; i++)	//JT2012
-		cpl_error_tolerance[i] = -1.0;			//JT2012: should not default this. Should always be entered by user!
+	for (size_t i = 0; i < DOF_NUMBER_MAX; i++) // JT2012
+		cpl_error_tolerance[i] = -1.0; // JT2012: should not default this. Should always be entered by user!
 	//
 	// ELE
 	ele_gauss_points = 3;
 	ele_mass_lumping = 0;
-	ele_upwind_method = 0;                //CB
+	ele_upwind_method = 0; // CB
 	ele_upwinding = 0;
-	ele_supg_method = 0;                  //NW
-	ele_supg_method_length = 0;           //NW
-	ele_supg_method_diffusivity = 0;      //NW
-	fct_method = -1;                      //NW
-	fct_prelimiter_type = 0;              //NW
-	fct_const_alpha = -1.0;               //NW
+	ele_supg_method = 0; // NW
+	ele_supg_method_length = 0; // NW
+	ele_supg_method_diffusivity = 0; // NW
+	fct_method = -1; // NW
+	fct_prelimiter_type = 0; // NW
+	fct_const_alpha = -1.0; // NW
 	//----------------------------------------------------------------------
 	// Deformation
 	GravityProfile = 0;
-	DynamicDamping = NULL;                //WW
-	if(pcs_type_name.compare("DEFORMATION") == 0)
+	DynamicDamping = NULL; // WW
+	if (pcs_type_name.compare("DEFORMATION") == 0)
 	{
 		ls_method = 2;
 		ls_error_method = 2;
@@ -140,7 +140,7 @@ CNumerics::CNumerics(string name)
 		ls_storage_method = 4;
 	}
 	//----------------------------------------------------------------------
-	if(pcs_type_name.compare("RICHARDS_FLOW") == 0)
+	if (pcs_type_name.compare("RICHARDS_FLOW") == 0)
 	{
 		ele_mass_lumping = 1;
 		ele_upwinding = 0.5;
@@ -166,8 +166,8 @@ CNumerics::CNumerics(string name)
 **************************************************************************/
 CNumerics::~CNumerics(void)
 {
-	if(DynamicDamping)
-		delete [] DynamicDamping;
+	if (DynamicDamping)
+		delete[] DynamicDamping;
 	DynamicDamping = NULL;
 }
 
@@ -180,45 +180,47 @@ CNumerics::~CNumerics(void)
 bool NUMRead(string file_base_name)
 {
 	//----------------------------------------------------------------------
-	//OK  NUMDelete();
+	// OK  NUMDelete();
 	//----------------------------------------------------------------------
 	CNumerics* m_num = NULL;
 	char line[MAX_ZEILE];
-	bool overall_coupling_exists=false; //JT
+	bool overall_coupling_exists = false; // JT
 	string sub_line;
 	string line_string;
 	ios::pos_type position;
 	//========================================================================
 	// File handling
 	string num_file_name = file_base_name + NUM_FILE_EXTENSION;
-	ifstream num_file (num_file_name.data(),ios::in);
+	ifstream num_file(num_file_name.data(), ios::in);
 	if (!num_file.good())
 		return false;
-	num_file.seekg(0L,ios::beg);
+	num_file.seekg(0L, ios::beg);
 	//========================================================================
 	// Keyword loop
-	cout << "NUMRead" << "\n";
+	cout << "NUMRead"
+	     << "\n";
 	while (!num_file.eof())
 	{
-		num_file.getline(line,MAX_ZEILE);
+		num_file.getline(line, MAX_ZEILE);
 		line_string = line;
-		if(line_string.find("#STOP") != string::npos)
+		if (line_string.find("#STOP") != string::npos)
 			return true;
 		//
-		if(line_string.find("$OVERALL_COUPLING") != string::npos){
+		if (line_string.find("$OVERALL_COUPLING") != string::npos)
+		{
 			overall_coupling_exists = true; // JT: for error checking
 		}
 		//----------------------------------------------------------------------
 		// keyword found
-		if(line_string.find("#NUMERICS") != string::npos)
+		if (line_string.find("#NUMERICS") != string::npos)
 		{
 			m_num = new CNumerics("default");
 			position = m_num->Read(&num_file);
 			num_vector.push_back(m_num);
-			num_file.seekg(position,ios::beg);
-			m_num->NumConfigure(overall_coupling_exists);					  // JT2012
-		}                         // keyword found
-	}                                     // eof
+			num_file.seekg(position, ios::beg);
+			m_num->NumConfigure(overall_coupling_exists); // JT2012
+		} // keyword found
+	} // eof
 	return true;
 }
 
@@ -230,7 +232,7 @@ bool NUMRead(string file_base_name)
 **************************************************************************/
 bool CNumerics::CheckDynamic()
 {
-	if(DynamicDamping)
+	if (DynamicDamping)
 		return true;
 	else
 		return false;
@@ -244,64 +246,76 @@ Programing:
 **************************************************************************/
 void CNumerics::NumConfigure(bool overall_coupling_exists)
 {
-   // Overall coupling check
-   if(overall_coupling_exists && !cpl_error_specified){
-	   if(this->nls_method < 0){
-		   std::cout<<"ERROR in NUMRead. Overall coupling requested, but ";
-		   std::cout<< this->pcs_type_name << " was not\n";
-		   std::cout<<"supplied with coupling tolerance. See $COUPLING_CONTROL keyword to enter this.\n";
-		   exit(1);
-	   }
-	   else{ // Can take the non-linear tolerance as an emergency backup
-		   std::cout<<"WARNING in NUMRead. Overall coupling requested, but ";
-		   std::cout<< this->pcs_type_name << " was not\n";
-		   std::cout<<"supplied with coupling tolerance. Adopting 10*non_linear_tolerance.\n";
-		   setCouplingErrorMethod(getNonLinearErrorMethod());
-		   for(size_t i=0; i<DOF_NUMBER_MAX; i++){
-			   cpl_error_tolerance[i] = 10.0*nls_error_tolerance[i];
-		   }
-		   cpl_error_specified = true;
-	   }
-   }
-   //
-   // Check master processes
-   if(cpl_master_process && !cpl_error_specified){
-	   std::cout<<"ERROR in NUMRead. Process coupling requested, but ";
-	   std::cout<< this->pcs_type_name << " was not\n";
-	   std::cout<<"supplied with coupling tolerance. See $COUPLING_CONTROL keyword to enter this.\n";
-	   exit(1);
-   }
-   //
-   // We are ok. Now check the tolerances.
-   if(this->nls_method < 0){ // linear solution
-	   if(cpl_error_specified){ // A coupling error was entered. Adopt this for error calculations.
-		   for(size_t i=0; i<DOF_NUMBER_MAX; i++){
-			   nls_error_tolerance[i] = cpl_error_tolerance[i];
-		   }
-		   setNonLinearErrorMethod(getCouplingErrorMethod());
-	   }
-	   else{ // We have no error tolerances for non-linear or coupled simulations. Force some defaults.
-		   setNonLinearErrorMethod(FiniteElement::LMAX);
-		   setCouplingErrorMethod(FiniteElement::LMAX);
-		   nls_error_tolerance[0] = cpl_error_tolerance[0] = 1.0;
-	   }
-   }
-   // Default CPL error method to NLS method. Just so error is not checked twice
-   if(!cpl_error_specified){
-	   setCouplingErrorMethod(getNonLinearErrorMethod());
-   }
-   //
-   // Default all NLS tolerances to the previous DOF, if they were not entered.
-   for(size_t i=1; i<DOF_NUMBER_MAX; i++){
-	   if(nls_error_tolerance[i] < 0.0)
-		   nls_error_tolerance[i] = nls_error_tolerance[i-1];
-   }
-   //
-   // Default all CPL tolerances to the previous DOF, if they were not entered.
-   for(size_t i=1; i<DOF_NUMBER_MAX; i++){
-	   if(cpl_error_tolerance[i] < 0.0)
-		   cpl_error_tolerance[i] = cpl_error_tolerance[i-1];
-   }
+	// Overall coupling check
+	if (overall_coupling_exists && !cpl_error_specified)
+	{
+		if (this->nls_method < 0)
+		{
+			std::cout << "ERROR in NUMRead. Overall coupling requested, but ";
+			std::cout << this->pcs_type_name << " was not\n";
+			std::cout << "supplied with coupling tolerance. See $COUPLING_CONTROL keyword to enter this.\n";
+			exit(1);
+		}
+		else
+		{ // Can take the non-linear tolerance as an emergency backup
+			std::cout << "WARNING in NUMRead. Overall coupling requested, but ";
+			std::cout << this->pcs_type_name << " was not\n";
+			std::cout << "supplied with coupling tolerance. Adopting 10*non_linear_tolerance.\n";
+			setCouplingErrorMethod(getNonLinearErrorMethod());
+			for (size_t i = 0; i < DOF_NUMBER_MAX; i++)
+			{
+				cpl_error_tolerance[i] = 10.0 * nls_error_tolerance[i];
+			}
+			cpl_error_specified = true;
+		}
+	}
+	//
+	// Check master processes
+	if (cpl_master_process && !cpl_error_specified)
+	{
+		std::cout << "ERROR in NUMRead. Process coupling requested, but ";
+		std::cout << this->pcs_type_name << " was not\n";
+		std::cout << "supplied with coupling tolerance. See $COUPLING_CONTROL keyword to enter this.\n";
+		exit(1);
+	}
+	//
+	// We are ok. Now check the tolerances.
+	if (this->nls_method < 0)
+	{ // linear solution
+		if (cpl_error_specified)
+		{ // A coupling error was entered. Adopt this for error calculations.
+			for (size_t i = 0; i < DOF_NUMBER_MAX; i++)
+			{
+				nls_error_tolerance[i] = cpl_error_tolerance[i];
+			}
+			setNonLinearErrorMethod(getCouplingErrorMethod());
+		}
+		else
+		{ // We have no error tolerances for non-linear or coupled simulations. Force some defaults.
+			setNonLinearErrorMethod(FiniteElement::LMAX);
+			setCouplingErrorMethod(FiniteElement::LMAX);
+			nls_error_tolerance[0] = cpl_error_tolerance[0] = 1.0;
+		}
+	}
+	// Default CPL error method to NLS method. Just so error is not checked twice
+	if (!cpl_error_specified)
+	{
+		setCouplingErrorMethod(getNonLinearErrorMethod());
+	}
+	//
+	// Default all NLS tolerances to the previous DOF, if they were not entered.
+	for (size_t i = 1; i < DOF_NUMBER_MAX; i++)
+	{
+		if (nls_error_tolerance[i] < 0.0)
+			nls_error_tolerance[i] = nls_error_tolerance[i - 1];
+	}
+	//
+	// Default all CPL tolerances to the previous DOF, if they were not entered.
+	for (size_t i = 1; i < DOF_NUMBER_MAX; i++)
+	{
+		if (cpl_error_tolerance[i] < 0.0)
+			cpl_error_tolerance[i] = cpl_error_tolerance[i - 1];
+	}
 }
 
 /**************************************************************************
@@ -322,17 +336,17 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 	std::stringstream line;
 	//========================================================================
 	// Schleife ueber alle Phasen bzw. Komponenten
-	while(!new_keyword)
+	while (!new_keyword)
 	{
-		if(new_subkeyword)
-			num_file->seekg(position,ios::beg);
+		if (new_subkeyword)
+			num_file->seekg(position, ios::beg);
 		new_subkeyword = false;
-		position = GetNextSubKeyword(num_file,&line_string,&new_keyword);
-		if(new_keyword)
+		position = GetNextSubKeyword(num_file, &line_string, &new_keyword);
+		if (new_keyword)
 			return position;
 		//....................................................................
 		// subkeyword found
-		if(line_string.find("$PCS_TYPE") != string::npos)
+		if (line_string.find("$PCS_TYPE") != string::npos)
 		{
 			line.str(GetLineFromFile1(num_file));
 			line >> pcs_type_name;
@@ -341,25 +355,25 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 		}
 		//....................................................................
 		// subkeyword found
-		if(line_string.find("$RENUMBER") != string::npos)
+		if (line_string.find("$RENUMBER") != string::npos)
 		{
 			line.str(GetLineFromFile1(num_file));
 			line >> renumber_method;
-			if(renumber_method == 2)
+			if (renumber_method == 2)
 				line >> renumber_parameter;
 			line.clear();
 			continue;
 		}
 		//....................................................................
 		// JT->WW: Local tolerance previously found in $NON_LINEAR_SOLVER for NEWTON. Moved here for now.
-		if(line_string.find("$PLASTICITY_TOLERANCE") != string::npos)
+		if (line_string.find("$PLASTICITY_TOLERANCE") != string::npos)
 		{
 			line.str(GetLineFromFile1(num_file));
 			line >> nls_plasticity_local_tolerance;
 		}
 		//....................................................................
 		// subkeyword found ($NON_LINEAR_ITERATION  -or-  $NON_LINEAR_ITERATIONS)
-		if(line_string.find("$NON_LINEAR_ITERATION") != string::npos)
+		if (line_string.find("$NON_LINEAR_ITERATION") != string::npos)
 		{
 			// JT:	in >> nls_method_name
 			//		in >> error_method_name
@@ -374,7 +388,7 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 			line >> nls_relaxation;
 			//
 			setNonLinearErrorMethod(FiniteElement::convertErrorMethod(error_method_name));
-			switch(getNonLinearErrorMethod())
+			switch (getNonLinearErrorMethod())
 			{
 				case FiniteElement::ENORM: // only 1 tolerance required
 					line >> nls_error_tolerance[0];
@@ -384,13 +398,15 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 					line >> nls_error_tolerance[0];
 					break;
 				//
-				case FiniteElement::EVNORM: // 1 tolerance for each primary variable (for Deformation, only 1 tolerance required. Applies to x,y,z)
-					for(int i=0; i<DOF_NUMBER_MAX; i++)
+				case FiniteElement::EVNORM: // 1 tolerance for each primary variable (for Deformation, only 1 tolerance
+					// required. Applies to x,y,z)
+					for (int i = 0; i < DOF_NUMBER_MAX; i++)
 						line >> nls_error_tolerance[i];
 					break;
 				//
-				case FiniteElement::LMAX: // 1 tolerance for each primary variable (for Deformation, only 1 tolerance required. Applies to x,y,z)
-					for(int i=0; i<DOF_NUMBER_MAX; i++)
+				case FiniteElement::LMAX: // 1 tolerance for each primary variable (for Deformation, only 1 tolerance
+					// required. Applies to x,y,z)
+					for (int i = 0; i < DOF_NUMBER_MAX; i++)
 						line >> nls_error_tolerance[i];
 					break;
 				//
@@ -405,15 +421,15 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 			}
 
 			nls_method = 0;
-			if(nls_method_name.find("NEWTON") != string::npos)
+			if (nls_method_name.find("NEWTON") != string::npos)
 				nls_method = 1;
-			else if(nls_method_name.find("JFNK") != string::npos) //  Jacobian free Newton-Krylov method
+			else if (nls_method_name.find("JFNK") != string::npos) //  Jacobian free Newton-Krylov method
 				nls_method = 2;
 			//
 			line.clear();
 			continue;
 		}
-		else if(line_string.find("$NON_LINEAR_SOLVER") != string::npos)
+		else if (line_string.find("$NON_LINEAR_SOLVER") != string::npos)
 		{
 			ScreenMessage(" --\n Using old $NON_LINEAR_SOLVER keyword.\n");
 			ScreenMessage(" Eventually this will be obsolete. Consider switching to\n");
@@ -431,17 +447,19 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 			line >> nls_method_name;
 			//
 			nls_method = 0;
-			if(nls_method_name.find("NEWTON") != string::npos)
+			if (nls_method_name.find("NEWTON") != string::npos)
 				nls_method = 1;
-			else if(nls_method_name.find("JFNK") != string::npos) //  Jacobian free Newton-Krylov method
+			else if (nls_method_name.find("JFNK") != string::npos) //  Jacobian free Newton-Krylov method
 				nls_method = 2;
 			//
-			if(nls_method > 0){
+			if (nls_method > 0)
+			{
 				line >> nls_error_tolerance[0];
 				line >> nls_plasticity_local_tolerance;
 				error_method_name = "BNORM"; // JT: this is hardwired in old version
 			}
-			else{
+			else
+			{
 				line >> nls_error_tolerance[0];
 				error_method_name = "LMAX"; // JT: this is hardwired in old version
 			}
@@ -454,19 +472,14 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 		}
 		//....................................................................
 		// subkeyword found
-		if(line_string.find("$LINEAR_SOLVER") != string::npos)
+		if (line_string.find("$LINEAR_SOLVER") != string::npos)
 		{
-			std::string str_buf = GetLineFromFile1(num_file); //WW
+			std::string str_buf = GetLineFromFile1(num_file); // WW
 			line.str(str_buf);
 #ifdef USE_PETSC
-			if(str_buf.find("petsc") != string::npos) //03.2012. WW
+			if (str_buf.find("petsc") != string::npos) // 03.2012. WW
 			{
-				line >> str_buf
-				>> lsover_name
-				>> pres_name
-				>> ls_error_tolerance
-				>> ls_max_iterations
-				>> ls_theta;
+				line >> str_buf >> lsover_name >> pres_name >> ls_error_tolerance >> ls_max_iterations >> ls_theta;
 			}
 			else
 #endif
@@ -479,7 +492,7 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 				line >> ls_precond;
 				line >> ls_storage_method;
 				/// For GMRES. 06.2010. WW
-				if(ls_method == 13)
+				if (ls_method == 13)
 					line >> m_cols;
 			}
 			line.clear();
@@ -487,7 +500,7 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 		}
 		//....................................................................
 		// JT subkeyword found
-		if(line_string.find("$COUPLING_ITERATIONS") != string::npos)
+		if (line_string.find("$COUPLING_ITERATIONS") != string::npos)
 		{
 			ScreenMessage("$COUPLING_ITERATIONS keyword obsolete.\n");
 			ScreenMessage("Use $COUPLING_CONTROL and $COUPLED_PROCESS for process couplings.\n");
@@ -495,7 +508,8 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 		}
 		//....................................................................
 		// JT subkeyword found
-		if(line_string.find("$COUPLING_CONTROL") != string::npos) // JT: For this process, how is coupling error handled?
+		if (line_string.find("$COUPLING_CONTROL")
+		    != string::npos) // JT: For this process, how is coupling error handled?
 		{
 			// JT:	in >> error_method_name
 			//		in >> tolerance[1:dof]
@@ -505,7 +519,7 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 			//
 			cpl_error_specified = true;
 			setCouplingErrorMethod(FiniteElement::convertErrorMethod(error_method_name));
-			switch(getCouplingErrorMethod())
+			switch (getCouplingErrorMethod())
 			{
 				case FiniteElement::ENORM: // only 1 tolerance required
 					line >> cpl_error_tolerance[0];
@@ -515,13 +529,15 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 					line >> cpl_error_tolerance[0];
 					break;
 				//
-				case FiniteElement::EVNORM: // 1 tolerance for each primary variable (for Deformation, only 1 tolerance required. Applies to x,y,z)
-					for(int i=0; i<DOF_NUMBER_MAX; i++)
+				case FiniteElement::EVNORM: // 1 tolerance for each primary variable (for Deformation, only 1 tolerance
+					// required. Applies to x,y,z)
+					for (int i = 0; i < DOF_NUMBER_MAX; i++)
 						line >> cpl_error_tolerance[i];
 					break;
 				//
-				case FiniteElement::LMAX: // 1 tolerance for each primary variable (for Deformation, only 1 tolerance required. Applies to x,y,z)
-					for(int i=0; i<DOF_NUMBER_MAX; i++)
+				case FiniteElement::LMAX: // 1 tolerance for each primary variable (for Deformation, only 1 tolerance
+					// required. Applies to x,y,z)
+					for (int i = 0; i < DOF_NUMBER_MAX; i++)
 						line >> cpl_error_tolerance[i];
 					break;
 				//
@@ -542,26 +558,32 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 		}
 		//....................................................................
 		// JT subkeyword found
-		if(line_string.find("$COUPLED_PROCESS") != string::npos) // JT: Is this process coupled to another process in an inner loop?
+		if (line_string.find("$COUPLED_PROCESS")
+		    != string::npos) // JT: Is this process coupled to another process in an inner loop?
 		{
 			// in >> process name >> min iter >> max iter
 			//
 			line.str(GetLineFromFile1(num_file));
-			line >> coupling_target;			// name of coupled process -OR- process variable
+			line >> coupling_target; // name of coupled process -OR- process variable
 			line >> cpl_min_iterations;
 			line >> cpl_max_iterations;
 			//
 			cpl_master_process = true;
 			//
 			// Is coupling through a process name or a primary variable?
-			if(FiniteElement::convertPrimaryVariable(coupling_target) != FiniteElement::INVALID_PV){ // Then a valid process VARIABLE is entered. Use this.
+			if (FiniteElement::convertPrimaryVariable(coupling_target) != FiniteElement::INVALID_PV)
+			{ // Then a valid process VARIABLE is entered. Use this.
 				cpl_variable = coupling_target;
 			}
-			else if(PCSGet(coupling_target)){ // Then a valid process is entered
-				cpl_process  = coupling_target;
+			else if (PCSGet(coupling_target))
+			{ // Then a valid process is entered
+				cpl_process = coupling_target;
 			}
-			else{
-				ScreenMessage("WARNING. $COUPLED_PROCESS keyword encountered, but a valid process OR primary variable was not found.\n");
+			else
+			{
+				ScreenMessage(
+				    "WARNING. $COUPLED_PROCESS keyword encountered, but a valid process OR primary variable was not "
+				    "found.\n");
 				cpl_master_process = false;
 			}
 			//
@@ -569,7 +591,7 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 			continue;
 		}
 		//....................................................................
-		if(line_string.find("$EXTERNAL_SOLVER_OPTION") != string::npos) // subkeyword found
+		if (line_string.find("$EXTERNAL_SOLVER_OPTION") != string::npos) // subkeyword found
 		{
 			ls_extra_arg = GetLineFromFile1(num_file);
 			trim(ls_extra_arg);
@@ -577,7 +599,7 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 		}
 		//....................................................................
 		// subkeyword found
-		if(line_string.find("$ELE_GAUSS_POINTS") != string::npos)
+		if (line_string.find("$ELE_GAUSS_POINTS") != string::npos)
 		{
 			line.str(GetLineFromFile1(num_file));
 			line >> ele_gauss_points; // probably element-type-wise
@@ -585,46 +607,46 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 			continue;
 		}
 		// subkeyword found
-		if(line_string.find("$ELE_MASS_LUMPING") != string::npos)
+		if (line_string.find("$ELE_MASS_LUMPING") != string::npos)
 		{
 			line.str(GetLineFromFile1(num_file));
 			line >> ele_mass_lumping;
 			line.clear();
-			cout << "-> Mass lumping selected for " << pcs_type_name << "\n";// JOD 2014-11-10
+			cout << "-> Mass lumping selected for " << pcs_type_name << "\n"; // JOD 2014-11-10
 			continue;
 		}
 		// subkeyword found
-		if(line_string.find("$ELE_UPWINDING") != string::npos)
+		if (line_string.find("$ELE_UPWINDING") != string::npos)
 		{
 			line.str(GetLineFromFile1(num_file));
-			//CB now read also upwinding method
+			// CB now read also upwinding method
 			line >> ele_upwinding >> ele_upwind_method;
 			line.clear();
 			continue;
 		}
 		// subkeyword found
-		if(line_string.find("$ELE_SUPG") != string::npos)
+		if (line_string.find("$ELE_SUPG") != string::npos)
 		{
 			line.str(GetLineFromFile1(num_file));
-			//NW
-			line >> ele_supg_method >> ele_supg_method_length >>
-			ele_supg_method_diffusivity;
+			// NW
+			line >> ele_supg_method >> ele_supg_method_length >> ele_supg_method_diffusivity;
 			line.clear();
-			cout << "->SUPG method is selected." << "\n";
+			cout << "->SUPG method is selected."
+			     << "\n";
 			continue;
 		}
 		// subkeyword found
-		if(line_string.find("$GRAVITY_PROFILE") != string::npos)
+		if (line_string.find("$GRAVITY_PROFILE") != string::npos)
 		{
-			line.str(GetLineFromFile1(num_file)); //WW
+			line.str(GetLineFromFile1(num_file)); // WW
 			line >> GravityProfile;
 			line.clear();
 			continue;
 		}
 		// subkeyword found
-		if(line_string.find("$DYNAMIC_DAMPING") != string::npos)
+		if (line_string.find("$DYNAMIC_DAMPING") != string::npos)
 		{
-			line.str(GetLineFromFile1(num_file)); //WW
+			line.str(GetLineFromFile1(num_file)); // WW
 			DynamicDamping = new double[3];
 			// Default
 			DynamicDamping[0] = 0.515;
@@ -634,31 +656,32 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 			line.clear();
 			continue;
 		}
-		//Flux corrected transport by Kuzmin (2009)
-        if(line_string.find("$LOCAL_PICARD1")!=string::npos) //NW
-        {
-          line.str(GetLineFromFile1(num_file));
-          line >> local_picard1_max_iterations;
-          line >> local_picard1_tolerance;
-          line.clear();
-          continue;
-        }
-        if(line_string.find("$NON_LINEAR_UPDATE_VELOCITY")!=string::npos) //NW
-        {
-          line.str(GetLineFromFile1(num_file));
-          line >> update_velocity_within_nonlinear;
-          line.clear();
-          continue;
-        }
-		// NW
-		if(line_string.find("$FEM_FCT") != string::npos)
+		// Flux corrected transport by Kuzmin (2009)
+		if (line_string.find("$LOCAL_PICARD1") != string::npos) // NW
 		{
 			line.str(GetLineFromFile1(num_file));
-			line >> fct_method; //1: linearized FCT
-			line >> fct_prelimiter_type; //0: just cancel, 1: minmod, 2: superbee
+			line >> local_picard1_max_iterations;
+			line >> local_picard1_tolerance;
+			line.clear();
+			continue;
+		}
+		if (line_string.find("$NON_LINEAR_UPDATE_VELOCITY") != string::npos) // NW
+		{
+			line.str(GetLineFromFile1(num_file));
+			line >> update_velocity_within_nonlinear;
+			line.clear();
+			continue;
+		}
+		// NW
+		if (line_string.find("$FEM_FCT") != string::npos)
+		{
+			line.str(GetLineFromFile1(num_file));
+			line >> fct_method; // 1: linearized FCT
+			line >> fct_prelimiter_type; // 0: just cancel, 1: minmod, 2: superbee
 			line >> fct_const_alpha; //-1: off, [0.0,1.0] 0: Upwind, 1: Galerkin
 			line.clear();
-			cout << "->FEM_FCT method is selected." << "\n";
+			cout << "->FEM_FCT method is selected."
+			     << "\n";
 			continue;
 		}
 
@@ -704,19 +727,19 @@ void NUMWrite(string base_file_name)
 	//========================================================================
 	// File handling
 	string num_file_name = base_file_name + NUM_FILE_EXTENSION;
-	fstream num_file (num_file_name.data(),ios::trunc | ios::out);
-	num_file.setf(ios::scientific,ios::floatfield);
+	fstream num_file(num_file_name.data(), ios::trunc | ios::out);
+	num_file.setf(ios::scientific, ios::floatfield);
 	num_file.precision(12);
 	if (!num_file.good())
 		return;
-	num_file.seekg(0L,ios::beg);
+	num_file.seekg(0L, ios::beg);
 	//========================================================================
 	num_file << "GeoSys-NUM: Numerics ------------------------------------------------\n";
 	//========================================================================
 	// OUT vector
 	int num_vector_size = (int)num_vector.size();
 	int i;
-	for(i = 0; i < num_vector_size; i++)
+	for (i = 0; i < num_vector_size; i++)
 	{
 		m_num = num_vector[i];
 		m_num->Write(&num_file);
@@ -734,8 +757,9 @@ void NUMWrite(string base_file_name)
 **************************************************************************/
 void CNumerics::Write(fstream* num_file)
 {
-	//KEYWORD
-	*num_file << "#NUMERICS" << "\n";
+	// KEYWORD
+	*num_file << "#NUMERICS"
+	          << "\n";
 	//--------------------------------------------------------------------
 	/*OK
 	   *num_file << " $METHOD" << "\n";
@@ -748,35 +772,41 @@ void CNumerics::Write(fstream* num_file)
 	   }
 	 */
 	//--------------------------------------------------------------------
-	*num_file << " $PCS_TYPE" << "\n";
+	*num_file << " $PCS_TYPE"
+	          << "\n";
 	*num_file << "  " << pcs_type_name << "\n";
 	//--------------------------------------------------------------------
-	*num_file << " $NON_LINEAR_SOLVER" << "\n";
+	*num_file << " $NON_LINEAR_SOLVER"
+	          << "\n";
 	*num_file << "  " << nls_method_name;
-	*num_file << " "  << nls_error_tolerance;
-	*num_file << " "  << nls_max_iterations;
-	*num_file << " "  << nls_relaxation;
+	*num_file << " " << nls_error_tolerance;
+	*num_file << " " << nls_max_iterations;
+	*num_file << " " << nls_relaxation;
 	*num_file << "\n";
 	//--------------------------------------------------------------------
-	*num_file << " $LINEAR_SOLVER" << "\n";
+	*num_file << " $LINEAR_SOLVER"
+	          << "\n";
 	*num_file << "  " << ls_method;
-	*num_file << " "  << ls_error_method;
-	*num_file << " "  << ls_error_tolerance;
-	*num_file << " "  << ls_max_iterations;
-	*num_file << " "  << ls_theta;
-	*num_file << " "  << ls_precond;
-	*num_file << " "  << ls_storage_method;
+	*num_file << " " << ls_error_method;
+	*num_file << " " << ls_error_tolerance;
+	*num_file << " " << ls_max_iterations;
+	*num_file << " " << ls_theta;
+	*num_file << " " << ls_precond;
+	*num_file << " " << ls_storage_method;
 	*num_file << "\n";
 	//--------------------------------------------------------------------
-	*num_file << " $ELE_GAUSS_POINTS" << "\n";
+	*num_file << " $ELE_GAUSS_POINTS"
+	          << "\n";
 	*num_file << "  " << ele_gauss_points;
 	*num_file << "\n";
 	//--------------------------------------------------------------------
-	*num_file << " $ELE_MASS_LUMPING" << "\n";
+	*num_file << " $ELE_MASS_LUMPING"
+	          << "\n";
 	*num_file << "  " << ele_mass_lumping;
 	*num_file << "\n";
 	//--------------------------------------------------------------------
-	*num_file << " $ELE_UPWINDING" << "\n";
+	*num_file << " $ELE_UPWINDING"
+	          << "\n";
 	*num_file << "  " << ele_upwinding;
 	*num_file << "\n";
 	//--------------------------------------------------------------------
@@ -899,17 +929,16 @@ LINEAR_SOLVER* DestroyLinearSolver(LINEAR_SOLVER* ls)
 	SetLinearSolver(ls);
 
 	if (ls->system_time_name)
-		ls->system_time_name = (char*) Free(ls->system_time_name);
+		ls->system_time_name = (char*)Free(ls->system_time_name);
 	if (ls->system_time_assemble_function_name)
-		ls->system_time_assemble_function_name = (char*) Free(
-		        ls->system_time_assemble_function_name);
+		ls->system_time_assemble_function_name = (char*)Free(ls->system_time_assemble_function_name);
 
-	//OK    if (ls->name)
-	//OK        ls->name = (char *) Free(ls->name);
+	// OK    if (ls->name)
+	// OK        ls->name = (char *) Free(ls->name);
 	if (ls->b)
-		ls->b = (double*) Free(ls->b);
+		ls->b = (double*)Free(ls->b);
 	if (ls->x)
-		ls->x = (double*) Free(ls->x);
+		ls->x = (double*)Free(ls->x);
 	/* //WW
 	   if (ls->bc_name)
 	    ls->bc_name = (char *) Free(ls->bc_name);
@@ -923,15 +952,15 @@ LINEAR_SOLVER* DestroyLinearSolver(LINEAR_SOLVER* ls)
 	    ls->sousin_name2 = (char *) Free(ls->sousin_name2);
 	 */
 	if (ls->lsp_name)
-		ls->lsp_name = (char*) Free(ls->lsp_name);
+		ls->lsp_name = (char*)Free(ls->lsp_name);
 	if (ls->r)
-		ls->r = (double*) Free(ls->r);
+		ls->r = (double*)Free(ls->r);
 	if (ls->xx)
-		ls->xx = (double*) Free(ls->xx);
+		ls->xx = (double*)Free(ls->xx);
 	if (ls->memory)
-		ls->memory = (double*) Free(ls->memory);
+		ls->memory = (double*)Free(ls->memory);
 	if (ls->new_memory)
-		ls->new_memory = (double**) DestroyMemoryLinearSolver(ls);
+		ls->new_memory = (double**)DestroyMemoryLinearSolver(ls);
 	if (ls->matrix)
 	{
 		MXSetMatrixPointer(ls->matrix);
@@ -939,12 +968,12 @@ LINEAR_SOLVER* DestroyLinearSolver(LINEAR_SOLVER* ls)
 	}
 	/* Multiple unknowns (Dim) / multiple solvers (MultSolvers) */
 	if (ls->name_ls)
-		ls->name_ls = (char*) Free(ls->name_ls);
+		ls->name_ls = (char*)Free(ls->name_ls);
 
 	if (ls->name_group_ls)
-		ls->name_group_ls = (char*) Free(ls->name_group_ls);
+		ls->name_group_ls = (char*)Free(ls->name_group_ls);
 	if (ls)
-		ls = (LINEAR_SOLVER*) Free(ls);
+		ls = (LINEAR_SOLVER*)Free(ls);
 	return NULL;
 }
 
@@ -974,9 +1003,9 @@ LINEAR_SOLVER* DestroyMemoryLinearSolver(LINEAR_SOLVER* ls)
 
 	for (i = 0; i < ls->memory_number; i++)
 		if (ls->new_memory[i])
-			ls->new_memory[i] = (double*) Free(ls->new_memory[i]);
+			ls->new_memory[i] = (double*)Free(ls->new_memory[i]);
 	if (ls->new_memory)
-		ls->new_memory = (double**) Free(ls->new_memory);
+		ls->new_memory = (double**)Free(ls->new_memory);
 
 	return ls;
 }
@@ -1019,26 +1048,26 @@ LINEAR_SOLVER* InitLinearSolver(LINEAR_SOLVER* ls)
 		return ls;
 
 	if (ls->b)
-		ls->b = (double*) Free(ls->b);
-	ls->b = (double*) Malloc(ls->dim * sizeof(double));
+		ls->b = (double*)Free(ls->b);
+	ls->b = (double*)Malloc(ls->dim * sizeof(double));
 	if (ls->x)
-		ls->x = (double*) Free(ls->x);
-	ls->x = (double*) Malloc(ls->dim * sizeof(double));
+		ls->x = (double*)Free(ls->x);
+	ls->x = (double*)Malloc(ls->dim * sizeof(double));
 	if (ls->r)
-		ls->r = (double*) Free(ls->r);
-	ls->r = (double*) Malloc(ls->dim * sizeof(double));
+		ls->r = (double*)Free(ls->r);
+	ls->r = (double*)Malloc(ls->dim * sizeof(double));
 
 	if (ls->xx)
-		ls->xx = (double*) Free(ls->xx);
-	ls->xx = (double*) Malloc(ls->dim * sizeof(double));
+		ls->xx = (double*)Free(ls->xx);
+	ls->xx = (double*)Malloc(ls->dim * sizeof(double));
 	if (ls->memory)
-		ls->memory = (double*) Free(ls->memory);
-	ls->memory = (double*) Malloc(ls->dim * sizeof(double));
+		ls->memory = (double*)Free(ls->memory);
+	ls->memory = (double*)Malloc(ls->dim * sizeof(double));
 
 	return ls;
 }
 
-#ifdef USE_MPI                                    //WW
+#ifdef USE_MPI // WW
 /////////////////////////////////////////////////////////////////////
 /**************************************************************************
    FEMLib-Method:
@@ -1056,21 +1085,21 @@ LINEAR_SOLVER* InitVectorLinearSolver(LINEAR_SOLVER* ls)
 		return ls;
 
 	if (ls->b)
-		ls->b = (double*) Free(ls->b);
-	ls->b = (double*) Malloc(ls->dim * sizeof(double));
+		ls->b = (double*)Free(ls->b);
+	ls->b = (double*)Malloc(ls->dim * sizeof(double));
 	if (ls->x)
-		ls->x = (double*) Free(ls->x);
-	ls->x = (double*) Malloc(ls->dim * sizeof(double));
+		ls->x = (double*)Free(ls->x);
+	ls->x = (double*)Malloc(ls->dim * sizeof(double));
 	if (ls->r)
-		ls->r = (double*) Free(ls->r);
-	ls->r = (double*) Malloc(ls->dim * sizeof(double));
+		ls->r = (double*)Free(ls->r);
+	ls->r = (double*)Malloc(ls->dim * sizeof(double));
 
 	if (ls->xx)
-		ls->xx = (double*) Free(ls->xx);
-	ls->xx = (double*) Malloc(ls->dim * sizeof(double));
+		ls->xx = (double*)Free(ls->xx);
+	ls->xx = (double*)Malloc(ls->dim * sizeof(double));
 	if (ls->memory)
-		ls->memory = (double*) Free(ls->memory);
-	ls->memory = (double*) Malloc(ls->dim * sizeof(double));
+		ls->memory = (double*)Free(ls->memory);
+	ls->memory = (double*)Malloc(ls->dim * sizeof(double));
 
 	return ls;
 }
@@ -1097,21 +1126,21 @@ void ConfigSolverProperties(void)
 	/* Speichertechnik automatisch optimieren */
 	switch (max_dim)
 	{
-	case 0:
-		sp2_start = 3;
-		sp2_inc = 1;
-		break;
-	case 1:
-		sp2_start = 11;
-		sp2_inc = 2;
-		break;
-	case 2:
-		sp2_start = 33;
-		sp2_inc = 6;
-		break;
+		case 0:
+			sp2_start = 3;
+			sp2_inc = 1;
+			break;
+		case 1:
+			sp2_start = 11;
+			sp2_inc = 2;
+			break;
+		case 2:
+			sp2_start = 33;
+			sp2_inc = 6;
+			break;
 	}
 	/* Umnummerierer-Methode auswaehlen */
-	//WW ConfigRenumberProperties();
+	// WW ConfigRenumberProperties();
 	/* umnummerierer muss definiert sein ! */
 }
 
@@ -1132,8 +1161,8 @@ void ConfigSolverProperties(void)
    08/1999     AH         Erweiterung memory  (neq)
    09/2004      Remove BC/Sink incoorperation
 *************************************************************************/
-//WW
-void SetLinearSolverType(LINEAR_SOLVER* ls,CNumerics* m_num)
+// WW
+void SetLinearSolverType(LINEAR_SOLVER* ls, CNumerics* m_num)
 {
 	if (!ls)
 		return;
@@ -1165,64 +1194,65 @@ void SetLinearSolverType(LINEAR_SOLVER* ls,CNumerics* m_num)
 	   }
 	 */
 	ls->store = m_num->ls_storage_method;
-	switch(m_num->ls_method)              //OK (ls->lsp->type){
+	switch (m_num->ls_method) // OK (ls->lsp->type){
 	{
-	case 1:
-		ls->LinearSolver = SpGauss;
-		break;
-	case 2:
+		case 1:
+			ls->LinearSolver = SpGauss;
+			break;
+		case 2:
 #ifndef USE_MPI
-		ls->LinearSolver = SpBICGSTAB;
+			ls->LinearSolver = SpBICGSTAB;
 #endif
-		break;
-	case 3:
-		ls->LinearSolver = SpBICG;
-		break;
-	case 4:
-		ls->LinearSolver = SpQMRCGSTAB;
-		break;
-	case 5:
-		ls->LinearSolver = SpCG;
-		break;
-	case 6:
-		ls->LinearSolver = SpCGNR;
-		break;
-	case 7:
-		ls->LinearSolver = SpCGS;
-		break;
-	case 8:
-		ls->LinearSolver = SpRichardson;
-		break;
-	case 9:
-		ls->LinearSolver = SpJOR;
-		break;
-	case 10:
-		ls->LinearSolver = SpSOR;
-		break;
-	case 11:
-		ls->LinearSolver = SpAMG1R5;
-		break;
-	case 12:
-		ls->LinearSolver = SpUMF;
-		break;
-	default:
-		cout << "***ERROR in SetLinearSolverType(): Specified linear solver type (" <<
-		m_num->ls_method << ") is not supported. " << "\n";
-		exit(1);
+			break;
+		case 3:
+			ls->LinearSolver = SpBICG;
+			break;
+		case 4:
+			ls->LinearSolver = SpQMRCGSTAB;
+			break;
+		case 5:
+			ls->LinearSolver = SpCG;
+			break;
+		case 6:
+			ls->LinearSolver = SpCGNR;
+			break;
+		case 7:
+			ls->LinearSolver = SpCGS;
+			break;
+		case 8:
+			ls->LinearSolver = SpRichardson;
+			break;
+		case 9:
+			ls->LinearSolver = SpJOR;
+			break;
+		case 10:
+			ls->LinearSolver = SpSOR;
+			break;
+		case 11:
+			ls->LinearSolver = SpAMG1R5;
+			break;
+		case 12:
+			ls->LinearSolver = SpUMF;
+			break;
+		default:
+			cout << "***ERROR in SetLinearSolverType(): Specified linear solver type (" << m_num->ls_method
+			     << ") is not supported. "
+			     << "\n";
+			exit(1);
 	}
 }
 
-//WW
-LINEAR_SOLVER* InitializeLinearSolver(LINEAR_SOLVER* ls,CNumerics* m_num)
+// WW
+LINEAR_SOLVER* InitializeLinearSolver(LINEAR_SOLVER* ls, CNumerics* m_num)
 {
-	SetLinearSolverType(ls,m_num);
-//#ifdef USE_MPI                                 //WW
-//	InitVectorLinearSolver(ls);
-//#else
+	SetLinearSolverType(ls, m_num);
+	//#ifdef USE_MPI                                 //WW
+	//	InitVectorLinearSolver(ls);
+	//#else
 	InitLinearSolver(ls);
-//#endif
+	//#endif
 	/* Internen Speicher allokieren */
-	InitMemoryLinearSolver(ls,ls->memory_number);
+	InitMemoryLinearSolver(ls, ls->memory_number);
 	/* Speicher initialisieren */
 	SetMemoryZeroLinearSolver(ls);
 	return ls;
@@ -1255,7 +1285,7 @@ LINEAR_SOLVER* InitMemoryLinearSolver(LINEAR_SOLVER* ls, int memory_number)
 	if (ls->new_memory)
 		DestroyMemoryLinearSolver(ls);
 
-	ls->new_memory = (double**) Malloc(memory_number * sizeof(double*));
+	ls->new_memory = (double**)Malloc(memory_number * sizeof(double*));
 	if (ls->new_memory == NULL)
 		return NULL;
 	for (i = 0; i < memory_number; i++)
@@ -1263,7 +1293,7 @@ LINEAR_SOLVER* InitMemoryLinearSolver(LINEAR_SOLVER* ls, int memory_number)
 
 	for (i = 0; i < memory_number; i++)
 	{
-		ls->new_memory[i] = (double*) Malloc(ls->dim * sizeof(double));
+		ls->new_memory[i] = (double*)Malloc(ls->dim * sizeof(double));
 		if (ls->new_memory[i] == NULL)
 			return DestroyMemoryLinearSolver(ls);
 	}
@@ -1325,11 +1355,11 @@ LINEAR_SOLVER* CreateLinearSolver(long store, long dim)
 {
 	LINEAR_SOLVER* ls;
 
-	ls = (LINEAR_SOLVER*) Malloc(sizeof(LINEAR_SOLVER));
+	ls = (LINEAR_SOLVER*)Malloc(sizeof(LINEAR_SOLVER));
 	if (ls == NULL)
 		return NULL;
 
-	//OK    ls->name = NULL;
+	// OK    ls->name = NULL;
 	ls->store = store;
 	ls->dim = dim;
 	ls->matrix = NULL;
@@ -1402,11 +1432,11 @@ LINEAR_SOLVER* CreateLinearSolverDim(long store, int unknown_vector_dimension, l
 {
 	LINEAR_SOLVER* ls;
 
-	ls = (LINEAR_SOLVER*) Malloc(sizeof(LINEAR_SOLVER));
+	ls = (LINEAR_SOLVER*)Malloc(sizeof(LINEAR_SOLVER));
 	if (ls == NULL)
 		return NULL;
 
-	//OK    ls->name = NULL;
+	// OK    ls->name = NULL;
 	ls->store = store;
 	ls->dim = dim;
 	ls->matrix = NULL;
@@ -1466,11 +1496,12 @@ double GetNumericalTimeCollocation(char* name)
 {
 	CRFProcess* m_pcs = NULL;
 	m_pcs = PCSGet(name);
-	if(m_pcs)
+	if (m_pcs)
 		return m_pcs->m_num->ls_theta;
 	else
-		cout << "Fatal error in GetNumericalTimeCollocation: No valid PCS" << "\n";
-	//OK return np_array[GetNumericsIndex(name)].time_collocation;
+		cout << "Fatal error in GetNumericalTimeCollocation: No valid PCS"
+		     << "\n";
+	// OK return np_array[GetNumericsIndex(name)].time_collocation;
 	return 1.0;
 }
 
@@ -1494,11 +1525,7 @@ double GetNumericalTimeCollocation(char* name)
 /* Programmaenderungen:
    1/1999     C.Thorenz  Zweite Version                                                                          */
 /**************************************************************************/
-double NUMCalcIterationError(double* new_iteration,
-                             double* old_iteration,
-                             double* reference,
-                             long length,
-                             int method)
+double NUMCalcIterationError(double* new_iteration, double* old_iteration, double* reference, long length, int method)
 {
 	static long i;
 	static double error, change, max_c, min_c;
@@ -1511,84 +1538,77 @@ double NUMCalcIterationError(double* new_iteration,
 
 	switch (method)
 	{
-	default:
-	case 0:
-		return 0.;
-	/* Max. Unterschied zwischen altem und neuem Iterationsschritt */
-	case 1:
-		for (i = 0l; i < length; i++)
-			error = max(error, fabs(new_iteration[i] - old_iteration[i]));
-		return error;
+		default:
+		case 0:
+			return 0.;
+		/* Max. Unterschied zwischen altem und neuem Iterationsschritt */
+		case 1:
+			for (i = 0l; i < length; i++)
+				error = max(error, fabs(new_iteration[i] - old_iteration[i]));
+			return error;
 
-	/* Max. Unterschied zwischen altem und neuem Iterationsschritt,
-	   jeweils normiert mit dem Mittelwert der Groesse des Wertes  */
-	case 2:
-		for (i = 0l; i < length; i++)
-			error =
-			        max(error, 2. *
-			            fabs(new_iteration[i] -
-			                 old_iteration[i]) /
-			            (fabs(new_iteration[i]) + fabs(old_iteration[i]) +
-			             MKleinsteZahl));
-		return error;
+		/* Max. Unterschied zwischen altem und neuem Iterationsschritt,
+		   jeweils normiert mit dem Mittelwert der Groesse des Wertes  */
+		case 2:
+			for (i = 0l; i < length; i++)
+				error = max(error, 2. * fabs(new_iteration[i] - old_iteration[i])
+				                       / (fabs(new_iteration[i]) + fabs(old_iteration[i]) + MKleinsteZahl));
+			return error;
 
-	/* Max. Unterschied zwischen altem und neuem Iterationsschritt,
-	   normiert mit dem groessten Wert */
-	case 3:
-		for (i = 0l; i < length; i++)
-		{
-			error = max(error, fabs(new_iteration[i] - old_iteration[i]));
-			max_c = max(max(max_c, fabs(new_iteration[i])),fabs(old_iteration[i]));
-		}
-		return error / (max_c + MKleinsteZahl);
+		/* Max. Unterschied zwischen altem und neuem Iterationsschritt,
+		   normiert mit dem groessten Wert */
+		case 3:
+			for (i = 0l; i < length; i++)
+			{
+				error = max(error, fabs(new_iteration[i] - old_iteration[i]));
+				max_c = max(max(max_c, fabs(new_iteration[i])), fabs(old_iteration[i]));
+			}
+			return error / (max_c + MKleinsteZahl);
 
-	/* Max. Unterschied zwischen altem und neuem Iterationsschritt,
-	   normiert mit der Spanne der Werte */
-	case 4:
-		for (i = 0l; i < length; i++)
-		{
-			error = max(error, fabs(new_iteration[i] - old_iteration[i]));
-			min_c = min(min_c, fabs(new_iteration[i]));
-			max_c = max(max_c, fabs(new_iteration[i]));
-		}
-		return error / (max_c - min_c + MKleinsteZahl);
+		/* Max. Unterschied zwischen altem und neuem Iterationsschritt,
+		   normiert mit der Spanne der Werte */
+		case 4:
+			for (i = 0l; i < length; i++)
+			{
+				error = max(error, fabs(new_iteration[i] - old_iteration[i]));
+				min_c = min(min_c, fabs(new_iteration[i]));
+				max_c = max(max_c, fabs(new_iteration[i]));
+			}
+			return error / (max_c - min_c + MKleinsteZahl);
 
-	/* Max. Unterschied zwischen altem und neuem Iterationsschritt,
-	   normiert mit dem Unterschied zum alten Zeitschritt. Die
-	   genaueste Methode, da die Fehlerberechnung dann Zeitschritt-
-	   unabhaengig wird! */
-	case 5:
-		for (i = 0l; i < length; i++)
-			error =
-			        max(error,
-			            fabs(new_iteration[i] -
-			                 old_iteration[i]) /
-			            (fabs(new_iteration[i] - reference[i]) + MKleinsteZahl));
-		return error;
+		/* Max. Unterschied zwischen altem und neuem Iterationsschritt,
+		   normiert mit dem Unterschied zum alten Zeitschritt. Die
+		   genaueste Methode, da die Fehlerberechnung dann Zeitschritt-
+		   unabhaengig wird! */
+		case 5:
+			for (i = 0l; i < length; i++)
+				error = max(error,
+				            fabs(new_iteration[i] - old_iteration[i])
+				                / (fabs(new_iteration[i] - reference[i]) + MKleinsteZahl));
+			return error;
 
-	/* Max. Unterschied zwischen altem und neuem Iterationsschritt,
-	   normiert mit dem maximalen Unterschied zum alten Zeitschritt */
-	case 6:
-		for (i = 0l; i < length; i++)
-		{
-			error = max(error, fabs(new_iteration[i] - old_iteration[i]));
-			change = max(change, fabs(new_iteration[i] - reference[i]));
-		}
-		return error / (change + MKleinsteZahl);
+		/* Max. Unterschied zwischen altem und neuem Iterationsschritt,
+		   normiert mit dem maximalen Unterschied zum alten Zeitschritt */
+		case 6:
+			for (i = 0l; i < length; i++)
+			{
+				error = max(error, fabs(new_iteration[i] - old_iteration[i]));
+				change = max(change, fabs(new_iteration[i] - reference[i]));
+			}
+			return error / (change + MKleinsteZahl);
 
-	/* Der Vektorabstand */
-	case 7:
-		return MVekDist(old_iteration, new_iteration, length);
+		/* Der Vektorabstand */
+		case 7:
+			return MVekDist(old_iteration, new_iteration, length);
 
-	/* Der Vektorabstand der Iteration, normiert mit dem Vektorabstand
-	   zur alten Zeitebene */
-	case 8:
-		return MVekDist(old_iteration, new_iteration,
-		                length) /
-		       (MVekDist(reference, new_iteration, length) + MKleinsteZahl);
+		/* Der Vektorabstand der Iteration, normiert mit dem Vektorabstand
+		   zur alten Zeitebene */
+		case 8:
+			return MVekDist(old_iteration, new_iteration, length)
+			       / (MVekDist(reference, new_iteration, length) + MKleinsteZahl);
 	}
 }
-#endif                                            //ifndef NEW_EQS //WW. 06.11.2008
+#endif // ifndef NEW_EQS //WW. 06.11.2008
 
 int GetNumericsGaussPoints(int element_dimension)
 {
@@ -1596,18 +1616,18 @@ int GetNumericsGaussPoints(int element_dimension)
 	int g_gaussian_points = 3;
 	switch (element_dimension)
 	{
-	case 1:
-		m_gaussian_points = 1;
-		break;
-	case 2:
-		m_gaussian_points = g_gaussian_points;
-		break;
-	case 3:
-		m_gaussian_points = g_gaussian_points;
-		break;
-	case 4:
-		m_gaussian_points = g_gaussian_points;
-		break;
+		case 1:
+			m_gaussian_points = 1;
+			break;
+		case 2:
+			m_gaussian_points = g_gaussian_points;
+			break;
+		case 3:
+			m_gaussian_points = g_gaussian_points;
+			break;
+		case 4:
+			m_gaussian_points = g_gaussian_points;
+			break;
 	}
 	return m_gaussian_points;
 }
@@ -1622,10 +1642,10 @@ int GetNumericsGaussPoints(int element_dimension)
 CNumerics* NUMGet(string num_name)
 {
 	CNumerics* m_num = NULL;
-	for(int i = 0; i < (int)num_vector.size(); i++)
+	for (int i = 0; i < (int)num_vector.size(); i++)
 	{
 		m_num = num_vector[i];
-		if(m_num->pcs_type_name.compare(num_name) == 0)
+		if (m_num->pcs_type_name.compare(num_name) == 0)
 			return m_num;
 	}
 	return NULL;
@@ -1642,7 +1662,7 @@ void NUMDelete()
 {
 	long i;
 	int no_num = (int)num_vector.size();
-	for(i = 0; i < no_num; i++)
+	for (i = 0; i < no_num; i++)
 		delete num_vector[i];
 	num_vector.clear();
 }

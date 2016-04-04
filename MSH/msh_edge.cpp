@@ -18,7 +18,7 @@
 // C++
 #include <cmath>
 // MSHLib
-#include "mathlib.h"                              //OK
+#include "mathlib.h" //OK
 #include "msh_edge.h"
 
 //========================================================================
@@ -31,12 +31,11 @@ namespace MeshLib
    06/2005 WW Implementation
    03/2010 TF moved initialization of attributes to initialization list, added docu
 **************************************************************************/
-CEdge::CEdge(size_t Index, bool quadr)
-	: CCore(Index), nodes_of_edges(3), joint (0), velocity (NULL)
+CEdge::CEdge(size_t Index, bool quadr) : CCore(Index), nodes_of_edges(3), joint(0), velocity(NULL)
 {
 	quadratic = quadr;
 	// Assume that each edge has three nodes, third node is middle point
-	for(size_t i = 0; i < 3; i++)
+	for (size_t i = 0; i < 3; i++)
 		nodes_of_edges[i] = NULL;
 }
 
@@ -49,7 +48,7 @@ CEdge::CEdge(size_t Index, bool quadr)
 CEdge::~CEdge()
 {
 	nodes_of_edges.resize(0);
-	delete [] velocity;
+	delete[] velocity;
 }
 /**************************************************************************
    MSHLib-Method:
@@ -57,12 +56,12 @@ CEdge::~CEdge()
    Programing:
    06/2005 WW Implementation
 **************************************************************************/
-void CEdge::operator = (CEdge& ed)
+void CEdge::operator=(CEdge& ed)
 {
 	boundary_type = ed.boundary_type;
 	index = ed.index;
 	mark = ed.mark;
-	for(size_t i = 0; i < nodes_of_edges.Size(); i++)
+	for (size_t i = 0; i < nodes_of_edges.Size(); i++)
 		nodes_of_edges[i] = ed.nodes_of_edges[i];
 }
 
@@ -76,7 +75,7 @@ double CEdge::getLength() const
 {
 	double const* const pnt0(nodes_of_edges[0]->getData());
 	double const* const pnt1(nodes_of_edges[1]->getData());
-	double const dx (pnt1[0] - pnt0[0]), dy(pnt1[1] - pnt0[1]), dz(pnt1[2] - pnt0[2]);
+	double const dx(pnt1[0] - pnt0[0]), dy(pnt1[1] - pnt0[1]), dz(pnt1[2] - pnt0[2]);
 	return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
@@ -86,23 +85,23 @@ double CEdge::getLength() const
    Programing:
    06/2005 WW Implementation
 **************************************************************************/
-bool CEdge::operator == (CEdge& ed)
+bool CEdge::operator==(CEdge& ed)
 {
 	int identical;
 
 	// Compare two ends
 	identical = 0;
-	for(int i = 0; i < 2; i++)
-		if(nodes_of_edges[i] == ed.nodes_of_edges[i])
+	for (int i = 0; i < 2; i++)
+		if (nodes_of_edges[i] == ed.nodes_of_edges[i])
 			identical++;
-	if(identical == 2)
+	if (identical == 2)
 		return true;
 
 	identical = 0;
-	for(int i = 0; i < 2; i++)
-		if(nodes_of_edges[1 - i] == ed.nodes_of_edges[i])
+	for (int i = 0; i < 2; i++)
+		if (nodes_of_edges[1 - i] == ed.nodes_of_edges[i])
 			identical++;
-	if(identical == 2)
+	if (identical == 2)
 		return true;
 
 	return false;
@@ -117,7 +116,7 @@ bool CEdge::operator == (CEdge& ed)
 void CEdge::Write(std::ostream& osm) const
 {
 	osm << "Edge: " << index << "\n";
-	for(size_t i = 0; i < nodes_of_edges.Size(); i++)
+	for (size_t i = 0; i < nodes_of_edges.Size(); i++)
 	{
 		osm << "Node: " << i << "\n";
 		nodes_of_edges[i]->Write(osm);
@@ -129,15 +128,15 @@ void CEdge::Write(std::ostream& osm) const
    MSHLib-Method:
    08/2006 OK Implementation
 **************************************************************************/
-void CEdge::SetNormalVector(double* ele_normal_vector,double* normal_vector)
+void CEdge::SetNormalVector(double* ele_normal_vector, double* normal_vector)
 {
 	// Element normal vector
 	// Edge vector
 	double edge_vector[3];
 	GetEdgeVector(edge_vector);
 	// Edge normal vector
-	CrossProduction(edge_vector,ele_normal_vector,normal_vector);
-	NormalizeVector(normal_vector,3);
+	CrossProduction(edge_vector, ele_normal_vector, normal_vector);
+	NormalizeVector(normal_vector, 3);
 }
 
 /**************************************************************************
@@ -165,4 +164,4 @@ void CEdge::GetEdgeMidPoint(double* edge_vector)
 	edge_vector[1] = 0.5 * (pnt1[1] + pnt0[1]);
 	edge_vector[2] = 0.5 * (pnt1[2] + pnt0[2]);
 }
-}                                                 // namespace MeshLib
+} // namespace MeshLib

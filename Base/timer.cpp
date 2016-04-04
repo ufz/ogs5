@@ -35,7 +35,7 @@ using namespace std;
 #ifndef WIN32
 #include <sys/times.h>
 #include <unistd.h>
-#endif                                            // WIN32
+#endif // WIN32
 #include <time.h>
 #endif
 
@@ -46,7 +46,7 @@ using namespace std;
 static int max_zeitspeicher = -1;
 static long* zeit = NULL;
 static int* running = NULL;
-vector <CClockTime*> ClockTimeVec;
+vector<CClockTime*> ClockTimeVec;
 
 /*************************************************************************
    ROCKFLOW - Funktion: TInitTimer
@@ -72,8 +72,8 @@ void TInitTimer(int speicher)
 	/* Ggf. Liste der Speicher erweitern */
 	if (speicher > max_zeitspeicher)
 	{
-		zeit = (long*) Realloc(zeit, sizeof(long) * (speicher + 1));
-		running = (int*) Realloc(running, sizeof(int) * (speicher + 1));
+		zeit = (long*)Realloc(zeit, sizeof(long) * (speicher + 1));
+		running = (int*)Realloc(running, sizeof(int) * (speicher + 1));
 		max_zeitspeicher = speicher;
 	}
 
@@ -105,8 +105,8 @@ void TStartTimer(int speicher)
 	/* Ggf. Liste der Speicher erweitern */
 	if (speicher > max_zeitspeicher)
 	{
-		zeit = (long*) Realloc(zeit, sizeof(long) * (speicher + 1));
-		running = (int*) Realloc(running, sizeof(int) * (speicher + 1));
+		zeit = (long*)Realloc(zeit, sizeof(long) * (speicher + 1));
+		running = (int*)Realloc(running, sizeof(int) * (speicher + 1));
 		max_zeitspeicher = speicher;
 	}
 
@@ -141,10 +141,10 @@ double TGetTimerDouble(int speicher)
 
 	if (!running[speicher])
 		/* Der Timer war angehalten */
-		time_gone_by = (double) zeit[speicher] / (double) TGetTicksPerSecond();
+		time_gone_by = (double)zeit[speicher] / (double)TGetTicksPerSecond();
 	else
 		/* Der Timer lief */
-		time_gone_by = (double) (TGetTime() - zeit[speicher]) / (double) TGetTicksPerSecond();
+		time_gone_by = (double)(TGetTime() - zeit[speicher]) / (double)TGetTicksPerSecond();
 
 	return time_gone_by;
 }
@@ -172,15 +172,15 @@ double TGetTimerDouble(int speicher)
 **************************************************************************/
 long TGetTimer(int speicher)
 {
-	if(!running)                          //OK
+	if (!running) // OK
 		return -1;
 	long time_gone_by;
 	if (!running[speicher])
 		/* Der Timer war angehalten */
-		time_gone_by = (long) (zeit[speicher] / TGetTicksPerSecond());
+		time_gone_by = (long)(zeit[speicher] / TGetTicksPerSecond());
 	else
 		/* Der Timer lief */
-		time_gone_by = (long) ((TGetTime() - zeit[speicher]) / TGetTicksPerSecond());
+		time_gone_by = (long)((TGetTime() - zeit[speicher]) / TGetTicksPerSecond());
 	return time_gone_by;
 }
 
@@ -315,8 +315,8 @@ long TGetTicksPerSecond(void)
 void TDestroyTimers(void)
 {
 	/* Speicherfreigaben */
-	zeit = (long*) Free(zeit);
-	running = (int*) Free(running);
+	zeit = (long*)Free(zeit);
+	running = (int*)Free(running);
 }
 
 /*************************************************************************
@@ -339,7 +339,7 @@ void ctime_(float* time)
 	*time = (float)TGetTime() / (float)TGetTicksPerSecond();
 }
 
-//New SB time
+// New SB time
 
 CClockTime::CClockTime(void)
 {
@@ -374,10 +374,10 @@ CClockTime::~CClockTime(void)
 void CClockTime::StartTime(void)
 {
 	start = clock();
-	//WW	time1=GetTickCount();
+	// WW	time1=GetTickCount();
 }
 
-void CClockTime::StopTime(const std::string &name)
+void CClockTime::StopTime(const std::string& name)
 {
 	char name1;
 	name1 = name[0];
@@ -385,108 +385,109 @@ void CClockTime::StopTime(const std::string &name)
 	end = clock();
 	this->delta_clocktime = (double)(end - start) / CLOCKS_PER_SEC;
 
-	//WW time2=GetTickCount();
+	// WW time2=GetTickCount();
 	difftime = (time2 - time1) / 1000.0;
 	// cout << " ClockTime: " << delta_clocktime << ", TickTime: " << difftime << "\n";
 
 	switch (name1)
 	{
-	default:
-		break;
-	case ('F'):
-		time_flow.push_back(delta_clocktime);
-		time_total_flow += delta_clocktime;
-		break;
-	case ('T'):
-		this->time_transport.push_back(delta_clocktime);
-		time_total_transport += delta_clocktime;
-		break;
-	case ('K'):
-		this->time_kinreact.push_back(delta_clocktime);
-		time_total_kinreact += delta_clocktime;
-		break;
-	case ('E'):
-		this->time_equireact.push_back(delta_clocktime);
-		time_total_equireact += delta_clocktime;
-		break;
-	case ('R'):
-		this->time_reactdeact.push_back(delta_clocktime);
-		time_total_reactdeact += delta_clocktime;
-		break;
+		default:
+			break;
+		case ('F'):
+			time_flow.push_back(delta_clocktime);
+			time_total_flow += delta_clocktime;
+			break;
+		case ('T'):
+			this->time_transport.push_back(delta_clocktime);
+			time_total_transport += delta_clocktime;
+			break;
+		case ('K'):
+			this->time_kinreact.push_back(delta_clocktime);
+			time_total_kinreact += delta_clocktime;
+			break;
+		case ('E'):
+			this->time_equireact.push_back(delta_clocktime);
+			time_total_equireact += delta_clocktime;
+			break;
+		case ('R'):
+			this->time_reactdeact.push_back(delta_clocktime);
+			time_total_reactdeact += delta_clocktime;
+			break;
 	}
 }
 
 void CClockTime::PrintTimes(void)
 {
 #ifndef OGS_OUTPUT_TIME_ALLPCS
-	if (time_kinreact.size() == 0
-		|| time_equireact.size() == 0
-		|| time_reactdeact.size() == 0) //WW
+	if (time_kinreact.size() == 0 || time_equireact.size() == 0 || time_reactdeact.size() == 0) // WW
 		return;
 #endif
 
-	int i,length;
+	int i, length;
 	double tot = 0., help = 0.0, tot_zeitschritt = 0.;
-	string outname= FileName + "_ClockTimes.txt";
+	string outname = FileName + "_ClockTimes.txt";
 
 	cout.precision(2);
 	tot = time_total_flow + time_total_transport + time_total_kinreact + time_total_equireact + time_total_reactdeact;
-	cout << "ClockTimes: " << "\n" <<
-	"Unit   Flow:  Transport:  KinReactions:  EquiReactions:  ReactDeact:  total: " << "\n";
-	cout <<  "[sec] " << setw(6) << time_total_flow << "  " << setw(10) <<
-	time_total_transport << "  " << setw(13) << time_total_kinreact << "  " << setw(14) <<
-	time_total_equireact << "  " << setw(14) << time_total_reactdeact << "  " << setw(6) << tot <<  "\n";
-	cout <<  "[%]   " << setw(6) <<  time_total_flow / tot * 100 << "  " <<  setw(10) <<
-	time_total_transport / tot * 100 << "  " <<  setw(13) << time_total_kinreact / tot * 100 <<
-	"  " <<  setw(14) << time_total_equireact / tot * 100 << "  " <<  setw(14) << time_total_reactdeact/tot*100<< "  " <<  setw(6) << tot/tot*100 << "\n";
+	cout << "ClockTimes: "
+	     << "\n"
+	     << "Unit   Flow:  Transport:  KinReactions:  EquiReactions:  ReactDeact:  total: "
+	     << "\n";
+	cout << "[sec] " << setw(6) << time_total_flow << "  " << setw(10) << time_total_transport << "  " << setw(13)
+	     << time_total_kinreact << "  " << setw(14) << time_total_equireact << "  " << setw(14) << time_total_reactdeact
+	     << "  " << setw(6) << tot << "\n";
+	cout << "[%]   " << setw(6) << time_total_flow / tot * 100 << "  " << setw(10) << time_total_transport / tot * 100
+	     << "  " << setw(13) << time_total_kinreact / tot * 100 << "  " << setw(14) << time_total_equireact / tot * 100
+	     << "  " << setw(14) << time_total_reactdeact / tot * 100 << "  " << setw(6) << tot / tot * 100 << "\n";
 
-	length = (int) this->time_flow.size();
-	if ((int) this->time_transport.size() > length)
-		length = (int) this->time_transport.size();
-	if ((int) this->time_kinreact.size() > length)
-		length = (int) this->time_kinreact.size();
-	if ((int) this->time_equireact.size() > length)
-		length = (int) this->time_equireact.size();
-	if ((int) this->time_reactdeact.size() > length)
-		length = (int) this->time_reactdeact.size();
+	length = (int)this->time_flow.size();
+	if ((int)this->time_transport.size() > length)
+		length = (int)this->time_transport.size();
+	if ((int)this->time_kinreact.size() > length)
+		length = (int)this->time_kinreact.size();
+	if ((int)this->time_equireact.size() > length)
+		length = (int)this->time_equireact.size();
+	if ((int)this->time_reactdeact.size() > length)
+		length = (int)this->time_reactdeact.size();
 
 	ofstream out_file(outname.data(), ios::out);
 	out_file.precision(6);
 
-	out_file << "Step   Flow   Transport  KinReactions  EquiReactions ReactDeact Total"<< "\n";
-	for(i = 0; i < length; i++)
+	out_file << "Step   Flow   Transport  KinReactions  EquiReactions ReactDeact Total"
+	         << "\n";
+	for (i = 0; i < length; i++)
 	{
 		out_file << i << "  ";
-		//flow
-		if((int)time_flow.size() > i)
+		// flow
+		if ((int)time_flow.size() > i)
 			help = time_flow[i];
 		else
 			help = 0.0;
 		out_file << help << "  ";
 		tot_zeitschritt = help;
-		//transport
-		if((int)time_transport.size() > i)
+		// transport
+		if ((int)time_transport.size() > i)
 			help = time_transport[i];
 		else
 			help = 0.0;
 		out_file << help << "  ";
 		tot_zeitschritt += help;
-		//kinetic reactions
-		if((int)time_kinreact.size() > i)
+		// kinetic reactions
+		if ((int)time_kinreact.size() > i)
 			help = time_kinreact[i];
 		else
 			help = 0.0;
 		out_file << help << "  ";
 		tot_zeitschritt += help;
-		//equilibrium reactions
-		if((int)time_equireact.size() > i)
+		// equilibrium reactions
+		if ((int)time_equireact.size() > i)
 			help = time_equireact[i];
 		else
 			help = 0.0;
 		out_file << help << "  ";
 
-		//reaction deactivation
-		if ((int) time_reactdeact.size() > i)
+		// reaction deactivation
+		if ((int)time_reactdeact.size() > i)
 			help = time_reactdeact[i];
 		else
 			help = 0.0;
@@ -497,9 +498,14 @@ void CClockTime::PrintTimes(void)
 		out_file << tot_zeitschritt << "\n";
 	}
 	out_file << "\n";
-	out_file << "TotalFlow   TotalTransport  TotalKinReactions  TotalEquiReactions  TotalReactDeact  Total"<< "\n";
-	out_file << time_total_flow << "  " << time_total_transport << "  " << time_total_kinreact << "  " << time_total_equireact << "  " << time_total_reactdeact << "  " << tot << " " << "\n";
-	out_file <<  time_total_flow/tot*100 << "  " << time_total_transport/tot*100 << "  " << time_total_kinreact/tot*100 << "  " << time_total_equireact/tot*100 << "  " << time_total_reactdeact/tot*100 << "  " << tot/tot*100 << "\n";
+	out_file << "TotalFlow   TotalTransport  TotalKinReactions  TotalEquiReactions  TotalReactDeact  Total"
+	         << "\n";
+	out_file << time_total_flow << "  " << time_total_transport << "  " << time_total_kinreact << "  "
+	         << time_total_equireact << "  " << time_total_reactdeact << "  " << tot << " "
+	         << "\n";
+	out_file << time_total_flow / tot * 100 << "  " << time_total_transport / tot * 100 << "  "
+	         << time_total_kinreact / tot * 100 << "  " << time_total_equireact / tot * 100 << "  "
+	         << time_total_reactdeact / tot * 100 << "  " << tot / tot * 100 << "\n";
 	out_file.close();
 }
 
@@ -513,7 +519,7 @@ void CreateClockTime(void)
 
 void DestroyClockTime(void)
 {
-	for (size_t i=0; i<ClockTimeVec.size(); i++)
+	for (size_t i = 0; i < ClockTimeVec.size(); i++)
 		delete ClockTimeVec[i];
 	ClockTimeVec.clear();
 }

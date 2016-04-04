@@ -36,23 +36,24 @@
 using namespace std;
 
 LegacyVtkInterface::LegacyVtkInterface(MeshLib::CFEMesh* mesh,
-									   std::vector<std::string> pointArrayNames,
-									   std::vector<std::string> cellArrayNames,
-									   std::vector<std::string> materialPropertyArrayNames,
-									   std::string meshTypeName,
-									   ProcessInfo* processInfo)
-	: _mesh(mesh),
-	  _pointArrayNames(pointArrayNames),
-	  _cellArrayNames(cellArrayNames),
-	  _materialPropertyArrayNames(materialPropertyArrayNames),
-	  _meshTypeName(meshTypeName),
-	  _processInfo(processInfo)
+                                       std::vector<std::string>
+                                           pointArrayNames,
+                                       std::vector<std::string>
+                                           cellArrayNames,
+                                       std::vector<std::string>
+                                           materialPropertyArrayNames,
+                                       std::string meshTypeName,
+                                       ProcessInfo* processInfo)
+    : _mesh(mesh), _pointArrayNames(pointArrayNames), _cellArrayNames(cellArrayNames),
+      _materialPropertyArrayNames(materialPropertyArrayNames), _meshTypeName(meshTypeName), _processInfo(processInfo)
 {
 	_processType = convertProcessTypeToString(processInfo->getProcessType());
 	_mesh = FEMGet(_processType);
 }
 
-LegacyVtkInterface::~LegacyVtkInterface() {}
+LegacyVtkInterface::~LegacyVtkInterface()
+{
+}
 
 #if defined(USE_PETSC)
 /**************************************************************************
@@ -63,13 +64,12 @@ LegacyVtkInterface::~LegacyVtkInterface() {}
    09/2006 KG44 Output for MPI - correct OUTPUT not yet implemented
    12/2008 NW Remove ios::app, Add PCS name to VTK file name
 **************************************************************************/
-void LegacyVtkInterface::WriteDataVTKPETSC(int number, double simulation_time,
-									  std::string baseFilename) const
+void LegacyVtkInterface::WriteDataVTKPETSC(int number, double simulation_time, std::string baseFilename) const
 {
-
-	if(!_mesh)
+	if (!_mesh)
 	{
-		cout << "Warning in LegacyVtkInterface::WriteVTKNodes - no MSH data" << "\n";
+		cout << "Warning in LegacyVtkInterface::WriteVTKNodes - no MSH data"
+		     << "\n";
 		return;
 	}
 
@@ -84,100 +84,97 @@ void LegacyVtkInterface::WriteDataVTKPETSC(int number, double simulation_time,
 	baseFilename += ".vtk";
 
 	// convert filename string to *char
-	const char * filename = baseFilename.c_str();
+	const char* filename = baseFilename.c_str();
 
-// Open the viewer
+	// Open the viewer
 	PetscViewer viewer;
 	// PetscViewerASCIIOpen(PETSC_COMM_WORLD, "x.txt", &viewer);
 	PetscViewerCreate(PETSC_COMM_WORLD, &viewer);
 	PetscViewerSetType(viewer, PETSCVIEWERASCII);
 	PetscViewerFileSetName(viewer, filename);
 	PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);
-// write header
-	PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 3.0\n");
-	PetscViewerASCIIPrintf(viewer,"Unstructured Grid from OpenGeoSys-GEM\n");
-	PetscViewerASCIIPrintf(viewer,"ASCII\n");
-	PetscViewerASCIIPrintf(viewer,"DATASET UNSTRUCTURED_GRID\n");
-	PetscViewerASCIIPrintf(viewer,"FIELD TimesAndCycles 2\n");
-	PetscViewerASCIIPrintf(viewer,"TIME 1 1 double\n");
-	PetscViewerASCIIPrintf(viewer,"%lg\n",simulation_time);
-	PetscViewerASCIIPrintf(viewer,"CYCLE 1 1 long\n");
-	PetscViewerASCIIPrintf(viewer,"%d\n",number);
+	// write header
+	PetscViewerASCIIPrintf(viewer, "# vtk DataFile Version 3.0\n");
+	PetscViewerASCIIPrintf(viewer, "Unstructured Grid from OpenGeoSys-GEM\n");
+	PetscViewerASCIIPrintf(viewer, "ASCII\n");
+	PetscViewerASCIIPrintf(viewer, "DATASET UNSTRUCTURED_GRID\n");
+	PetscViewerASCIIPrintf(viewer, "FIELD TimesAndCycles 2\n");
+	PetscViewerASCIIPrintf(viewer, "TIME 1 1 double\n");
+	PetscViewerASCIIPrintf(viewer, "%lg\n", simulation_time);
+	PetscViewerASCIIPrintf(viewer, "CYCLE 1 1 long\n");
+	PetscViewerASCIIPrintf(viewer, "%d\n", number);
 
 	this->WriteVTKPointDataPETSC(viewer);
 	this->WriteVTKCellDataPETSC(viewer);
 	this->WriteVTKDataArraysPETSC(viewer);
 
-// close viewer
+	// close viewer
 	PetscViewerDestroy(&viewer);
 
 	return;
 }
 
-
 void LegacyVtkInterface::WriteVTKPointDataPETSC(PetscViewer viewer) const
 {
-
-	PetscScalar *xp, *yp, *zp; //used for pointer
-	PetscInt low,high,nn;
+	PetscScalar *xp, *yp, *zp; // used for pointer
+	PetscInt low, high, nn;
 	PetscInt count;
 	int i;
-	VecScatter   ctx;
+	VecScatter ctx;
 
-	MeshLib::CFEMesh *mesh = fem_msh_vector[0];
-//    const int nn = mesh->getNumNodesGlobal(); //global number of nodes without shadow nodes
-	const size_t n_linear_pnts (mesh->GetNodesNumber(false));
+	MeshLib::CFEMesh* mesh = fem_msh_vector[0];
+	//    const int nn = mesh->getNumNodesGlobal(); //global number of nodes without shadow nodes
+	const size_t n_linear_pnts(mesh->GetNodesNumber(false));
 	// get my petsc rank
 	int myrank;
 	MPI_Comm_rank(PETSC_COMM_WORLD, &myrank);
 
 	// test vtk output
-	PETSc_Vec x,y,z,xcoor,ycoor,zcoor; //
+	PETSc_Vec x, y, z, xcoor, ycoor, zcoor; //
 	VecCreate(PETSC_COMM_WORLD, &x);
-	VecSetSizes(x,n_linear_pnts ,PETSC_DECIDE);
+	VecSetSizes(x, n_linear_pnts, PETSC_DECIDE);
 	VecSetFromOptions(x); //
 	// get range of local variables
 	VecGetOwnershipRange(x, &low, &high);
 	VecGetLocalSize(x, &count);
-	VecGetSize(x,&nn);
-// first duplicate x vector
-	VecDuplicate(x,&y);
-	VecDuplicate(x,&z);
+	VecGetSize(x, &nn);
+	// first duplicate x vector
+	VecDuplicate(x, &y);
+	VecDuplicate(x, &z);
 	// get local part of vectors
 	VecGetArray(x, &xp);
 	VecGetArray(y, &yp);
 	VecGetArray(z, &zp);
 
+	// write coordinates
 
-// write coordinates
-
-	PetscViewerASCIIPrintf(viewer,"POINTS %d double\n",nn);
+	PetscViewerASCIIPrintf(viewer, "POINTS %d double\n", nn);
 
 	const std::vector<MeshLib::CNode*> pointVector = mesh->getNodeVector();
 
-	for(size_t i = 0; i < (size_t)count; i++)
+	for (size_t i = 0; i < (size_t)count; i++)
 	{
-		double const* const coords (pointVector[i]->getData());
+		double const* const coords(pointVector[i]->getData());
 		// now fill the vectors
 		// get the pointer to current node;
-		//copy local coordinates to pointer
-		xp[i]=coords[0];
-		yp[i]=coords[1];
-		zp[i]=coords[2];
+		// copy local coordinates to pointer
+		xp[i] = coords[0];
+		yp[i] = coords[1];
+		zp[i] = coords[2];
 	}
 
 	// create a sequential vector and scatter the coordinates
-// to this seq. vector on proc 0
+	// to this seq. vector on proc 0
 	VecScatterCreateToZero(x, &ctx, &xcoor);
-	VecScatterBegin(ctx,x,xcoor,INSERT_VALUES,SCATTER_FORWARD);
-	VecScatterEnd(ctx,x,xcoor,INSERT_VALUES,SCATTER_FORWARD);
+	VecScatterBegin(ctx, x, xcoor, INSERT_VALUES, SCATTER_FORWARD);
+	VecScatterEnd(ctx, x, xcoor, INSERT_VALUES, SCATTER_FORWARD);
 	VecScatterCreateToZero(y, &ctx, &ycoor);
-	VecScatterBegin(ctx,y,ycoor,INSERT_VALUES,SCATTER_FORWARD);
-	VecScatterEnd(ctx,y,ycoor,INSERT_VALUES,SCATTER_FORWARD);
+	VecScatterBegin(ctx, y, ycoor, INSERT_VALUES, SCATTER_FORWARD);
+	VecScatterEnd(ctx, y, ycoor, INSERT_VALUES, SCATTER_FORWARD);
 	VecScatterCreateToZero(z, &ctx, &zcoor);
-	VecScatterBegin(ctx,z,zcoor,INSERT_VALUES,SCATTER_FORWARD);
-	VecScatterEnd(ctx,z,zcoor,INSERT_VALUES,SCATTER_FORWARD);
-// now we have the global vector on rank 0 and can write
+	VecScatterBegin(ctx, z, zcoor, INSERT_VALUES, SCATTER_FORWARD);
+	VecScatterEnd(ctx, z, zcoor, INSERT_VALUES, SCATTER_FORWARD);
+	// now we have the global vector on rank 0 and can write
 	if (myrank == 0)
 	{
 		VecGetArray(xcoor, &xp);
@@ -185,7 +182,7 @@ void LegacyVtkInterface::WriteVTKPointDataPETSC(PetscViewer viewer) const
 		VecGetArray(zcoor, &zp);
 		for (i = 0; i < nn; i++)
 		{
-			PetscViewerASCIIPrintf(viewer, "%lg %lg %lg \n",xp[i],yp[i],zp[i] );
+			PetscViewerASCIIPrintf(viewer, "%lg %lg %lg \n", xp[i], yp[i], zp[i]);
 		}
 	}
 
@@ -198,242 +195,247 @@ void LegacyVtkInterface::WriteVTKCellDataPETSC(PetscViewer viewer) const
 
 	// count overall length of element vector
 	long numAllPoints = 0;
-	for(size_t i = 0; i < nelocal; i++)
+	for (size_t i = 0; i < nelocal; i++)
 	{
 		MeshLib::CElem* ele = _mesh->ele_vector[i];
 		numAllPoints = numAllPoints + (ele->GetNodesNumber(false)) + 1;
 	}
 
-	PetscScalar *ep,*eglobp; //used for pointer
-	PetscInt low,high,neglob,nn;
+	PetscScalar *ep, *eglobp; // used for pointer
+	PetscInt low, high, neglob, nn;
 	int i;
-	VecScatter   ctx;
-
+	VecScatter ctx;
 
 	// get my petsc rank
 	int myrank;
 	MPI_Comm_rank(PETSC_COMM_WORLD, &myrank);
 
 	// test vtk output
-	PETSc_Vec e, eglob,x; //
+	PETSc_Vec e, eglob, x; //
 
-
-
-	// vector for elements ...contains number of nodes connected to form a element in first entry and then the node numbers
+	// vector for elements ...contains number of nodes connected to form a element in first entry and then the node
+	// numbers
 	VecCreate(PETSC_COMM_WORLD, &e);
-	VecSetSizes(e, numAllPoints,PETSC_DECIDE); // nummAllPoints is local lenght of the vector we need
+	VecSetSizes(e, numAllPoints, PETSC_DECIDE); // nummAllPoints is local lenght of the vector we need
 	VecSetFromOptions(e); //
 	// get range of local variables
 	VecGetOwnershipRange(e, &low, &high);
 	VecGetSize(e, &neglob);
-// get local part of vector
+	// get local part of vector
 	VecGetArray(e, &ep);
 
-
- // in order to get a global mesh the node numbers have to be corrected..
-// we have to get the position in the global node vector in order to  get the correct  additive value
-// is there a simpler way to do it (as below)?
-	MeshLib::CFEMesh *mesh = fem_msh_vector[0];
-//    const int nn = mesh->getNumNodesGlobal(); //global number of nodes without shadow nodes
-	const size_t n_linear_pnts (mesh->GetNodesNumber(false));
+	// in order to get a global mesh the node numbers have to be corrected..
+	// we have to get the position in the global node vector in order to  get the correct  additive value
+	// is there a simpler way to do it (as below)?
+	MeshLib::CFEMesh* mesh = fem_msh_vector[0];
+	//    const int nn = mesh->getNumNodesGlobal(); //global number of nodes without shadow nodes
+	const size_t n_linear_pnts(mesh->GetNodesNumber(false));
 
 	VecCreate(PETSC_COMM_WORLD, &x);
-	VecSetSizes(x, n_linear_pnts,PETSC_DECIDE);
+	VecSetSizes(x, n_linear_pnts, PETSC_DECIDE);
 	VecSetFromOptions(x); //
 	// get range of local variables
 	VecGetOwnershipRange(x, &low, &high);
-	VecGetSize(x,&nn);
-//  cout << " " << low << " " << high << " \n";
-// low is now the first node number
+	VecGetSize(x, &nn);
+	//  cout << " " << low << " " << high << " \n";
+	// low is now the first node number
 
 	// now we can fill the element vector
 	size_t anz_elem = 0; // here a local value
-	for(size_t i = 0; i < nelocal; i++)
+	for (size_t i = 0; i < nelocal; i++)
 	{
 		MeshLib::CElem* ele = _mesh->ele_vector[i];
 		//	cout << ele->GetNodesNumber(false)<< " " ;
 
-		switch(ele->GetElementType())// first entry: type of element as defined for vtk ..better than number of nodes
+		switch (ele->GetElementType()) // first entry: type of element as defined for vtk ..better than number of nodes
 		{
-		case MshElemType::LINE:
-			ep[anz_elem]=3;
-			break;
-		case MshElemType::QUAD:
-			ep[anz_elem]=9;
-			break;
-		case MshElemType::HEXAHEDRON:
-			ep[anz_elem]=12;
-			break;
-		case MshElemType::TRIANGLE:
-			ep[anz_elem]=5;
-			break;
-		case MshElemType::TETRAHEDRON:
-			ep[anz_elem]=10;
-			break;
-		case MshElemType::PRISM: // VTK_WEDGE
-			ep[anz_elem]=13;
-			break;
-		case MshElemType::PYRAMID:
-			ep[anz_elem]=14;
-			break;
-		default:
-			cerr << "PETSC VTK output::WriteVTKElementData MshElemType not recogniced" << "\n";
-			break;
+			case MshElemType::LINE:
+				ep[anz_elem] = 3;
+				break;
+			case MshElemType::QUAD:
+				ep[anz_elem] = 9;
+				break;
+			case MshElemType::HEXAHEDRON:
+				ep[anz_elem] = 12;
+				break;
+			case MshElemType::TRIANGLE:
+				ep[anz_elem] = 5;
+				break;
+			case MshElemType::TETRAHEDRON:
+				ep[anz_elem] = 10;
+				break;
+			case MshElemType::PRISM: // VTK_WEDGE
+				ep[anz_elem] = 13;
+				break;
+			case MshElemType::PYRAMID:
+				ep[anz_elem] = 14;
+				break;
+			default:
+				cerr << "PETSC VTK output::WriteVTKElementData MshElemType not recogniced"
+				     << "\n";
+				break;
 		}
 
 		//   cout << ele->GetNodesNumber(false)<< " " ;
-		for(size_t j = 0; j < ele->GetNodesNumber(false); j++)
+		for (size_t j = 0; j < ele->GetNodesNumber(false); j++)
 		{
-				ep[anz_elem+j+1]= ele->GetNodeIndeces()[j] + low;  // this are the nodes
+			ep[anz_elem + j + 1] = ele->GetNodeIndeces()[j] + low; // this are the nodes
 			//		cout << "DEBUG " <<  ele->GetNodeIndeces()[j] << " " ;
 		}
 		// cout << " \n";
-		anz_elem = anz_elem+(ele->GetNodesNumber(false))+1 ;
+		anz_elem = anz_elem + (ele->GetNodesNumber(false)) + 1;
 	}
 
-// now scatter the vectors to process rank 0
+	// now scatter the vectors to process rank 0
 	VecScatterCreateToZero(e, &ctx, &eglob);
-	VecScatterBegin(ctx,e,eglob,INSERT_VALUES,SCATTER_FORWARD);
-	VecScatterEnd(ctx,e,eglob,INSERT_VALUES,SCATTER_FORWARD);
-// count number of elements
+	VecScatterBegin(ctx, e, eglob, INSERT_VALUES, SCATTER_FORWARD);
+	VecScatterEnd(ctx, e, eglob, INSERT_VALUES, SCATTER_FORWARD);
+	// count number of elements
 	if (myrank == 0)
 	{
 		VecGetArray(eglob, &eglobp);
 		anz_elem = 0; // here this es global number of elements
-		i=0;
+		i = 0;
 		while (i < neglob)
 		{
-			anz_elem+=1; // add one for the element
-			int  mswitch= (int) eglobp[i];
-			switch(mswitch )// first entry: type of element as defined for vtk ..better than number of nodes
+			anz_elem += 1; // add one for the element
+			int mswitch = (int)eglobp[i];
+			switch (mswitch) // first entry: type of element as defined for vtk ..better than number of nodes
 			{
-			case 3: //LINE
-				i+=2+1;
-				break;
-			case 9: //QUAD
-				i+=4+1;
-				break;
-			case 12: //HEXAHEDRON:
-				i+=6+1;
-				break;
-			case 5: // TRIANGLE:
-				i+=3+1;
-				break;
-			case 10:// TETRAHEDRON:
-				i+=4+1;
-				break;
-			case 13: // PRISM: // VTK_WEDGE
-				i+=6+1;
-				break;
-			case 14: // PYRAMID:
-				i+=5+1;
-				break;
-			default:
-				cerr << "PETSC VTK Output 1::WriteVTKElementData MshElemType not handled, i. anz_elem. ep[i] type " << i << " " << anz_elem << " " << eglobp[i] << "\n";
-				exit(1);
-				break;
+				case 3: // LINE
+					i += 2 + 1;
+					break;
+				case 9: // QUAD
+					i += 4 + 1;
+					break;
+				case 12: // HEXAHEDRON:
+					i += 6 + 1;
+					break;
+				case 5: // TRIANGLE:
+					i += 3 + 1;
+					break;
+				case 10: // TETRAHEDRON:
+					i += 4 + 1;
+					break;
+				case 13: // PRISM: // VTK_WEDGE
+					i += 6 + 1;
+					break;
+				case 14: // PYRAMID:
+					i += 5 + 1;
+					break;
+				default:
+					cerr << "PETSC VTK Output 1::WriteVTKElementData MshElemType not handled, i. anz_elem. ep[i] type "
+					     << i << " " << anz_elem << " " << eglobp[i] << "\n";
+					exit(1);
+					break;
 			}
 		}
 
 		// write elements
-//	vtk_file << "CELLS " << numCells << " " << numAllPoints << "\n";
-		PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n",anz_elem,neglob);
-		i=0;
+		//	vtk_file << "CELLS " << numCells << " " << numAllPoints << "\n";
+		PetscViewerASCIIPrintf(viewer, "CELLS %d %d\n", anz_elem, neglob);
+		i = 0;
 		while (i < neglob)
 		{
-
-			switch((int) eglobp[i])// first entry: type of element as defined for vtk ..better than number of nodes
+			switch ((int)eglobp[i]) // first entry: type of element as defined for vtk ..better than number of nodes
 			{
-			case 3: //LINE
-				PetscViewerASCIIPrintf(viewer," 2 ");
-				for(size_t j = 0; j < 2; j++) PetscViewerASCIIPrintf(viewer," %d ",(long) eglobp[i+j+1]);
-				i+=2+1;
-				break;
-			case 9: //QUAD
-				PetscViewerASCIIPrintf(viewer," 4 ");
-				for(size_t j = 0; j < 4; j++) PetscViewerASCIIPrintf(viewer," %d ",(long) eglobp[i+j+1]);
-				i+=4+1;
-				break;
-			case 12: //HEXAHEDRON:
-				PetscViewerASCIIPrintf(viewer," 6 ");
-				for(size_t j = 0; j < 6; j++) PetscViewerASCIIPrintf(viewer," %d ",(long) eglobp[i+j+1]);
-				i+=6+1;
-				break;
-			case 5: // TRIANGLE:
-				PetscViewerASCIIPrintf(viewer," 3 ");
-				for(size_t j = 0; j < 3; j++) PetscViewerASCIIPrintf(viewer," %d ",(long) eglobp[i+j+1]);
-				i+=3+1;
-				break;
-			case 10:// TETRAHEDRON:
-				PetscViewerASCIIPrintf(viewer," 4 ");
-				for(size_t j = 0; j < 4; j++) PetscViewerASCIIPrintf(viewer," %d ",(long) eglobp[i+j+1]);
-				i+=4+1;
-				break;
-			case 13: // PRISM: // VTK_WEDGE
-				PetscViewerASCIIPrintf(viewer," 6 ");
-				for(size_t j = 0; j < 6; j++) PetscViewerASCIIPrintf(viewer," %d ",(long) eglobp[i+j+1]);
-				i+=6+1;
-				break;
-			case 14: // PYRAMID:
-				PetscViewerASCIIPrintf(viewer," 5 ");
-				for(size_t j = 0; j < 5; j++) PetscViewerASCIIPrintf(viewer," %d ",(long) eglobp[i+j+1]);
-				i+=5+1;
-				break;
-			default:
-				cerr << "PETSC VTK Output 2::WriteVTKElementData MshElemType not handled" << "\n";
-				break;
+				case 3: // LINE
+					PetscViewerASCIIPrintf(viewer, " 2 ");
+					for (size_t j = 0; j < 2; j++)
+						PetscViewerASCIIPrintf(viewer, " %d ", (long)eglobp[i + j + 1]);
+					i += 2 + 1;
+					break;
+				case 9: // QUAD
+					PetscViewerASCIIPrintf(viewer, " 4 ");
+					for (size_t j = 0; j < 4; j++)
+						PetscViewerASCIIPrintf(viewer, " %d ", (long)eglobp[i + j + 1]);
+					i += 4 + 1;
+					break;
+				case 12: // HEXAHEDRON:
+					PetscViewerASCIIPrintf(viewer, " 6 ");
+					for (size_t j = 0; j < 6; j++)
+						PetscViewerASCIIPrintf(viewer, " %d ", (long)eglobp[i + j + 1]);
+					i += 6 + 1;
+					break;
+				case 5: // TRIANGLE:
+					PetscViewerASCIIPrintf(viewer, " 3 ");
+					for (size_t j = 0; j < 3; j++)
+						PetscViewerASCIIPrintf(viewer, " %d ", (long)eglobp[i + j + 1]);
+					i += 3 + 1;
+					break;
+				case 10: // TETRAHEDRON:
+					PetscViewerASCIIPrintf(viewer, " 4 ");
+					for (size_t j = 0; j < 4; j++)
+						PetscViewerASCIIPrintf(viewer, " %d ", (long)eglobp[i + j + 1]);
+					i += 4 + 1;
+					break;
+				case 13: // PRISM: // VTK_WEDGE
+					PetscViewerASCIIPrintf(viewer, " 6 ");
+					for (size_t j = 0; j < 6; j++)
+						PetscViewerASCIIPrintf(viewer, " %d ", (long)eglobp[i + j + 1]);
+					i += 6 + 1;
+					break;
+				case 14: // PYRAMID:
+					PetscViewerASCIIPrintf(viewer, " 5 ");
+					for (size_t j = 0; j < 5; j++)
+						PetscViewerASCIIPrintf(viewer, " %d ", (long)eglobp[i + j + 1]);
+					i += 5 + 1;
+					break;
+				default:
+					cerr << "PETSC VTK Output 2::WriteVTKElementData MshElemType not handled"
+					     << "\n";
+					break;
 			}
-			PetscViewerASCIIPrintf(viewer," \n ");
+			PetscViewerASCIIPrintf(viewer, " \n ");
 		}
 
-
 		// write cell types
-//	vtk_file << "CELL_TYPES " << numCells << "\n";
-		PetscViewerASCIIPrintf(viewer,"CELL_TYPES %d \n",anz_elem);
-		i=0;
+		//	vtk_file << "CELL_TYPES " << numCells << "\n";
+		PetscViewerASCIIPrintf(viewer, "CELL_TYPES %d \n", anz_elem);
+		i = 0;
 		while (i < neglob)
 		{
-
-			switch((int) eglobp[i])// first entry: type of element as defined for vtk ..better than number of nodes
+			switch ((int)eglobp[i]) // first entry: type of element as defined for vtk ..better than number of nodes
 			{
-			case 3: //LINE
-				PetscViewerASCIIPrintf(viewer," 3 \n");
-				i+=2+1;
-				break;
-			case 9: //QUAD
-				PetscViewerASCIIPrintf(viewer," 9 \n");
-				i+=4+1;
-				break;
-			case 12: //HEXAHEDRON:
-				PetscViewerASCIIPrintf(viewer," 12 \n");
-				i+=6+1;
-				break;
-			case 5: // TRIANGLE:
-				PetscViewerASCIIPrintf(viewer," 5 \n");
-				i+=3+1;
-				break;
-			case 10:// TETRAHEDRON:
-				PetscViewerASCIIPrintf(viewer," 10 \n");
-				i+=4+1;
-				break;
-			case 13: // PRISM: // VTK_WEDGE
-				PetscViewerASCIIPrintf(viewer," 13 \n");
-				i+=6+1;
-				break;
-			case 14: // PYRAMID:
-				PetscViewerASCIIPrintf(viewer," 14 \n");;
-				i+=5+1;
-				break;
-			default:
-				cerr << "COutput::WriteVTKElementData MshElemType not handled" << "\n";
-				break;
+				case 3: // LINE
+					PetscViewerASCIIPrintf(viewer, " 3 \n");
+					i += 2 + 1;
+					break;
+				case 9: // QUAD
+					PetscViewerASCIIPrintf(viewer, " 9 \n");
+					i += 4 + 1;
+					break;
+				case 12: // HEXAHEDRON:
+					PetscViewerASCIIPrintf(viewer, " 12 \n");
+					i += 6 + 1;
+					break;
+				case 5: // TRIANGLE:
+					PetscViewerASCIIPrintf(viewer, " 5 \n");
+					i += 3 + 1;
+					break;
+				case 10: // TETRAHEDRON:
+					PetscViewerASCIIPrintf(viewer, " 10 \n");
+					i += 4 + 1;
+					break;
+				case 13: // PRISM: // VTK_WEDGE
+					PetscViewerASCIIPrintf(viewer, " 13 \n");
+					i += 6 + 1;
+					break;
+				case 14: // PYRAMID:
+					PetscViewerASCIIPrintf(viewer, " 14 \n");
+					;
+					i += 5 + 1;
+					break;
+				default:
+					cerr << "COutput::WriteVTKElementData MshElemType not handled"
+					     << "\n";
+					break;
 			}
-//	PetscViewerASCIIPrintf(viewer," \n ");
+			//	PetscViewerASCIIPrintf(viewer," \n ");
 		}
 
 	} // end myrank == 0
 }
-
 
 /**************************************************************************
    FEMLib-Method:
@@ -446,13 +448,11 @@ void LegacyVtkInterface::WriteVTKCellDataPETSC(PetscViewer viewer) const
 **************************************************************************/
 void LegacyVtkInterface::WriteVTKDataArraysPETSC(PetscViewer viewer) const
 {
-
-	PetscScalar *xp; //used for pointer
-	PetscInt low,high;
+	PetscScalar* xp; // used for pointer
+	PetscInt low, high;
 	PetscInt count;
 
-
-	MeshLib::CFEMesh *_mesh = fem_msh_vector[0];
+	MeshLib::CFEMesh* _mesh = fem_msh_vector[0];
 	long numNodes = _mesh->GetNodesNumber(false);
 
 	// const int nn = mesh->getNumNodesGlobal(); //global number of nodes ..without shadow nodes
@@ -460,7 +460,7 @@ void LegacyVtkInterface::WriteVTKDataArraysPETSC(PetscViewer viewer) const
 	// test vtk output
 	PETSc_Vec x; //
 	VecCreate(PETSC_COMM_WORLD, &x);
-	VecSetSizes(x, numNodes,PETSC_DECIDE);
+	VecSetSizes(x, numNodes, PETSC_DECIDE);
 	VecSetFromOptions(x); //
 	// get range of local variables
 	VecGetOwnershipRange(x, &low, &high);
@@ -468,9 +468,8 @@ void LegacyVtkInterface::WriteVTKDataArraysPETSC(PetscViewer viewer) const
 	// get local part of vectors
 	VecGetArray(x, &xp);
 
-
 	// NODAL DATA
-//	vtk_file << "POINT_DATA " << numNodes << "\n";
+	//	vtk_file << "POINT_DATA " << numNodes << "\n";
 	const size_t numPointArrays = _pointArrayNames.size();
 
 	for (size_t k = 0; k < numPointArrays; k++)
@@ -493,32 +492,34 @@ void LegacyVtkInterface::WriteVTKDataArraysPETSC(PetscViewer viewer) const
 		{
 			string arrayName = _pointArrayNames[k];
 			CRFProcess* pcs = PCSGet(arrayName, true);
-			if (!pcs) { }
-			else {
-				const char * carrayName = arrayName.c_str();
+			if (!pcs)
+			{
+			}
+			else
+			{
+				const char* carrayName = arrayName.c_str();
 				int indexDataArray = pcs->GetNodeValueIndex(arrayName);
 
-				PetscObjectSetName((PetscObject)x,carrayName);
+				PetscObjectSetName((PetscObject)x, carrayName);
 
 				for (long j = 0; j < count; j++)
-					xp[j]= pcs->GetNodeValue(_mesh->nod_vector[j]->GetIndex(),
-											 indexDataArray);
+					xp[j] = pcs->GetNodeValue(_mesh->nod_vector[j]->GetIndex(), indexDataArray);
 				VecView(x, viewer);
 			}
-
 		}
 	}
 
 // here is the place to add the GEMS node data
 #ifdef GEM_REACT
-	m_vec_GEM->WriteVTKGEMValuesPETSC(viewer);	   //kg44 export GEM internal variables like speciateion vector , phases etc
+	m_vec_GEM->WriteVTKGEMValuesPETSC(viewer); // kg44 export GEM internal variables like speciateion vector , phases
+// etc
 #endif
 
-// ELEMENT DATA
+	// ELEMENT DATA
 	// first create a PETSC vector for storing the data
-	PetscScalar *ep; //used for pointer
+	PetscScalar* ep; // used for pointer
 
-//        MeshLib::CFEMesh *_mesh = fem_msh_vector[0];
+	//        MeshLib::CFEMesh *_mesh = fem_msh_vector[0];
 	long numElem = _mesh->ele_vector.size();
 
 	// const int nn = mesh->getNumNodesGlobal(); //global number of nodes ..without shadow nodes
@@ -526,11 +527,11 @@ void LegacyVtkInterface::WriteVTKDataArraysPETSC(PetscViewer viewer) const
 	// test vtk output
 	PETSc_Vec e; //
 	VecCreate(PETSC_COMM_WORLD, &e);
-	VecSetSizes(e, numElem,PETSC_DECIDE);
+	VecSetSizes(e, numElem, PETSC_DECIDE);
 	VecSetFromOptions(e); //
 	// get range of local variables
-	VecGetOwnershipRange(e, &low, &high);  //reuse low and high from before
-	VecGetLocalSize(e, &count);         // reuse count
+	VecGetOwnershipRange(e, &low, &high); // reuse low and high from before
+	VecGetLocalSize(e, &count); // reuse count
 	// get local part of vectors
 	VecGetArray(e, &ep);
 
@@ -545,8 +546,7 @@ void LegacyVtkInterface::WriteVTKDataArraysPETSC(PetscViewer viewer) const
 		std::vector<int> ele_value_index_vector(_cellArrayNames.size());
 		if (_cellArrayNames[0].size() > 0)
 			for (size_t i = 0; i < _cellArrayNames.size(); i++)
-				ele_value_index_vector[i] = pcs->GetElementValueIndex(
-												_cellArrayNames[i]);
+				ele_value_index_vector[i] = pcs->GetElementValueIndex(_cellArrayNames[i]);
 
 		//....................................................................
 		//
@@ -555,33 +555,34 @@ void LegacyVtkInterface::WriteVTKDataArraysPETSC(PetscViewer viewer) const
 			// JTARON 2010, "VELOCITY" should only write as vector, scalars handled elswhere
 			if (_cellArrayNames[k].compare("VELOCITY") == 0)
 			{
-				//kg44 to be done		vtk_file << "VECTORS velocity double " << "\n";
+				// kg44 to be done		vtk_file << "VECTORS velocity double " << "\n";
 				// 		this->WriteELEVelocity(vtk_file); //WW/OK
 			}
 			// PRINT CHANGING (OR CONSTANT) PERMEABILITY TENSOR?   // JTARON 2010
 			else if (_cellArrayNames[k].compare("PERMEABILITY") == 0)
 			{
 				/*  kg44 to be done     		vtk_file << "TENSORS permeability double " << endl;
-										for (long j = 0; j < (long) _mesh->ele_vector.size(); j++)
-										{
-											MeshLib::CElem* ele = _mesh->ele_vector[j];
-											CMediumProperties* MediaProp =
-													mmp_vector[ele->GetPatchIndex()];
-											// KG44 22.2.2013 this is not working as expected...we need to differenciate for type of permeability_tensor
-											for (size_t i = 0; i < 9; i++)
-												vtk_file <<
-												MediaProp->PermeabilityTensor(j)[i] << " ";
-						//KG44 this is buggy						MediaProp->PermeabilityTensor(j)[i * 3 + i] << " ";
-											vtk_file << "\n";
-										}
-									*/
+				                        for (long j = 0; j < (long) _mesh->ele_vector.size(); j++)
+				                        {
+				                            MeshLib::CElem* ele = _mesh->ele_vector[j];
+				                            CMediumProperties* MediaProp =
+				                                    mmp_vector[ele->GetPatchIndex()];
+				                            // KG44 22.2.2013 this is not working as expected...we need to differenciate
+				   for type of permeability_tensor
+				                            for (size_t i = 0; i < 9; i++)
+				                                vtk_file <<
+				                                MediaProp->PermeabilityTensor(j)[i] << " ";
+				        //KG44 this is buggy						MediaProp->PermeabilityTensor(j)[i * 3 + i] << " ";
+				                            vtk_file << "\n";
+				                        }
+				                    */
 			}
 			else if (ele_value_index_vector[k] > -1)
 			{
-				const char * carrayName = _cellArrayNames[k].c_str();
-				PetscObjectSetName((PetscObject)e,carrayName);
+				const char* carrayName = _cellArrayNames[k].c_str();
+				PetscObjectSetName((PetscObject)e, carrayName);
 				for (long j = 0; j < count; j++)
-					ep[j]= pcs->GetElementValue(j, ele_value_index_vector[k]);
+					ep[j] = pcs->GetElementValue(j, ele_value_index_vector[k]);
 				VecView(e, viewer);
 			}
 		}
@@ -597,21 +598,22 @@ void LegacyVtkInterface::WriteVTKDataArraysPETSC(PetscViewer viewer) const
 			mmp_id = 0;
 		// Let's say porosity
 		// write header for cell data
-//            if (!wroteAnyEleData)
-//                vtk_file << "CELL_DATA " << _mesh->ele_vector.size() << "\n";
-		const char * carrayName = _materialPropertyArrayNames[0].c_str();
-		PetscObjectSetName((PetscObject)e,carrayName);
+		//            if (!wroteAnyEleData)
+		//                vtk_file << "CELL_DATA " << _mesh->ele_vector.size() << "\n";
+		const char* carrayName = _materialPropertyArrayNames[0].c_str();
+		PetscObjectSetName((PetscObject)e, carrayName);
 		for (size_t i = 0; i < (size_t)count; i++)
 		{
 			MeshLib::CElem* ele = _mesh->ele_vector[i];
 			switch (mmp_id)
 			{
-			case 0:
-				ep[i] = mmp_vector[ele->GetPatchIndex()]->Porosity(i, 0.0);
-				break;
-			default:
-				cout << "COutput::WriteVTKValues: no MMP values specified" << "\n";
-				break;
+				case 0:
+					ep[i] = mmp_vector[ele->GetPatchIndex()]->Porosity(i, 0.0);
+					break;
+				default:
+					cout << "COutput::WriteVTKValues: no MMP values specified"
+					     << "\n";
+					break;
 			}
 		}
 		VecView(e, viewer);
@@ -620,43 +622,40 @@ void LegacyVtkInterface::WriteVTKDataArraysPETSC(PetscViewer viewer) const
 	if (mmp_vector.size() > 1)
 	{
 		// write header for cell data
-//            if (!wroteAnyEleData)				//NW: check whether the header has been already written
-//                vtk_file << "CELL_DATA " << _mesh->ele_vector.size() << "\n";
+		//            if (!wroteAnyEleData)				//NW: check whether the header has been already written
+		//                vtk_file << "CELL_DATA " << _mesh->ele_vector.size() << "\n";
 
-		const char * carrayName = "MatGroup";
-		PetscObjectSetName((PetscObject)e,carrayName);
+		const char* carrayName = "MatGroup";
+		PetscObjectSetName((PetscObject)e, carrayName);
 
-//            vtk_file << "SCALARS " << "MatGroup" << " int 1" << "\n";
-//            vtk_file << "LOOKUP_TABLE default" << "\n";
+		//            vtk_file << "SCALARS " << "MatGroup" << " int 1" << "\n";
+		//            vtk_file << "LOOKUP_TABLE default" << "\n";
 		for (size_t i = 0; i < (size_t)count; i++)
 		{
 			MeshLib::CElem* ele = _mesh->ele_vector[i];
-			ep[i]=ele->GetPatchIndex();
-//                vtk_file << ele->GetPatchIndex() << "\n";
+			ep[i] = ele->GetPatchIndex();
+			//                vtk_file << ele->GetPatchIndex() << "\n";
 		}
 		VecView(e, viewer);
 
-	const char * carrayNameD = "Domain";
-		PetscObjectSetName((PetscObject)e,carrayNameD);
+		const char* carrayNameD = "Domain";
+		PetscObjectSetName((PetscObject)e, carrayNameD);
 
-//            vtk_file << "SCALARS " << "MatGroup" << " int 1" << "\n";
-//            vtk_file << "LOOKUP_TABLE default" << "\n";
-	int myrank;
-	MPI_Comm_rank(PETSC_COMM_WORLD, &myrank);
+		//            vtk_file << "SCALARS " << "MatGroup" << " int 1" << "\n";
+		//            vtk_file << "LOOKUP_TABLE default" << "\n";
+		int myrank;
+		MPI_Comm_rank(PETSC_COMM_WORLD, &myrank);
 		for (size_t i = 0; i < (size_t)count; i++)
 		{
 			// MeshLib::CElem* ele = _mesh->ele_vector[i];
-			ep[i]=myrank;
-//                vtk_file << ele->GetPatchIndex() << "\n";
-	}
+			ep[i] = myrank;
+			//                vtk_file << ele->GetPatchIndex() << "\n";
+		}
 		VecView(e, viewer);
-
 	}
-
 
 	return;
 }
-
 
 #else // this is the default if petsc is not defined
 
@@ -668,18 +667,19 @@ void LegacyVtkInterface::WriteVTKDataArraysPETSC(PetscViewer viewer) const
    09/2006 KG44 Output for MPI - correct OUTPUT not yet implemented
    12/2008 NW Remove ios::app, Add PCS name to VTK file name
 **************************************************************************/
-void LegacyVtkInterface::WriteDataVTK(int number, double simulation_time,
-									  std::string baseFilename) const
+void LegacyVtkInterface::WriteDataVTK(int number, double simulation_time, std::string baseFilename) const
 {
 	baseFilename = pathJoin(defaultOutputPath, pathBasename(baseFilename));
 
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL)
-	cout << "Process " << myrank << " in WriteDataVTK" << "\n";
+	cout << "Process " << myrank << " in WriteDataVTK"
+	     << "\n";
 #endif
 
-	if(!_mesh)
+	if (!_mesh)
 	{
-		cout << "Warning in LegacyVtkInterface::WriteVTKNodes - no MSH data" << "\n";
+		cout << "Warning in LegacyVtkInterface::WriteVTKNodes - no MSH data"
+		     << "\n";
 		return;
 	}
 
@@ -694,68 +694,73 @@ void LegacyVtkInterface::WriteDataVTK(int number, double simulation_time,
 	baseFilename += ".vtk";
 
 	// LB if(!_new_file_opened) remove(baseFilename.c_str());
-	fstream vtk_file (baseFilename.c_str(), ios::out);
-	vtk_file.setf(ios::scientific,ios::floatfield);
+	fstream vtk_file(baseFilename.c_str(), ios::out);
+	vtk_file.setf(ios::scientific, ios::floatfield);
 	vtk_file.precision(12);
 	if (!vtk_file.good())
 	{
 		cout << "Could not open file for writing: " << baseFilename << "\n";
 		return;
 	}
-	vtk_file.seekg(0L,ios::beg);
+	vtk_file.seekg(0L, ios::beg);
 #ifdef SUPERCOMPUTER
-// kg44 buffer the output
-	char mybuffer [MY_IO_BUFSIZE * MY_IO_BUFSIZE];
-	vtk_file.rdbuf()->pubsetbuf(mybuffer,MY_IO_BUFSIZE * MY_IO_BUFSIZE);
+	// kg44 buffer the output
+	char mybuffer[MY_IO_BUFSIZE * MY_IO_BUFSIZE];
+	vtk_file.rdbuf()->pubsetbuf(mybuffer, MY_IO_BUFSIZE * MY_IO_BUFSIZE);
 //
 #endif
 
-	this->WriteVTKHeader(vtk_file,number,simulation_time);
+	this->WriteVTKHeader(vtk_file, number, simulation_time);
 	this->WriteVTKPointData(vtk_file);
 	this->WriteVTKCellData(vtk_file);
 	this->WriteVTKDataArrays(vtk_file);
 	vtk_file.close();
 }
 
-
-void LegacyVtkInterface::WriteVTKHeader(fstream &vtk_file,
-										int time_step_number,
-										double simulation_time) const
+void LegacyVtkInterface::WriteVTKHeader(fstream& vtk_file, int time_step_number, double simulation_time) const
 {
-	vtk_file << "# vtk DataFile Version 3.0" << "\n";
-	vtk_file << "Unstructured Grid from OpenGeoSys" << "\n";
-	vtk_file << "ASCII"	 << "\n";
-	vtk_file << "DATASET UNSTRUCTURED_GRID"	 << "\n";
+	vtk_file << "# vtk DataFile Version 3.0"
+	         << "\n";
+	vtk_file << "Unstructured Grid from OpenGeoSys"
+	         << "\n";
+	vtk_file << "ASCII"
+	         << "\n";
+	vtk_file << "DATASET UNSTRUCTURED_GRID"
+	         << "\n";
 
 	// time information
 	// see http://www.visitusers.org/index.php?title=Time_and_Cycle_in_VTK_files
-	vtk_file << "FIELD TimesAndCycles 2" << "\n";
-	vtk_file << "TIME 1 1 double" << "\n";
+	vtk_file << "FIELD TimesAndCycles 2"
+	         << "\n";
+	vtk_file << "TIME 1 1 double"
+	         << "\n";
 	vtk_file << simulation_time << "\n";
-	vtk_file << "CYLCE 1 1 long" << "\n";
+	vtk_file << "CYLCE 1 1 long"
+	         << "\n";
 	vtk_file << time_step_number << "\n";
 }
 
-void LegacyVtkInterface::WriteVTKPointData(fstream &vtk_file) const
+void LegacyVtkInterface::WriteVTKPointData(fstream& vtk_file) const
 {
 	const std::vector<MeshLib::CNode*> pointVector = _mesh->getNodeVector();
-	const size_t n_linear_pnts (_mesh->GetNodesNumber(false));
-	vtk_file << "POINTS " << n_linear_pnts << " double" << "\n";
+	const size_t n_linear_pnts(_mesh->GetNodesNumber(false));
+	vtk_file << "POINTS " << n_linear_pnts << " double"
+	         << "\n";
 
-	for(size_t i = 0; i < n_linear_pnts; i++)
+	for (size_t i = 0; i < n_linear_pnts; i++)
 	{
-		double const* const coords (pointVector[i]->getData());
+		double const* const coords(pointVector[i]->getData());
 		vtk_file << coords[0] << " " << coords[1] << " " << coords[2] << "\n";
 	}
 }
 
-void LegacyVtkInterface::WriteVTKCellData(fstream &vtk_file) const
+void LegacyVtkInterface::WriteVTKCellData(fstream& vtk_file) const
 {
 	size_t numCells = _mesh->ele_vector.size();
 
 	// count overall length of element vector
 	long numAllPoints = 0;
-	for(size_t i = 0; i < numCells; i++)
+	for (size_t i = 0; i < numCells; i++)
 	{
 		MeshLib::CElem* ele = _mesh->ele_vector[i];
 		numAllPoints = numAllPoints + (ele->GetNodesNumber(false)) + 1;
@@ -763,40 +768,41 @@ void LegacyVtkInterface::WriteVTKCellData(fstream &vtk_file) const
 
 	// write elements
 	vtk_file << "CELLS " << numCells << " " << numAllPoints << "\n";
-	for(size_t i = 0; i < numCells; i++)
+	for (size_t i = 0; i < numCells; i++)
 	{
 		MeshLib::CElem* ele = _mesh->ele_vector[i];
 
 		// Write number of points per cell
-		switch(ele->GetElementType())
+		switch (ele->GetElementType())
 		{
-		case MshElemType::LINE:
-			vtk_file << "2";
-			break;
-		case MshElemType::QUAD:
-			vtk_file << "4";
-			break;
-		case MshElemType::HEXAHEDRON:
-			vtk_file << "8";
-			break;
-		case MshElemType::TRIANGLE:
-			vtk_file << "3";
-			break;
-		case MshElemType::TETRAHEDRON:
-			vtk_file << "4";
-			break;
-		case MshElemType::PRISM:
-			vtk_file << "6";
-			break;
-		case MshElemType::PYRAMID:
-			vtk_file << "5";
-			break;
-		default:
-			cerr << "COutput::WriteVTKElementData MshElemType not handled" << "\n";
-			break;
+			case MshElemType::LINE:
+				vtk_file << "2";
+				break;
+			case MshElemType::QUAD:
+				vtk_file << "4";
+				break;
+			case MshElemType::HEXAHEDRON:
+				vtk_file << "8";
+				break;
+			case MshElemType::TRIANGLE:
+				vtk_file << "3";
+				break;
+			case MshElemType::TETRAHEDRON:
+				vtk_file << "4";
+				break;
+			case MshElemType::PRISM:
+				vtk_file << "6";
+				break;
+			case MshElemType::PYRAMID:
+				vtk_file << "5";
+				break;
+			default:
+				cerr << "COutput::WriteVTKElementData MshElemType not handled"
+				     << "\n";
+				break;
 		}
 
-		for(size_t j = 0; j < ele->GetNodesNumber(false); j++)
+		for (size_t j = 0; j < ele->GetNodesNumber(false); j++)
 			vtk_file << " " << ele->getNodeIndices()[j];
 
 		vtk_file << "\n";
@@ -806,37 +812,45 @@ void LegacyVtkInterface::WriteVTKCellData(fstream &vtk_file) const
 	// write cell types
 	vtk_file << "CELL_TYPES " << numCells << "\n";
 
-	for(size_t i = 0; i < numCells; i++)
+	for (size_t i = 0; i < numCells; i++)
 	{
 		MeshLib::CElem* ele = _mesh->ele_vector[i];
 
 		// Write vtk cell type number (see vtkCellType.h)
-		switch(ele->GetElementType())
+		switch (ele->GetElementType())
 		{
-		case MshElemType::LINE:
-			vtk_file << "3" << "\n";
-			break;
-		case MshElemType::QUAD:
-			vtk_file << "9" << "\n";
-			break;
-		case MshElemType::HEXAHEDRON:
-			vtk_file << "12" << "\n";
-			break;
-		case MshElemType::TRIANGLE:
-			vtk_file << "5" << "\n";
-			break;
-		case MshElemType::TETRAHEDRON:
-			vtk_file << "10" << "\n";
-			break;
-		case MshElemType::PRISM: // VTK_WEDGE
-			vtk_file << "13" << "\n";
-			break;
-		case MshElemType::PYRAMID:
-			vtk_file << "14" << "\n";
-			break;
-		default:
-			cerr << "COutput::WriteVTKElementData MshElemType not handled" << "\n";
-			break;
+			case MshElemType::LINE:
+				vtk_file << "3"
+				         << "\n";
+				break;
+			case MshElemType::QUAD:
+				vtk_file << "9"
+				         << "\n";
+				break;
+			case MshElemType::HEXAHEDRON:
+				vtk_file << "12"
+				         << "\n";
+				break;
+			case MshElemType::TRIANGLE:
+				vtk_file << "5"
+				         << "\n";
+				break;
+			case MshElemType::TETRAHEDRON:
+				vtk_file << "10"
+				         << "\n";
+				break;
+			case MshElemType::PRISM: // VTK_WEDGE
+				vtk_file << "13"
+				         << "\n";
+				break;
+			case MshElemType::PYRAMID:
+				vtk_file << "14"
+				         << "\n";
+				break;
+			default:
+				cerr << "COutput::WriteVTKElementData MshElemType not handled"
+				     << "\n";
+				break;
 		}
 	}
 	vtk_file << "\n";
@@ -852,7 +866,7 @@ void LegacyVtkInterface::WriteVTKCellData(fstream &vtk_file) const
    06/2009 WW/OK WriteELEVelocity for different coordinate systems
    11/2012 WW   Rewrite this fucntion in order to have a correct vec/teosor output
 **************************************************************************/
-void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
+void LegacyVtkInterface::WriteVTKDataArrays(fstream& vtk_file) const
 {
 	long numNodes = _mesh->GetNodesNumber(false);
 
@@ -863,9 +877,8 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
 
 	int tensor_com = 4;
 
-	if(space_dim == 3)
-	   tensor_com = 6;
-
+	if (space_dim == 3)
+		tensor_com = 6;
 
 	// NODAL DATA
 	vtk_file << "POINT_DATA " << numNodes << "\n";
@@ -876,50 +889,48 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
 		bool toNext = false;
 
 		// Write X, Y and Z arrays as vectors
-		//WW. 11.2012. if(k + 1 < numPointArrays)
+		// WW. 11.2012. if(k + 1 < numPointArrays)
 		{
-			if (_pointArrayNames[k].find("_X") != string::npos && (k+1<numPointArrays && _pointArrayNames[k + 1].find("_Y") != string::npos))
+			if (_pointArrayNames[k].find("_X") != string::npos
+			    && (k + 1 < numPointArrays && _pointArrayNames[k + 1].find("_Y") != string::npos))
 			{
-			   string arrayName = _pointArrayNames[k];
-			   CRFProcess* pcs = PCSGet(arrayName, true);
-			   if (!pcs)
-				  continue;
+				string arrayName = _pointArrayNames[k];
+				CRFProcess* pcs = PCSGet(arrayName, true);
+				if (!pcs)
+					continue;
 
-
-				if(pcs->getProcessType() == FiniteElement::FLUID_MOMENTUM ) // 23.11.2012. WW
+				if (pcs->getProcessType() == FiniteElement::FLUID_MOMENTUM) // 23.11.2012. WW
 				{
-				   vec_val_idx[0] = pcs->GetNodeValueIndex(arrayName) + 1;
-				   for(int kk=1; kk<space_dim; kk++)
+					vec_val_idx[0] = pcs->GetNodeValueIndex(arrayName) + 1;
+					for (int kk = 1; kk < space_dim; kk++)
 					{
-					   vec_val_idx[kk] =  vec_val_idx[kk-1] + 2;
+						vec_val_idx[kk] = vec_val_idx[kk - 1] + 2;
 					}
 				}
 				else
 				{
-				   vec_val_idx[0] = pcs->GetNodeValueIndex(arrayName);
-				   for(int kk=1; kk<space_dim; kk++)
+					vec_val_idx[0] = pcs->GetNodeValueIndex(arrayName);
+					for (int kk = 1; kk < space_dim; kk++)
 					{
-					   vec_val_idx[kk] =  vec_val_idx[0] + kk;
+						vec_val_idx[kk] = vec_val_idx[0] + kk;
 					}
 				}
 
-
 				std::cout << "ArrayName: " << arrayName << "\n";
-				vtk_file << "VECTORS " << arrayName.substr(0, arrayName.size() - 2) <<
-				" double" << "\n";
+				vtk_file << "VECTORS " << arrayName.substr(0, arrayName.size() - 2) << " double"
+				         << "\n";
 
 				for (long j = 0l; j < numNodes; j++)
 				{
-
 					const long node_id = _mesh->nod_vector[j]->GetIndex();
-					for(int kk=0; kk<space_dim; kk++)
+					for (int kk = 0; kk < space_dim; kk++)
 					{
-					   vtk_file << pcs->GetNodeValue(node_id, vec_val_idx[kk]) << " " ;
+						vtk_file << pcs->GetNodeValue(node_id, vec_val_idx[kk]) << " ";
 					}
 
-					for(int kk=space_dim; kk<3; kk++)
+					for (int kk = space_dim; kk < 3; kk++)
 					{
-					   vtk_file << "0.0  " ;
+						vtk_file << "0.0  ";
 					}
 
 					vtk_file << "\n";
@@ -930,23 +941,21 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
 			}
 			// Write tensors as Eigenvectors
 			// XX, XY, YY, ZZ, XZ, YZ must be present in that order
-			else if(_pointArrayNames[k].find("_XX") != string::npos)
+			else if (_pointArrayNames[k].find("_XX") != string::npos)
 			{
-
-			   string arrayName = _pointArrayNames[k];
-			   CRFProcess* pcs = PCSGet(arrayName, true);
-			   if (!pcs)
-				  continue;
+				string arrayName = _pointArrayNames[k];
+				CRFProcess* pcs = PCSGet(arrayName, true);
+				if (!pcs)
+					continue;
 
 				tensor_val_idx[0] = pcs->GetNodeValueIndex(arrayName);
-				for(int kk=1; kk<tensor_com; kk++)
+				for (int kk = 1; kk < tensor_com; kk++)
 				{
-					tensor_val_idx[kk] =  tensor_val_idx[0] + kk;
+					tensor_val_idx[kk] = tensor_val_idx[0] + kk;
 				}
 
 				{
 #if defined(VTK_FOUND) && defined(OGS_USE_QT)
-
 
 					vector<vector<double> > eigenvectors_1, eigenvectors_2, eigenvectors_3;
 
@@ -956,11 +965,10 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
 						const long node_id = _mesh->nod_vector[j]->GetIndex();
 						double vector6[6];
 						// Iterate over the tensor 6 arrays
-						for(size_t component = 0; component < tensor_com; ++component)
+						for (size_t component = 0; component < tensor_com; ++component)
 						{
-
 							vector6[component] = pcs->GetNodeValue(node_id, tensor_val_idx[component]);
-							//std::cout << "vector " << component << " : " << vector6[component] << "\n";
+							// std::cout << "vector " << component << " : " << vector6[component] << "\n";
 						}
 
 						double* tensor[3];
@@ -971,7 +979,7 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
 						tensor[1] = tensor1;
 						tensor[2] = tensor2;
 
-						if(tensor_com == 6)
+						if (tensor_com == 6)
 						{
 							tensor0[0] = vector6[0];
 							tensor0[1] = vector6[1];
@@ -985,8 +993,8 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
 						}
 						else
 						{
-							 continue;
-							 //std::cout << " To be finished / " << "\n";
+							continue;
+							// std::cout << " To be finished / " << "\n";
 						}
 						// std::cout << "TensorMat:" << "\n";
 						// std::cout << tensor0[0] << " " << tensor0[1] << " " << tensor0[2] << "\n";
@@ -994,12 +1002,14 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
 						// std::cout << tensor2[0] << " " << tensor2[1] << " " << tensor2[2] << "\n";
 						// std::cout << "\n" << "\n";
 
-						double *eigenvectors[3];
+						double* eigenvectors[3];
 						double eigenvectors0[3];
 						double eigenvectors1[3];
 						double eigenvectors2[3];
 
-						eigenvectors[0] = eigenvectors0; eigenvectors[1] = eigenvectors1; eigenvectors[2] = eigenvectors2;
+						eigenvectors[0] = eigenvectors0;
+						eigenvectors[1] = eigenvectors1;
+						eigenvectors[2] = eigenvectors2;
 						double eigenvalues[3];
 
 						vtkMath::Jacobi(tensor, eigenvalues, eigenvectors);
@@ -1020,24 +1030,30 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
 						eigenvectors_3.push_back(eigenvector_3);
 					}
 
-					vtk_file << "VECTORS " << arrayName.substr(0, arrayName.size() - 3) <<
-					"_Eigenvector_1" << " double" << "\n";
-					for(vector<vector<double> >::iterator it = eigenvectors_1.begin(); it != eigenvectors_1.end(); ++it)
+					vtk_file << "VECTORS " << arrayName.substr(0, arrayName.size() - 3) << "_Eigenvector_1"
+					         << " double"
+					         << "\n";
+					for (vector<vector<double> >::iterator it = eigenvectors_1.begin(); it != eigenvectors_1.end();
+					     ++it)
 						vtk_file << (*it)[0] << " " << (*it)[1] << " " << (*it)[2] << "\n";
 
-					vtk_file << "VECTORS " << arrayName.substr(0, arrayName.size() - 3) <<
-					"_Eigenvector_2" << " double" << "\n";
-					for(vector<vector<double> >::iterator it = eigenvectors_2.begin(); it != eigenvectors_2.end(); ++it)
+					vtk_file << "VECTORS " << arrayName.substr(0, arrayName.size() - 3) << "_Eigenvector_2"
+					         << " double"
+					         << "\n";
+					for (vector<vector<double> >::iterator it = eigenvectors_2.begin(); it != eigenvectors_2.end();
+					     ++it)
 						vtk_file << (*it)[0] << " " << (*it)[1] << " " << (*it)[2] << "\n";
 
-					vtk_file << "VECTORS " << arrayName.substr(0, arrayName.size() - 3) <<
-					"_Eigenvector_3" << " double" << "\n";
-					for(vector<vector<double> >::iterator it = eigenvectors_3.begin(); it != eigenvectors_3.end(); ++it)
+					vtk_file << "VECTORS " << arrayName.substr(0, arrayName.size() - 3) << "_Eigenvector_3"
+					         << " double"
+					         << "\n";
+					for (vector<vector<double> >::iterator it = eigenvectors_3.begin(); it != eigenvectors_3.end();
+					     ++it)
 						vtk_file << (*it)[0] << " " << (*it)[1] << " " << (*it)[2] << "\n";
 					k += tensor_com;
 					toNext = true;
 #else
-					 // TBD
+// TBD
 #endif
 				}
 			}
@@ -1050,26 +1066,28 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
 	// Saturation 2 for 1212 pp - scheme. 01.04.2009. WW
 	// ---------------------------------------------------------------------
 	CRFProcess* pcs = NULL;
-	if (!_pointArrayNames.empty())					  //SB added
+	if (!_pointArrayNames.empty()) // SB added
 		pcs = PCSGet(_pointArrayNames[0], true);
 	if (pcs && pcs->type == 1212)
 	{
-		size_t i = pcs->GetNodeValueIndex("SATURATION1",true); // JT: Latest
-		vtk_file << "SCALARS SATURATION2 double 1" << "\n";
-		vtk_file << "LOOKUP_TABLE default" << "\n";
+		size_t i = pcs->GetNodeValueIndex("SATURATION1", true); // JT: Latest
+		vtk_file << "SCALARS SATURATION2 double 1"
+		         << "\n";
+		vtk_file << "LOOKUP_TABLE default"
+		         << "\n";
 		for (long j = 0l; j < numNodes; j++)
 		{
 			double val_n = pcs->GetNodeValue(_mesh->nod_vector[j]->GetIndex(), i);
 			vtk_file << 1.0 - val_n << "\n";
 		}
 	}
-//kg44 GEM node data
+// kg44 GEM node data
 #ifdef GEM_REACT
-	m_vec_GEM->WriteVTKGEMValues(vtk_file);	   //kg44 export GEM internal variables like speciateion vector , phases etc
+	m_vec_GEM->WriteVTKGEMValues(vtk_file); // kg44 export GEM internal variables like speciateion vector , phases etc
 #endif
 	// ELEMENT DATA
 	// ---------------------------------------------------------------------
-	bool wroteAnyEleData = false;			   //NW
+	bool wroteAnyEleData = false; // NW
 	if (!_cellArrayNames.empty())
 	{
 		CRFProcess* pcs = this->GetPCS_ELE(_cellArrayNames[0]);
@@ -1077,10 +1095,9 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
 		std::vector<int> ele_value_index_vector(_cellArrayNames.size());
 		if (_cellArrayNames[0].size() > 0)
 			for (size_t i = 0; i < _cellArrayNames.size(); i++)
-				ele_value_index_vector[i] = pcs->GetElementValueIndex(
-						_cellArrayNames[i]);
+				ele_value_index_vector[i] = pcs->GetElementValueIndex(_cellArrayNames[i]);
 
-		vtk_file << "CELL_DATA " << (long) _mesh->ele_vector.size() << "\n";
+		vtk_file << "CELL_DATA " << (long)_mesh->ele_vector.size() << "\n";
 		wroteAnyEleData = true;
 		//....................................................................
 		//
@@ -1089,23 +1106,23 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
 			// JTARON 2010, "VELOCITY" should only write as vector, scalars handled elswhere
 			if (_cellArrayNames[k].compare("VELOCITY") == 0)
 			{
-				vtk_file << "VECTORS velocity double " << "\n";
-				this->WriteELEVelocity(vtk_file); //WW/OK
+				vtk_file << "VECTORS velocity double "
+				         << "\n";
+				this->WriteELEVelocity(vtk_file); // WW/OK
 			}
 			// PRINT CHANGING (OR CONSTANT) PERMEABILITY TENSOR?   // JTARON 2010
 			else if (_cellArrayNames[k].compare("PERMEABILITY") == 0)
 			{
 				vtk_file << "TENSORS permeability double " << endl;
-				for (long j = 0; j < (long) _mesh->ele_vector.size(); j++)
+				for (long j = 0; j < (long)_mesh->ele_vector.size(); j++)
 				{
 					MeshLib::CElem* ele = _mesh->ele_vector[j];
-					CMediumProperties* MediaProp =
-							mmp_vector[ele->GetPatchIndex()];
-					// KG44 22.2.2013 this is not working as expected...we need to differenciate for type of permeability_tensor
+					CMediumProperties* MediaProp = mmp_vector[ele->GetPatchIndex()];
+					// KG44 22.2.2013 this is not working as expected...we need to differenciate for type of
+					// permeability_tensor
 					for (size_t i = 0; i < 9; i++)
-						vtk_file <<
-						MediaProp->PermeabilityTensor(j)[i] << " ";
-//KG44 this is buggy						MediaProp->PermeabilityTensor(j)[i * 3 + i] << " ";
+						vtk_file << MediaProp->PermeabilityTensor(j)[i] << " ";
+					// KG44 this is buggy						MediaProp->PermeabilityTensor(j)[i * 3 + i] << " ";
 					vtk_file << "\n";
 				}
 			}
@@ -1113,12 +1130,11 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
 			{
 				// NOW REMAINING SCALAR DATA  // JTARON 2010, reconfig
 				vtk_file << "SCALARS " << _cellArrayNames[k] << " double 1"
-						 << "\n";
-				vtk_file << "LOOKUP_TABLE default" << "\n";
+				         << "\n";
+				vtk_file << "LOOKUP_TABLE default"
+				         << "\n";
 				for (size_t i = 0; i < _mesh->ele_vector.size(); i++)
-					vtk_file << pcs->GetElementValue(i,
-													 ele_value_index_vector[k])
-							 << "\n";
+					vtk_file << pcs->GetElementValue(i, ele_value_index_vector[k]) << "\n";
 			}
 		}
 		//--------------------------------------------------------------------
@@ -1142,12 +1158,13 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
 			double mat_value = 0.0;
 			switch (mmp_id)
 			{
-			case 0:
-				mat_value = mmp_vector[ele->GetPatchIndex()]->Porosity(i, 0.0);
-				break;
-			default:
-				cout << "COutput::WriteVTKValues: no MMP values specified" << "\n";
-				break;
+				case 0:
+					mat_value = mmp_vector[ele->GetPatchIndex()]->Porosity(i, 0.0);
+					break;
+				default:
+					cout << "COutput::WriteVTKValues: no MMP values specified"
+					     << "\n";
+					break;
 			}
 			vtk_file << mat_value << "\n";
 		}
@@ -1156,12 +1173,16 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
 	if (mmp_vector.size() > 1)
 	{
 		// write header for cell data
-		if (!wroteAnyEleData)				//NW: check whether the header has been already written
+		if (!wroteAnyEleData) // NW: check whether the header has been already written
 			vtk_file << "CELL_DATA " << _mesh->ele_vector.size() << "\n";
 		wroteAnyEleData = true;
 
-		vtk_file << "SCALARS " << "MatGroup" << " int 1" << "\n";
-		vtk_file << "LOOKUP_TABLE default" << "\n";
+		vtk_file << "SCALARS "
+		         << "MatGroup"
+		         << " int 1"
+		         << "\n";
+		vtk_file << "LOOKUP_TABLE default"
+		         << "\n";
 		for (size_t i = 0; i < _mesh->ele_vector.size(); i++)
 		{
 			MeshLib::CElem* ele = _mesh->ele_vector[i];
@@ -1175,37 +1196,37 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream &vtk_file) const
    FEMLib-Method:
    06/2009 WW/OK Implementation
 **************************************************************************/
-inline void LegacyVtkInterface::WriteELEVelocity(fstream &vtk_file) const
+inline void LegacyVtkInterface::WriteELEVelocity(fstream& vtk_file) const
 {
 	int vel_ind[3] = {0, 1, 2};
 
 	// 1D
-	if(_mesh->GetCoordinateFlag() / 10 == 1)
+	if (_mesh->GetCoordinateFlag() / 10 == 1)
 	{
 		// 0 y 0
-		if(_mesh->GetCoordinateFlag() % 10 == 1)
+		if (_mesh->GetCoordinateFlag() % 10 == 1)
 		{
 			vel_ind[0] = 1;
 			vel_ind[1] = 0;
 		}
 		// 0 0 z
-		else if(_mesh->GetCoordinateFlag() % 10 == 2)
+		else if (_mesh->GetCoordinateFlag() % 10 == 2)
 		{
 			vel_ind[0] = 2;
 			vel_ind[2] = 0;
 		}
 	}
 	// 2D
-	if(_mesh->GetCoordinateFlag() / 10 == 2)
+	if (_mesh->GetCoordinateFlag() / 10 == 2)
 	{
 		// 0 y z
-		if(_mesh->GetCoordinateFlag() % 10 == 1)
+		if (_mesh->GetCoordinateFlag() % 10 == 1)
 		{
 			vel_ind[0] = 1;
 			vel_ind[1] = 2;
 		}
 		// x 0 z
-		else if(_mesh->GetCoordinateFlag() % 10 == 2)
+		else if (_mesh->GetCoordinateFlag() % 10 == 2)
 		{
 			vel_ind[0] = 0;
 			vel_ind[1] = 2;
@@ -1213,15 +1234,15 @@ inline void LegacyVtkInterface::WriteELEVelocity(fstream &vtk_file) const
 		}
 	}
 
-	for(long i = 0; i < (long)_mesh->ele_vector.size(); i++)
+	for (long i = 0; i < (long)_mesh->ele_vector.size(); i++)
 	{
-		for(int k = 0; k < 3; k++)
-			vtk_file << ele_gp_value[i]->Velocity(vel_ind[k],0) << " ";
+		for (int k = 0; k < 3; k++)
+			vtk_file << ele_gp_value[i]->Velocity(vel_ind[k], 0) << " ";
 		vtk_file << "\n";
 	}
 }
 
-CRFProcess* LegacyVtkInterface::GetPCS_ELE(const string &var_name) const
+CRFProcess* LegacyVtkInterface::GetPCS_ELE(const string& var_name) const
 {
 	string pcs_var_name;
 	CRFProcess* pcs = NULL;
@@ -1244,7 +1265,7 @@ CRFProcess* LegacyVtkInterface::GetPCS_ELE(const string &var_name) const
 	return pcs;
 }
 
-void LegacyVtkInterface::printScalarArray(string arrayName, std::fstream &vtk_file) const
+void LegacyVtkInterface::printScalarArray(string arrayName, std::fstream& vtk_file) const
 {
 	CRFProcess* pcs = PCSGet(arrayName, true);
 	if (!pcs)
@@ -1253,23 +1274,26 @@ void LegacyVtkInterface::printScalarArray(string arrayName, std::fstream &vtk_fi
 	int indexDataArray = pcs->GetNodeValueIndex(arrayName);
 	long numNodes = _mesh->GetNodesNumber(false);
 
-	vtk_file << "SCALARS " << arrayName << " double 1" << "\n";
-	vtk_file << "LOOKUP_TABLE default" << "\n";
+	vtk_file << "SCALARS " << arrayName << " double 1"
+	         << "\n";
+	vtk_file << "LOOKUP_TABLE default"
+	         << "\n";
 
 	for (long j = 0l; j < numNodes; j++)
-		vtk_file << pcs->GetNodeValue(_mesh->nod_vector[j]->GetIndex(),
-									  indexDataArray)
-		<< "\n";
+		vtk_file << pcs->GetNodeValue(_mesh->nod_vector[j]->GetIndex(), indexDataArray) << "\n";
 }
 
 // round very small and very large numbers in order to avoid read error in paraview
 // paraview can not read number with exponents bigger/smaller than 300/-300
 double LegacyVtkInterface::RoundDoubleVTK(double MyZahl)
 {
-  double rnumber;
-  rnumber=MyZahl;
-	 if(MyZahl > 1.0e200) rnumber=1.0e200;
-	 if(MyZahl < -1.0e200) rnumber=-1.0e200;
-	 if((MyZahl < 1.0e-200)&&(MyZahl >-1.0e-200)) rnumber=0.0;
-  return rnumber;
+	double rnumber;
+	rnumber = MyZahl;
+	if (MyZahl > 1.0e200)
+		rnumber = 1.0e200;
+	if (MyZahl < -1.0e200)
+		rnumber = -1.0e200;
+	if ((MyZahl < 1.0e-200) && (MyZahl > -1.0e-200))
+		rnumber = 0.0;
+	return rnumber;
 }

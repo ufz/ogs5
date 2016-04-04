@@ -12,10 +12,10 @@
 
 #include <string>
 
-namespace  MeshLib
+namespace MeshLib
 {
-   class CFEMesh;
+class CFEMesh;
 }
 
-void writeOGSMesh(const MeshLib::CFEMesh &mesh, const std::string file_base_name);
+void writeOGSMesh(const MeshLib::CFEMesh& mesh, const std::string file_base_name);
 #endif

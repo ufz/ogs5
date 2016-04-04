@@ -162,14 +162,14 @@
 
 #include <cfloat>
 //#include <stdio.h>
-#include "femlib.h"                               //CMCD 03 2004
+#include "femlib.h" //CMCD 03 2004
 #include "makros.h"
 #include "memory.h"
 #include "display.h"
 #include "mathlib.h"
-//WW----------------------
+// WW----------------------
 #include "par_ddc.h"
-//WW----------------------
+// WW----------------------
 double pai = 4.0 * atan(1.0);
 VoidFuncDXCDX ShapeFunction;
 VoidFuncDXCDX ShapeFunctionHQ;
@@ -203,7 +203,7 @@ double MBtrgVec(double* vec, long n)
 	return sqrt(zwo);
 }
 
-#ifdef obsolete                                   //05.03.2010 WW
+#ifdef obsolete // 05.03.2010 WW
 /***************************************************************************
    ROCKFLOW - Funktion: MGleichDouble
    Aufgabe:
@@ -229,10 +229,10 @@ int MGleichDouble(double zahl1, double zahl2, double tol)
 		retval = 0;
 	return retval;
 }
-#endif                                            //#ifdef obsolete  //05.03.2010 WW
+#endif //#ifdef obsolete  //05.03.2010 WW
 
 ////////////////////////////////////////////////////////////
-#ifdef obsolete                                   //05.03.2010 WW
+#ifdef obsolete // 05.03.2010 WW
 /***************************************************************************
    ROCKFLOW - Funktion: MOmega1D
    Aufgabe:
@@ -380,8 +380,8 @@ int MOmega3D(double* vf, double r, double s, double t)
 //#ifdef obsolete //WW. 06.11.2008
 int MOmega2DTriangle(double* vf, double xx, double yy, long number)
 {
-	int i,nn = 3,ok = 0;
-	double x[3],y[3];
+	int i, nn = 3, ok = 0;
+	double x[3], y[3];
 	double area;
 	long* element_nodes;
 
@@ -423,17 +423,17 @@ int MOmega2DTriangle(double* vf, double xx, double yy, long number)
    Programing:
    08/2003 OK Implementation
 **************************************************************************/
-int MOmega3DTetrahedron(double* vf,double r,double s,double t,long number)
+int MOmega3DTetrahedron(double* vf, double r, double s, double t, long number)
 {
 	int ok = 0;
 	long* element_nodes;
 	int i;
-	double a1,a2,a3,a4;
-	double b1,b2,b3,b4;
-	double c1,c2,c3,c4;
-	double d1,d2,d3,d4;
-	double x[4],y[4],z[4];
-	double N1,N2,N3,N4;
+	double a1, a2, a3, a4;
+	double b1, b2, b3, b4;
+	double c1, c2, c3, c4;
+	double d1, d2, d3, d4;
+	double x[4], y[4], z[4];
+	double N1, N2, N3, N4;
 	double volume;
 	double mat3x3[9];
 
@@ -610,7 +610,7 @@ int MOmega3DTetrahedron(double* vf,double r,double s,double t,long number)
 	mat3x3[8] = 1.0;
 	d4 = 1.0 * M3Determinante(mat3x3);
 
-	//Element Shape Functions
+	// Element Shape Functions
 	N1 = ((a1 * 1) + (b1 * r) + (c1 * s) + (d1 * t)) / (6 * volume);
 	N2 = ((a2 * 1) + (b2 * r) + (c2 * s) + (d2 * t)) / (6 * volume);
 	N3 = ((a3 * 1) + (b3 * r) + (c3 * s) + (d3 * t)) / (6 * volume);
@@ -728,46 +728,22 @@ int MPhi3D_SUPG(double* vf, double r, double s, double t, double* alpha)
 		return ok;
 	}
 #endif
-	vf[0] = (1.0 + r) * (1.0 + s) * (1.0 + t) \
-	        + alpha[0] *
-	        (1.0 +
-	         s) *
-	        (1.0 + t) + alpha[1] * (1.0 + r) * (1.0 + t) + alpha[2] * (1.0 + r) * (1.0 + s);
-	vf[1] = (1.0 - r) * (1.0 + s) * (1.0 + t) \
-	        - alpha[0] *
-	        (1.0 +
-	         s) *
-	        (1.0 + t) + alpha[1] * (1.0 - r) * (1.0 + t) + alpha[2] * (1.0 - r) * (1.0 + s);
-	vf[2] = (1.0 - r) * (1.0 - s) * (1.0 + t) \
-	        - alpha[0] *
-	        (1.0 -
-	         s) *
-	        (1.0 + t) - alpha[1] * (1.0 - r) * (1.0 + t) + alpha[2] * (1.0 - r) * (1.0 - s);
-	vf[3] = (1.0 + r) * (1.0 - s) * (1.0 + t) \
-	        + alpha[0] *
-	        (1.0 -
-	         s) *
-	        (1.0 + t) - alpha[1] * (1.0 + r) * (1.0 + t) + alpha[2] * (1.0 + r) * (1.0 - s);
-	vf[4] = (1.0 + r) * (1.0 + s) * (1.0 - t) \
-	        + alpha[0] *
-	        (1.0 +
-	         s) *
-	        (1.0 - t) + alpha[1] * (1.0 + r) * (1.0 - t) - alpha[2] * (1.0 + r) * (1.0 + s);
-	vf[5] = (1.0 - r) * (1.0 + s) * (1.0 - t) \
-	        - alpha[0] *
-	        (1.0 +
-	         s) *
-	        (1.0 - t) + alpha[1] * (1.0 - r) * (1.0 - t) - alpha[2] * (1.0 - r) * (1.0 + s);
-	vf[6] = (1.0 - r) * (1.0 - s) * (1.0 - t) \
-	        - alpha[0] *
-	        (1.0 -
-	         s) *
-	        (1.0 - t) - alpha[1] * (1.0 - r) * (1.0 - t) - alpha[2] * (1.0 - r) * (1.0 - s);
-	vf[7] = (1.0 + r) * (1.0 - s) * (1.0 - t) \
-	        + alpha[0] *
-	        (1.0 -
-	         s) *
-	        (1.0 - t) - alpha[1] * (1.0 + r) * (1.0 - t) - alpha[2] * (1.0 + r) * (1.0 - s);
+	vf[0] = (1.0 + r) * (1.0 + s) * (1.0 + t) + alpha[0] * (1.0 + s) * (1.0 + t) + alpha[1] * (1.0 + r) * (1.0 + t)
+	        + alpha[2] * (1.0 + r) * (1.0 + s);
+	vf[1] = (1.0 - r) * (1.0 + s) * (1.0 + t) - alpha[0] * (1.0 + s) * (1.0 + t) + alpha[1] * (1.0 - r) * (1.0 + t)
+	        + alpha[2] * (1.0 - r) * (1.0 + s);
+	vf[2] = (1.0 - r) * (1.0 - s) * (1.0 + t) - alpha[0] * (1.0 - s) * (1.0 + t) - alpha[1] * (1.0 - r) * (1.0 + t)
+	        + alpha[2] * (1.0 - r) * (1.0 - s);
+	vf[3] = (1.0 + r) * (1.0 - s) * (1.0 + t) + alpha[0] * (1.0 - s) * (1.0 + t) - alpha[1] * (1.0 + r) * (1.0 + t)
+	        + alpha[2] * (1.0 + r) * (1.0 - s);
+	vf[4] = (1.0 + r) * (1.0 + s) * (1.0 - t) + alpha[0] * (1.0 + s) * (1.0 - t) + alpha[1] * (1.0 + r) * (1.0 - t)
+	        - alpha[2] * (1.0 + r) * (1.0 + s);
+	vf[5] = (1.0 - r) * (1.0 + s) * (1.0 - t) - alpha[0] * (1.0 + s) * (1.0 - t) + alpha[1] * (1.0 - r) * (1.0 - t)
+	        - alpha[2] * (1.0 - r) * (1.0 + s);
+	vf[6] = (1.0 - r) * (1.0 - s) * (1.0 - t) - alpha[0] * (1.0 - s) * (1.0 - t) - alpha[1] * (1.0 - r) * (1.0 - t)
+	        - alpha[2] * (1.0 - r) * (1.0 - s);
+	vf[7] = (1.0 + r) * (1.0 - s) * (1.0 - t) + alpha[0] * (1.0 - s) * (1.0 - t) - alpha[1] * (1.0 + r) * (1.0 - t)
+	        - alpha[2] * (1.0 + r) * (1.0 - s);
 	for (i = 0; i < 8; i++)
 		vf[i] *= 0.125;
 	return ok = 1;
@@ -946,21 +922,21 @@ void MGetCoor(int typ, long j, double* r, double* s, double* t)
 {
 	switch (typ)
 	{
-	case 0:
-		*r = (double) (1l - j - j);
-		*s = *t = 0.0;
-		break;
-	case 1:
-		*r = 1.0 - 2.0 * (double) (((j + 1l) % 4) / 2l);
-		*s = 1.0 - 2.0 * (double) (j / 2l);
-		*t = 0.0;
-		break;
-	case 2:
-		*r = 1.0 - 2.0 * (double) (((j + 1l) % 4) / 2l);
-		*s = 1.0 - 2.0 * (double) ((j % 4) / 2l);
-		*t = 1.0 - 2.0 * (double) (j / 4l);
-		break;
-	}                                     /* switch typ */
+		case 0:
+			*r = (double)(1l - j - j);
+			*s = *t = 0.0;
+			break;
+		case 1:
+			*r = 1.0 - 2.0 * (double)(((j + 1l) % 4) / 2l);
+			*s = 1.0 - 2.0 * (double)(j / 2l);
+			*t = 0.0;
+			break;
+		case 2:
+			*r = 1.0 - 2.0 * (double)(((j + 1l) % 4) / 2l);
+			*s = 1.0 - 2.0 * (double)((j % 4) / 2l);
+			*t = 1.0 - 2.0 * (double)(j / 4l);
+			break;
+	} /* switch typ */
 }
 
 /**************************************************************************
@@ -983,7 +959,7 @@ double MAngleVectors(double* v1, double* v2)
 	double angle;
 
 	Pproduct = v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
-	angle = (acos ( Pproduct / (MBtrgVec(v1, 3) * MBtrgVec(v2, 3)))) * 180 / PI;
+	angle = (acos(Pproduct / (MBtrgVec(v1, 3) * MBtrgVec(v2, 3)))) * 180 / PI;
 
 	return angle;
 }
@@ -1027,7 +1003,7 @@ void MNormiere(double* vec, long n)
 double M2Determinante(double* matrix)
 {
 	return matrix[0] * matrix[3] - matrix[1] * matrix[2];
-}                                                 /* extern double M2Determinante */
+} /* extern double M2Determinante */
 
 /***************************************************************************
    ROCKFLOW - Funktion: Mxg2Determinante
@@ -1058,12 +1034,12 @@ double Mxg2Determinante(double* matrix, long m, long n)
 	{
 		DisplayErrorMsg("Determinate einer nicht-quadratischen Matrix ?");
 		return 0.0;
-	}                                     /* if */
+	} /* if */
 	if (m < 3)
 	{
 		DisplayErrorMsg("Determinate zu klein m>2 !!");
 		return 0.0;
-	}                                     /* if */
+	} /* if */
 #endif
 
 	dussel = 1.0;
@@ -1079,9 +1055,9 @@ double Mxg2Determinante(double* matrix, long m, long n)
 			dussel *= matrix[i];
 			if (sprung == i)
 				i -= m;
-		}                         /* for */
+		} /* for */
 		depp += dussel;
-	}                                     /* for */
+	} /* for */
 	dussel = 1.0;
 	for (i = n - 1; i < m * n - m + 1; i += m - 1)
 		dussel *= matrix[i];
@@ -1095,11 +1071,11 @@ double Mxg2Determinante(double* matrix, long m, long n)
 			dussel *= matrix[i];
 			if (sprung == i)
 				i += m;
-		}                         /* for */
+		} /* for */
 		depp -= dussel;
-	}                                     /* for */
+	} /* for */
 	return depp;
-}                                                 /* extern double Mxg2Determinante */
+} /* extern double Mxg2Determinante */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MTranspoVec
@@ -1125,7 +1101,7 @@ void MTranspoVec(double* vec, long g)
 		vec[i] = vec[g - 1 - i];
 		vec[g - 1 - i] = zwiebel;
 	}
-}                                                 /* MTranspoVec */
+} /* MTranspoVec */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MTranspoMat
@@ -1150,7 +1126,7 @@ void MTranspoMat(double* mat1, long m, long n, double* mat2)
 	for (i = 0; i < n; i++)
 		for (k = 0; k < m; k++)
 			mat2[i * m + k] = mat1[k * n + i];
-}                                                 /* MTranspoMat */
+} /* MTranspoMat */
 
 /**************************************************************************
    ROCKFLOW - Funktion: M2InvertiereUndTransponiere
@@ -1175,17 +1151,17 @@ void M2InvertiereUndTransponiere(double* m)
 	register double eddet, zecke;
 	register int i;
 	eddet = m[0] * m[3] - m[1] * m[2];
-	if (fabs(eddet) >  MKleinsteZahl)
+	if (fabs(eddet) > MKleinsteZahl)
 		eddet = 1.0 / eddet;
 	zecke = m[0];
 	m[0] = m[3];
 	m[3] = zecke;
 	zecke = -m[1];
-	m[1] = -m[2];                         /* hier wird auch transponiert */
+	m[1] = -m[2]; /* hier wird auch transponiert */
 	m[2] = zecke;
 	for (i = 0; i < 4; i++)
 		m[i] *= eddet;
-}                                                 /* M2InvertiereUndTransponiere */
+} /* M2InvertiereUndTransponiere */
 
 /**************************************************************************
    ROCKFLOW - Funktion: M2Invertiere
@@ -1213,7 +1189,7 @@ void M2Invertiere(double* m)
 	register double eddet, zecke;
 	register int i;
 	eddet = m[0] * m[3] - m[1] * m[2];
-	if (fabs(eddet) >  MKleinsteZahl)
+	if (fabs(eddet) > MKleinsteZahl)
 		eddet = 1.0 / eddet;
 	zecke = m[0];
 	m[0] = m[3];
@@ -1222,7 +1198,7 @@ void M2Invertiere(double* m)
 	m[2] = -m[2];
 	for (i = 0; i < 4; i++)
 		m[i] *= eddet;
-}                                                 /* M2Invertiere */
+} /* M2Invertiere */
 
 /**************************************************************************
    ROCKFLOW - Funktion: M3Invertiere
@@ -1243,10 +1219,8 @@ void M3Invertiere(double* m)
 	double z[9];
 	register double d;
 	register int i;
-	d = m[0] * (m[4] * m[8] - m[7] * m[5]) \
-	    + m[3] * (m[7] * m[2] - m[1] * m[8]) \
-	    + m[6] * (m[1] * m[5] - m[4] * m[2]);
-	if (fabs(d) >  MKleinsteZahl)
+	d = m[0] * (m[4] * m[8] - m[7] * m[5]) + m[3] * (m[7] * m[2] - m[1] * m[8]) + m[6] * (m[1] * m[5] - m[4] * m[2]);
+	if (fabs(d) > MKleinsteZahl)
 		d = 1.0 / d;
 	z[0] = m[4] * m[8] - m[7] * m[5];
 	z[3] = m[6] * m[5] - m[3] * m[8];
@@ -1259,7 +1233,7 @@ void M3Invertiere(double* m)
 	z[8] = m[0] * m[4] - m[3] * m[1];
 	for (i = 0; i < 9; i++)
 		m[i] = d * z[i];
-}                                                 /* M3Invertiere */
+} /* M3Invertiere */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MInvertiere
@@ -1294,7 +1268,7 @@ void MInvertiere(double* mat, long m, long n)
 			abort();
 		}
 #endif
-	m = n;                                /* ah */
+	m = n; /* ah */
 	for (k = 0; k < n; k++)
 	{
 		for (j = 0; j < n; j++)
@@ -1310,7 +1284,7 @@ void MInvertiere(double* mat, long m, long n)
 			if (i != k)
 				mat[n * i + k] *= mat[n * k + k];
 	}
-}                                                 /* MInvertiere */
+} /* MInvertiere */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MAddVektoren
@@ -1340,7 +1314,7 @@ int MAddVektoren(double* v1, double* v2, double* vout, long g)
 	for (i = 0; i < g; i++)
 		vout[i] = v1[i] + v2[i];
 	return 1;
-}                                                 /* MAddVektoren */
+} /* MAddVektoren */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MAddMatrizen
@@ -1397,7 +1371,7 @@ int MMultVecSkalar(double* vec, double skal, long g)
 	for (i = 0; i < g; i++)
 		vec[i] *= skal;
 	return 1;
-}                                                 /* extern int MMultVecSkalar */
+} /* extern int MMultVecSkalar */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MMultMatSkalar
@@ -1635,7 +1609,7 @@ int MKTF3Dr2D(double* vec1, double* vec2, double winkel, double* vec)
 **************************************************************************/
 
 void MKTFMat3Dr2D(double* vec1, double* vec2, double winkel, double* mat)
-{                               /* if(winkel!=0.0) */ /* diese Verzweigung spart viel Zeit */
+{ /* if(winkel!=0.0) */ /* diese Verzweigung spart viel Zeit */
 	{
 		static double f;
 		static double zwick[6];
@@ -1657,13 +1631,13 @@ void MKTFMat3Dr2D(double* vec1, double* vec2, double winkel, double* mat)
 		MMultMatMat(zwick, 3, 2, zwock, 2, 2, zwack, 3, 2);
 		for (i = 0; i < 6; i++)
 			mat[i] = zwack[i];
-	}                                     /* if */
+	} /* if */
 
-/* else
-   {MNulleMat(mat,3,2);
-   mat[0]=1.0;mat[3]=1.0;
-   } */
-/* else */
+	/* else
+	   {MNulleMat(mat,3,2);
+	   mat[0]=1.0;mat[3]=1.0;
+	   } */
+	/* else */
 }
 
 /*##########################################################################
@@ -1694,8 +1668,7 @@ int MBistDuDiagMat(double* matrix, long m, long n)
 	for (i = 0; i < m; i++)
 		for (j = 0; j < n; j++)
 			/*printf(" %ld %ld \n",i,j); */
-			if ((fabs(matrix[i + j * n]) > MKleinsteZahl) &&
-			    ((i - j < -1) || (i - j > 1)))
+			if ((fabs(matrix[i + j * n]) > MKleinsteZahl) && ((i - j < -1) || (i - j > 1)))
 				return 0;
 
 	diag = 3;
@@ -1707,7 +1680,7 @@ int MBistDuDiagMat(double* matrix, long m, long n)
 	if (!knall)
 		diag = 1;
 	return diag;
-}                                                 /* of MBistDuDiagMat */
+} /* of MBistDuDiagMat */
 
 /*##########################################################################
    Bearbeitungfunktionen fuer Vektoren
@@ -1731,8 +1704,8 @@ void MLoeschVec(double* vec)
 	if (vec == NULL)
 		DisplayErrorMsg("Fehler in MLoeschVec");
 #endif
-	vec = (double*) Free(vec);
-}                                                 /* MLoeschVec */
+	vec = (double*)Free(vec);
+} /* MLoeschVec */
 
 /*##########################################################################
    Bearbeitungfunktionen fuer Matrizen
@@ -1755,13 +1728,13 @@ void MLoeschVec(double* vec)
 double* MMachMat(long m, long n)
 {
 	double* zwerg;
-	zwerg = (double*) Malloc(sizeof(double) * m * n);
+	zwerg = (double*)Malloc(sizeof(double) * m * n);
 #ifdef ERROR_CONTROL
 	if (zwerg == NULL)
 		DisplayErrorMsg("zuwenig Speicher in MMachMat");
 #endif
 	return zwerg;
-}                                                 /* MMachMat */
+} /* MMachMat */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MNullMat
@@ -1783,7 +1756,7 @@ void MNullMat(double* zwerg, long m, long n)
 #endif
 	for (i = 0; i < m * n; i++)
 		zwerg[i] = 0.0;
-}                                                 /* MNullMat */
+} /* MNullMat */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MLoeschMat
@@ -1803,8 +1776,8 @@ void MLoeschMat(double* mat)
 	if (mat == NULL)
 		DisplayErrorMsg("Fehler in MLoeschMat");
 #endif
-	mat = (double*) Free(mat);
-}                                                 /* MLoeschMat */
+	mat = (double*)Free(mat);
+} /* MLoeschMat */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MKopierMat
@@ -1826,7 +1799,7 @@ void MKopierMat(double* matq, double* matz, long m, long n)
 	register long i;
 	for (i = 0; i < m * n; i++)
 		matz[i] = matq[i];
-}                                                 /* MKopierMat */
+} /* MKopierMat */
 
 /*##########################################################################
    Ausgabefunktionen
@@ -1895,7 +1868,7 @@ void MZeigMat(double* mat, long m, long n, char* text)
 			printf(" %e ", mat[i + k * n]);
 		puts(" |");
 	}
-}                                                 /* MZeigMat */
+} /* MZeigMat */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MVekNormMax
@@ -1970,15 +1943,15 @@ double MCalcProjectionOfPointOnLine(double* pt, double* l1, double* l2, double* 
 	double vec1[3], vec2[3], l, projektionslaenge, abstand;
 
 	/* Vektor Linienpunkt zu Punkt */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec1[i] = pt[i] - l1[i];
 
 	/* Vektor Linienpunkt zu Linienpunkt */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec2[i] = l2[i] - l1[i];
 
 	/* Normieren */
-	l = MBtrgVec(vec2,3);
+	l = MBtrgVec(vec2, 3);
 #ifdef ERROR_CONTROL
 	if (l < MKleinsteZahl)
 	{
@@ -1986,13 +1959,13 @@ double MCalcProjectionOfPointOnLine(double* pt, double* l1, double* l2, double* 
 		exit(1);
 	}
 #endif
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec2[i] /= (l + MKleinsteZahl);
 
 	projektionslaenge = MSkalarprodukt(vec1, vec2, 3);
 
 	/* Punkt bestimmen */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		proj[i] = l1[i] + projektionslaenge * vec2[i];
 
 	abstand = MCalcDistancePointToPoint(proj, pt);
@@ -2052,12 +2025,12 @@ double MCalcProjectionOfPointOnLine(double* pt, double* l1, double* l2, double* 
    05/2000     RK        Erste Version
 
  **************************************************************************/
-double CalcTriangleArea (long n1, long n2, long n3)
+double CalcTriangleArea(long n1, long n2, long n3)
 {
 	double area = 0.0;
 	n1 = n1;
 	n2 = n2;
-	n3 = n3;                              //OK411
+	n3 = n3; // OK411
 	/*OK411
 	   double vec1[3], vec2[3], vec3[3];
 
@@ -2123,7 +2096,7 @@ int MOmega2D_9N(double* vf, double r, double s)
 		return ok;
 	}
 #endif
-	vf[8] = (1.0 - r * r) * ( 1.0 - s * s);
+	vf[8] = (1.0 - r * r) * (1.0 - s * s);
 	vf[7] = 0.5 * (1.0 - s * s) * (1.0 + r) - 0.5 * vf[8];
 	vf[6] = 0.5 * (1.0 - r * r) * (1.0 - s) - 0.5 * vf[8];
 	vf[5] = 0.5 * (1.0 - s * s) * (1.0 - r) - 0.5 * vf[8];
@@ -2154,7 +2127,7 @@ int MPhi2D_9N(double* vf, double r, double s)
 {
 	int ok = 0;
 
-	vf[8] = (1.0 - r * r) * ( 1.0 - s * s);
+	vf[8] = (1.0 - r * r) * (1.0 - s * s);
 	vf[7] = 0.5 * (1.0 - s * s) * (1.0 + r) - 0.5 * vf[8];
 	vf[6] = 0.5 * (1.0 - r * r) * (1.0 - s) - 0.5 * vf[8];
 	vf[5] = 0.5 * (1.0 - s * s) * (1.0 - r) - 0.5 * vf[8];
@@ -2268,26 +2241,26 @@ int MPhi3D_20N(double* vf, double r, double s, double t)
 	}
 #endif
 
-	g[0] =  0.125 * (1.0 + r)     * (1.0 + s)     * (1.0 + t);
-	g[1] =  0.125 * (1.0 - r)     * (1.0 + s)     * (1.0 + t);
-	g[2] =  0.125 * (1.0 - r)     * (1.0 - s)     * (1.0 + t);
-	g[3] =  0.125 * (1.0 + r)     * (1.0 - s)     * (1.0 + t);
-	g[4] =  0.125 * (1.0 + r)     * (1.0 + s)     * (1.0 - t);
-	g[5] =  0.125 * (1.0 - r)     * (1.0 + s)     * (1.0 - t);
-	g[6] =  0.125 * (1.0 - r)     * (1.0 - s)     * (1.0 - t);
-	g[7] =  0.125 * (1.0 + r)     * (1.0 - s)     * (1.0 - t);
-	g[8] =  0.25  * (1.0 - r * r) * (1.0 + s)     * (1.0 + t);
-	g[9] =  0.25  * (1.0 - r)     * (1.0 - s * s) * (1.0 + t);
-	g[10] = 0.25  * (1.0 - r * r) * (1.0 - s)     * (1.0 + t);
-	g[11] = 0.25  * (1.0 + r)     * (1.0 - s * s) * (1.0 + t);
-	g[12] = 0.25  * (1.0 - r * r) * (1.0 + s)     * (1.0 - t);
-	g[13] = 0.25  * (1.0 - r)     * (1.0 - s * s) * (1.0 - t);
-	g[14] = 0.25  * (1.0 - r * r) * (1.0 - s)     * (1.0 - t);
-	g[15] = 0.25  * (1.0 + r)     * (1.0 - s * s) * (1.0 - t);
-	g[16] = 0.25  * (1.0 + r)     * (1.0 + s)     * (1.0 - t * t);
-	g[17] = 0.25  * (1.0 - r)     * (1.0 + s)     * (1.0 - t * t);
-	g[18] = 0.25  * (1.0 - r)     * (1.0 - s)     * (1.0 - t * t);
-	g[19] = 0.25  * (1.0 + r)     * (1.0 - s)     * (1.0 - t * t);
+	g[0] = 0.125 * (1.0 + r) * (1.0 + s) * (1.0 + t);
+	g[1] = 0.125 * (1.0 - r) * (1.0 + s) * (1.0 + t);
+	g[2] = 0.125 * (1.0 - r) * (1.0 - s) * (1.0 + t);
+	g[3] = 0.125 * (1.0 + r) * (1.0 - s) * (1.0 + t);
+	g[4] = 0.125 * (1.0 + r) * (1.0 + s) * (1.0 - t);
+	g[5] = 0.125 * (1.0 - r) * (1.0 + s) * (1.0 - t);
+	g[6] = 0.125 * (1.0 - r) * (1.0 - s) * (1.0 - t);
+	g[7] = 0.125 * (1.0 + r) * (1.0 - s) * (1.0 - t);
+	g[8] = 0.25 * (1.0 - r * r) * (1.0 + s) * (1.0 + t);
+	g[9] = 0.25 * (1.0 - r) * (1.0 - s * s) * (1.0 + t);
+	g[10] = 0.25 * (1.0 - r * r) * (1.0 - s) * (1.0 + t);
+	g[11] = 0.25 * (1.0 + r) * (1.0 - s * s) * (1.0 + t);
+	g[12] = 0.25 * (1.0 - r * r) * (1.0 + s) * (1.0 - t);
+	g[13] = 0.25 * (1.0 - r) * (1.0 - s * s) * (1.0 - t);
+	g[14] = 0.25 * (1.0 - r * r) * (1.0 - s) * (1.0 - t);
+	g[15] = 0.25 * (1.0 + r) * (1.0 - s * s) * (1.0 - t);
+	g[16] = 0.25 * (1.0 + r) * (1.0 + s) * (1.0 - t * t);
+	g[17] = 0.25 * (1.0 - r) * (1.0 + s) * (1.0 - t * t);
+	g[18] = 0.25 * (1.0 - r) * (1.0 - s) * (1.0 - t * t);
+	g[19] = 0.25 * (1.0 + r) * (1.0 - s) * (1.0 - t * t);
 
 	vf[0] = g[0] - (g[8] + g[11] + g[16]) * 0.5;
 	vf[1] = g[1] - (g[8] + g[9] + g[17]) * 0.5;
@@ -2298,8 +2271,8 @@ int MPhi3D_20N(double* vf, double r, double s, double t)
 	vf[6] = g[6] - (g[13] + g[14] + g[18]) * 0.5;
 	vf[7] = g[7] - (g[14] + g[15] + g[19]) * 0.5;
 
-	vf[8]  =  g[8];
-	vf[9]  = g[9];
+	vf[8] = g[8];
+	vf[9] = g[9];
 	vf[10] = g[10];
 	vf[11] = g[11];
 	vf[12] = g[12];
@@ -2331,9 +2304,9 @@ int MPhi3D_20N(double* vf, double r, double s, double t)
 int MGradOmega3D_20N(double* vf, double r, double s, double t)
 {
 	int ok = 0;
-	double g_r[20];                       /* r-Ableitung */
-	double g_s[20];                       /* s-Ableitung */
-	double g_t[20];                       /* t-Ableitung */
+	double g_r[20]; /* r-Ableitung */
+	double g_s[20]; /* s-Ableitung */
+	double g_t[20]; /* t-Ableitung */
 
 #ifdef ERROR_CONTROL
 	if (vf == NULL)
@@ -2343,68 +2316,68 @@ int MGradOmega3D_20N(double* vf, double r, double s, double t)
 	}
 #endif
 
-	g_r[0] =  +0.125   * (1.0 + s)     * (1.0 + t);
-	g_r[1] =  -0.125   * (1.0 + s)     * (1.0 + t);
-	g_r[2] =  -0.125   * (1.0 - s)     * (1.0 + t);
-	g_r[3] =  +0.125   * (1.0 - s)     * (1.0 + t);
-	g_r[4] =  +0.125   * (1.0 + s)     * (1.0 - t);
-	g_r[5] =  -0.125   * (1.0 + s)     * (1.0 - t);
-	g_r[6] =  -0.125   * (1.0 - s)     * (1.0 - t);
-	g_r[7] =  +0.125   * (1.0 - s)     * (1.0 - t);
-	g_r[8] =  -0.5 * r * (1.0 + s)     * (1.0 + t);
-	g_r[9] =  -0.25    * (1.0 - s * s) * (1.0 + t);
-	g_r[10] = -0.5 * r * (1.0 - s)     * (1.0 + t);
-	g_r[11] = +0.25    * (1.0 - s * s) * (1.0 + t);
-	g_r[12] = -0.5 * r * (1.0 + s)     * (1.0 - t);
-	g_r[13] = -0.25    * (1.0 - s * s) * (1.0 - t);
-	g_r[14] = -0.5 * r * (1.0 - s)     * (1.0 - t);
-	g_r[15] = +0.25    * (1.0 - s * s) * (1.0 - t);
-	g_r[16] = +0.25    * (1.0 + s)     * (1.0 - t * t);
-	g_r[17] = -0.25    * (1.0 + s)     * (1.0 - t * t);
-	g_r[18] = -0.25    * (1.0 - s)     * (1.0 - t * t);
-	g_r[19] = +0.25    * (1.0 - s)     * (1.0 - t * t);
+	g_r[0] = +0.125 * (1.0 + s) * (1.0 + t);
+	g_r[1] = -0.125 * (1.0 + s) * (1.0 + t);
+	g_r[2] = -0.125 * (1.0 - s) * (1.0 + t);
+	g_r[3] = +0.125 * (1.0 - s) * (1.0 + t);
+	g_r[4] = +0.125 * (1.0 + s) * (1.0 - t);
+	g_r[5] = -0.125 * (1.0 + s) * (1.0 - t);
+	g_r[6] = -0.125 * (1.0 - s) * (1.0 - t);
+	g_r[7] = +0.125 * (1.0 - s) * (1.0 - t);
+	g_r[8] = -0.5 * r * (1.0 + s) * (1.0 + t);
+	g_r[9] = -0.25 * (1.0 - s * s) * (1.0 + t);
+	g_r[10] = -0.5 * r * (1.0 - s) * (1.0 + t);
+	g_r[11] = +0.25 * (1.0 - s * s) * (1.0 + t);
+	g_r[12] = -0.5 * r * (1.0 + s) * (1.0 - t);
+	g_r[13] = -0.25 * (1.0 - s * s) * (1.0 - t);
+	g_r[14] = -0.5 * r * (1.0 - s) * (1.0 - t);
+	g_r[15] = +0.25 * (1.0 - s * s) * (1.0 - t);
+	g_r[16] = +0.25 * (1.0 + s) * (1.0 - t * t);
+	g_r[17] = -0.25 * (1.0 + s) * (1.0 - t * t);
+	g_r[18] = -0.25 * (1.0 - s) * (1.0 - t * t);
+	g_r[19] = +0.25 * (1.0 - s) * (1.0 - t * t);
 
-	g_s[0] =  +0.125 * (1.0 + r)     * (1.0 + t);
-	g_s[1] =  +0.125 * (1.0 - r)     * (1.0 + t);
-	g_s[2] =  -0.125 * (1.0 - r)     * (1.0 + t);
-	g_s[3] =  -0.125 * (1.0 + r)     * (1.0 + t);
-	g_s[4] =  +0.125 * (1.0 + r)     * (1.0 - t);
-	g_s[5] =  +0.125 * (1.0 - r)     * (1.0 - t);
-	g_s[6] =  -0.125 * (1.0 - r)     * (1.0 - t);
-	g_s[7] =  -0.125 * (1.0 + r)     * (1.0 - t);
-	g_s[8] =  +0.25  * (1.0 - r * r) * (1.0 + t);
-	g_s[9] =  -0.5   * (1.0 - r) * s * (1.0 + t);
-	g_s[10] = -0.25  * (1.0 - r * r) * (1.0 + t);
-	g_s[11] = -0.5   * (1.0 + r) * s * (1.0 + t);
-	g_s[12] = +0.25  * (1.0 - r * r) * (1.0 - t);
-	g_s[13] = -0.5   * (1.0 - r) * s * (1.0 - t);
-	g_s[14] = -0.25  * (1.0 - r * r) * (1.0 - t);
-	g_s[15] = -0.5   * (1.0 + r) * s * (1.0 - t);
-	g_s[16] = +0.25  * (1.0 + r)     * (1.0 - t * t);
-	g_s[17] = +0.25  * (1.0 - r)     * (1.0 - t * t);
-	g_s[18] = -0.25  * (1.0 - r)     * (1.0 - t * t);
-	g_s[19] = -0.25  * (1.0 + r)     * (1.0 - t * t);
+	g_s[0] = +0.125 * (1.0 + r) * (1.0 + t);
+	g_s[1] = +0.125 * (1.0 - r) * (1.0 + t);
+	g_s[2] = -0.125 * (1.0 - r) * (1.0 + t);
+	g_s[3] = -0.125 * (1.0 + r) * (1.0 + t);
+	g_s[4] = +0.125 * (1.0 + r) * (1.0 - t);
+	g_s[5] = +0.125 * (1.0 - r) * (1.0 - t);
+	g_s[6] = -0.125 * (1.0 - r) * (1.0 - t);
+	g_s[7] = -0.125 * (1.0 + r) * (1.0 - t);
+	g_s[8] = +0.25 * (1.0 - r * r) * (1.0 + t);
+	g_s[9] = -0.5 * (1.0 - r) * s * (1.0 + t);
+	g_s[10] = -0.25 * (1.0 - r * r) * (1.0 + t);
+	g_s[11] = -0.5 * (1.0 + r) * s * (1.0 + t);
+	g_s[12] = +0.25 * (1.0 - r * r) * (1.0 - t);
+	g_s[13] = -0.5 * (1.0 - r) * s * (1.0 - t);
+	g_s[14] = -0.25 * (1.0 - r * r) * (1.0 - t);
+	g_s[15] = -0.5 * (1.0 + r) * s * (1.0 - t);
+	g_s[16] = +0.25 * (1.0 + r) * (1.0 - t * t);
+	g_s[17] = +0.25 * (1.0 - r) * (1.0 - t * t);
+	g_s[18] = -0.25 * (1.0 - r) * (1.0 - t * t);
+	g_s[19] = -0.25 * (1.0 + r) * (1.0 - t * t);
 
-	g_t[0] =  +0.125 * (1.0 + r)     * (1.0 + s);
-	g_t[1] =  +0.125 * (1.0 - r)     * (1.0 + s);
-	g_t[2] =  +0.125 * (1.0 - r)     * (1.0 - s);
-	g_t[3] =  +0.125 * (1.0 + r)     * (1.0 - s);
-	g_t[4] =  -0.125 * (1.0 + r)     * (1.0 + s);
-	g_t[5] =  -0.125 * (1.0 - r)     * (1.0 + s);
-	g_t[6] =  -0.125 * (1.0 - r)     * (1.0 - s);
-	g_t[7] =  -0.125 * (1.0 + r)     * (1.0 - s);
-	g_t[8] =  +0.25  * (1.0 - r * r) * (1.0 + s);
-	g_t[9] =  +0.25  * (1.0 - r)     * (1.0 - s * s);
-	g_t[10] = +0.25  * (1.0 - r * r) * (1.0 - s);
-	g_t[11] = +0.25  * (1.0 + r)     * (1.0 - s * s);
-	g_t[12] = -0.25  * (1.0 - r * r) * (1.0 + s);
-	g_t[13] = -0.25  * (1.0 - r)     * (1.0 - s * s);
-	g_t[14] = -0.25  * (1.0 - r * r) * (1.0 - s);
-	g_t[15] = -0.25  * (1.0 + r)     * (1.0 - s * s);
-	g_t[16] = -0.5  * (1.0 + r)     * (1.0 + s)   * t;
-	g_t[17] = -0.5  * (1.0 - r)     * (1.0 + s)   * t;
-	g_t[18] = -0.5  * (1.0 - r)     * (1.0 - s)   * t;
-	g_t[19] = -0.5  * (1.0 + r)     * (1.0 - s)   * t;
+	g_t[0] = +0.125 * (1.0 + r) * (1.0 + s);
+	g_t[1] = +0.125 * (1.0 - r) * (1.0 + s);
+	g_t[2] = +0.125 * (1.0 - r) * (1.0 - s);
+	g_t[3] = +0.125 * (1.0 + r) * (1.0 - s);
+	g_t[4] = -0.125 * (1.0 + r) * (1.0 + s);
+	g_t[5] = -0.125 * (1.0 - r) * (1.0 + s);
+	g_t[6] = -0.125 * (1.0 - r) * (1.0 - s);
+	g_t[7] = -0.125 * (1.0 + r) * (1.0 - s);
+	g_t[8] = +0.25 * (1.0 - r * r) * (1.0 + s);
+	g_t[9] = +0.25 * (1.0 - r) * (1.0 - s * s);
+	g_t[10] = +0.25 * (1.0 - r * r) * (1.0 - s);
+	g_t[11] = +0.25 * (1.0 + r) * (1.0 - s * s);
+	g_t[12] = -0.25 * (1.0 - r * r) * (1.0 + s);
+	g_t[13] = -0.25 * (1.0 - r) * (1.0 - s * s);
+	g_t[14] = -0.25 * (1.0 - r * r) * (1.0 - s);
+	g_t[15] = -0.25 * (1.0 + r) * (1.0 - s * s);
+	g_t[16] = -0.5 * (1.0 + r) * (1.0 + s) * t;
+	g_t[17] = -0.5 * (1.0 - r) * (1.0 + s) * t;
+	g_t[18] = -0.5 * (1.0 - r) * (1.0 - s) * t;
+	g_t[19] = -0.5 * (1.0 + r) * (1.0 - s) * t;
 
 	vf[0] = g_r[0] - (g_r[8] + g_r[11] + g_r[16]) * 0.5;
 	vf[1] = g_r[1] - (g_r[8] + g_r[9] + g_r[17]) * 0.5;
@@ -2415,8 +2388,8 @@ int MGradOmega3D_20N(double* vf, double r, double s, double t)
 	vf[6] = g_r[6] - (g_r[13] + g_r[14] + g_r[18]) * 0.5;
 	vf[7] = g_r[7] - (g_r[14] + g_r[15] + g_r[19]) * 0.5;
 
-	vf[8] =  g_r[8];
-	vf[9] =  g_r[9];
+	vf[8] = g_r[8];
+	vf[9] = g_r[9];
 	vf[10] = g_r[10];
 	vf[11] = g_r[11];
 	vf[12] = g_r[12];
@@ -2437,8 +2410,8 @@ int MGradOmega3D_20N(double* vf, double r, double s, double t)
 	vf[26] = g_s[6] - (g_s[13] + g_s[14] + g_s[18]) * 0.5;
 	vf[27] = g_s[7] - (g_s[14] + g_s[15] + g_s[19]) * 0.5;
 
-	vf[28] =  g_s[8];
-	vf[29] =  g_s[9];
+	vf[28] = g_s[8];
+	vf[29] = g_s[9];
 	vf[30] = g_s[10];
 	vf[31] = g_s[11];
 	vf[32] = g_s[12];
@@ -2459,8 +2432,8 @@ int MGradOmega3D_20N(double* vf, double r, double s, double t)
 	vf[46] = g_t[6] - (g_t[13] + g_t[14] + g_t[18]) * 0.5;
 	vf[47] = g_t[7] - (g_t[14] + g_t[15] + g_t[19]) * 0.5;
 
-	vf[48] =  g_t[8];
-	vf[49] =  g_t[9];
+	vf[48] = g_t[8];
+	vf[49] = g_t[9];
 	vf[50] = g_t[10];
 	vf[51] = g_t[11];
 	vf[52] = g_t[12];
@@ -2510,14 +2483,14 @@ int MGradPhi3D_20N(double* vf, double r, double s, double t)
    06/2001     MK       Erste Version
 
  **************************************************************************/
-int MCompare_for_MQSort_LongDouble( const void* Arg1, const void* Arg2 )
+int MCompare_for_MQSort_LongDouble(const void* Arg1, const void* Arg2)
 {
 	typedef struct
 	{
 		long index;
 		double value;
 	} MType_LongDouble;
-	MType_LongDouble* arg1, * arg2;
+	MType_LongDouble *arg1, *arg2;
 	arg1 = (MType_LongDouble*)Arg1;
 	arg2 = (MType_LongDouble*)Arg2;
 	if ((arg1->value) > (arg2->value))
@@ -2545,7 +2518,7 @@ int MCompare_for_MQSort_LongDouble( const void* Arg1, const void* Arg2 )
  **************************************************************************/
 void MQSort_LongDouble(void* DataSets, const int NumberOfDataSets, const int SizeOfDataSet)
 {
-	qsort( DataSets, NumberOfDataSets, SizeOfDataSet, MCompare_for_MQSort_LongDouble );
+	qsort(DataSets, NumberOfDataSets, SizeOfDataSet, MCompare_for_MQSort_LongDouble);
 }
 
 /*##########################################################################
@@ -2569,24 +2542,23 @@ void MQSort_LongDouble(void* DataSets, const int NumberOfDataSets, const int Siz
 
  **************************************************************************/
 
-double* JWDMMultMatSkalar(double* matrix,
-                          double skal, long m, long n)
-{                                                 /* flip ist Zwischenspeicher fuer die Matrix */
-	double* flip, * flippy;
+double* JWDMMultMatSkalar(double* matrix, double skal, long m, long n)
+{ /* flip ist Zwischenspeicher fuer die Matrix */
+	double *flip, *flippy;
 	long i;
-	flip = (double*) Malloc(sizeof(double) * n * m);
+	flip = (double*)Malloc(sizeof(double) * n * m);
 	flippy = flip;
 	if (flip == NULL)
 	{
 		DisplayErrorMsg(" kein Speicher mehr !!! ");
 		return 0;
-	}                                     /* if */
+	} /* if */
 	for (i = 0; i < m * n; i++)
 		flip[i] = matrix[i] * skal;
 	/* for */
 	return flippy;
 	/* flippy = Free(flippy); */
-}                                                 /* extern double *JWDMMultMatSkalar */
+} /* extern double *JWDMMultMatSkalar */
 
 /**************************************************************************
    ROCKFLOW - Function: GetPriMatFromTriMat
@@ -2722,12 +2694,12 @@ double* TensorDrehDich(double* d, double* velo)
 			MMultMatMat(d, 3, 3, zwa, 3, 3, zwi, 3, 3);
 			MTranspoMat(zwa, 3, 3, zwo);
 			MMultMatMat(zwo, 3, 3, zwi, 3, 3, d, 3, 3);
-		}                         /* end if (vg > MKleinsteZahl) */
+		} /* end if (vg > MKleinsteZahl) */
 	/* end if (d[0] > MKleinsteZahl || d[4] > MKleinsteZahl || d[8] > MKleinsteZahl) */
 
 	return d;
 }
-#endif                                            //#ifdef obsolete  //05.03.2010 WW
+#endif //#ifdef obsolete  //05.03.2010 WW
 
 ///////////////////////////////////////////////////////////////////
 //
@@ -2753,21 +2725,21 @@ double* TensorDrehDich(double* d, double* velo)
    02/2000   C. Thorenz      Erste Version
 
  **************************************************************************/
-double MCalcDistancePointToLine(double* pt,double* l1,double* l2)
+double MCalcDistancePointToLine(double* pt, double* l1, double* l2)
 {
 	int i;
 	double vec1[3], vec2[3], erg_vec[3], l;
 
 	/* Vektor Linienpunkt zu Punkt */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec1[i] = pt[i] - l1[i];
 
 	/* Vektor Linienpunkt zu Linienpunkt */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec2[i] = l2[i] - l1[i];
 
 	/* Normieren */
-	l = MBtrgVec(vec2,3);
+	l = MBtrgVec(vec2, 3);
 #ifdef ERROR_CONTROL
 	if (l < MKleinsteZahl)
 	{
@@ -2776,12 +2748,12 @@ double MCalcDistancePointToLine(double* pt,double* l1,double* l2)
 	}
 #endif
 
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec2[i] /= (l + MKleinsteZahl);
 
 	M3KreuzProdukt(vec1, vec2, erg_vec);
 
-	return MBtrgVec(erg_vec,3);
+	return MBtrgVec(erg_vec, 3);
 }
 
 /***************************************************************************
@@ -2808,15 +2780,15 @@ double MCalcProjectionOfPointOnLine(double* pt, double* l1, double* l2, double* 
 	double vec1[3], vec2[3], l, projektionslaenge, abstand;
 
 	/* Vektor Linienpunkt zu Punkt */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec1[i] = pt[i] - l1[i];
 
 	/* Vektor Linienpunkt zu Linienpunkt */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec2[i] = l2[i] - l1[i];
 
 	/* Normieren */
-	l = MBtrgVec(vec2,3);
+	l = MBtrgVec(vec2, 3);
 #ifdef ERROR_CONTROL
 	if (l < MKleinsteZahl)
 	{
@@ -2824,13 +2796,13 @@ double MCalcProjectionOfPointOnLine(double* pt, double* l1, double* l2, double* 
 		exit(1);
 	}
 #endif
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec2[i] /= (l + MKleinsteZahl);
 
 	projektionslaenge = MSkalarprodukt(vec1, vec2, 3);
 
 	/* Punkt bestimmen */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		proj[i] = l1[i] + projektionslaenge * vec2[i];
 
 	abstand = MCalcDistancePointToPoint(proj, pt);
@@ -2857,21 +2829,21 @@ double MCalcProjectionOfPointOnLine(double* pt, double* l1, double* l2, double* 
    02/2000   C. Thorenz      Erste Version
 
  **************************************************************************/
-double MCalcDistancePointToPlane(double const* const pt,double* e1,double* e2,double* e3)
+double MCalcDistancePointToPlane(double const* const pt, double* e1, double* e2, double* e3)
 {
 	int i;
 	double vec1[3], vec2[3], vec3[3], normal[3], volume, area;
 
 	/* 1. Ebenen-Vektor  */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec1[i] = e2[i] - e1[i];
 
 	/* 2. Ebenen-Vektor  */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec2[i] = e3[i] - e1[i];
 
 	/* Ebene-Punkt-Vektor  */
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		vec3[i] = pt[i] - e1[i];
 
 	/* Normalenvektor */
@@ -3011,7 +2983,7 @@ void MNulleMat(double* mat, long m, long n)
 		mat[i] = 0.0;
 }
 
-#ifndef NEW_EQS                                   //WW. 05.03.2010
+#ifndef NEW_EQS // WW. 05.03.2010
 /*##########################################################################
    Funktionen fuer Gleichungsloeser (CG)
  ######################################################################## */
@@ -3100,7 +3072,7 @@ double MVekNorm2(double* x, long n)
 #ifdef SX
 void MVekSum(double* restrict x, double alpha, double* restrict y, long n)
 #else
-void MVekSum(double* x,double alpha,double* y,long n)
+void MVekSum(double* x, double alpha, double* y, long n)
 #endif
 {
 	register long i;
@@ -3137,8 +3109,7 @@ void MVekSum(double* x,double alpha,double* y,long n)
    11/1995     MSR        Erste Version
 
 **************************************************************************/
-void MVekGle(double alpha, double* x, double beta, double* y,
-             double* z, long n)
+void MVekGle(double alpha, double* x, double beta, double* y, double* z, long n)
 {
 	register long i;
 	for (i = 0l; i < n; i++)
@@ -3168,10 +3139,10 @@ double MVekDist(double* x, double* y, long n)
 	double dist;
 	double* d;
 
-	d = (double*) Malloc(n * sizeof(double));
+	d = (double*)Malloc(n * sizeof(double));
 	MVekGle(1., x, -1., y, d, n);
 	dist = VEKNORM_BICG(d, n);
-	d = (double*) Free(d);
+	d = (double*)Free(d);
 
 	return dist;
 }
@@ -3193,13 +3164,13 @@ double MVekDist(double* x, double* y, long n)
 double* MMachVec(long g)
 {
 	double* zwerg;
-	zwerg = (double*) Malloc(sizeof(double) * g);
+	zwerg = (double*)Malloc(sizeof(double) * g);
 #ifdef ERROR_CONTROL
 	if (zwerg == NULL)
 		DisplayErrorMsg("zuwenig Speicher in MMachVec");
 #endif
 	return zwerg;
-}                                                 /* MMachVec */
+} /* MMachVec */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MNullVec
@@ -3219,7 +3190,7 @@ void MNullVec(double* zwerg, long g)
 #endif
 {
 	register long i;
-	zwerg = (double*) Malloc(sizeof(double) * g);
+	zwerg = (double*)Malloc(sizeof(double) * g);
 #ifdef ERROR_CONTROL
 	if (zwerg == NULL)
 		DisplayErrorMsg("Fehler in MNullVec");
@@ -3229,7 +3200,7 @@ void MNullVec(double* zwerg, long g)
 #endif
 	for (i = 0; i < g; i++)
 		zwerg[i] = 0.0;
-}                                                 /* MNullVec */
+} /* MNullVec */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MKopierVec
@@ -3263,7 +3234,7 @@ void MKopierVec(double* vecquelle, double* vecziel, long g)
 #endif
 	for (i = 0; i < g; i++)
 		vecziel[i] = vecquelle[i];
-}                                                 /* MKopierVec */
+} /* MKopierVec */
 
 /* Function MVectorlength
    Aufgabe:
@@ -3278,7 +3249,7 @@ void MKopierVec(double* vecquelle, double* vecziel, long g)
    05/2004     CMCD        Erste Version
    01/2011	TF changed from pow(*,0.5) to sqrt(*)
  */
-//double MVectorlength(double dx, double dy, double dz)
+// double MVectorlength(double dx, double dy, double dz)
 //{
 ////    double length;
 ////    length=pow(((dz*dz)+(dy*dy)+(dx*dx)),0.5);
@@ -3301,31 +3272,26 @@ void MKopierVec(double* vecquelle, double* vecziel, long g)
    8/2001     C.Thorenz: Erste Version
 **************************************************************************/
 #ifdef SX
-int MAddSkalVektoren(double* restrict v1,
-                     double m1,
-                     double* restrict v2,
-                     double m2,
-                     double* restrict vout,
-                     long g)
+int MAddSkalVektoren(double* restrict v1, double m1, double* restrict v2, double m2, double* restrict vout, long g)
 #else
 int MAddSkalVektoren(double* v1, double m1, double* v2, double m2, double* vout, long g)
 #endif
 {
 	register long i;
-	//WW    if ((m1==1.)&&(m2==1.))
+	// WW    if ((m1==1.)&&(m2==1.))
 	if ((fabs(m1 - 1.) < MKleinsteZahl) && (fabs(m2 - 1.) < MKleinsteZahl))
 #ifdef SX
 #pragma cdir nodep
 #endif
 		for (i = 0; i < g; i++)
 			vout[i] = v1[i] + v2[i];
-	else if(fabs(m1 - 1.) < MKleinsteZahl)
+	else if (fabs(m1 - 1.) < MKleinsteZahl)
 #ifdef SX
 #pragma cdir nodep
 #endif
 		for (i = 0; i < g; i++)
 			vout[i] = v1[i] + m2 * v2[i];
-	else if(fabs(m2 - 1.) < MKleinsteZahl)
+	else if (fabs(m2 - 1.) < MKleinsteZahl)
 #ifdef SX
 #pragma cdir nodep
 #endif
@@ -3340,7 +3306,7 @@ int MAddSkalVektoren(double* v1, double m1, double* v2, double m2, double* vout,
 
 	return 1;
 }
-#endif                                            //   05.03.2010. WW
+#endif //   05.03.2010. WW
 
 ////
 /**************************************************************************
@@ -3365,9 +3331,7 @@ int MAddSkalVektoren(double* v1, double m1, double* v2, double m2, double* vout,
    11/1999     C.Thorenz Register-Variablen
 **************************************************************************/
 
-int MMultVecVec(double* vec1, long gv1,
-                double* vec2, long gv2,
-                double* mato, long mo, long no)
+int MMultVecVec(double* vec1, long gv1, double* vec2, long gv2, double* mato, long mo, long no)
 {
 	register long i, j;
 
@@ -3376,7 +3340,8 @@ int MMultVecVec(double* vec1, long gv1,
 #else
 	const bool check_err = false;
 #endif
-	if (check_err) {
+	if (check_err)
+	{
 		if (gv1 != mo)
 			DisplayErrorMsg("MMultVecVec: Groesse von Matrix und Vektor 1 passen nicht");
 		if (gv2 != no)
@@ -3389,7 +3354,7 @@ int MMultVecVec(double* vec1, long gv1,
 		for (j = 0; j < gv2; j++)
 			mato[i * gv2 + j] = vec1[i] * vec2[j];
 	return 1;
-}                                                 /* MMultVecVec */
+} /* MMultVecVec */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MMultVecMat
@@ -3419,13 +3384,9 @@ int MMultVecVec(double* vec1, long gv1,
    11/1999     C.Thorenz Register-Variablen
 **************************************************************************/
 #ifdef SX
-int MMultVecMat(double* restrict vec, long gv,
-                double* restrict mat, long m, long n,
-                double* restrict veco, long go)
+int MMultVecMat(double* restrict vec, long gv, double* restrict mat, long m, long n, double* restrict veco, long go)
 #else
-int MMultVecMat(double* vec, long gv,
-                double* mat, long m, long n,
-                double* veco, long go)
+int MMultVecMat(double* vec, long gv, double* mat, long m, long n, double* veco, long go)
 #endif
 {
 	register long i, j;
@@ -3434,14 +3395,15 @@ int MMultVecMat(double* vec, long gv,
 #else
 	const bool check_err = false;
 #endif
-	if (check_err) {
+	if (check_err)
+	{
 		if (gv != m)
 			DisplayErrorMsg("MMultVecMat: Groesse von Matrix und Vektor passen nicht");
 		if (go != n)
 			DisplayErrorMsg("MMultVecMat: Groesse von Ergebnis-Vektor stimmt nicht");
 	}
 
-	MNulleVec(veco, n);                   /* cb: Nullen nicht vergessen ! */
+	MNulleVec(veco, n); /* cb: Nullen nicht vergessen ! */
 	for (i = 0; i < m; i++)
 #ifdef SX
 #pragma cdir nodep
@@ -3449,7 +3411,7 @@ int MMultVecMat(double* vec, long gv,
 		for (j = 0; j < n; j++)
 			veco[j] += vec[i] * mat[j + i * n];
 	return 1;
-}                                                 /* MMultVecMat */
+} /* MMultVecMat */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MMultMatVec
@@ -3479,12 +3441,12 @@ int MMultVecMat(double* vec, long gv,
    11/1999     C.Thorenz Warnung in #IFDEF, Register-Variablen
 **************************************************************************/
 
-int MMultMatVec(                                  /* Matrix */
-        double* mat, long m, long n,
-/* Veltor fuer das Produkt */
-        double* vec, long g,
-/* Vektor fuer das Ergebnis */
-        double* veco, long r)
+int MMultMatVec(/* Matrix */
+                double* mat, long m, long n,
+                /* Veltor fuer das Produkt */
+                double* vec, long g,
+                /* Vektor fuer das Ergebnis */
+                double* veco, long r)
 {
 	register long i, k;
 
@@ -3493,7 +3455,8 @@ int MMultMatVec(                                  /* Matrix */
 #else
 	const bool check_err = false;
 #endif
-	if (check_err) {
+	if (check_err)
+	{
 		if (g != n)
 			DisplayErrorMsg("MMultMatVec: Groesse von Matrix und Vektor passen nicht");
 		if (r != m)
@@ -3503,12 +3466,12 @@ int MMultMatVec(                                  /* Matrix */
 	r = m;
 	for (k = 0; k < m; k++)
 	{
-		veco[k] = 0.0;            /* cb: Nullen nicht vergessen ! */
+		veco[k] = 0.0; /* cb: Nullen nicht vergessen ! */
 		for (i = 0; i < g; i++)
 			veco[k] += vec[i] * mat[i + k * n];
 	}
 	return 1;
-}                                                 /* MMultMatVec */
+} /* MMultMatVec */
 
 /**************************************************************************
    ROCKFLOW - Funktion: MMultMatMat
@@ -3551,13 +3514,10 @@ int MMultMatVec(                                  /* Matrix */
 
 **************************************************************************/
 #ifdef SX
-int MMultMatMat(double* restrict mat1, long m1, long n1,
-                double* restrict mat2, long m2, long n2,
-                double* restrict mato, long mo, long no)
+int MMultMatMat(double* restrict mat1, long m1, long n1, double* restrict mat2, long m2, long n2, double* restrict mato,
+                long mo, long no)
 #else
-int MMultMatMat(double* mat1, long m1, long n1,
-                double* mat2, long m2, long n2,
-                double* mato, long mo, long no)
+int MMultMatMat(double* mat1, long m1, long n1, double* mat2, long m2, long n2, double* mato, long mo, long no)
 #endif
 {
 #ifdef CBLAS_MMultMatMat
@@ -3581,7 +3541,7 @@ int MMultMatMat(double* mat1, long m1, long n1,
 #pragma cdir nodep
 #endif
 	for (i = 0; i < mo * no; i++)
-		mato[i] = 0.0;            /*Ergebnismatrix vorsichtshalber nullen */
+		mato[i] = 0.0; /*Ergebnismatrix vorsichtshalber nullen */
 
 	for (i = 0; i < n1 * m1; i++)
 	{
@@ -3598,7 +3558,7 @@ int MMultMatMat(double* mat1, long m1, long n1,
 #endif
 
 	return 1;
-}                                                 /* MMultMatMat */
+} /* MMultMatMat */
 
 /***************************************************************************
    ROCKFLOW - Funktion: MXPGaussPkt
@@ -3623,42 +3583,42 @@ double MXPGaussPkt(long grd, long pkt)
 {
 	switch (grd)
 	{
-	case 1:
-		return 0.0;
-	case 2:
-		switch (pkt)
-		{
-		case 0:
-			return 0.577350269189626;
-		case 1:
-			return -0.577350269189626;
-		}
-		break;
-	case 3:
-		switch (pkt)
-		{
-		case 0:
-			return 0.774596669241483;
 		case 1:
 			return 0.0;
 		case 2:
-			return -0.774596669241483;
-		}
-		break;
-	case 4:
-		switch (pkt)
-		{
-		case 0:
-			return 0.861136311594053;
-		case 1:
-			return 0.339981043584856;
-		case 2:
-			return -0.339981043584856;
+			switch (pkt)
+			{
+				case 0:
+					return 0.577350269189626;
+				case 1:
+					return -0.577350269189626;
+			}
+			break;
 		case 3:
-			return -0.861136311594053;
-		}
-		break;
-	}                                     /* switch grd */
+			switch (pkt)
+			{
+				case 0:
+					return 0.774596669241483;
+				case 1:
+					return 0.0;
+				case 2:
+					return -0.774596669241483;
+			}
+			break;
+		case 4:
+			switch (pkt)
+			{
+				case 0:
+					return 0.861136311594053;
+				case 1:
+					return 0.339981043584856;
+				case 2:
+					return -0.339981043584856;
+				case 3:
+					return -0.861136311594053;
+			}
+			break;
+	} /* switch grd */
 	return 0.0;
 }
 
@@ -3685,42 +3645,42 @@ double MXPGaussFkt(long grd, long pkt)
 {
 	switch (grd)
 	{
-	case 1:
-		return 2.0;
-	case 2:
-		switch (pkt)
-		{
-		case 0:
-			return 1.0;
 		case 1:
-			return 1.0;
-		}
-		break;
-	case 3:
-		switch (pkt)
-		{
-		case 0:
-			return 0.555555555555556;
-		case 1:
-			return 0.888888888888889;
+			return 2.0;
 		case 2:
-			return 0.555555555555556;
-		}
-		break;
-	case 4:
-		switch (pkt)
-		{
-		case 0:
-			return 0.347854845137454;
-		case 1:
-			return 0.652145154862546;
-		case 2:
-			return 0.652145154862546;
+			switch (pkt)
+			{
+				case 0:
+					return 1.0;
+				case 1:
+					return 1.0;
+			}
+			break;
 		case 3:
-			return 0.347854845137454;
-		}
-		break;
-	}                                     /* switch grd */
+			switch (pkt)
+			{
+				case 0:
+					return 0.555555555555556;
+				case 1:
+					return 0.888888888888889;
+				case 2:
+					return 0.555555555555556;
+			}
+			break;
+		case 4:
+			switch (pkt)
+			{
+				case 0:
+					return 0.347854845137454;
+				case 1:
+					return 0.652145154862546;
+				case 2:
+					return 0.652145154862546;
+				case 3:
+					return 0.347854845137454;
+			}
+			break;
+	} /* switch grd */
 	return 0.0;
 }
 
@@ -3730,7 +3690,7 @@ double MXPGaussFkt(long grd, long pkt)
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
-//NEW. WW
+// NEW. WW
 
 /***************************************************************************
    ROCKFLOW - Funktion: SamplePointTriHQ(const int nsample)
@@ -3756,24 +3716,25 @@ double MXPGaussFkt(long grd, long pkt)
  **************************************************************************/
 void SamplePointTriHQ(const int nsample, double* SPoint)
 {
-	switch(nsample)
+	switch (nsample)
 	{
-	case 0:
-		SPoint[0] = 0.166666666666667;
-		SPoint[1] = 0.166666666666667;
-		SPoint[2] = 0.1666666666667; // Weight
-		break;
-	case 1:
-		SPoint[0] = 0.666666666666667;
-		SPoint[1] = 0.166666666666667;
-		SPoint[2] = 0.1666666666667; // Weight
-		break;
-	case 2:
-		SPoint[0] = 0.166666666666667;
-		SPoint[1] = 0.666666666666667;
-		SPoint[2] = 0.1666666666667; // Weight
-		break;
-	default: break;
+		case 0:
+			SPoint[0] = 0.166666666666667;
+			SPoint[1] = 0.166666666666667;
+			SPoint[2] = 0.1666666666667; // Weight
+			break;
+		case 1:
+			SPoint[0] = 0.666666666666667;
+			SPoint[1] = 0.166666666666667;
+			SPoint[2] = 0.1666666666667; // Weight
+			break;
+		case 2:
+			SPoint[0] = 0.166666666666667;
+			SPoint[1] = 0.666666666666667;
+			SPoint[2] = 0.1666666666667; // Weight
+			break;
+		default:
+			break;
 	}
 }
 
@@ -3793,39 +3754,40 @@ void SamplePointTriHQ(const int nsample, double* SPoint)
  **************************************************************************/
 void SamplePointTet5(const int nsample, double* SPoint)
 {
-	switch(nsample)
+	switch (nsample)
 	{
-	case 0:
-		SPoint[0] = 0.25;
-		SPoint[1] = 0.25;
-		SPoint[2] = 0.25;
-		SPoint[3] = -0.133333333333333; // Weight
-		break;
-	case 1:
-		SPoint[0] = 0.166666666666667;
-		SPoint[1] = 0.166666666666667;
-		SPoint[2] = 0.166666666666667;
-		SPoint[3] = 0.07500000000000; // Weight
-		break;
-	case 2:
-		SPoint[0] = 0.5;
-		SPoint[1] = 0.166666666666667;
-		SPoint[2] = 0.166666666666667;
-		SPoint[3] = 0.07500000000000; // Weight
-		break;
-	case 3:
-		SPoint[0] = 0.166666666666667;
-		SPoint[1] = 0.5;
-		SPoint[2] = 0.166666666666667;
-		SPoint[3] = 0.07500000000000; // Weight
-		break;
-	case 4:
-		SPoint[0] = 0.166666666666667;
-		SPoint[1] = 0.166666666666667;
-		SPoint[2] = 0.5;
-		SPoint[3] = 0.07500000000000; // Weight
-		break;
-	default: break;
+		case 0:
+			SPoint[0] = 0.25;
+			SPoint[1] = 0.25;
+			SPoint[2] = 0.25;
+			SPoint[3] = -0.133333333333333; // Weight
+			break;
+		case 1:
+			SPoint[0] = 0.166666666666667;
+			SPoint[1] = 0.166666666666667;
+			SPoint[2] = 0.166666666666667;
+			SPoint[3] = 0.07500000000000; // Weight
+			break;
+		case 2:
+			SPoint[0] = 0.5;
+			SPoint[1] = 0.166666666666667;
+			SPoint[2] = 0.166666666666667;
+			SPoint[3] = 0.07500000000000; // Weight
+			break;
+		case 3:
+			SPoint[0] = 0.166666666666667;
+			SPoint[1] = 0.5;
+			SPoint[2] = 0.166666666666667;
+			SPoint[3] = 0.07500000000000; // Weight
+			break;
+		case 4:
+			SPoint[0] = 0.166666666666667;
+			SPoint[1] = 0.166666666666667;
+			SPoint[2] = 0.5;
+			SPoint[3] = 0.07500000000000; // Weight
+			break;
+		default:
+			break;
 	}
 }
 
@@ -3845,99 +3807,100 @@ void SamplePointTet5(const int nsample, double* SPoint)
  **************************************************************************/
 void SamplePointTet15(const int nsample, double* SPoint)
 {
-	switch(nsample)
+	switch (nsample)
 	{
-	case 0:
-		SPoint[0] = 0.25;
-		SPoint[1] = 0.25;
-		SPoint[2] = 0.25;
-		SPoint[3] = 0.019753086419753086; // Weight
-		break;
-	case 1:
-		SPoint[0] = 0.09197107805272303;
-		SPoint[1] = 0.09197107805272303;
-		SPoint[2] = 0.09197107805272303;
-		SPoint[3] = 0.011989513963169772; // Weight
-		break;
-	case 2:
-		SPoint[0] = 0.72408676584183096;
-		SPoint[1] = 0.09197107805272303;
-		SPoint[2] = 0.09197107805272303;
-		SPoint[3] = 0.011989513963169772; // Weight
-		break;
-	case 3:
-		SPoint[0] = 0.09197107805272303;
-		SPoint[1] = 0.72408676584183096;
-		SPoint[2] = 0.09197107805272303;
-		SPoint[3] = 0.011989513963169772; // Weight
-		break;
-	case 4:
-		SPoint[0] = 0.09197107805272303;
-		SPoint[1] = 0.09197107805272303;
-		SPoint[2] = 0.72408676584183096;
-		SPoint[3] = 0.011989513963169772; // Weight
-		break;
-	case 5:
-		SPoint[0] = 0.44364916731037080;
-		SPoint[1] = 0.05635083268962915;
-		SPoint[2] = 0.05635083268962915;
-		SPoint[3] = 0.008818342151675485; // Weight
-		break;
-	case 6:
-		SPoint[0] = 0.05635083268962915;
-		SPoint[1] = 0.44364916731037080;
-		SPoint[2] = 0.05635083268962915;
-		SPoint[3] = 0.008818342151675485; // Weight
-		break;
-	case 7:
-		SPoint[0] = 0.05635083268962915;
-		SPoint[1] = 0.05635083268962915;
-		SPoint[2] = 0.44364916731037080;
-		SPoint[3] = 0.008818342151675485; // Weight
-		break;
-	case 8:
-		SPoint[0] = 0.05635083268962915;
-		SPoint[1] = 0.44364916731037080;
-		SPoint[2] = 0.44364916731037080;
-		SPoint[3] = 0.008818342151675485; // Weight
-		break;
-	case 9:
-		SPoint[0] = 0.44364916731037080;
-		SPoint[1] = 0.05635083268962915;
-		SPoint[2] = 0.44364916731037080;
-		SPoint[3] = 0.008818342151675485; // Weight
-		break;
-	case 10:
-		SPoint[0] = 0.44364916731037080;
-		SPoint[1] = 0.44364916731037080;
-		SPoint[2] = 0.05635083268962915;
-		SPoint[3] = 0.008818342151675485; // Weight
-		break;
-	case 11:
-		SPoint[0] = 0.31979362782962989;
-		SPoint[1] = 0.31979362782962989;
-		SPoint[2] = 0.31979362782962989;
-		SPoint[3] = 0.011511367871045397; // Weight
-		break;
-	case 12:
-		SPoint[0] = 0.04061911651111023;
-		SPoint[1] = 0.31979362782962989;
-		SPoint[2] = 0.31979362782962989;
-		SPoint[3] = 0.011511367871045397; // Weight
-		break;
-	case 13:
-		SPoint[0] = 0.31979362782962989;
-		SPoint[1] = 0.04061911651111023;
-		SPoint[2] = 0.31979362782962989;
-		SPoint[3] = 0.011511367871045397; // Weight
-		break;
-	case 14:
-		SPoint[0] = 0.31979362782962989;
-		SPoint[1] = 0.31979362782962989;
-		SPoint[2] = 0.04061911651111023;
-		SPoint[3] = 0.011511367871045397; // Weight
-		break;
-	default: break;
+		case 0:
+			SPoint[0] = 0.25;
+			SPoint[1] = 0.25;
+			SPoint[2] = 0.25;
+			SPoint[3] = 0.019753086419753086; // Weight
+			break;
+		case 1:
+			SPoint[0] = 0.09197107805272303;
+			SPoint[1] = 0.09197107805272303;
+			SPoint[2] = 0.09197107805272303;
+			SPoint[3] = 0.011989513963169772; // Weight
+			break;
+		case 2:
+			SPoint[0] = 0.72408676584183096;
+			SPoint[1] = 0.09197107805272303;
+			SPoint[2] = 0.09197107805272303;
+			SPoint[3] = 0.011989513963169772; // Weight
+			break;
+		case 3:
+			SPoint[0] = 0.09197107805272303;
+			SPoint[1] = 0.72408676584183096;
+			SPoint[2] = 0.09197107805272303;
+			SPoint[3] = 0.011989513963169772; // Weight
+			break;
+		case 4:
+			SPoint[0] = 0.09197107805272303;
+			SPoint[1] = 0.09197107805272303;
+			SPoint[2] = 0.72408676584183096;
+			SPoint[3] = 0.011989513963169772; // Weight
+			break;
+		case 5:
+			SPoint[0] = 0.44364916731037080;
+			SPoint[1] = 0.05635083268962915;
+			SPoint[2] = 0.05635083268962915;
+			SPoint[3] = 0.008818342151675485; // Weight
+			break;
+		case 6:
+			SPoint[0] = 0.05635083268962915;
+			SPoint[1] = 0.44364916731037080;
+			SPoint[2] = 0.05635083268962915;
+			SPoint[3] = 0.008818342151675485; // Weight
+			break;
+		case 7:
+			SPoint[0] = 0.05635083268962915;
+			SPoint[1] = 0.05635083268962915;
+			SPoint[2] = 0.44364916731037080;
+			SPoint[3] = 0.008818342151675485; // Weight
+			break;
+		case 8:
+			SPoint[0] = 0.05635083268962915;
+			SPoint[1] = 0.44364916731037080;
+			SPoint[2] = 0.44364916731037080;
+			SPoint[3] = 0.008818342151675485; // Weight
+			break;
+		case 9:
+			SPoint[0] = 0.44364916731037080;
+			SPoint[1] = 0.05635083268962915;
+			SPoint[2] = 0.44364916731037080;
+			SPoint[3] = 0.008818342151675485; // Weight
+			break;
+		case 10:
+			SPoint[0] = 0.44364916731037080;
+			SPoint[1] = 0.44364916731037080;
+			SPoint[2] = 0.05635083268962915;
+			SPoint[3] = 0.008818342151675485; // Weight
+			break;
+		case 11:
+			SPoint[0] = 0.31979362782962989;
+			SPoint[1] = 0.31979362782962989;
+			SPoint[2] = 0.31979362782962989;
+			SPoint[3] = 0.011511367871045397; // Weight
+			break;
+		case 12:
+			SPoint[0] = 0.04061911651111023;
+			SPoint[1] = 0.31979362782962989;
+			SPoint[2] = 0.31979362782962989;
+			SPoint[3] = 0.011511367871045397; // Weight
+			break;
+		case 13:
+			SPoint[0] = 0.31979362782962989;
+			SPoint[1] = 0.04061911651111023;
+			SPoint[2] = 0.31979362782962989;
+			SPoint[3] = 0.011511367871045397; // Weight
+			break;
+		case 14:
+			SPoint[0] = 0.31979362782962989;
+			SPoint[1] = 0.31979362782962989;
+			SPoint[2] = 0.04061911651111023;
+			SPoint[3] = 0.011511367871045397; // Weight
+			break;
+		default:
+			break;
 	}
 }
 
@@ -3956,40 +3919,40 @@ void SamplePointPyramid5(const int nsample, double* SPoint)
 	static const double w1 = 81.0 / 100.0;
 	static const double w2 = 125.0 / 27.0;
 
-	switch(nsample)
+	switch (nsample)
 	{
-	case 0:
-		SPoint[0] = -g1;
-		SPoint[1] = -g1;
-		SPoint[2] = g2;
-		SPoint[3] = w1; // Weight
-		break;
-	case 1:
-		SPoint[0] = g1;
-		SPoint[1] = -g1;
-		SPoint[2] = g2;
-		SPoint[3] = w1; // Weight
-		break;
-	case 2:
-		SPoint[0] = g1;
-		SPoint[1] = g1;
-		SPoint[2] = g2;
-		SPoint[3] = w1; // Weight
-		break;
-	case 3:
-		SPoint[0] = -g1;
-		SPoint[1] = g1;
-		SPoint[2] = g2;
-		SPoint[3] = w1; // Weight
-		break;
-	case 4:
-		SPoint[0] = .0;
-		SPoint[1] = .0;
-		SPoint[2] = g3;
-		SPoint[3] = w2; // Weight
-		break;
-	default:
-		break;
+		case 0:
+			SPoint[0] = -g1;
+			SPoint[1] = -g1;
+			SPoint[2] = g2;
+			SPoint[3] = w1; // Weight
+			break;
+		case 1:
+			SPoint[0] = g1;
+			SPoint[1] = -g1;
+			SPoint[2] = g2;
+			SPoint[3] = w1; // Weight
+			break;
+		case 2:
+			SPoint[0] = g1;
+			SPoint[1] = g1;
+			SPoint[2] = g2;
+			SPoint[3] = w1; // Weight
+			break;
+		case 3:
+			SPoint[0] = -g1;
+			SPoint[1] = g1;
+			SPoint[2] = g2;
+			SPoint[3] = w1; // Weight
+			break;
+		case 4:
+			SPoint[0] = .0;
+			SPoint[1] = .0;
+			SPoint[2] = g3;
+			SPoint[3] = w2; // Weight
+			break;
+		default:
+			break;
 	}
 }
 
@@ -4014,88 +3977,88 @@ void SamplePointPyramid13(const int nsample, double* SPoint)
 	static const double w3 = 2.474004977113405936;
 	static const double w4 = 0.419515737191525950;
 
-	switch(nsample)
+	switch (nsample)
 	{
-	case 0:
-		SPoint[0] = -g1;
-		SPoint[1] = -g1;
-		SPoint[2] = g4;
-		SPoint[3] = w1; // Weight
-		break;
-	case 1:
-		SPoint[0] = g1;
-		SPoint[1] = -g1;
-		SPoint[2] = g4;
-		SPoint[3] = w1; // Weight
-		break;
-	case 2:
-		SPoint[0] = g1;
-		SPoint[1] = g1;
-		SPoint[2] = g4;
-		SPoint[3] = w1; // Weight
-		break;
-	case 3:
-		SPoint[0] = -g1;
-		SPoint[1] = g1;
-		SPoint[2] = g4;
-		SPoint[3] = w1; // Weight
-		break;
-	case 4:
-		SPoint[0] = -g2;
-		SPoint[1] = .0;
-		SPoint[2] = g5;
-		SPoint[3] = w2; // Weight
-		break;
-	case 5:
-		SPoint[0] = g2;
-		SPoint[1] = .0;
-		SPoint[2] = g5;
-		SPoint[3] = w2; // Weight
-		break;
-	case 6:
-		SPoint[0] = .0;
-		SPoint[1] = -g2;
-		SPoint[2] = g5;
-		SPoint[3] = w2; // Weight
-		break;
-	case 7:
-		SPoint[0] = .0;
-		SPoint[1] = g2;
-		SPoint[2] = g5;
-		SPoint[3] = w2; // Weight
-		break;
-	case 8:
-		SPoint[0] = .0;
-		SPoint[1] = .0;
-		SPoint[2] = g6;
-		SPoint[3] = w3; // Weight
-		break;
-	case 9:
-		SPoint[0] = -g3;
-		SPoint[1] = -g3;
-		SPoint[2] = g7;
-		SPoint[3] = w4; // Weight
-		break;
-	case 10:
-		SPoint[0] = g3;
-		SPoint[1] = -g3;
-		SPoint[2] = g7;
-		SPoint[3] = w4; // Weight
-		break;
-	case 11:
-		SPoint[0] = g3;
-		SPoint[1] = g3;
-		SPoint[2] = g7;
-		SPoint[3] = w4; // Weight
-		break;
-	case 12:
-		SPoint[0] = -g3;
-		SPoint[1] = g3;
-		SPoint[2] = g7;
-		SPoint[3] = w4; // Weight
-		break;
-	default:
-		break;
+		case 0:
+			SPoint[0] = -g1;
+			SPoint[1] = -g1;
+			SPoint[2] = g4;
+			SPoint[3] = w1; // Weight
+			break;
+		case 1:
+			SPoint[0] = g1;
+			SPoint[1] = -g1;
+			SPoint[2] = g4;
+			SPoint[3] = w1; // Weight
+			break;
+		case 2:
+			SPoint[0] = g1;
+			SPoint[1] = g1;
+			SPoint[2] = g4;
+			SPoint[3] = w1; // Weight
+			break;
+		case 3:
+			SPoint[0] = -g1;
+			SPoint[1] = g1;
+			SPoint[2] = g4;
+			SPoint[3] = w1; // Weight
+			break;
+		case 4:
+			SPoint[0] = -g2;
+			SPoint[1] = .0;
+			SPoint[2] = g5;
+			SPoint[3] = w2; // Weight
+			break;
+		case 5:
+			SPoint[0] = g2;
+			SPoint[1] = .0;
+			SPoint[2] = g5;
+			SPoint[3] = w2; // Weight
+			break;
+		case 6:
+			SPoint[0] = .0;
+			SPoint[1] = -g2;
+			SPoint[2] = g5;
+			SPoint[3] = w2; // Weight
+			break;
+		case 7:
+			SPoint[0] = .0;
+			SPoint[1] = g2;
+			SPoint[2] = g5;
+			SPoint[3] = w2; // Weight
+			break;
+		case 8:
+			SPoint[0] = .0;
+			SPoint[1] = .0;
+			SPoint[2] = g6;
+			SPoint[3] = w3; // Weight
+			break;
+		case 9:
+			SPoint[0] = -g3;
+			SPoint[1] = -g3;
+			SPoint[2] = g7;
+			SPoint[3] = w4; // Weight
+			break;
+		case 10:
+			SPoint[0] = g3;
+			SPoint[1] = -g3;
+			SPoint[2] = g7;
+			SPoint[3] = w4; // Weight
+			break;
+		case 11:
+			SPoint[0] = g3;
+			SPoint[1] = g3;
+			SPoint[2] = g7;
+			SPoint[3] = w4; // Weight
+			break;
+		case 12:
+			SPoint[0] = -g3;
+			SPoint[1] = g3;
+			SPoint[2] = g7;
+			SPoint[3] = w4; // Weight
+			break;
+		default:
+			break;
 	}
 }
 void SamplePointPyramid8(const int i, double* SPoint)
@@ -4106,56 +4069,56 @@ void SamplePointPyramid8(const int i, double* SPoint)
 	static const double w1 = 5.0 * (68.0 + 5.0 * sqrt(10.0)) / 432.0;
 	static const double w2 = 85.0 / 54.0 - w1;
 
-	switch(i)
+	switch (i)
 	{
-	case 0:
-		SPoint[0] = -g1;
-		SPoint[1] = -g1;
-		SPoint[2] = g2;
-		SPoint[3] = w1; // Weight
-		break;
-	case 1:
-		SPoint[0] = g1;
-		SPoint[1] = -g1;
-		SPoint[2] = g2;
-		SPoint[3] = w1; // Weight
-		break;
-	case 2:
-		SPoint[0] = g1;
-		SPoint[1] = g1;
-		SPoint[2] = g2;
-		SPoint[3] = w1; // Weight
-		break;
-	case 3:
-		SPoint[0] = -g1;
-		SPoint[1] = g1;
-		SPoint[2] = g2;
-		SPoint[3] = w1; // Weight
-		break;
-	case 4:
-		SPoint[0] = -g1;
-		SPoint[1] = -g1;
-		SPoint[2] = g3;
-		SPoint[3] = w2; // Weight
-		break;
-	case 5:
-		SPoint[0] = g1;
-		SPoint[1] = -g1;
-		SPoint[2] = g3;
-		SPoint[3] = w2; // Weight
-		break;
-	case 6:
-		SPoint[0] = g1;
-		SPoint[1] = g1;
-		SPoint[2] = g3;
-		SPoint[3] = w2; // Weight
-		break;
-	case 7:
-		SPoint[0] = -g1;
-		SPoint[1] = g1;
-		SPoint[2] = g3;
-		SPoint[3] = w2; // Weight
-		break;
+		case 0:
+			SPoint[0] = -g1;
+			SPoint[1] = -g1;
+			SPoint[2] = g2;
+			SPoint[3] = w1; // Weight
+			break;
+		case 1:
+			SPoint[0] = g1;
+			SPoint[1] = -g1;
+			SPoint[2] = g2;
+			SPoint[3] = w1; // Weight
+			break;
+		case 2:
+			SPoint[0] = g1;
+			SPoint[1] = g1;
+			SPoint[2] = g2;
+			SPoint[3] = w1; // Weight
+			break;
+		case 3:
+			SPoint[0] = -g1;
+			SPoint[1] = g1;
+			SPoint[2] = g2;
+			SPoint[3] = w1; // Weight
+			break;
+		case 4:
+			SPoint[0] = -g1;
+			SPoint[1] = -g1;
+			SPoint[2] = g3;
+			SPoint[3] = w2; // Weight
+			break;
+		case 5:
+			SPoint[0] = g1;
+			SPoint[1] = -g1;
+			SPoint[2] = g3;
+			SPoint[3] = w2; // Weight
+			break;
+		case 6:
+			SPoint[0] = g1;
+			SPoint[1] = g1;
+			SPoint[2] = g3;
+			SPoint[3] = w2; // Weight
+			break;
+		case 7:
+			SPoint[0] = -g1;
+			SPoint[1] = g1;
+			SPoint[2] = g3;
+			SPoint[3] = w2; // Weight
+			break;
 	}
 }
 /**************************************************************************
@@ -4267,8 +4230,8 @@ void GradShapeFunctionTri(double* dN3, const double* u)
 	u = u;
 	//   d()/dL_1
 	dN3[0] = -1.0;
-	dN3[1] =  1.0;
-	dN3[2] =  0.0;
+	dN3[1] = 1.0;
+	dN3[2] = 0.0;
 	//   d()/dL_2
 	dN3[3] = -1.0;
 	dN3[4] = 0.0;
@@ -4323,22 +4286,22 @@ void ShapeFunctionTriHQ(double* N6, const double* u)
  **************************************************************************/
 void GradShapeFunctionTriHQ(double* dN6, const double* u)
 {
-	dN6[0] = 4. * (u[0] + u[1]) - 3.;     // dN1/dL1
-	dN6[6] = 4. * (u[0] + u[1]) - 3.;     // dN1/dL2
+	dN6[0] = 4. * (u[0] + u[1]) - 3.; // dN1/dL1
+	dN6[6] = 4. * (u[0] + u[1]) - 3.; // dN1/dL2
 
-	dN6[1] = 4. * u[0] - 1.;              // dN2/dL1
-	dN6[7] = 0.;                          // dN2/dL2
+	dN6[1] = 4. * u[0] - 1.; // dN2/dL1
+	dN6[7] = 0.; // dN2/dL2
 
-	dN6[2] = 0.;                          // dN3/dL1
-	dN6[8] = 4. * u[1] - 1.;              // dN3/dL2
+	dN6[2] = 0.; // dN3/dL1
+	dN6[8] = 4. * u[1] - 1.; // dN3/dL2
 
-	dN6[3] =  4. * (1 - 2. * u[0] - u[1]); // dN4/dL1
-	dN6[9] = -4. * u[0];                  // dN4/dL2
+	dN6[3] = 4. * (1 - 2. * u[0] - u[1]); // dN4/dL1
+	dN6[9] = -4. * u[0]; // dN4/dL2
 
-	dN6[4] = 4. * u[1];                   // dN5/dL1
-	dN6[10] = 4. * u[0];                  // dN5/dL2
+	dN6[4] = 4. * u[1]; // dN5/dL1
+	dN6[10] = 4. * u[0]; // dN5/dL2
 
-	dN6[5] = -4. * u[1];                  // dN6/dL1
+	dN6[5] = -4. * u[1]; // dN6/dL1
 	dN6[11] = 4. * (1 - u[0] - 2. * u[1]); // dN6/dL2
 }
 
@@ -4361,10 +4324,10 @@ void GradShapeFunctionTriHQ(double* dN6, const double* u)
    06/2003     WW        Erste Version
 
  **************************************************************************/
-void  realCoordTriHQ(double* x,   const double* XY, const double* u )
+void realCoordTriHQ(double* x, const double* XY, const double* u)
 {
-	x[1] = (1.0 - u[0] - u[1]) * XY[0] +  u[0] * XY[1] + u[1] * XY[2];
-	x[1] = (1.0 - u[0] - u[1]) * XY[6] +  u[0] * XY[7] + u[1] * XY[8];
+	x[1] = (1.0 - u[0] - u[1]) * XY[0] + u[0] * XY[1] + u[1] * XY[2];
+	x[1] = (1.0 - u[0] - u[1]) * XY[6] + u[0] * XY[7] + u[1] * XY[8];
 }
 
 /***************************************************************************
@@ -4444,10 +4407,10 @@ void GradShapeFunctionQuad(double* dN4, const double* u)
 void ShapeFunctionQuadHQ8(double* N8, const double* u)
 {
 	//
-	N8[0] = -0.25 * (1.0 - u[0]) * (1.0 - u[1]) * (( 1.0 + u[0] + u[1]));
-	N8[1] =  0.25 * (1.0 + u[0]) * (1.0 - u[1]) * ((-1.0 + u[0] - u[1]));
-	N8[2] =  0.25 * (1.0 + u[0]) * (1.0 + u[1]) * ((-1.0 + u[0] + u[1]));
-	N8[3] = -0.25 * (1.0 - u[0]) * (1.0 + u[1]) * (( 1.0 + u[0] - u[1]));
+	N8[0] = -0.25 * (1.0 - u[0]) * (1.0 - u[1]) * ((1.0 + u[0] + u[1]));
+	N8[1] = 0.25 * (1.0 + u[0]) * (1.0 - u[1]) * ((-1.0 + u[0] - u[1]));
+	N8[2] = 0.25 * (1.0 + u[0]) * (1.0 + u[1]) * ((-1.0 + u[0] + u[1]));
+	N8[3] = -0.25 * (1.0 - u[0]) * (1.0 + u[1]) * ((1.0 + u[0] - u[1]));
 	//
 	N8[4] = 0.5 * (1.0 - u[0] * u[0]) * (1.0 - u[1]);
 	N8[5] = 0.5 * (1.0 - u[1] * u[1]) * (1.0 + u[0]);
@@ -4473,7 +4436,7 @@ void ShapeFunctionQuadHQ8(double* N8, const double* u)
  **************************************************************************/
 void ShapeFunctionQuadHQ(double* N9, const double* u)
 {
-	N9[8] = (1.0 - u[0] * u[0]) * ( 1.0 - u[1] * u[1]);
+	N9[8] = (1.0 - u[0] * u[0]) * (1.0 - u[1] * u[1]);
 	N9[7] = 0.5 * (1.0 - u[1] * u[1]) * (1.0 + u[0]) - 0.5 * N9[8];
 	N9[6] = 0.5 * (1.0 - u[0] * u[0]) * (1.0 - u[1]) - 0.5 * N9[8];
 	N9[5] = 0.5 * (1.0 - u[1] * u[1]) * (1.0 - u[0]) - 0.5 * N9[8];
@@ -4541,7 +4504,7 @@ void GradShapeFunctionQuadHQ8(double* dN8, const double* u)
 	double r = u[0];
 	double s = u[1];
 
-	//dN/dr
+	// dN/dr
 	dN8[0] = (1 - s) * (2 * r + s) * 0.25;
 	dN8[1] = (1 - s) * (2 * r - s) * 0.25;
 	dN8[2] = (1 + s) * (2 * r + s) * 0.25;
@@ -4551,7 +4514,7 @@ void GradShapeFunctionQuadHQ8(double* dN8, const double* u)
 	dN8[6] = -r * (1 + s);
 	dN8[7] = -(1 - s * s) * 0.5;
 
-	//dN/ds
+	// dN/ds
 	dN8[8] = (1 - r) * (r + 2 * s) * 0.25;
 	dN8[9] = -(1 + r) * (r - 2 * s) * 0.25;
 	dN8[10] = (1 + r) * (r + 2 * s) * 0.25;
@@ -4676,7 +4639,7 @@ void GradShapeFunctionTetHQ(double* dN10, const double* x)
 	dN10[8] = 0.0;
 	dN10[9] = -4.0 * x[2];
 
-	dN10[10] =  4. * (x[0] + x[1] + x[2]) - 3.;
+	dN10[10] = 4. * (x[0] + x[1] + x[2]) - 3.;
 	dN10[11] = 0.0;
 	dN10[12] = 4. * x[1] - 1.;
 	dN10[13] = 0.;
@@ -4763,9 +4726,9 @@ void ShapeFunctionHex(double* N8, const double* x)
 void GradShapeFunctionHex(double* dN8, const double* x)
 {
 	int i;
-	double r =  x[0];
-	double s =  x[1];
-	double t =  x[2];
+	double r = x[0];
+	double s = x[1];
+	double t = x[2];
 	dN8[0] = +(1.0 + s) * (1.0 + t);
 	dN8[1] = -(1.0 + s) * (1.0 + t);
 	dN8[2] = -(1.0 - s) * (1.0 + t);
@@ -4822,7 +4785,7 @@ void GradShapeFunctionHex(double* dN8, const double* x)
  **************************************************************************/
 double ShapeFunctionHexHQ_Corner(const double r, const double s, const double t)
 {
-	return 0.125 * (1 + r) * (1 + s) * (1 + t) * ( r + s + t - 2.0);
+	return 0.125 * (1 + r) * (1 + s) * (1 + t) * (r + s + t - 2.0);
 }
 
 double ShapeFunctionHexHQ_Middle(const double r, const double s, const double t)
@@ -4832,34 +4795,34 @@ double ShapeFunctionHexHQ_Middle(const double r, const double s, const double t)
 
 double dShapeFunctionHexHQ_Corner(const double r, const double s, const double t, const int ty)
 {
-	switch(ty)
+	switch (ty)
 	{
-	case 0:
-		return 0.125 * (1 + s) * (1 + t) * (2.0 * r + s + t - 1.0);
-		break;
-	case 1:
-		return 0.125 * (1 + t) * (1 + r) * (2.0 * s + r + t - 1.0);
-		break;
-	case 2:
-		return 0.125 * (1 + r) * (1 + s) * (2.0 * t + s + r - 1.0);
-		break;
+		case 0:
+			return 0.125 * (1 + s) * (1 + t) * (2.0 * r + s + t - 1.0);
+			break;
+		case 1:
+			return 0.125 * (1 + t) * (1 + r) * (2.0 * s + r + t - 1.0);
+			break;
+		case 2:
+			return 0.125 * (1 + r) * (1 + s) * (2.0 * t + s + r - 1.0);
+			break;
 	}
 	return 0.0;
 }
 
 double dShapeFunctionHexHQ_Middle(const double r, const double s, const double t, const int ty)
 {
-	switch(ty)
+	switch (ty)
 	{
-	case 0:
-		return -0.5 * r * (1 + s) * (1 + t);
-		break;
-	case 1:
-		return 0.25 * (1 - r * r) * (1 + t);
-		break;
-	case 2:
-		return 0.25 * (1 - r * r) * (1 + s);
-		break;
+		case 0:
+			return -0.5 * r * (1 + s) * (1 + t);
+			break;
+		case 1:
+			return 0.25 * (1 - r * r) * (1 + t);
+			break;
+		case 2:
+			return 0.25 * (1 - r * r) * (1 + s);
+			break;
 	}
 	return 0.0;
 }
@@ -4870,29 +4833,29 @@ void ShapeFunctionHexHQ(double* N20, const double* x)
 	double s = x[1];
 	double t = x[2];
 
-	N20[0] = ShapeFunctionHexHQ_Corner(r,s,t);
-	N20[1] = ShapeFunctionHexHQ_Corner(-r,s,t);
-	N20[2] = ShapeFunctionHexHQ_Corner(-r,-s,t);
-	N20[3] = ShapeFunctionHexHQ_Corner(r,-s,t);
-	N20[4] = ShapeFunctionHexHQ_Corner(r,s,-t);
-	N20[5] = ShapeFunctionHexHQ_Corner(-r,s,-t);
-	N20[6] = ShapeFunctionHexHQ_Corner(-r,-s,-t);
-	N20[7] = ShapeFunctionHexHQ_Corner(r,-s,-t);
+	N20[0] = ShapeFunctionHexHQ_Corner(r, s, t);
+	N20[1] = ShapeFunctionHexHQ_Corner(-r, s, t);
+	N20[2] = ShapeFunctionHexHQ_Corner(-r, -s, t);
+	N20[3] = ShapeFunctionHexHQ_Corner(r, -s, t);
+	N20[4] = ShapeFunctionHexHQ_Corner(r, s, -t);
+	N20[5] = ShapeFunctionHexHQ_Corner(-r, s, -t);
+	N20[6] = ShapeFunctionHexHQ_Corner(-r, -s, -t);
+	N20[7] = ShapeFunctionHexHQ_Corner(r, -s, -t);
 
-	N20[8] = ShapeFunctionHexHQ_Middle(r,s,t);
-	N20[10] = ShapeFunctionHexHQ_Middle(r,-s,t);
-	N20[14] = ShapeFunctionHexHQ_Middle(r,-s,-t);
-	N20[12] = ShapeFunctionHexHQ_Middle(r,s,-t);
+	N20[8] = ShapeFunctionHexHQ_Middle(r, s, t);
+	N20[10] = ShapeFunctionHexHQ_Middle(r, -s, t);
+	N20[14] = ShapeFunctionHexHQ_Middle(r, -s, -t);
+	N20[12] = ShapeFunctionHexHQ_Middle(r, s, -t);
 
-	N20[11] = ShapeFunctionHexHQ_Middle(s,t,r);
-	N20[15] = ShapeFunctionHexHQ_Middle(s,-t,r);
-	N20[13] = ShapeFunctionHexHQ_Middle(s,-t,-r);
-	N20[9]  =  ShapeFunctionHexHQ_Middle(s,t,-r);
+	N20[11] = ShapeFunctionHexHQ_Middle(s, t, r);
+	N20[15] = ShapeFunctionHexHQ_Middle(s, -t, r);
+	N20[13] = ShapeFunctionHexHQ_Middle(s, -t, -r);
+	N20[9] = ShapeFunctionHexHQ_Middle(s, t, -r);
 
-	N20[16] = ShapeFunctionHexHQ_Middle(t,r,s);
-	N20[17] = ShapeFunctionHexHQ_Middle(t,-r,s);
-	N20[18] = ShapeFunctionHexHQ_Middle(t,-r,-s);
-	N20[19] = ShapeFunctionHexHQ_Middle(t,r,-s);
+	N20[16] = ShapeFunctionHexHQ_Middle(t, r, s);
+	N20[17] = ShapeFunctionHexHQ_Middle(t, -r, s);
+	N20[18] = ShapeFunctionHexHQ_Middle(t, -r, -s);
+	N20[19] = ShapeFunctionHexHQ_Middle(t, r, -s);
 }
 
 /***************************************************************************
@@ -4919,39 +4882,36 @@ void GradShapeFunctionHexHQ(double* dN20, const double* x)
 	double r = x[0];
 	double s = x[1];
 	double t = x[2];
-	static double sign1[] = {-1.0, 1.0,1.0};
-	static double sign2[] = { 1.0,-1.0,1.0};
-	static double sign3[] = { 1.0, 1.0,-1.0};
-	for(int i = 0; i < 3; i++)
+	static double sign1[] = {-1.0, 1.0, 1.0};
+	static double sign2[] = {1.0, -1.0, 1.0};
+	static double sign3[] = {1.0, 1.0, -1.0};
+	for (int i = 0; i < 3; i++)
 	{
-		dN20[20 * i + 0] = dShapeFunctionHexHQ_Corner(r,s,t,i);
-		dN20[20 * i + 1] = sign1[i] * dShapeFunctionHexHQ_Corner(-r,s,t,i);
-		dN20[20 * i + 2] = sign1[i] * sign2[i] * dShapeFunctionHexHQ_Corner(-r,-s,t,i);
-		dN20[20 * i + 3] = sign2[i] * dShapeFunctionHexHQ_Corner(r,-s,t,i);
-		dN20[20 * i + 4] = sign3[i] * dShapeFunctionHexHQ_Corner(r,s,-t,i);
-		dN20[20 * i + 5] = sign1[i] * sign3[i] * dShapeFunctionHexHQ_Corner(-r,s,-t,i);
-		dN20[20 * i + 6] = sign1[i] * sign2[i] * sign3[i] * dShapeFunctionHexHQ_Corner(-r,
-		                                                                               -s,
-		                                                                               -t,
-		                                                                               i);
-		dN20[20 * i + 7] = sign2[i] * sign3[i] * dShapeFunctionHexHQ_Corner(r,-s,-t,i);
+		dN20[20 * i + 0] = dShapeFunctionHexHQ_Corner(r, s, t, i);
+		dN20[20 * i + 1] = sign1[i] * dShapeFunctionHexHQ_Corner(-r, s, t, i);
+		dN20[20 * i + 2] = sign1[i] * sign2[i] * dShapeFunctionHexHQ_Corner(-r, -s, t, i);
+		dN20[20 * i + 3] = sign2[i] * dShapeFunctionHexHQ_Corner(r, -s, t, i);
+		dN20[20 * i + 4] = sign3[i] * dShapeFunctionHexHQ_Corner(r, s, -t, i);
+		dN20[20 * i + 5] = sign1[i] * sign3[i] * dShapeFunctionHexHQ_Corner(-r, s, -t, i);
+		dN20[20 * i + 6] = sign1[i] * sign2[i] * sign3[i] * dShapeFunctionHexHQ_Corner(-r, -s, -t, i);
+		dN20[20 * i + 7] = sign2[i] * sign3[i] * dShapeFunctionHexHQ_Corner(r, -s, -t, i);
 
-		dN20[20 * i + 8] =  dShapeFunctionHexHQ_Middle(r,s,t,i);
-		dN20[20 * i + 10] = sign2[i] * dShapeFunctionHexHQ_Middle(r,-s,t,i);
-		dN20[20 * i + 14] = sign2[i] * sign3[i] * dShapeFunctionHexHQ_Middle(r,-s,-t,i);
-		dN20[20 * i + 12] = sign3[i] * dShapeFunctionHexHQ_Middle(r,s,-t,i);
+		dN20[20 * i + 8] = dShapeFunctionHexHQ_Middle(r, s, t, i);
+		dN20[20 * i + 10] = sign2[i] * dShapeFunctionHexHQ_Middle(r, -s, t, i);
+		dN20[20 * i + 14] = sign2[i] * sign3[i] * dShapeFunctionHexHQ_Middle(r, -s, -t, i);
+		dN20[20 * i + 12] = sign3[i] * dShapeFunctionHexHQ_Middle(r, s, -t, i);
 
 		co = (i + 2) % 3;
-		dN20[20 * i + 11] = dShapeFunctionHexHQ_Middle(s,t,r,co);
-		dN20[20 * i + 15] = sign3[i] * dShapeFunctionHexHQ_Middle(s,-t,r,co);
-		dN20[20 * i + 13] = sign1[i] * sign3[i] * dShapeFunctionHexHQ_Middle(s,-t,-r,co);
-		dN20[20 * i + 9] =  sign1[i] * dShapeFunctionHexHQ_Middle(s,t,-r,co);
+		dN20[20 * i + 11] = dShapeFunctionHexHQ_Middle(s, t, r, co);
+		dN20[20 * i + 15] = sign3[i] * dShapeFunctionHexHQ_Middle(s, -t, r, co);
+		dN20[20 * i + 13] = sign1[i] * sign3[i] * dShapeFunctionHexHQ_Middle(s, -t, -r, co);
+		dN20[20 * i + 9] = sign1[i] * dShapeFunctionHexHQ_Middle(s, t, -r, co);
 
 		co = (i + 1) % 3;
-		dN20[20 * i + 16] = dShapeFunctionHexHQ_Middle(t,r,s,co);
-		dN20[20 * i + 17] = sign1[i] * dShapeFunctionHexHQ_Middle(t,-r,s,co);
-		dN20[20 * i + 18] = sign1[i] * sign2[i] * dShapeFunctionHexHQ_Middle(t,-r,-s,co);
-		dN20[20 * i + 19] = sign2[i] * dShapeFunctionHexHQ_Middle(t,r,-s,co);
+		dN20[20 * i + 16] = dShapeFunctionHexHQ_Middle(t, r, s, co);
+		dN20[20 * i + 17] = sign1[i] * dShapeFunctionHexHQ_Middle(t, -r, s, co);
+		dN20[20 * i + 18] = sign1[i] * sign2[i] * dShapeFunctionHexHQ_Middle(t, -r, -s, co);
+		dN20[20 * i + 19] = sign2[i] * dShapeFunctionHexHQ_Middle(t, r, -s, co);
 	}
 }
 
@@ -5113,18 +5073,18 @@ void GradShapeFunctionPriHQ(double* dN, const double* x)
 	double v2 = (4.0 * L1 - 1);
 	// Vertex, bottom
 	dN[0] = -0.5 * (v1 * (1.0 - t) - tt1);
-	dN[1] =  0.5 * (v2 * (1.0 - t) - tt1);
-	dN[2] =  0.0;
+	dN[1] = 0.5 * (v2 * (1.0 - t) - tt1);
+	dN[2] = 0.0;
 	// Vertex, top
 	dN[3] = -0.5 * (v1 * (1.0 + t) - tt1);
-	dN[4] =  0.5 * (v2 * (1.0 + t) - tt1);
-	dN[5] =  0.0;
+	dN[4] = 0.5 * (v2 * (1.0 + t) - tt1);
+	dN[5] = 0.0;
 	// Middle point, bottom
-	dN[6] = 2.0 * (L0 -L1) * (1.0 - t);
-	dN[7] =  2.0 * L2 * (1.0 - t);
-	dN[8] = - dN[7];
+	dN[6] = 2.0 * (L0 - L1) * (1.0 - t);
+	dN[7] = 2.0 * L2 * (1.0 - t);
+	dN[8] = -dN[7];
 	// Middle point, top
-	dN[9] =  2.0 * (L0 - L1) * (1.0 + t);
+	dN[9] = 2.0 * (L0 - L1) * (1.0 + t);
 	dN[10] = 2.0 * L2 * (1.0 + t);
 	dN[11] = -dN[10];
 	// Middle point, center
@@ -5136,20 +5096,20 @@ void GradShapeFunctionPriHQ(double* dN, const double* x)
 	v1 = (4.0 * L2 - 1);
 	// Vertex, bottom
 	dN[15] = dN[0];
-	dN[16] =  0.0;
-	dN[17] =  0.5 * (v1 * (1.0 - t) - tt1);
+	dN[16] = 0.0;
+	dN[17] = 0.5 * (v1 * (1.0 - t) - tt1);
 	// Vertex, top
 	dN[18] = dN[3];
-	dN[19] =  0.0;
-	dN[20] =  0.5 * (v1 * (1.0 + t) - tt1);
+	dN[19] = 0.0;
+	dN[20] = 0.5 * (v1 * (1.0 + t) - tt1);
 	// Middle point, bottom
 	dN[21] = -2.0 * L1 * (1.0 - t);
 	dN[22] = -dN[21];
-	v1 = 2.0 * (L0 -  L2);
-	dN[23] =  v1 * (1.0 - t);
+	v1 = 2.0 * (L0 - L2);
+	dN[23] = v1 * (1.0 - t);
 	// Middle point, top
 	dN[24] = -2.0 * L1 * (1.0 + t);
-	dN[25] =  -dN[24];
+	dN[25] = -dN[24];
 	dN[26] = v1 * (1.0 + t);
 	// Middle point, center
 	dN[27] = -tt1;
@@ -5231,47 +5191,23 @@ void ShapeFunctionPyraHQ13(double* N, const double* x)
 	const double s = x[1];
 	const double t = x[2];
 
-	N[0]  = -0.0625 *
-	        (1.0 -
-	         r) *
-	        (1.0 -
-	         s) *
-	        (1.0 -
-	         t) *
-	        (4.0 + 3.0 * r + 3.0 * s + 2.0 * r * s + 2.0 * t + r * t + s * t + 2.0 * r * s * t);
-	N[1]  = -0.0625 *
-	        (1.0 +
-	         r) *
-	        (1.0 -
-	         s) *
-	        (1.0 -
-	         t) *
-	        (4.0 - 3.0 * r + 3.0 * s - 2.0 * r * s + 2.0 * t - r * t + s * t - 2.0 * r * s * t);
-	N[2]  = -0.0625 *
-	        (1.0 +
-	         r) *
-	        (1.0 +
-	         s) *
-	        (1.0 -
-	         t) *
-	        (4.0 - 3.0 * r - 3.0 * s + 2.0 * r * s + 2.0 * t - r * t - s * t + 2.0 * r * s * t);
-	N[3]  = -0.0625 *
-	        (1.0 -
-	         r) *
-	        (1.0 +
-	         s) *
-	        (1.0 -
-	         t) *
-	        (4.0 + 3.0 * r - 3.0 * s - 2.0 * r * s + 2.0 * t + r * t - s * t - 2.0 * r * s * t);
-	N[4]  =  0.5 * t * (1.0 + t);
-	N[5]  =  0.125 * (1.0 - r * r) * (1.0 - s)  * (1.0 - t) * (2.0 + s + s * t);
-	N[6]  =  0.125 * (1.0 + r)  * (1.0 - s * s) * (1.0 - t) * (2.0 - r - r * t);
-	N[7]  =  0.125 * (1.0 - r * r) * (1.0 + s)  * (1.0 - t) * (2.0 - s - s * t);
-	N[8]  =  0.125 * (1.0 - r)  * (1.0 - s * s) * (1.0 - t) * (2.0 + r + r * t);
-	N[9]  =  0.25 * (1.0 - r) * (1.0 - s) * (1.0 - t * t);
-	N[10] =  0.25 * (1.0 + r) * (1.0 - s) * (1.0 - t * t);
-	N[11] =  0.25 * (1.0 + r) * (1.0 + s) * (1.0 - t * t);
-	N[12] =  0.25 * (1.0 - r) * (1.0 + s) * (1.0 - t * t);
+	N[0] = -0.0625 * (1.0 - r) * (1.0 - s) * (1.0 - t)
+	       * (4.0 + 3.0 * r + 3.0 * s + 2.0 * r * s + 2.0 * t + r * t + s * t + 2.0 * r * s * t);
+	N[1] = -0.0625 * (1.0 + r) * (1.0 - s) * (1.0 - t)
+	       * (4.0 - 3.0 * r + 3.0 * s - 2.0 * r * s + 2.0 * t - r * t + s * t - 2.0 * r * s * t);
+	N[2] = -0.0625 * (1.0 + r) * (1.0 + s) * (1.0 - t)
+	       * (4.0 - 3.0 * r - 3.0 * s + 2.0 * r * s + 2.0 * t - r * t - s * t + 2.0 * r * s * t);
+	N[3] = -0.0625 * (1.0 - r) * (1.0 + s) * (1.0 - t)
+	       * (4.0 + 3.0 * r - 3.0 * s - 2.0 * r * s + 2.0 * t + r * t - s * t - 2.0 * r * s * t);
+	N[4] = 0.5 * t * (1.0 + t);
+	N[5] = 0.125 * (1.0 - r * r) * (1.0 - s) * (1.0 - t) * (2.0 + s + s * t);
+	N[6] = 0.125 * (1.0 + r) * (1.0 - s * s) * (1.0 - t) * (2.0 - r - r * t);
+	N[7] = 0.125 * (1.0 - r * r) * (1.0 + s) * (1.0 - t) * (2.0 - s - s * t);
+	N[8] = 0.125 * (1.0 - r) * (1.0 - s * s) * (1.0 - t) * (2.0 + r + r * t);
+	N[9] = 0.25 * (1.0 - r) * (1.0 - s) * (1.0 - t * t);
+	N[10] = 0.25 * (1.0 + r) * (1.0 - s) * (1.0 - t * t);
+	N[11] = 0.25 * (1.0 + r) * (1.0 + s) * (1.0 - t * t);
+	N[12] = 0.25 * (1.0 - r) * (1.0 + s) * (1.0 - t * t);
 }
 
 /***************************************************************************
@@ -5299,16 +5235,16 @@ void GradShapeFunctionPyra(double* dN, const double* x)
 	const double t = x[2];
 	//  dN/dL1
 	dN[0] = -0.125 * (1.0 - s) * (1.0 - t);
-	dN[1] =  0.125 * (1.0 - s) * (1.0 - t);
-	dN[2] =  0.125 * (1.0 + s) * (1.0 - t);
+	dN[1] = 0.125 * (1.0 - s) * (1.0 - t);
+	dN[2] = 0.125 * (1.0 + s) * (1.0 - t);
 	dN[3] = -0.125 * (1.0 + s) * (1.0 - t);
-	dN[4] =  0.0;
+	dN[4] = 0.0;
 	//  dN/dL2
 	dN[5] = -0.125 * (1.0 - r) * (1.0 - t);
 	dN[6] = -0.125 * (1.0 + r) * (1.0 - t);
-	dN[7] =  0.125 * (1.0 + r) * (1.0 - t);
-	dN[8] =  0.125 * (1.0 - r) * (1.0 - t);
-	dN[9] =  0.0;
+	dN[7] = 0.125 * (1.0 + r) * (1.0 - t);
+	dN[8] = 0.125 * (1.0 - r) * (1.0 - t);
+	dN[9] = 0.0;
 	//  dN/dt
 	dN[10] = -0.125 * (1.0 - r) * (1.0 - s);
 	dN[11] = -0.125 * (1.0 + r) * (1.0 - s);
@@ -5340,77 +5276,49 @@ void GradShapeFunctionPyraHQ13(double* dN, const double* x)
 	const double s = x[1];
 	const double t = x[2];
 	//---dN/dr
-	dN[0]  =  0.0625 *
-	         (1.0 -
-	          s) *
-	         (1.0 -
-	          t) * (1.0 + 6.0 * r + s + 4.0 * r * s + t + 2.0 * r * t - s * t + 4.0 * r * s * t);
-	dN[1]  = -0.0625 *
-	         (1.0 -
-	          s) *
-	         (1.0 -
-	          t) * (1.0 - 6.0 * r + s - 4.0 * r * s + t - 2.0 * r * t - s * t - 4.0 * r * s * t);
-	dN[2]  = -0.0625 *
-	         (1.0 +
-	          s) *
-	         (1.0 -
-	          t) * (1.0 - 6.0 * r - s + 4.0 * r * s + t - 2.0 * r * t + s * t + 4.0 * r * s * t);
-	dN[3]  =  0.0625 *
-	         (1.0 +
-	          s) *
-	         (1.0 -
-	          t) * (1.0 + 6.0 * r - s - 4.0 * r * s + t + 2.0 * r * t + s * t - 4.0 * r * s * t);
-	dN[4]  =  0.0;
-	dN[5]  = -0.25 * r * (1.0 - s) * (1.0 - t) * (2.0 + s + s * t);
-	dN[6]  =  0.125 * (1.0 - s * s) * (1.0 - t) * (1.0 - 2.0 * r - t - 2 * r * t);
-	dN[7]  = -0.25 * r * (1.0 + s) * (1.0 - t) * (2.0 - s - s * t);
-	dN[8]  = -0.125 * (1.0 - s * s) * (1.0 - t) * (1.0 + 2.0 * r - t + 2 * r * t);
-	dN[9]  = -0.25 * (1.0 - s) * (1.0 - t * t);
-	dN[10] =  0.25 * (1.0 - s) * (1.0 - t * t);
-	dN[11] =  0.25 * (1.0 + s) * (1.0 - t * t);
+	dN[0] = 0.0625 * (1.0 - s) * (1.0 - t)
+	        * (1.0 + 6.0 * r + s + 4.0 * r * s + t + 2.0 * r * t - s * t + 4.0 * r * s * t);
+	dN[1] = -0.0625 * (1.0 - s) * (1.0 - t)
+	        * (1.0 - 6.0 * r + s - 4.0 * r * s + t - 2.0 * r * t - s * t - 4.0 * r * s * t);
+	dN[2] = -0.0625 * (1.0 + s) * (1.0 - t)
+	        * (1.0 - 6.0 * r - s + 4.0 * r * s + t - 2.0 * r * t + s * t + 4.0 * r * s * t);
+	dN[3] = 0.0625 * (1.0 + s) * (1.0 - t)
+	        * (1.0 + 6.0 * r - s - 4.0 * r * s + t + 2.0 * r * t + s * t - 4.0 * r * s * t);
+	dN[4] = 0.0;
+	dN[5] = -0.25 * r * (1.0 - s) * (1.0 - t) * (2.0 + s + s * t);
+	dN[6] = 0.125 * (1.0 - s * s) * (1.0 - t) * (1.0 - 2.0 * r - t - 2 * r * t);
+	dN[7] = -0.25 * r * (1.0 + s) * (1.0 - t) * (2.0 - s - s * t);
+	dN[8] = -0.125 * (1.0 - s * s) * (1.0 - t) * (1.0 + 2.0 * r - t + 2 * r * t);
+	dN[9] = -0.25 * (1.0 - s) * (1.0 - t * t);
+	dN[10] = 0.25 * (1.0 - s) * (1.0 - t * t);
+	dN[11] = 0.25 * (1.0 + s) * (1.0 - t * t);
 	dN[12] = -0.25 * (1.0 + s) * (1.0 - t * t);
 
 	//---dN/ds
-	dN[13] =  0.0625 *
-	         (1.0 -
-	          r) *
-	         (1.0 -
-	          t) * (1.0 + r + 6.0 * s + 4.0 * r * s + t - r * t + 2.0 * s * t + 4.0 * r * s * t);
-	dN[14] =  0.0625 *
-	         (1.0 +
-	          r) *
-	         (1.0 -
-	          t) * (1.0 - r + 6.0 * s - 4.0 * r * s + t + r * t + 2.0 * s * t - 4.0 * r * s * t);
-	dN[15] = -0.0625 *
-	         (1.0 +
-	          r) *
-	         (1.0 -
-	          t) * (1.0 - r - 6.0 * s + 4.0 * r * s + t + r * t - 2.0 * s * t + 4.0 * r * s * t);
-	dN[16] = -0.0625 *
-	         (1.0 -
-	          r) *
-	         (1.0 -
-	          t) * (1.0 + r - 6.0 * s - 4.0 * r * s + t - r * t - 2.0 * s * t - 4.0 * r * s * t);
-	dN[17] =  0.0;
+	dN[13] = 0.0625 * (1.0 - r) * (1.0 - t)
+	         * (1.0 + r + 6.0 * s + 4.0 * r * s + t - r * t + 2.0 * s * t + 4.0 * r * s * t);
+	dN[14] = 0.0625 * (1.0 + r) * (1.0 - t)
+	         * (1.0 - r + 6.0 * s - 4.0 * r * s + t + r * t + 2.0 * s * t - 4.0 * r * s * t);
+	dN[15] = -0.0625 * (1.0 + r) * (1.0 - t)
+	         * (1.0 - r - 6.0 * s + 4.0 * r * s + t + r * t - 2.0 * s * t + 4.0 * r * s * t);
+	dN[16] = -0.0625 * (1.0 - r) * (1.0 - t)
+	         * (1.0 + r - 6.0 * s - 4.0 * r * s + t - r * t - 2.0 * s * t - 4.0 * r * s * t);
+	dN[17] = 0.0;
 	dN[18] = -0.125 * (1.0 - r * r) * (1.0 - t) * (1.0 + 2.0 * s - t + 2.0 * s * t);
 	dN[19] = -0.25 * (1.0 + r) * s * (1.0 - t) * (2.0 - r - r * t);
-	dN[20] =  0.125 * (1.0 - r * r) * (1.0 - t) * (1.0 - 2.0 * s - t - 2.0 * s * t);
+	dN[20] = 0.125 * (1.0 - r * r) * (1.0 - t) * (1.0 - 2.0 * s - t - 2.0 * s * t);
 	dN[21] = -0.25 * (1.0 - r) * s * (1.0 - t) * (2.0 + r + r * t);
 	dN[22] = -0.25 * (1.0 - r) * (1.0 - t * t);
 	dN[23] = -0.25 * (1.0 + r) * (1.0 - t * t);
-	dN[24] =  0.25 * (1.0 + r) * (1.0 - t * t);
-	dN[25] =  0.25 * (1.0 - r) * (1.0 - t * t);
+	dN[24] = 0.25 * (1.0 + r) * (1.0 - t * t);
+	dN[25] = 0.25 * (1.0 - r) * (1.0 - t * t);
 
 	//---dN/dt
-	dN[26] =  0.125 *
-	         (1.0 - r) * (1.0 - s) * (1.0 + r + s + 2.0 * t + r * t + s * t + 2.0 * r * s * t);
-	dN[27] =  0.125 *
-	         (1.0 + r) * (1.0 - s) * (1.0 - r + s + 2.0 * t - r * t + s * t - 2.0 * r * s * t);
-	dN[28] =  0.125 *
-	         (1.0 + r) * (1.0 + s) * (1.0 - r - s + 2.0 * t - r * t - s * t + 2.0 * r * s * t);
-	dN[29] =  0.125 *
-	         (1.0 - r) * (1.0 + s) * (1.0 + r - s + 2.0 * t + r * t - s * t - 2.0 * r * s * t);
-	dN[30] =  0.5 + t;
+	dN[26] = 0.125 * (1.0 - r) * (1.0 - s) * (1.0 + r + s + 2.0 * t + r * t + s * t + 2.0 * r * s * t);
+	dN[27] = 0.125 * (1.0 + r) * (1.0 - s) * (1.0 - r + s + 2.0 * t - r * t + s * t - 2.0 * r * s * t);
+	dN[28] = 0.125 * (1.0 + r) * (1.0 + s) * (1.0 - r - s + 2.0 * t - r * t - s * t + 2.0 * r * s * t);
+	dN[29] = 0.125 * (1.0 - r) * (1.0 + s) * (1.0 + r - s + 2.0 * t + r * t - s * t - 2.0 * r * s * t);
+	dN[30] = 0.5 + t;
 	dN[31] = -0.25 * (1.0 - r * r) * (1.0 - s) * (1.0 + s * t);
 	dN[32] = -0.25 * (1.0 + r) * (1.0 - s * s) * (1.0 - r * t);
 	dN[33] = -0.25 * (1.0 - r * r) * (1.0 + s) * (1.0 - s * t);
@@ -5434,8 +5342,7 @@ void GradShapeFunctionPyraHQ13(double* dN, const double* x)
    Programming:
    09/2004     WW        Erste Version
  **************************************************************************/
-double ComputeDetTri(const double* x1, const double* x2,
-                     const double* x3)
+double ComputeDetTri(const double* x1, const double* x2, const double* x3)
 {
 	static double u[3], v[3], z[3];
 
@@ -5451,7 +5358,7 @@ double ComputeDetTri(const double* x1, const double* x2,
 	z[1] = u[2] * v[0] - u[0] * v[2];
 	z[2] = u[0] * v[1] - u[1] * v[0];
 
-	return 0.5 * sqrt(z[0] * z[0] + z[1] * z[1] + z[2] * z[2] );
+	return 0.5 * sqrt(z[0] * z[0] + z[1] * z[1] + z[2] * z[2]);
 }
 
 /***************************************************************************
@@ -5469,13 +5376,12 @@ double ComputeDetTri(const double* x1, const double* x2,
    Programming:
    09/2004     WW        Erste Version
  **************************************************************************/
-double ComputeDetTex(const double* x1, const double* x2,
-                     const double* x3, const double* x4)
+double ComputeDetTex(const double* x1, const double* x2, const double* x3, const double* x4)
 {
-	return
-	        fabs((x1[0] - x4[0])  *  ((x2[1] - x4[1]) * (x3[2] - x4[2]) - (x2[2] - x4[2]) * (x3[1] - x4[1]))
-	           - (x1[1] - x4[1])  *  ((x2[0] - x4[0]) * (x3[2] - x4[2]) - (x2[2] - x4[2]) * (x3[0] - x4[0]))
-	           + (x1[2] - x4[2])  *  ((x2[0] - x4[0]) * (x3[1] - x4[1]) - (x2[1] - x4[1]) * (x3[0] - x4[0]))) / 6.0;
+	return fabs((x1[0] - x4[0]) * ((x2[1] - x4[1]) * (x3[2] - x4[2]) - (x2[2] - x4[2]) * (x3[1] - x4[1]))
+	            - (x1[1] - x4[1]) * ((x2[0] - x4[0]) * (x3[2] - x4[2]) - (x2[2] - x4[2]) * (x3[0] - x4[0]))
+	            + (x1[2] - x4[2]) * ((x2[0] - x4[0]) * (x3[1] - x4[1]) - (x2[1] - x4[1]) * (x3[0] - x4[0])))
+	       / 6.0;
 }
 
 /**************************************************************************
@@ -5488,10 +5394,10 @@ double ComputeDetTex(const double* x1, const double* x2,
 double NormalizeVector(double* x, size_t n)
 {
 	double nrm(x[0] * x[0]);
-	for(size_t i = 1; i < n; i++)
+	for (size_t i = 1; i < n; i++)
 		nrm += x[i] * x[i];
-	double sqrt_nrm (sqrt(nrm));
-	for(size_t i = 0; i < n; i++)
+	double sqrt_nrm(sqrt(nrm));
+	for (size_t i = 0; i < n; i++)
 		x[i] /= sqrt_nrm;
 	return sqrt_nrm;
 }
@@ -5519,7 +5425,7 @@ double PointProduction(double* x, double* y)
 {
 	int i;
 	double nrm = 0.0;
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 		nrm += x[i] * y[i];
 	return nrm;
 }
@@ -5553,7 +5459,7 @@ double MLangevin(double v)
 void VCopy(double* x, const double* y, const int n)
 {
 	int i;
-	for(i = 0; i < n; i++)
+	for (i = 0; i < n; i++)
 		x[i] = y[i];
 }
 
@@ -5583,10 +5489,10 @@ double SuperBee(double v1, double v2)
 {
 	if (v1 * v2 < 0.0)
 		return 0.0;
-	//max{min{2|a|, |b|},min{|a|, 2|b|}}.
+	// max{min{2|a|, |b|},min{|a|, 2|b|}}.
 	double a1 = std::min(2.0 * fabs(v1), fabs(v2));
 	double a2 = std::min(fabs(v1), 2.0 * fabs(v2));
-	double ret = std::max(a1,a2);
+	double ret = std::max(a1, a2);
 	if (v1 > 0.0)
 		return ret;
 	else

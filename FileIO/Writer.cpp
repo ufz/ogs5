@@ -17,7 +17,6 @@
 
 namespace FileIO
 {
-
 Writer::Writer()
 {
 }
@@ -40,12 +39,13 @@ int Writer::writeToFile(std::string const& filename)
 	if (!file_content.empty())
 	{
 		std::ofstream fileStream;
-		fileStream.open (filename.c_str());
+		fileStream.open(filename.c_str());
 
 		// check file stream
 		if (!fileStream)
 		{
-			std::cerr << "Could not open file " << filename << " !" << "\n";
+			std::cerr << "Could not open file " << filename << " !"
+			          << "\n";
 			return 0;
 		}
 

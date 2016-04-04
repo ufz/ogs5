@@ -33,7 +33,7 @@ using namespace std;
    Programing:
    05/2004 TK Implementation
 **************************************************************************/
-void TriCircumcenter3d(double a[3],double b[3],double c[3],double circumcenter[3])
+void TriCircumcenter3d(double a[3], double b[3], double c[3], double circumcenter[3])
 {
 	double xba, yba, zba, xca, yca, zca;
 	double balength, calength;
@@ -52,7 +52,7 @@ void TriCircumcenter3d(double a[3],double b[3],double c[3],double circumcenter[3
 	balength = xba * xba + yba * yba + zba * zba;
 	calength = xca * xca + yca * yca + zca * zca;
 
-	/* Cross product of these edges. */
+/* Cross product of these edges. */
 #ifdef EXACT
 	/* Use orient2d() from http://www.cs.cmu.edu/~quake/robust.html     */
 	/*   to ensure a correctly signed (and reasonably accurate) result, */
@@ -68,18 +68,16 @@ void TriCircumcenter3d(double a[3],double b[3],double c[3],double circumcenter[3
 #endif
 
 	/* Calculate the denominator of the formulae. */
-	denominator = 0.5 / (xcrossbc * xcrossbc + ycrossbc * ycrossbc +
-	                     zcrossbc * zcrossbc);
+	denominator = 0.5 / (xcrossbc * xcrossbc + ycrossbc * ycrossbc + zcrossbc * zcrossbc);
 
 	/* Calculate offset (from `a') of circumcenter. */
-	xcirca = ((balength * yca - calength * yba) * zcrossbc -
-	          (balength * zca - calength * zba) * ycrossbc) * denominator;
-	ycirca = ((balength * zca - calength * zba) * xcrossbc -
-	          (balength * xca - calength * xba) * zcrossbc) * denominator;
-	zcirca = ((balength * xca - calength * xba) * ycrossbc -
-	          (balength * yca - calength * yba) * xcrossbc) * denominator;
+	xcirca
+	    = ((balength * yca - calength * yba) * zcrossbc - (balength * zca - calength * zba) * ycrossbc) * denominator;
+	ycirca
+	    = ((balength * zca - calength * zba) * xcrossbc - (balength * xca - calength * xba) * zcrossbc) * denominator;
+	zcirca
+	    = ((balength * xca - calength * xba) * ycrossbc - (balength * yca - calength * yba) * xcrossbc) * denominator;
 	circumcenter[0] = xcirca + a[0];
 	circumcenter[1] = ycirca + a[1];
 	circumcenter[2] = zcirca + a[2];
 }
-

@@ -1,47 +1,61 @@
+# Ubuntu 14.04 Trusty support
+sudo: required
+dist: trusty
+
 language: cpp
-#dist: trusty
-compiler:
-  - gcc
-os:
-- linux
-cache:
-  - apt
+compiler: gcc
 
+# workaround to exclude the default job
 env:
-  - CASE=FEM
-#  - CASE=SP
-#  - CASE=PQC
-  - CASE=IPQC
-  - CASE=GEMS
-  - CASE=LIS CMAKE_ARGS="-DLIS_INCLUDE_DIR=$TRAVIS_BUILD_DIR/lis-cmake-master/include -DLIS_LIBRARIES=$TRAVIS_BUILD_DIR/lis-cmake-master/build/lib/liblis.a"
-  - CASE=MPI
-  - CASE=PETSC CMAKE_ARGS="-DPETSC_DIR=/usr/lib/petscdir/3.4.2/"
+  matrix:
+    - TRAVIS_EMPTY_JOB_WORKAROUND=true 
 
-before_install:
-  # -- External package sources --
-  - if [[ "$CASE" == "GEMS" ]]; then travis_retry sudo add-apt-repository --yes ppa:boost-latest; fi
-  - if [[ "$CASE" == "PETSC" ]]; then travis_retry sudo add-apt-repository --yes ppa:feelpp/petsc; fi
-  - travis_retry sudo apt-get update -qq;
+matrix:
+  exclude:
+    - env: TRAVIS_EMPTY_JOB_WORKAROUND=true
+
+  include:
+#    # check coding style
+#    - env: CASE=codingstyle
+#      addons:
+#        apt:
+#          sources:
+#            - llvm-toolchain-precise-3.7
+#            - ubuntu-toolchain-r-test
+#          packages:
+#            - clang-format-3.7
+    # check typical OGS builds
+    - env: CASE=FEM
+    - env: CASE=IPQC
+    - env: CASE=GEMS
+      addons:
+        apt:
+          sources:
+            - boost-latest
+          packages:
+            - libboost-thread1.55-dev
+    - env: CASE=LIS CMAKE_ARGS="-DLIS_INCLUDE_DIR=$TRAVIS_BUILD_DIR/lis-cmake-master/include -DLIS_LIBRARIES=$TRAVIS_BUILD_DIR/lis-cmake-master/build/lib/liblis.a"
+      addons:
+        apt:
+          packages:
+            - gfortran
+    - env: CASE=MPI
+    - env: CASE=PETSC CMAKE_ARGS="-DPETSC_DIR=/usr/lib/petscdir/3.4.2/"
 
 install:
-  # GEMS
-  - if [[ "$CASE" == "GEMS" ]]; then travis_retry sudo apt-get install -qq libboost-thread1.55-dev; fi
   # Lis
-  - if [[ "$CASE" == "LIS" ]]; then sudo apt-get install -qq gfortran; fi
   - if [[ "$CASE" == "LIS" ]]; then wget https://github.com/norihiro-w/lis-cmake/archive/master.zip; fi
   - if [[ "$CASE" == "LIS" ]]; then unzip master.zip && cd lis-cmake-master; fi
   - if [[ "$CASE" == "LIS" ]]; then mkdir build && cd build && cmake .. && make && cd ../..; fi
   # MPI
-  - if [[ "$CASE" == "MPI" ]]; then travis_retry sudo apt-get install -qq openmpi-bin openmpi-dev; fi
+  - if [[ "$CASE" == "MPI" ]]; then travis_retry sudo apt-get install -qq openmpi-bin libopenmpi-dev; fi
   # PETSC
   - if [[ "$CASE" == "PETSC" ]]; then travis_retry sudo apt-get install -qq libpetsc3.4.2-dev; fi
 
 script:
-  - mkdir build
-  - cd build
-  - cmake -DOGS_CONFIG=${CASE} $CMAKE_ARGS -DOGS_CPU_ARCHITECTURE=generic ..
-  - cmake ..
-  - make
+  - if [[ "$CASE" != "codingstyle" ]]; then mkdir build && cd build && cmake -DOGS_CONFIG=${CASE} $CMAKE_ARGS -DOGS_CPU_ARCHITECTURE=generic .. && cmake ..; fi
+  - if [[ "$CASE" != "codingstyle" ]]; then make; fi
+#  - if [[ "$CASE" == "codingstyle" ]]; then chmod +x ./scripts/ci/check_code_format.sh && ./scripts/ci/check_code_format.sh; fi
 
 notifications:
   email:

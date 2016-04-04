@@ -25,7 +25,6 @@
 #include <unistd.h>
 #endif
 
-
 /**
  * Returns true if given file exists. From http://www.techbytes.ca/techbyte103.html
  */
@@ -36,9 +35,9 @@ bool IsFileExisting(std::string const& strFilename)
 	int intStat;
 
 	// Attempt to get the file attributes
-	intStat = stat(strFilename.c_str(),&stFileInfo);
+	intStat = stat(strFilename.c_str(), &stFileInfo);
 
-	if(intStat == 0)
+	if (intStat == 0)
 		// We were able to get the file attributes
 		// so the file obviously exists.
 		blnReturn = true;
@@ -57,20 +56,24 @@ bool IsFileExisting(std::string const& strFilename)
 bool HasCRInLineEnding(std::string const& strFilename)
 {
 	std::ifstream is(strFilename.c_str(), std::ios::in | std::ios::binary);
-	if (!is) {
+	if (!is)
+	{
 		std::cout << "*** error: could not open " << strFilename.data() << std::endl;
 		return false;
 	}
 
 	bool foundCR = false;
-	while (is.good()) {
+	while (is.good())
+	{
 		char c;
 		is.read(&c, sizeof(c));
-		if (c == '\r') {
+		if (c == '\r')
+		{
 			foundCR = true;
 			break;
 		}
-		else if (c == EOF || c == '\n') {
+		else if (c == EOF || c == '\n')
+		{
 			break;
 		}
 	}
@@ -80,21 +83,21 @@ bool HasCRInLineEnding(std::string const& strFilename)
 	return foundCR;
 }
 
-
 inline char getDirSep()
 {
 #ifdef WIN32
-    return '\\';
+	return '\\';
 #else
-    return '/';
+	return '/';
 #endif
 }
 
-
 std::string pathJoin(const std::string& path1, const std::string& path2)
 {
-	if (path1.empty()) return path2;
-	if (path2.empty()) return path1;
+	if (path1.empty())
+		return path2;
+	if (path2.empty())
+		return path1;
 
 	const char dirSep = getDirSep();
 
@@ -103,50 +106,57 @@ std::string pathJoin(const std::string& path1, const std::string& path2)
 	return s;
 }
 
-
 std::string pathBasename(const std::string& path)
 {
-	if (path.empty()) return "";
+	if (path.empty())
+		return "";
 
 	const char dirSep = getDirSep();
 	const std::string p = rtrim(path, dirSep);
 
 	const size_t idx = p.find_last_of(dirSep);
-	if (idx == std::string::npos) {
+	if (idx == std::string::npos)
+	{
 		return path; // no dirSep in path
-	} else {
-		return p.substr(idx+1);
+	}
+	else
+	{
+		return p.substr(idx + 1);
 	}
 }
 
-
 std::string pathDirname(const std::string& path)
 {
-	if (path.empty()) return ".";
+	if (path.empty())
+		return ".";
 
 	const char dirSep = getDirSep();
 	const std::string p = rtrim(path, dirSep);
 
 	const size_t idx = p.find_last_of(dirSep);
-	if (idx == std::string::npos) {
+	if (idx == std::string::npos)
+	{
 		return "."; // no dirSep in path
-	} else if (idx == 0) {
+	}
+	else if (idx == 0)
+	{
 		return std::string(1, dirSep); // only one dirSep at the beginning of path
-	} else {
+	}
+	else
+	{
 		return p.substr(0, idx);
 	}
 }
 
-
 std::string getCwd()
 {
-    char cwd[FILENAME_MAX];
+	char cwd[FILENAME_MAX];
 
 #ifdef WIN32
-    _getcwd(cwd, FILENAME_MAX);
+	_getcwd(cwd, FILENAME_MAX);
 #else
-    getcwd(cwd, FILENAME_MAX);
+	getcwd(cwd, FILENAME_MAX);
 #endif
 
-    return cwd;
+	return cwd;
 }

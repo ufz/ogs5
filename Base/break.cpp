@@ -21,7 +21,7 @@
 #include "break.h"
 #include "makros.h"
 
-void BreakFunc ( int sig );
+void BreakFunc(int sig);
 int abbruch = 0;
 
 /**************************************************************************/
@@ -40,9 +40,9 @@ int abbruch = 0;
    07/1994     MSR        Erste Version
  */
 /**************************************************************************/
-void NoBreak ( void )
+void NoBreak(void)
 {
-	signal(SIGINT,SIG_IGN);
+	signal(SIGINT, SIG_IGN);
 	abbruch = 0;
 }
 
@@ -62,9 +62,9 @@ void NoBreak ( void )
    07/1994     MSR        Erste Version
  */
 /**************************************************************************/
-void StandardBreak ( void )
+void StandardBreak(void)
 {
-	signal(SIGINT,SIG_DFL);
+	signal(SIGINT, SIG_DFL);
 	abbruch = 0;
 }
 
@@ -84,9 +84,9 @@ void StandardBreak ( void )
    07/1994     MSR        Erste Version
  */
 /**************************************************************************/
-void SaveBreak ( void )
+void SaveBreak(void)
 {
-	signal(SIGINT,BreakFunc);
+	signal(SIGINT, BreakFunc);
 	abbruch = 0;
 }
 
@@ -106,7 +106,7 @@ void SaveBreak ( void )
    07/1994     MSR        Erste Version
  */
 /**************************************************************************/
-void ClearBreak ( void )
+void ClearBreak(void)
 {
 	abbruch = 0;
 }
@@ -127,7 +127,7 @@ void ClearBreak ( void )
    07/1994     MSR        Erste Version
  */
 /**************************************************************************/
-void BreakFunc ( int sig )
+void BreakFunc(int sig)
 {
 	if (sig == SIGINT)
 		abbruch = 1;

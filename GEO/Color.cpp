@@ -24,19 +24,20 @@ Color* getRandomColor()
 	return new Color((rand() % 5) * 50, (rand() % 5) * 50, (rand() % 5) * 50);
 }
 
-int readColorLookupTable(std::map<std::string, Color*> &colors, const std::string &filename)
+int readColorLookupTable(std::map<std::string, Color*>& colors, const std::string& filename)
 {
 	std::string id = "", line = "";
 
-	std::ifstream in( filename.c_str() );
+	std::ifstream in(filename.c_str());
 
 	if (!in.is_open())
 	{
-		std::cout << "Color::readLookupTable() - Could not open file..."  << "\n";
+		std::cout << "Color::readLookupTable() - Could not open file..."
+		          << "\n";
 		return 0;
 	}
 
-	while ( getline(in, line) )
+	while (getline(in, line))
 	{
 		std::list<std::string> fields = splitString(line, '\t');
 		Color* c = new Color();
@@ -59,19 +60,19 @@ int readColorLookupTable(std::map<std::string, Color*> &colors, const std::strin
 	return 1;
 }
 
-const Color* getColor(const std::string &id, std::map<std::string, Color*> &colors)
+const Color* getColor(const std::string& id, std::map<std::string, Color*>& colors)
 {
-	for (std::map<std::string, Color*>::const_iterator it = colors.begin(); it != colors.end();
-	     ++it)
+	for (std::map<std::string, Color*>::const_iterator it = colors.begin(); it != colors.end(); ++it)
 		if (id.compare(it->first) == 0)
 			return it->second;
-	std::cout << "Key \"" << id << "\" not found in color lookup table..." << "\n";
+	std::cout << "Key \"" << id << "\" not found in color lookup table..."
+	          << "\n";
 	Color* c = getRandomColor();
 	colors.insert(std::pair<std::string, Color*>(id, c));
 	return c;
 }
 
-const Color* getColor(double id, std::map<std::string, GEOLIB::Color*> &colors)
+const Color* getColor(double id, std::map<std::string, GEOLIB::Color*>& colors)
 {
 	std::ostringstream stream;
 	stream << id;

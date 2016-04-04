@@ -36,28 +36,25 @@ public:
 
 	// Returns the GEOObjects containing all points, polylines and surfaces
 	GEOLIB::GEOObjects* getGEOObjects() { return _geoObjects; }
-
 	// Returns the GEOObjects containing all points, polylines and surfaces
 	void setGEOObjects(GEOLIB::GEOObjects* geo_objects) { _geoObjects = geo_objects; }
-
 	//** Mesh functionality **//
 
 	/// Adds a new mesh
-	virtual void addMesh(MeshLib::CFEMesh* mesh, std::string &name);
+	virtual void addMesh(MeshLib::CFEMesh* mesh, std::string& name);
 
 	/// Returns the mesh with the given name.
-	const MeshLib::CFEMesh* getMesh(const std::string &name) const;
+	const MeshLib::CFEMesh* getMesh(const std::string& name) const;
 
 	/// Returns all the meshes with their respective names
 	const std::map<std::string, MeshLib::CFEMesh*>& getMeshObjects() const { return _msh_vec; }
-
 	/// Removes the mesh with the given name.
-	virtual bool removeMesh(const std::string &name);
+	virtual bool removeMesh(const std::string& name);
 
 	/// Checks if the name of the mesh is already exists, if so it generates a unique name.
-	bool isUniqueMeshName(std::string &name);
+	bool isUniqueMeshName(std::string& name);
 
-	bool meshExists(const std::string &name);
+	bool meshExists(const std::string& name);
 
 	//** Process functionality **//
 
@@ -79,24 +76,22 @@ public:
 	virtual void addConditions(std::vector<FEMCondition*> conds);
 
 	/// Returns the FEM Condition set on a GeoObject with the given name and type from a certain geometry.
-	const FEMCondition* getCondition(const std::string &geo_name,
+	const FEMCondition* getCondition(const std::string& geo_name,
 	                                 GEOLIB::GEOTYPE type,
-	                                 const std::string &cond_name) const;
+	                                 const std::string& cond_name) const;
 
 	/// Returns all FEM Conditions with the given type from a certain geometry.
 	const std::vector<FEMCondition*> getConditions(FiniteElement::ProcessType pcs_type = FiniteElement::INVALID_PROCESS,
-												   std::string geo_name = "",
-												   FEMCondition::CondType type = FEMCondition::UNSPECIFIED) const;
+	                                               std::string geo_name = "",
+	                                               FEMCondition::CondType type = FEMCondition::UNSPECIFIED) const;
 
 	/// Removes the FEM Condition set on a GeoObject with the given name and type from a certain geometry.
-	virtual bool removeCondition(const std::string &geo_name,
-	                             GEOLIB::GEOTYPE type,
-	                             const std::string &cond_name);
+	virtual bool removeCondition(const std::string& geo_name, GEOLIB::GEOTYPE type, const std::string& cond_name);
 
 	/// Removes all FEM Conditions with the given type from the given process
 	virtual void removeConditions(FiniteElement::ProcessType pcs_type = FiniteElement::INVALID_PROCESS,
-								  std::string geo_name = "",
-								  FEMCondition::CondType cond_type = FEMCondition::UNSPECIFIED);
+	                              std::string geo_name = "",
+	                              FEMCondition::CondType cond_type = FEMCondition::UNSPECIFIED);
 
 private:
 	GEOLIB::GEOObjects* _geoObjects;
@@ -105,4 +100,4 @@ private:
 	std::vector<FEMCondition*> _cond_vec;
 };
 
-#endif //PROJECTDATA_H_
+#endif // PROJECTDATA_H_

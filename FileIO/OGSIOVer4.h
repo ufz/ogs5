@@ -34,13 +34,14 @@ namespace FileIO
 /** I/O - routines for the OGS-4 gli file format */
 
 /** method reads geometric objects from file in gli format */
-bool readGLIFileV4 (const std::string& fname, GEOLIB::GEOObjects* geo, std::string& unique_name, std::vector<std::string>& errors);
+bool readGLIFileV4(const std::string& fname,
+                   GEOLIB::GEOObjects* geo,
+                   std::string& unique_name,
+                   std::vector<std::string>& errors);
 
-void writeGLIFileV4 (const std::string& fname,
-                     const std::string& proj_name,
-                     const GEOLIB::GEOObjects& geo);
+void writeGLIFileV4(const std::string& fname, const std::string& proj_name, const GEOLIB::GEOObjects& geo);
 
-void writeAllDataToGLIFileV4 (const std::string& fname, const GEOLIB::GEOObjects& geo);
+void writeAllDataToGLIFileV4(const std::string& fname, const GEOLIB::GEOObjects& geo);
 
 } // end namespace
 

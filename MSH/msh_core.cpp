@@ -25,7 +25,7 @@ namespace MeshLib
    06/2005 WW Implementation
    03/2010 TF initialization in initialization list
 **************************************************************************/
-CCore::CCore(size_t id) :
-	index (id), boundary_type ('I'), mark (true), quadratic (false)
-{}
-}                                                 // namespace MeshLib
+CCore::CCore(size_t id) : index(id), boundary_type('I'), mark(true), quadratic(false)
+{
+}
+} // namespace MeshLib

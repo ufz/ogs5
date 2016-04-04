@@ -13,7 +13,6 @@
 
 namespace FileIO
 {
-
 /// @brief Base class which enables reading an object from string, stringstream
 /// or file.
 ///
@@ -22,7 +21,7 @@ class Reader
 {
 public:
 	Reader();
-	virtual ~Reader() {};
+	virtual ~Reader(){};
 
 	/// @brief Reads the object from a string.
 	void readFromString(std::string str);

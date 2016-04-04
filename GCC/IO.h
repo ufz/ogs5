@@ -9,20 +9,19 @@
 
 #include <string>
 #include <vector>
-//using namespace std;
+// using namespace std;
 
 class IO
 {
-
 private:
-
 public:
 	IO(void);
 	~IO(void);
 
 	static int file2code(std::string datafile_in, std::string codefile_out);
-	static int file2vector(std::string datafile_in, std::vector<std::string> &vector_out);
-	static std::vector<std::string> string2vector(std::string line);	//split string line to pieces, and store in a vector
+	static int file2vector(std::string datafile_in, std::vector<std::string>& vector_out);
+	static std::vector<std::string> string2vector(
+	    std::string line); // split string line to pieces, and store in a vector
 
 	static std::vector<int> formula2index(std::string formula);
 	static std::vector<int> formula2index_total(std::string formula);
@@ -33,4 +32,3 @@ public:
 	static std::vector<std::string> vector_reduce(std::vector<std::string>);
 	static void entrance(void);
 };
-
