@@ -16,7 +16,8 @@
 /**
  * max returns the maximum of its arguments
  */
-template<class T> T max(const T& arg0, const T& arg1)
+template <class T>
+T max(const T& arg0, const T& arg1)
 {
 	if (arg0 < arg1)
 		return arg1;

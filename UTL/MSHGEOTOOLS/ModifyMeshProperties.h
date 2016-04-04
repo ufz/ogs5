@@ -25,7 +25,7 @@ public:
 	ModifyMeshProperties(CFEMesh* msh);
 	virtual ~ModifyMeshProperties();
 
-	void setMaterial (const GEOLIB::Polygon& polygon, size_t mat_id);
+	void setMaterial(const GEOLIB::Polygon& polygon, size_t mat_id);
 	/**
 	 * Method substitutes material ids within the given volume. The volume is described
 	 * by three surfaces, the first and second surfaces are the parts of bottom and the top
@@ -36,7 +36,7 @@ public:
 	 * @param old_mat_id [input] the old material id (which is changed)
 	 * @param new_mat_id [input] the value of the new material id that is set
 	 */
-	void substituteMaterialID (GEOLIB::Polygon const& polygon, size_t old_mat_id, size_t new_mat_id);
+	void substituteMaterialID(GEOLIB::Polygon const& polygon, size_t old_mat_id, size_t new_mat_id);
 
 private:
 	CFEMesh* _mesh;

@@ -21,7 +21,8 @@
 //#include "rf_mmp_new.h"
 
 namespace SolidProp
-{class CSolidProperties;
+{
+class CSolidProperties;
 }
 
 class CRFProcess;
@@ -29,10 +30,12 @@ class CFluidProperties;
 class CMediumProperties;
 
 namespace process
-{class CRFProcessDeformation;
+{
+class CRFProcessDeformation;
 }
 namespace MeshLib
-{class CElem;
+{
+class CElem;
 }
 namespace FiniteElement
 {
@@ -49,25 +52,21 @@ using MeshLib::CElem;
 class ElementValue_DM
 {
 public:
-	ElementValue_DM(CElem* ele,  const int NGP, bool HM_Staggered);
+	ElementValue_DM(CElem* ele, const int NGP, bool HM_Staggered);
 	~ElementValue_DM();
 	void ResetStress(bool cpl_loop);
 	/// \param last_step The last time step or the end of the program.
 	void Write_BIN(std::fstream& os, const bool last_step = false);
 	void Read_BIN(std::fstream& is);
 	void ReadElementStressASCI(std::fstream& is);
-	double MeanStress(const int gp)
-	{
-		return (*Stress)(0, gp)
-		       + (*Stress)(1, gp) + (*Stress)(2, gp);
-	}
+	double MeanStress(const int gp) { return (*Stress)(0, gp) + (*Stress)(1, gp) + (*Stress)(2, gp); }
 private:
 	// Friend class
 	friend class SolidProp::CSolidProperties;
 	friend class process::CRFProcessDeformation;
 	friend class ::CMediumProperties;
 	friend class CFiniteElementVec;
-	Matrix* Stress0;                      // Initial stress
+	Matrix* Stress0; // Initial stress
 	Matrix* Stress;
 	Matrix* Stress_i;
 	Matrix* Stress_j;
@@ -75,10 +74,10 @@ private:
 	Matrix* y_surface;
 	// Preconsolidation pressure
 	Matrix* prep0;
-	Matrix* e_i;                          // Void ratio
+	Matrix* e_i; // Void ratio
 	// Variables of single yield surface model
-	Matrix* xi;                           // Rotational hardening variables
-	Matrix* MatP;                         // Material parameters
+	Matrix* xi; // Rotational hardening variables
+	Matrix* MatP; // Material parameters
 
 	// Discontinuity
 	double disp_j;
@@ -87,17 +86,16 @@ private:
 	Matrix* NodesOnPath;
 	double* orientation;
 
-	Matrix *scalar_aniso_comp;//WX:11.2011
-	Matrix *scalar_aniso_tens;//WX:11.2011 for aniso. plas.
+	Matrix* scalar_aniso_comp; // WX:11.2011
+	Matrix* scalar_aniso_tens; // WX:11.2011 for aniso. plas.
 };
 
 // Derived element for deformation caculation
 class CFiniteElementVec : public CElement
 {
 public:
-	CFiniteElementVec (process::CRFProcessDeformation* dm_pcs,
-	                   const int C_Sys_Flad, const int order = 2);
-	~CFiniteElementVec ();
+	CFiniteElementVec(process::CRFProcessDeformation* dm_pcs, const int C_Sys_Flad, const int order = 2);
+	~CFiniteElementVec();
 
 	// Set memory for local matrices
 	void SetMemory();
@@ -114,30 +112,27 @@ public:
 	void SetMaterial();
 
 	// Get strain
-	double* GetStrain() const {return dstrain; }
-
+	double* GetStrain() const { return dstrain; }
 	//----------- Enhanced element -----------------------
 	// Geometry related
 	bool LocalAssembly_CheckLocalization(CElem* MElement);
-	int IntersectionPoint(const int O_edge,
-	                      const double* NodeA, double* NodeB);
+	int IntersectionPoint(const int O_edge, const double* NodeA, double* NodeB);
 	//----------- End of enhanced element ----------------
 private:
-
 	process::CRFProcessDeformation* pcs;
 	::CRFProcess* h_pcs;
 	::CRFProcess* t_pcs;
 	// excavation
-	bool excavation;                      //12.2009. WW
+	bool excavation; // 12.2009. WW
 	//
-	int ns;                               // Number of stresses components
+	int ns; // Number of stresses components
 	// Flow coupling
 	int Flow_Type;
 
 	// Primary value indeces
 	// Column index in the node value table
 	int idx_P, idx_P0, idx_P1, idx_P1_0, idx_P2;
-	int idx_T0,idx_T1;
+	int idx_T0, idx_T1;
 	int idx_S0, idx_S, idx_Snw;
 	int idx_pls;
 	// Displacement column indeces in the node value table
@@ -147,14 +142,14 @@ private:
 	// B matrix
 	Matrix* B_matrix;
 	Matrix* B_matrix_T;
-	std::vector<Matrix*> vec_B_matrix;    //NW
-	std::vector<Matrix*> vec_B_matrix_T;  //NW
+	std::vector<Matrix*> vec_B_matrix; // NW
+	std::vector<Matrix*> vec_B_matrix_T; // NW
 
 	//------ Material -------
 	CSolidProperties* smat;
-	CFluidProperties* m_mfp;              // Fluid coupling
+	CFluidProperties* m_mfp; // Fluid coupling
 	// Medium property
-	CMediumProperties* m_mmp;             // Fluid coupling
+	CMediumProperties* m_mmp; // Fluid coupling
 	double CalDensity();
 
 	// Elastic constitutive matrix
@@ -164,12 +159,12 @@ private:
 
 	// Local matricies and vectors
 	Matrix* AuxMatrix;
-	Matrix* AuxMatrix2;                   //NW
+	Matrix* AuxMatrix2; // NW
 	Matrix* Stiffness;
 	Matrix* PressureC;
-	Matrix* PressureC_S;                  // Function of S
-	Matrix* PressureC_S_dp;                  // Function of S and ds_dp
-	Matrix* Mass;                      // For dynamic analysis
+	Matrix* PressureC_S; // Function of S
+	Matrix* PressureC_S_dp; // Function of S and ds_dp
+	Matrix* Mass; // For dynamic analysis
 	Vec* RHS;
 	// Global RHS. 08.2010. WW
 	double* b_rhs;
@@ -190,11 +185,11 @@ private:
 	double* Disp;
 
 	// Temperatures of nodes
-	double* Temp, Tem;
+	double *Temp, Tem;
 	double* T1;
 	double S_Water;
 
-	//Element value
+	// Element value
 	ElementValue_DM* eleV_DM;
 
 	//------ Enhanced element ------
@@ -224,13 +219,12 @@ private:
 	void ComputeMatrix_RHS(const double fkt, const Matrix* p_D);
 
 	// Temporarily used variables
-	double* Sxx, * Syy, * Szz, * Sxy, * Sxz, * Syz, * pstr;
+	double *Sxx, *Syy, *Szz, *Sxy, *Sxz, *Syz, *pstr;
 	// 2. For enhanced strain approach
-	Matrix* BDG, * PDB, * DtD, * PeDe;    // For enhanced strain element
+	Matrix *BDG, *PDB, *DtD, *PeDe; // For enhanced strain element
 
 	/// Extropolation
-	bool RecordGuassStrain(const int gp, const int gp_r,
-	                       const int gp_s, int gp_t);
+	bool RecordGuassStrain(const int gp, const int gp_r, const int gp_s, int gp_t);
 	// Effictive strain
 	double CalcStrain_v();
 	void ExtropolateGuassStrain();
@@ -270,9 +264,8 @@ private:
 	// Auxillarary vector
 	Vec* dAcceleration;
 	void ComputeMass();
-
 };
-}                                                 // end namespace
+} // end namespace
 
 extern std::vector<FiniteElement::ElementValue_DM*> ele_value_dm;
 #endif

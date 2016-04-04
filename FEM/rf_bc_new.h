@@ -30,9 +30,9 @@ class BoundaryConditionIO;
 // new GEOLIB
 #include "DistributionInfo.h" // TF
 #include "GEOObjects.h"
-#include "GeoInfo.h"                              // TF
+#include "GeoInfo.h" // TF
 #include "LinearFunctionData.h" // TF
-#include "ProcessInfo.h"                          // KR
+#include "ProcessInfo.h" // KR
 #include "Constrained.h"
 #include "SwitchBC.h"
 
@@ -49,16 +49,13 @@ class CFEMesh;
 
 class BoundaryCondition;
 
-class CBoundaryCondition :
-	public ProcessInfo,
-	public GeoInfo,
-	public DistributionInfo
+class CBoundaryCondition : public ProcessInfo, public GeoInfo, public DistributionInfo
 {
 public:
-//	CBoundaryCondition(ProcessInfo const& process_info,
-//			GeoInfo const& geo_info,
-//			DistributionInfo const& distribution_info,
-//			);
+	//	CBoundaryCondition(ProcessInfo const& process_info,
+	//			GeoInfo const& geo_info,
+	//			DistributionInfo const& distribution_info,
+	//			);
 	friend class CBoundaryConditionsGroup;
 	friend class FileIO::BoundaryConditionIO;
 	CBoundaryCondition();
@@ -78,9 +75,8 @@ public:
 	 * @return the position in the stream after the boundary condition
 	 */
 	// TF
-	std::ios::pos_type Read(std::ifstream* in,
-	                        const GEOLIB::GEOObjects& geo_obj, const std::string& unique_fname,
-	                        bool &valid);
+	std::ios::pos_type Read(std::ifstream* in, const GEOLIB::GEOObjects& geo_obj, const std::string& unique_fname,
+	                        bool& valid);
 
 	/**
 	 * ToDo remove after transition to new GEOLIB - REMOVE CANDIDATE
@@ -109,56 +105,30 @@ public:
 		return _periode_phase_shift;
 	}
 
-	const std::vector<int>& getPointsWithDistribedBC() const
-	{
-		return _PointsHaveDistribedBC;
-	}
-	const std::vector<double>& getDistribedBC() const
-	{
-		return _DistribedBC;
-	}
-	std::vector<double>& getDistribedBC()
-	{
-		return _DistribedBC;
-	}
-	double getGeoNodeValue() const
-	{
-		return geo_node_value;
-	}
-	//KR
+	const std::vector<int>& getPointsWithDistribedBC() const { return _PointsHaveDistribedBC; }
+	const std::vector<double>& getDistribedBC() const { return _DistribedBC; }
+	std::vector<double>& getDistribedBC() { return _DistribedBC; }
+	double getGeoNodeValue() const { return geo_node_value; }
+	// KR
 
-	const std::vector<std::string>& getPointsFCTNames() const
-	{
-		return _PointsFCTNames;
-	}
-
-	size_t getMeshNodeNumber() const
-	{
-		return _msh_node_number;
-	}
-	const std::string& getMeshTypeName() const
-	{
-		return _msh_type_name;
-	}
-
-	int getExcav() {return bcExcav; }             //WX:12.2010 get bc excav model
-	int getExcavMatGr() {return MatGr; }     //WX:12.2010 get excav material group
-	int getTimeContrCurve() {return time_contr_curve; } //WX:12.2010 get bc ativity controlled curve
-	int getNoDispIncre() {return NoDispIncre;};	//WX:12.2012
-
+	const std::vector<std::string>& getPointsFCTNames() const { return _PointsFCTNames; }
+	size_t getMeshNodeNumber() const { return _msh_node_number; }
+	const std::string& getMeshTypeName() const { return _msh_type_name; }
+	int getExcav() { return bcExcav; } // WX:12.2010 get bc excav model
+	int getExcavMatGr() { return MatGr; } // WX:12.2010 get excav material group
+	int getTimeContrCurve() { return time_contr_curve; } // WX:12.2010 get bc ativity controlled curve
+	int getNoDispIncre() { return NoDispIncre; }; // WX:12.2012
 	// give head bc for PRESSURE1 primary variable	//MW
-	int getPressureAsHeadModel() const {return _pressure_as_head_model;}
+	int getPressureAsHeadModel() const { return _pressure_as_head_model; }
 	// return given density
 	double getPressureAsHeadDensity() const { return _pressure_as_head_density; };
 	// constrain a BC by other process
-	bool isConstrainedBC() const {return _isConstrainedBC;}
-	Constrained const & getConstrainedBC(std::size_t i) const { return _constrainedBC[i]; }
+	bool isConstrainedBC() const { return _isConstrainedBC; }
+	Constrained const& getConstrainedBC(std::size_t i) const { return _constrainedBC[i]; }
 	std::size_t getNumberOfConstrainedBCs() const { return _constrainedBC.size(); }
 	bool isSeepageBC() const { return _isSeepageBC; }
-	bool isSwitchBC() const {return _isSwitchBC;}
-	SwitchBC const & getSwitchBC() const { return _switchBC; }
-
-
+	bool isSwitchBC() const { return _isSwitchBC; }
+	SwitchBC const& getSwitchBC() const { return _switchBC; }
 private:
 	std::vector<std::string> _PointsFCTNames;
 	std::vector<int> _PointsHaveDistribedBC;
@@ -171,7 +141,7 @@ private:
 	std::string geo_name; // TF 05/2010
 	std::string geo_type_name;
 
-	std::string fname; //27.02.2009. WW
+	std::string fname; // 27.02.2009. WW
 	int _curve_index; // Time function index
 
 	// DIS
@@ -188,28 +158,28 @@ private:
 	double gradient_ref_depth_value;
 	double gradient_ref_depth_gradient;
 
-	double node_value_cond; //OK
-	double condition; //OK
-	double epsilon; //NW. temporally set here for surface interpolation
+	double node_value_cond; // OK
+	double condition; // OK
+	double epsilon; // NW. temporally set here for surface interpolation
 	bool time_dep_interpol;
 
 	// FCT
 	std::string fct_name;
 	bool conditional;
 
-	LinearFunctionData* dis_linear_f;   //24.8.2011. WW
+	LinearFunctionData* dis_linear_f; // 24.8.2011. WW
 
-	//WW
+	// WW
 	void SurfaceInterpolation(CRFProcess* m_pcs,
 	                          std::vector<long>& nodes_on_sfc,
 	                          std::vector<double>& node_value_vector);
 	inline void DirectAssign(long ShiftInNodeVector);
-	//19.03.2009. WW
+	// 19.03.2009. WW
 	inline void PatchAssign(long ShiftInNodeVector);
 
 	// MSH
 	long _msh_node_number;
-	std::string _msh_type_name; //OK4105
+	std::string _msh_type_name; // OK4105
 
 	// copy values   SB 09.2012
 	std::string copy_geom;
@@ -233,29 +203,28 @@ private:
 
 	bool _isSwitchBC;
 	SwitchBC _switchBC;
-
 };
 
-class CBoundaryConditionNode                      //OK raus
+class CBoundaryConditionNode // OK raus
 {
 public:
 	long geo_node_number;
 	long msh_node_number;
-	long msh_node_number_subst;           //WW
+	long msh_node_number_subst; // WW
 
 	double node_value;
 	double node_value_pre_calc;
-	int CurveIndex;                       // Time dependent function index
-	std::string pcs_pv_name;              //YD/WW
+	int CurveIndex; // Time dependent function index
+	std::string pcs_pv_name; // YD/WW
 	//
-	std::string fct_name;                 //WW
-	//FCT
-	int conditional;                      //OK
+	std::string fct_name; // WW
+	// FCT
+	int conditional; // OK
 	std::string bc_node_copy_geom;
 	std::string bc_node_copy_geom_name;
 	CBoundaryConditionNode();
 
-	void SetNormalVector(double const*const normal_vector);
+	void SetNormalVector(double const* const normal_vector);
 	double const* GetNormalVector() const;
 
 	// 25.08.2011. WW
@@ -275,35 +244,34 @@ public:
 	void Set(CRFProcess* pcs, int ShiftInNodeVector, const std::string& this_pv_name = "");
 	CBoundaryConditionsGroup* Get(const std::string&);
 
-	const std::string& getProcessTypeName () const { return _pcs_type_name; }
-	void setProcessTypeName (const std::string& pcs_type_name) { _pcs_type_name = pcs_type_name; }
-	const std::string& getProcessPrimaryVariableName () const { return _pcs_pv_name; }
-	void setProcessPrimaryVariableName (const std::string& pcs_pv_name)
+	const std::string& getProcessTypeName() const { return _pcs_type_name; }
+	void setProcessTypeName(const std::string& pcs_type_name) { _pcs_type_name = pcs_type_name; }
+	const std::string& getProcessPrimaryVariableName() const { return _pcs_pv_name; }
+	void setProcessPrimaryVariableName(const std::string& pcs_pv_name)
 	{
 		if (_pcs_type_name.find("MASS_TRANSPORT") == std::string::npos)
 			_pcs_pv_name = pcs_pv_name;
 		else
 			_pcs_pv_name = "CONCENTRATION1";
 	}
-	long msh_node_number_subst;           //WW
-	std::string fct_name;                 //OK
+	long msh_node_number_subst; // WW
+	std::string fct_name; // OK
 
-	MeshLib::CFEMesh* m_msh;           //OK
-	//WW std::vector<CBoundaryCondition*>bc_group_vector; //OK
-	//WW double GetConditionalNODValue(int,CBoundaryCondition*); //OK
+	MeshLib::CFEMesh* m_msh; // OK
+	// WW std::vector<CBoundaryCondition*>bc_group_vector; //OK
+	// WW double GetConditionalNODValue(int,CBoundaryCondition*); //OK
 	int time_dep_bc;
 
 private:
 	std::string group_name;
-	std::string _pcs_type_name;           //OK
-	std::string _pcs_pv_name;             //OK
+	std::string _pcs_type_name; // OK
+	std::string _pcs_pv_name; // OK
 };
 
 //========================================================================
 #define BC_FILE_EXTENSION ".bc"
 extern std::list<CBoundaryConditionsGroup*> bc_group_list;
-extern CBoundaryConditionsGroup* BCGetGroup(const std::string& pcs_type_name,
-                                            const std::string& pcs_pv_name);
+extern CBoundaryConditionsGroup* BCGetGroup(const std::string& pcs_type_name, const std::string& pcs_pv_name);
 extern std::list<CBoundaryCondition*> bc_list;
 
 /**
@@ -313,18 +281,16 @@ extern std::list<CBoundaryCondition*> bc_list;
  * @param unique_name the (unique) name of the project
  * @return false, if the file can not opened, else true
  */
-bool BCRead (std::string const& file_base_name,
-             const GEOLIB::GEOObjects& geo_obj,
-             const std::string& unique_name);
+bool BCRead(std::string const& file_base_name, const GEOLIB::GEOObjects& geo_obj, const std::string& unique_name);
 
 extern void BCWrite(std::string const&);
 extern void BCDelete();
 extern void BCGroupDelete(const std::string& pcs_type_name, const std::string& pcs_pv_name);
 extern void BCGroupDelete(void);
-//OK
-extern CBoundaryCondition* BCGet(const std::string&,const std::string&,const std::string&);
-extern CBoundaryCondition* BCGet(std::string);    //OK
+// OK
+extern CBoundaryCondition* BCGet(const std::string&, const std::string&, const std::string&);
+extern CBoundaryCondition* BCGet(std::string); // OK
 
-//ToDo
+// ToDo
 extern void ScalingDirichletBoundaryConditions(const double factor);
 #endif

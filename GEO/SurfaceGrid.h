@@ -18,15 +18,16 @@
 // GEOLIB
 #include "AxisAlignedBoundingBox.h"
 
-namespace GEOLIB {
-
+namespace GEOLIB
+{
 // forward declaration
 class Surface;
 class Triangle;
 
-class SurfaceGrid : public AABB {
+class SurfaceGrid : public AABB
+{
 public:
-	SurfaceGrid(Surface const*const sfc);
+	SurfaceGrid(Surface const* const sfc);
 	virtual ~SurfaceGrid();
 
 	bool isPntInSurface(const double* pnt, double eps = 0) const;
@@ -34,9 +35,8 @@ public:
 private:
 #ifndef NDEBUG
 #ifdef DEBUGMESHNODESEARCH
-	void writeSurfaceGridData(std::ostream &os) const;
-	void writeTrianglesInGridCell(std::size_t i, std::size_t j, std::size_t k,
-		std::ostream & os) const;
+	void writeSurfaceGridData(std::ostream& os) const;
+	void writeTrianglesInGridCell(std::size_t i, std::size_t j, std::size_t k, std::ostream& os) const;
 #endif
 #endif
 	double _step_sizes[3];

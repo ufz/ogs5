@@ -26,13 +26,13 @@ public:
 	 * Sets the value for the distribution type
 	 * @param dis_type value for primary variable, possible values are documented in enum PrimaryVariable
 	 */
-	void setProcessDistributionType (FiniteElement::DistributionType dis_type);
+	void setProcessDistributionType(FiniteElement::DistributionType dis_type);
 
 	/**
 	 * Get the distribution type of the process.
 	 * @return the distribution type of the process
 	 */
-	FiniteElement::DistributionType getProcessDistributionType () const;
+	FiniteElement::DistributionType getProcessDistributionType() const;
 
 private:
 	/**
@@ -41,4 +41,4 @@ private:
 	FiniteElement::DistributionType _dis_type;
 };
 
-#endif                                            /* DISTRIBUTIONINFO_H_ */
+#endif /* DISTRIBUTIONINFO_H_ */

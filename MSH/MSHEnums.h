@@ -21,7 +21,8 @@
  */
 struct MshElemType
 {
-	enum type {
+	enum type
+	{
 		LINE = 1,
 		QUAD = 2,
 		HEXAHEDRON = 3,
@@ -35,7 +36,8 @@ struct MshElemType
 
 struct MshQualityType
 {
-	enum type {
+	enum type
+	{
 		INVALID = 0,
 		AREA,
 		VOLUME,
@@ -48,8 +50,8 @@ struct MshQualityType
 const std::string MshElemType2String(const MshElemType::type t);
 
 /// Given a string describing an element type this returns the corresponding MshElemType.
-MshElemType::type String2MshElemType(const std::string &s);
+MshElemType::type String2MshElemType(const std::string& s);
 
 const std::string MshQualityType2String(const MshQualityType::type t);
 
-#endif //MSHENUMS_H
+#endif // MSHENUMS_H

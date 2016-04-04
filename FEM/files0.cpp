@@ -59,18 +59,18 @@
 #include "rf_mfp_new.h"
 #include "rf_msp_new.h"
 //#include "rf_num_new.h"
-#include "rf_fct.h"                               //OK
-#include "rf_fluid_momentum.h"                    // PCH
+#include "rf_fct.h" //OK
+#include "rf_fluid_momentum.h" // PCH
 #include "rf_kinreact.h"
-#include "rf_random_walk.h"                       // PCH
+#include "rf_random_walk.h" // PCH
 #include "rf_react.h"
 #include "rf_react_int.h"
-//CB2406 #ifdef OGS_FEM_CAP // CAP_REACT
-  // CB_merge_0513
-  #include "rf_react_cap.h"
+// CB2406 #ifdef OGS_FEM_CAP // CAP_REACT
+// CB_merge_0513
+#include "rf_react_cap.h"
 
 #ifdef CHEMAPP
-#include "eqlink.h"                               //MX
+#include "eqlink.h" //MX
 #endif
 #include "fct_mpi.h"
 /* Tools */
@@ -83,16 +83,16 @@
 //#include "msh_lib.h"
 //#include "gs_project.h"
 /* Dateinamen */
-char* crdat = NULL;                               /*MX*/
-char* file_name = NULL;                           /* dateiname */
+char* crdat = NULL; /*MX*/
+char* file_name = NULL; /* dateiname */
 static char* msgdat = NULL;
 
-#define RFD_FILE_EXTENSION ".rfd"                 //OK
-#ifndef MFC                                       //WW
-void CURRead(std::string);                        //OK
+#define RFD_FILE_EXTENSION ".rfd" // OK
+#ifndef MFC // WW
+void CURRead(std::string); // OK
 #endif
-std::ios::pos_type CURReadCurve(std::ifstream*);  //OK
-void CURWrite();                                  //OK
+std::ios::pos_type CURReadCurve(std::ifstream*); // OK
+void CURWrite(); // OK
 
 #define KEYWORD '#'
 #define SUBKEYWORD '$'
@@ -107,7 +107,7 @@ void CURWrite();                                  //OK
 
 using namespace std;
 
-static bool isValidTextFileFormat(const std::string &basename, const std::string &fext)
+static bool isValidTextFileFormat(const std::string& basename, const std::string& fext)
 {
 	const std::string fname(basename + fext);
 	if (!IsFileExisting(fname))
@@ -117,9 +117,12 @@ static bool isValidTextFileFormat(const std::string &basename, const std::string
 #else
 	const bool is_win32 = false;
 #endif
-	if (is_win32 == HasCRInLineEnding(fname)) {
+	if (is_win32 == HasCRInLineEnding(fname))
+	{
 		return true;
-	} else {
+	}
+	else
+	{
 		if (is_win32)
 			std::cout << "*** ERROR: Detect UNIX file format " << fname.data() << std::endl;
 		else
@@ -128,7 +131,7 @@ static bool isValidTextFileFormat(const std::string &basename, const std::string
 	}
 }
 
-static bool checkFormatOfInputFiles(const std::string &basename)
+static bool checkFormatOfInputFiles(const std::string& basename)
 {
 	bool valid = true;
 	valid &= isValidTextFileFormat(basename, ".gli");
@@ -171,41 +174,44 @@ static bool checkFormatOfInputFiles(const std::string &basename)
    last modified: OK 16.10.2002
  */
 /**************************************************************************/
-int ReadData ( char* dateiname, GEOLIB::GEOObjects& geo_obj, std::string& unique_name )
+int ReadData(char* dateiname, GEOLIB::GEOObjects& geo_obj, std::string& unique_name)
 {
-#if defined(USE_MPI)                           //WW
-	if(myrank == 0)
+#if defined(USE_MPI) // WW
+	if (myrank == 0)
 	{
 #endif
-	std::cout << "\n";
-	std::cout << "---------------------------------------------" << "\n";
-	std::cout << "Data input:" << "\n";
-#if defined(USE_MPI)                        //WW
-}
+		std::cout << "\n";
+		std::cout << "---------------------------------------------"
+		          << "\n";
+		std::cout << "Data input:"
+		          << "\n";
+#if defined(USE_MPI) // WW
+	}
 #endif
 	/* Dateinamen generieren */
-	//OK  DATCreateFileNames(dateiname);
+	// OK  DATCreateFileNames(dateiname);
 	static int datlen;
 	datlen = (int)strlen(dateiname) + 5;
-	crdat = (char*) Malloc(datlen);       /*MX*/
-	                                      /*MX*/
-	crdat = strcat(strcpy(crdat,dateiname),CHEM_REACTION_EXTENSION);
-	msgdat = (char*) Malloc(datlen);
-	msgdat = strcat(strcpy(msgdat,dateiname),RF_MESSAGE_EXTENSION);
+	crdat = (char*)Malloc(datlen); /*MX*/
+	/*MX*/
+	crdat = strcat(strcpy(crdat, dateiname), CHEM_REACTION_EXTENSION);
+	msgdat = (char*)Malloc(datlen);
+	msgdat = strcat(strcpy(msgdat, dateiname), RF_MESSAGE_EXTENSION);
 	FILE* f = NULL;
-	if ((f = fopen(msgdat,"r")) == NULL) /* MSG-Datei existiert nicht */
+	if ((f = fopen(msgdat, "r")) == NULL) /* MSG-Datei existiert nicht */
 		msgdat = (char*)Free(msgdat);
 	else
 	{
-		fclose (f);
-		if ((f = fopen(msgdat,"a")) == NULL) /* MSG-Schreibzugriff nicht moeglich */
+		fclose(f);
+		if ((f = fopen(msgdat, "a")) == NULL) /* MSG-Schreibzugriff nicht moeglich */
 			msgdat = (char*)Free(msgdat);
 		else
-			fclose (f);
+			fclose(f);
 	}
 	//----------------------------------------------------------------------
 	// Check line ending of input files
-	if (!checkFormatOfInputFiles(dateiname)) {
+	if (!checkFormatOfInputFiles(dateiname))
+	{
 		ScreenMessage("terminate this program");
 		exit(0);
 	}
@@ -213,17 +219,17 @@ int ReadData ( char* dateiname, GEOLIB::GEOObjects& geo_obj, std::string& unique
 	// Read GEO data
 	GEOLIB_Read_GeoLib(dateiname);
 
-	std::string geo_file_name (dateiname);
+	std::string geo_file_name(dateiname);
 	geo_file_name += ".gli";
 	std::vector<std::string> file_read_errors;
-	FileIO::readGLIFileV4 (geo_file_name, &geo_obj, unique_name, file_read_errors);
+	FileIO::readGLIFileV4(geo_file_name, &geo_obj, unique_name, file_read_errors);
 
 	//----------------------------------------------------------------------
 	// Read object data
 	PCSRead(dateiname);
 	MFPRead(dateiname);
 	// HS PCS immediately followed by the MCP read
-	CPRead(dateiname);                    //SB:GS4
+	CPRead(dateiname); // SB:GS4
 	BCRead(dateiname, geo_obj, unique_name);
 	STRead(dateiname, geo_obj, unique_name);
 	ICRead(dateiname, geo_obj, unique_name);
@@ -232,39 +238,39 @@ int ReadData ( char* dateiname, GEOLIB::GEOObjects& geo_obj, std::string& unique
 
 	MSPRead(dateiname);
 	MMPRead(dateiname);
-    REACINTRead(dateiname); // CB new reaction interface
+	REACINTRead(dateiname); // CB new reaction interface
 	RCRead(dateiname);
-    REACT_CAP_Read(dateiname, geo_obj, unique_name);  //DL/SB 11/2008 ChemASpp inteface new
+	REACT_CAP_Read(dateiname, geo_obj, unique_name); // DL/SB 11/2008 ChemASpp inteface new
 
 	KRRead(dateiname, geo_obj, unique_name);
 	KRWrite(dateiname);
 #ifdef CHEMAPP
-	CHMRead(dateiname);                   //MX for CHEMAPP
+	CHMRead(dateiname); // MX for CHEMAPP
 #endif
 	NUMRead(dateiname);
 
-	FEMDeleteAll();                       // KR moved from FEMRead()
+	FEMDeleteAll(); // KR moved from FEMRead()
 	std::vector<CFEMesh*> mesh_vec;
 	FEMRead(dateiname, mesh_vec, &geo_obj, &unique_name);
-	if (!mesh_vec.empty())                              //KR
+	if (!mesh_vec.empty()) // KR
 	{
 		fem_msh_vector.insert(fem_msh_vector.end(), mesh_vec.begin(), mesh_vec.end()); // re-inserted by KR
-		CompleteMesh();           //WW
+		CompleteMesh(); // WW
 	}
 
-	//SBOK4209 MSHWrite(dateiname);
+	// SBOK4209 MSHWrite(dateiname);
 	// PCTRead is bounded by msh
-	PCTRead(dateiname);                   // PCH
-	FMRead(dateiname);                    // PCH
-	FCTRead(dateiname);                   //OK
-	CURRead(dateiname);                   //OK
-	//CURWrite(); //OK
+	PCTRead(dateiname); // PCH
+	FMRead(dateiname); // PCH
+	FCTRead(dateiname); // OK
+	CURRead(dateiname); // OK
+// CURWrite(); //OK
 #ifdef USE_PETSC
 	FCT_MPI::FCTCommRead(dateiname);
 #endif
 	//----------------------------------------------------------------------
 	// Read Excel/CVS data
-	//PNTPropertiesRead(dateiname);
+	// PNTPropertiesRead(dateiname);
 
 	msgdat = (char*)Free(msgdat);
 
@@ -303,31 +309,29 @@ bool RFDOpen(std::string file_name_base)
    12/2001     MK        Erste Version
  */
 /**************************************************************************/
-FILE* OpenMsgFile ()
+FILE* OpenMsgFile()
 {
 	FILE* f = NULL;
 	if (msgdat)
 	{
-		if ((f = fopen(msgdat,"a")) == NULL)
+		if ((f = fopen(msgdat, "a")) == NULL)
 		{
 			f = stdout;
-			fprintf(
-			        f,
+			fprintf(f,
 			        "\n!!!!!!!!  %s\n\n            ",
 			        "Fehler: Schreibzugriff auf Message-Protokolldatei nicht moeglich!!");
 		}
 	}
 	else
-		f = stdout;               /* Dateiname existiert nicht */
+		f = stdout; /* Dateiname existiert nicht */
 	return f;
 }
 
-void CloseMsgFile (FILE* f)
+void CloseMsgFile(FILE* f)
 {
 	if (f != stdout)
 		if (fclose(f))
-			DisplayErrorMsg(
-			        "Fehler: Message-Protokolldatei konnte nicht geschlossen werden !!");
+			DisplayErrorMsg("Fehler: Message-Protokolldatei konnte nicht geschlossen werden !!");
 }
 
 /**************************************************************************
@@ -344,18 +348,19 @@ void PRJRead(std::string base_file_name)
 	// file handling
 	string rfd_file_name;
 	rfd_file_name = base_file_name + FCT_FILE_EXTENSION;
-	std::ifstream rfd_file (rfd_file_name.data(),std::ios::in);
+	std::ifstream rfd_file(rfd_file_name.data(), std::ios::in);
 	if (!rfd_file.good())
 		return;
-	rfd_file.seekg(0L,std::ios::beg);
+	rfd_file.seekg(0L, std::ios::beg);
 	//========================================================================
 	// keyword loop
-	std::cout << "RFDRead" << "\n";
+	std::cout << "RFDRead"
+	          << "\n";
 	while (!rfd_file.eof())
 	{
-		rfd_file.getline(line,MAX_ZEILE);
+		rfd_file.getline(line, MAX_ZEILE);
 		project_title = line;
-	}                                     // eof
+	} // eof
 }
 
 /**************************************************************************
@@ -371,37 +376,38 @@ void CURRead(std::string base_file_name)
 	//----------------------------------------------------------------------
 	StuetzStellen* stuetz = NULL;
 	anz_kurven = 1;
-	stuetz = (StuetzStellen*) Malloc(sizeof(StuetzStellen));
+	stuetz = (StuetzStellen*)Malloc(sizeof(StuetzStellen));
 	stuetz[0].punkt = 1.0;
 	stuetz[0].wert = 1.0;
-	kurven = (Kurven*) Malloc(sizeof(Kurven));
+	kurven = (Kurven*)Malloc(sizeof(Kurven));
 	kurven[anz_kurven - 1].anz_stuetzstellen = 1;
 	kurven[anz_kurven - 1].stuetzstellen = stuetz;
 	//----------------------------------------------------------------------
 	// file handling
 	std::string cur_file_name;
 	cur_file_name = base_file_name + RFD_FILE_EXTENSION;
-	std::ifstream cur_file (cur_file_name.data(),std::ios::in);
+	std::ifstream cur_file(cur_file_name.data(), std::ios::in);
 	if (!cur_file.good())
 		return;
-	cur_file.seekg(0L,std::ios::beg);
+	cur_file.seekg(0L, std::ios::beg);
 	//========================================================================
 	// keyword loop
-	std::cout << "CURRead" << "\n";
+	std::cout << "CURRead"
+	          << "\n";
 	while (!cur_file.eof())
 	{
-		cur_file.getline(line,MAX_ZEILE);
+		cur_file.getline(line, MAX_ZEILE);
 		line_string = line;
-		if(line_string.find("#STOP") != std::string::npos)
+		if (line_string.find("#STOP") != std::string::npos)
 			return;
 		//----------------------------------------------------------------------
 		// keyword found
-		if(line_string.find("#CURVE") != std::string::npos)
+		if (line_string.find("#CURVE") != std::string::npos)
 		{
 			position = CURReadCurve(&cur_file);
-			cur_file.seekg(position,std::ios::beg);
-		}                         // keyword found
-	}                                     // eof
+			cur_file.seekg(position, std::ios::beg);
+		} // keyword found
+	} // eof
 }
 
 /**************************************************************************
@@ -416,45 +422,45 @@ std::ios::pos_type CURReadCurve(std::ifstream* cur_file)
 	ios::pos_type position;
 	std::stringstream line_stream;
 	int anz = 0;
-	double d1,d2;
+	double d1, d2;
 	StuetzStellen* stuetz = NULL;
 	//----------------------------------------------------------------------
 	while (!new_keyword)
 	{
 		position = cur_file->tellg();
-		//OK    cur_file->getline(buffer,MAX_ZEILE);
-		//OK    line_string = buffer;
+		// OK    cur_file->getline(buffer,MAX_ZEILE);
+		// OK    line_string = buffer;
 		line_string = GetLineFromFile1(cur_file);
-		if(line_string.size() < 1)
+		if (line_string.size() < 1)
 			continue;
 		//....................................................................
 		// Test next keyword
-		if(line_string.find(hash) != string::npos)
+		if (line_string.find(hash) != string::npos)
 		{
 			new_keyword = true;
 			continue;
 		}
 		//--------------------------------------------------------------------
-		if(line_string.find(";") != string::npos)
+		if (line_string.find(";") != string::npos)
 			continue;
 		//--------------------------------------------------------------------
-		//DATA
-		//OK    cur_file->seekg(position,ios::beg);
-		//OK    *cur_file >> d1 >> d2;
+		// DATA
+		// OK    cur_file->seekg(position,ios::beg);
+		// OK    *cur_file >> d1 >> d2;
 		line_stream.str(line_string);
 		line_stream >> d1 >> d2;
 		anz++;
-		stuetz = (StuetzStellen*) Realloc(stuetz, (anz * sizeof(StuetzStellen)));
+		stuetz = (StuetzStellen*)Realloc(stuetz, (anz * sizeof(StuetzStellen)));
 		stuetz[anz - 1].punkt = d1;
 		stuetz[anz - 1].wert = d2;
 		line_stream.clear();
 		//--------------------------------------------------------------------
 	}
 	//----------------------------------------------------------------------
-	if(anz >= 1l)
+	if (anz >= 1l)
 	{
 		anz_kurven++;
-		kurven = (Kurven*) Realloc(kurven, (anz_kurven * sizeof(Kurven)));
+		kurven = (Kurven*)Realloc(kurven, (anz_kurven * sizeof(Kurven)));
 		kurven[anz_kurven - 1].anz_stuetzstellen = anz;
 		kurven[anz_kurven - 1].stuetzstellen = stuetz;
 	}
@@ -470,23 +476,24 @@ void CURWrite()
 	//========================================================================
 	// File handling
 	std::string fct_file_name = "test.cur";
-	std::fstream fct_file (fct_file_name.c_str(),ios::trunc | ios::out);
-	fct_file.setf(ios::scientific,ios::floatfield);
+	std::fstream fct_file(fct_file_name.c_str(), ios::trunc | ios::out);
+	fct_file.setf(ios::scientific, ios::floatfield);
 	fct_file.precision(12);
 	if (!fct_file.good())
 		return;
-	fct_file << "GeoSys-CUR: Functions ------------------------------------------------" <<
-	"\n";
+	fct_file << "GeoSys-CUR: Functions ------------------------------------------------"
+	         << "\n";
 	//========================================================================
 	int j;
 	StuetzStellen stuetz;
-	for(int i = 0; i < anz_kurven; i++)
+	for (int i = 0; i < anz_kurven; i++)
 	{
-		fct_file << "#CURVES" << "\n";
-		for(j = 0; j < kurven[i].anz_stuetzstellen; j++)
+		fct_file << "#CURVES"
+		         << "\n";
+		for (j = 0; j < kurven[i].anz_stuetzstellen; j++)
 		{
 			stuetz = kurven[i].stuetzstellen[j];
-			fct_file << stuetz.punkt << " " << stuetz.wert <<  "\n";
+			fct_file << stuetz.punkt << " " << stuetz.wert << "\n";
 		}
 	}
 	fct_file << "#STOP";
@@ -508,36 +515,41 @@ void CURWrite()
  **************************************************************************/
 string GetLineFromFile1(ifstream* ein)
 {
-//	return readNonBlankLineFromInputStream(*ein);
+	//	return readNonBlankLineFromInputStream(*ein);
 	string line, zeile = "";
 	int fertig = 0, i = 0, j = 0;
 	char zeile1[MAX_ZEILEN];
-	line = "";                            //WW
+	line = ""; // WW
 	//----------------------------------------------------------------------
-	while(fertig < 1)
+	while (fertig < 1)
 	{
-		if(ein->getline(zeile1,MAX_ZEILEN)) //Zeile lesen
+		if (ein->getline(zeile1, MAX_ZEILEN)) // Zeile lesen
 		{
-			line = zeile1; //character in string umwandeln
-			i = (int) line.find_first_not_of(" ",0); //Anf�ngliche Leerzeichen �berlesen, i=Position des ersten Nichtleerzeichens im string
-			j = (int) line.find(";",i); //Nach Kommentarzeichen ; suchen. j = Position des Kommentarzeichens, j=-1 wenn es keines gibt.
-			if(j != i)
-				fertig = 1;  //Wenn das erste nicht-leerzeichen ein Kommentarzeichen ist, zeile �berlesen. Sonst ist das eine Datenzeile
-			if((i != -1))
-				zeile = line.substr(i,j - i);  //Ab erstem nicht-Leerzeichen bis Kommentarzeichen rauskopieren in neuen substring, falls Zeile nicht leer ist
-			i = (int) zeile.find_last_not_of(" "); // Suche nach dem letzten Zeichen, dass kein Leerzeichen ist
-			if(i >= 0)
+			line = zeile1; // character in string umwandeln
+			i = (int)line.find_first_not_of(
+			    " ", 0); // Anf�ngliche Leerzeichen �berlesen, i=Position des ersten Nichtleerzeichens im string
+			j = (int)line.find(
+			    ";",
+			    i); // Nach Kommentarzeichen ; suchen. j = Position des Kommentarzeichens, j=-1 wenn es keines gibt.
+			if (j != i)
+				fertig = 1; // Wenn das erste nicht-leerzeichen ein Kommentarzeichen ist, zeile �berlesen. Sonst ist das
+			// eine Datenzeile
+			if ((i != -1))
+				zeile = line.substr(i, j - i); // Ab erstem nicht-Leerzeichen bis Kommentarzeichen rauskopieren in neuen
+			// substring, falls Zeile nicht leer ist
+			i = (int)zeile.find_last_not_of(" "); // Suche nach dem letzten Zeichen, dass kein Leerzeichen ist
+			if (i >= 0)
 			{
 				//		  line.clear(); // = "";
-				line = zeile.substr(0,i + 1); // Leerzeichen am Ende rausschneiden
+				line = zeile.substr(0, i + 1); // Leerzeichen am Ende rausschneiden
 				//		  zeile.clear(); // = "";
 				zeile = line;
 			}
 		}
-		else                      //end of file found
+		else // end of file found
 
 			fertig = 1;
-	}                                     // end while(...)
+	} // end while(...)
 	//----------------------------------------------------------------------
 	return zeile;
 }
@@ -559,9 +571,9 @@ string GetLineFromFile1(ifstream* ein)
    03/1994     MSR        Erste Version
  */
 /**************************************************************************/
-int FilePrintString ( FILE* f, const char* s )
+int FilePrintString(FILE* f, const char* s)
 {
-	if ((int)fprintf(f,"%s",s) != (int)strlen(s))
+	if ((int)fprintf(f, "%s", s) != (int)strlen(s))
 		return 0;
 	return 1;
 }
@@ -583,9 +595,9 @@ int FilePrintString ( FILE* f, const char* s )
    05/1994     MSR        Erste Version
  */
 /**************************************************************************/
-int FilePrintInt ( FILE* f, int x )
+int FilePrintInt(FILE* f, int x)
 {
-	if (fprintf(f," %i ",x) < 0)
+	if (fprintf(f, " %i ", x) < 0)
 		return 0;
 	return 1;
 }
@@ -607,9 +619,9 @@ int FilePrintInt ( FILE* f, int x )
    05/1994     MSR        Erste Version
  */
 /**************************************************************************/
-int FilePrintLong ( FILE* f, long x )
+int FilePrintLong(FILE* f, long x)
 {
-	if (fprintf(f," %ld ",x) < 0)
+	if (fprintf(f, " %ld ", x) < 0)
 		return 0;
 	return 1;
 }
@@ -632,13 +644,13 @@ int FilePrintLong ( FILE* f, long x )
    12/1995     cb         E-Format
  */
 /**************************************************************************/
-int FilePrintDouble ( FILE* f, double x )
+int FilePrintDouble(FILE* f, double x)
 {
 #ifdef FORMAT_DOUBLE
-	if (fprintf(f," % #*.*g ",FPD_GESAMT,FPD_NACHKOMMA,x) < 0)
+	if (fprintf(f, " % #*.*g ", FPD_GESAMT, FPD_NACHKOMMA, x) < 0)
 		return 0;
 #else
-	if (fprintf(f," % #g ",x) < 0)
+	if (fprintf(f, " % #g ", x) < 0)
 		return 0;
 #endif
 	return 1;
@@ -665,22 +677,22 @@ int FilePrintDouble ( FILE* f, double x )
    03/1994     MSR        Erste Version
  */
 /**************************************************************************/
-int StrReadDouble ( double* x, char* s, FILE* f, int* pos )
+int StrReadDouble(double* x, char* s, FILE* f, int* pos)
 {
 	*x = 0.0;
-	if (sscanf(s," %lf%n",x,pos) <= 0)
+	if (sscanf(s, " %lf%n", x, pos) <= 0)
 	{
-		*pos = 0;                 /* nichts sinnvolles gelesen */
-		fprintf(f,"\n %f      *** Fehler: Kein Wert eingelesen (double) !!!\n",*x);
+		*pos = 0; /* nichts sinnvolles gelesen */
+		fprintf(f, "\n %f      *** Fehler: Kein Wert eingelesen (double) !!!\n", *x);
 		return 0;
 	}
 	else
 	{
 		/* CT: Protokolformat geaendert */
 		if ((fabs(*x) < 100000.) && (fabs(*x) >= 0.1))
-			fprintf(f," %f ",*x);
+			fprintf(f, " %f ", *x);
 		else
-			fprintf(f," %e ",*x);
+			fprintf(f, " %e ", *x);
 
 		return 1;
 	}
@@ -702,15 +714,15 @@ int StrReadDouble ( double* x, char* s, FILE* f, int* pos )
    03/1994     MSR        Erste Version
  */
 /**************************************************************************/
-char* ReadString ( void )
+char* ReadString(void)
 {
-	char* s = (char*) malloc(256);
-	//char *s = new char[256];//CC
-	scanf(" %s%*[^\n]%*c",s);
+	char* s = (char*)malloc(256);
+	// char *s = new char[256];//CC
+	scanf(" %s%*[^\n]%*c", s);
 	//  int a = (int)strlen(s);
 	//  delete[] s;
-	//s = new char[a+1];//CC
-	s = (char*) realloc(s,((int)strlen(s) + 1));
+	// s = new char[a+1];//CC
+	s = (char*)realloc(s, ((int)strlen(s) + 1));
 	return s;
 }
 
@@ -721,9 +733,9 @@ char* ReadString ( void )
    09/2004 OK Implementation
    last modification:
 **************************************************************************/
-bool SubKeyword(const std::string &line)
+bool SubKeyword(const std::string& line)
 {
-	if(line.find(SUBKEYWORD) != std::string::npos)
+	if (line.find(SUBKEYWORD) != std::string::npos)
 		return true;
 	else
 		return false;
@@ -736,9 +748,9 @@ bool SubKeyword(const std::string &line)
    09/2004 OK Implementation
    last modification:
 **************************************************************************/
-bool Keyword(const std::string &line)
+bool Keyword(const std::string& line)
 {
-	if(line.find(KEYWORD) != std::string::npos)
+	if (line.find(KEYWORD) != std::string::npos)
 		return true;
 	else
 		return false;
@@ -760,7 +772,7 @@ bool Keyword(const std::string &line)
    03/1994   MSR   Erste Version
  */
 /**************************************************************************/
-char* StrUp ( const char* s )
+char* StrUp(const char* s)
 {
 	int i;
 	int l = (int)strlen(s);
@@ -792,19 +804,19 @@ char* StrUp ( const char* s )
    06/1999   OK   aus StrReadString
  */
 /**************************************************************************/
-int StringReadStr ( char** x, char* s, int* pos )
+int StringReadStr(char** x, char* s, int* pos)
 {
 	*x = NULL;
 	//  *x = (char *) Malloc(256);
-	*x = new char[256];                   //CC
+	*x = new char[256]; // CC
 	*x[0] = '\0';
-	if (sscanf(s," %s%n",*x,pos) <= 0)
+	if (sscanf(s, " %s%n", *x, pos) <= 0)
 	{
-		int a = (int)strlen(*x);  //CC
-		//delete[] *x;//CC
-		*x = new char[a + 1];     //CC
+		int a = (int)strlen(*x); // CC
+		// delete[] *x;//CC
+		*x = new char[a + 1]; // CC
 		//*x = (char *) Realloc(*x,((int)strlen(*x)+1));
-		*pos = 0;                 /* nichts sinnvolles gelesen */
+		*pos = 0; /* nichts sinnvolles gelesen */
 		return 0;
 	}
 	else
@@ -827,19 +839,19 @@ int StringReadStr ( char** x, char* s, int* pos )
    03/1994     MSR        Erste Version
  */
 /**************************************************************************/
-int LineFeed ( FILE* f )
+int LineFeed(FILE* f)
 {
-	if (fprintf(f,"\n") < 0)
+	if (fprintf(f, "\n") < 0)
 		return 0;
 	return 1;
 }
 
-//int TFDouble ( double *x, FILE *f )
+// int TFDouble ( double *x, FILE *f )
 //{
 //   return 1;
 //}
 
-//int TFString ( char* x, FILE* f )
+// int TFString ( char* x, FILE* f )
 //{
 //	return 1;
 //}
@@ -859,7 +871,7 @@ void remove_white_space(std::string* buffer)
 		pos = (int)buffer->find_first_of(" ");
 		if (pos < 0)
 			break;
-		buffer->erase(pos,1);
+		buffer->erase(pos, 1);
 	}
 }
 
@@ -885,22 +897,22 @@ void remove_white_space(std::string* buffer)
    08/2000     CT        Erste Version
  */
 /**************************************************************************/
-int StrReadStr ( char* x, char* s, FILE* f, /*FctTestString func,*/ int* pos )
+int StrReadStr(char* x, char* s, FILE* f, /*FctTestString func,*/ int* pos)
 {
-//   int test;
+	//   int test;
 	x[0] = '\0';
-	if (sscanf(s," %s%n",x,pos) <= 0)
+	if (sscanf(s, " %s%n", x, pos) <= 0)
 	{
-		*pos = 0;                 /* nichts sinnvolles gelesen */
-		fprintf(f,"\n %s      *** Fehler: Kein Wert eingelesen (string) !!!\n",x);
+		*pos = 0; /* nichts sinnvolles gelesen */
+		fprintf(f, "\n %s      *** Fehler: Kein Wert eingelesen (string) !!!\n", x);
 		return 0;
 	}
 	else
 	{
-//      test = func(x,f);
-//      fprintf(f,"%s ",x);
-//      return test;
-		fprintf(f,"%s ",x);
+		//      test = func(x,f);
+		//      fprintf(f,"%s ",x);
+		//      return test;
+		fprintf(f, "%s ", x);
 		return 1;
 	}
 }
@@ -921,10 +933,10 @@ int StrReadStr ( char* x, char* s, FILE* f, /*FctTestString func,*/ int* pos )
    03/1994     MSR        Erste Version
  */
 /**************************************************************************/
-int StrTestDouble ( char* s )
+int StrTestDouble(char* s)
 {
 	double i;
-	if (sscanf(s," %lf",&i) <= 0)
+	if (sscanf(s, " %lf", &i) <= 0)
 		return 0;
 	else
 		return 1;
@@ -947,15 +959,15 @@ int StrTestDouble ( char* s )
    03/1994     MSR        Erste Version
  */
 /**************************************************************************/
-int StrTestHash ( char* s, int* pos )
+int StrTestHash(char* s, int* pos)
 {
 	int p;
 	char h[256];
-	if (sscanf(s," %s%n",h,&p) <= 0)
+	if (sscanf(s, " %s%n", h, &p) <= 0)
 		return 0;
 	else
 	{
-		if (strcmp(h,"#") == 0)
+		if (strcmp(h, "#") == 0)
 		{
 			*pos = p;
 			return 1;
@@ -989,19 +1001,19 @@ int StrTestHash ( char* s, int* pos )
  */
 /**************************************************************************/
 /*MX*/
-int StrOnlyReadStr ( char* x, char* s, FILE* /*f*/, /*FctTestString func,*/ int* pos )
+int StrOnlyReadStr(char* x, char* s, FILE* /*f*/, /*FctTestString func,*/ int* pos)
 {
-//   int test;
+	//   int test;
 
 	x[0] = '\0';
-	if (sscanf(s," %s%n",x,pos) <= 0)
+	if (sscanf(s, " %s%n", x, pos) <= 0)
 	{
-		*pos = 0;                 /* nichts sinnvolles gelesen */
+		*pos = 0; /* nichts sinnvolles gelesen */
 		return 0;
 	}
 	else
-//      test = func(x,f);
-//      return test;
+		//      test = func(x,f);
+		//      return test;
 		return 1;
 }
 
@@ -1028,18 +1040,18 @@ int StrOnlyReadStr ( char* x, char* s, FILE* /*f*/, /*FctTestString func,*/ int*
    08/2000 C.Thorenz  Erste Version
  */
 /**************************************************************************/
-int StrReadSubKeyword ( char* sub, char* s, int beginn, int* found, int* ende)
+int StrReadSubKeyword(char* sub, char* s, int beginn, int* found, int* ende)
 {
 	int i, xi = 0;
 
 	*found = -1;
 	*ende = (int)strlen(s);
 
-	for(i = beginn; i < (int)strlen(s); i++)
+	for (i = beginn; i < (int)strlen(s); i++)
 	{
-		if(s[i] == '$')
+		if (s[i] == '$')
 		{
-			if(*found < 1)
+			if (*found < 1)
 				/* Anfang des Sub-Keywords merken */
 				*found = i;
 			else
@@ -1050,21 +1062,21 @@ int StrReadSubKeyword ( char* sub, char* s, int beginn, int* found, int* ende)
 			}
 		}
 
-		if(s[i] == '#')
+		if (s[i] == '#')
 		{
 			/* Ende des Sub-Keywords merken (neues Keyword folgt) */
 			*ende = i;
 			break;
 		}
 
-		if(*found >= 0)
+		if (*found >= 0)
 		{
 			sub[xi] = s[i];
 			xi++;
 		}
 	}
 
-	if(*found >= 0)
+	if (*found >= 0)
 		sub[xi] = '\0';
 
 	return *found >= 0;
@@ -1077,36 +1089,33 @@ int StrReadSubKeyword ( char* sub, char* s, int beginn, int* found, int* ende)
    02/2004 OK Implementation
    last modification:
 **************************************************************************/
-std::string get_sub_string(const std::string &buffer,
-                           const std::string &delimiter,
-                           int pos1,
-                           int* pos2)
+std::string get_sub_string(const std::string& buffer, const std::string& delimiter, int pos1, int* pos2)
 {
 	int pos = 0;
 	std::string empty_string("");
-	//string sub_string_this;
-	*pos2 = (int)buffer.find(delimiter,pos1);
-	if(*pos2 < 0)
+	// string sub_string_this;
+	*pos2 = (int)buffer.find(delimiter, pos1);
+	if (*pos2 < 0)
 		return empty_string;
-	while(*pos2 <= pos1)
+	while (*pos2 <= pos1)
 	{
 		pos1++;
-		*pos2 = (int)buffer.find(delimiter,pos1);
-		if(*pos2 < 0)
+		*pos2 = (int)buffer.find(delimiter, pos1);
+		if (*pos2 < 0)
 		{
 			*pos2 = (int)buffer.size();
 			break;
 		}
-		if(pos1 >= (int)buffer.size())
+		if (pos1 >= (int)buffer.size())
 			break;
 	}
-	string sub_string_this = buffer.substr(pos1,*pos2);
+	string sub_string_this = buffer.substr(pos1, *pos2);
 	while (pos >= 0)
 	{
 		pos = (int)sub_string_this.find_first_of(" ");
 		if (pos < 0)
 			break;
-		sub_string_this.erase(pos,1);
+		sub_string_this.erase(pos, 1);
 	}
 	return sub_string_this;
 }
@@ -1118,10 +1127,10 @@ std::string get_sub_string(const std::string &buffer,
    02/2004 OK Implementation
    last modification:
 **************************************************************************/
-std::string get_sub_string2(const std::string &buffer,const std::string &delimiter,std::string* tmp)
+std::string get_sub_string2(const std::string& buffer, const std::string& delimiter, std::string* tmp)
 {
 	int pos2 = (int)buffer.find_first_of(delimiter);
-	std::string sub_string = buffer.substr(0,pos2);
+	std::string sub_string = buffer.substr(0, pos2);
 	*tmp = buffer.substr(pos2 + delimiter.size());
 	return sub_string;
 }
@@ -1141,14 +1150,17 @@ std::string GetUncommentedLine(std::string line)
 	std::string zeile = "";
 	int i = 0, j = 0;
 	//----------------------------------------------------------------------
-	i = (int) line.find_first_not_of(" ",0); //Anf�ngliche Leerzeichen �berlesen, i=Position des ersten Nichtleerzeichens im string
-	j = (int) line.find(";",i);           //Nach Kommentarzeichen ; suchen. j = Position des Kommentarzeichens, j=-1 wenn es keines gibt.
-	if((i != -1))
-		zeile = line.substr(i,j - i);  //Ab erstem nicht-Leerzeichen bis Kommentarzeichen rauskopieren in neuen substring, falls Zeile nicht leer ist
-	i = (int) zeile.find_last_not_of(" "); // Suche nach dem letzten Zeichen, dass kein Leerzeichen ist
-	if(i >= 0)
+	i = (int)line.find_first_not_of(
+	    " ", 0); // Anf�ngliche Leerzeichen �berlesen, i=Position des ersten Nichtleerzeichens im string
+	j = (int)line.find(
+	    ";", i); // Nach Kommentarzeichen ; suchen. j = Position des Kommentarzeichens, j=-1 wenn es keines gibt.
+	if ((i != -1))
+		zeile = line.substr(i, j - i); // Ab erstem nicht-Leerzeichen bis Kommentarzeichen rauskopieren in neuen
+	// substring, falls Zeile nicht leer ist
+	i = (int)zeile.find_last_not_of(" "); // Suche nach dem letzten Zeichen, dass kein Leerzeichen ist
+	if (i >= 0)
 	{
-		line = zeile.substr(0,i + 1); // Leerzeichen am Ende rausschneiden
+		line = zeile.substr(0, i + 1); // Leerzeichen am Ende rausschneiden
 		zeile = line;
 	}
 

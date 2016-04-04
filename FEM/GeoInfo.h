@@ -30,7 +30,7 @@ public:
 	 * standard constructor. You need to set the attributes via
 	 * setGeoType() and setGeoObj()!
 	 */
-	GeoInfo ();
+	GeoInfo();
 	/**
 	 * The constructor of a GeoInfo object initializes the
 	 * attributes of the object.
@@ -49,31 +49,31 @@ public:
 	 * @sa enum GeoType
 	 * @return the geo type
 	 */
-	GEOLIB::GEOTYPE getGeoType () const;
+	GEOLIB::GEOTYPE getGeoType() const;
 
 	/**
 	 * get the type as a string for log output
 	 * @return
 	 */
-	std::string getGeoTypeAsString () const;
+	std::string getGeoTypeAsString() const;
 
 	/**
 	 * getter for the pointer to the object
 	 * @return
 	 */
-	const GEOLIB::GeoObject* getGeoObj () const;
+	const GEOLIB::GeoObject* getGeoObj() const;
 
 	/**
 	 * setter for the geo type
 	 * @sa enum GeoType
 	 * @param geo_type type of the geometric entity
 	 */
-	void setGeoType (GEOLIB::GEOTYPE geo_type);
+	void setGeoType(GEOLIB::GEOTYPE geo_type);
 	/**
 	 * setter for the pointer to the GeoObject object
 	 * @param geo_obj an instance of class GeoObject
 	 */
-	void setGeoObj (const GEOLIB::GeoObject* geo_obj);
+	void setGeoObj(const GEOLIB::GeoObject* geo_obj);
 
 protected:
 	/**
@@ -85,4 +85,4 @@ protected:
 	 */
 	const GEOLIB::GeoObject* _geo_obj;
 };
-#endif                                            /* GEOINFO_H_ */
+#endif /* GEOINFO_H_ */

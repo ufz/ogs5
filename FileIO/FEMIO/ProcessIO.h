@@ -39,7 +39,7 @@ public:
 	 * @return false, if the process is of type INVALID_PROCESS, else true
 	 * \sa enum ProcessType for valid values
 	 */
-	static bool readProcessInfo (std::istream& in_str, FiniteElement::ProcessType& pcs_type);
+	static bool readProcessInfo(std::istream& in_str, FiniteElement::ProcessType& pcs_type);
 };
 }
 

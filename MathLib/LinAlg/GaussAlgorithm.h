@@ -46,55 +46,57 @@ public:
 	 * Attention: the given matrix will be destroyed!
 	 * @return a object of type GaussAlgorithm
 	 */
-	GaussAlgorithm(Matrix<FLOAT_TYPE> &A) :
-		_mat (A), _n(_mat.getNRows()), _perm (new size_t [_n])
+	GaussAlgorithm(Matrix<FLOAT_TYPE>& A) : _mat(A), _n(_mat.getNRows()), _perm(new size_t[_n])
 	{
-		size_t k, i, j, nr (_mat.getNRows()), nc(_mat.getNCols());
+		size_t k, i, j, nr(_mat.getNRows()), nc(_mat.getNCols());
 
-		for (k = 0; k < nc; k++) {
+		for (k = 0; k < nc; k++)
+		{
 			// search pivot
 			FLOAT_TYPE t = fabs(_mat(k, k));
 			_perm[k] = k;
-			for (i = k + 1; i < nr; i++) {
-				if (fabs(_mat(i,k)) > t) {
-					t = _mat(i,k);
+			for (i = k + 1; i < nr; i++)
+			{
+				if (fabs(_mat(i, k)) > t)
+				{
+					t = _mat(i, k);
 					_perm[k] = i;
 				}
 			}
 
 			// exchange rows
-			if (_perm[k] != k) {
-				for (j = 0; j < nc; j++) {
-					BASELIB::swap (_mat(_perm[k],j), _mat(k,j));
+			if (_perm[k] != k)
+			{
+				for (j = 0; j < nc; j++)
+				{
+					BASELIB::swap(_mat(_perm[k], j), _mat(k, j));
 				}
 			}
 
 			// eliminate
-			for (i = k + 1; i < nr; i++) {
-				const FLOAT_TYPE l (_mat(i,k) / _mat(k,k));
-				for (j = k; j < nc; j++) {
-					_mat(i,j) -= _mat(k,j) * l;
+			for (i = k + 1; i < nr; i++)
+			{
+				const FLOAT_TYPE l(_mat(i, k) / _mat(k, k));
+				for (j = k; j < nc; j++)
+				{
+					_mat(i, j) -= _mat(k, j) * l;
 				}
-				_mat(i,k) = l;
+				_mat(i, k) = l;
 			}
 		}
 	}
 	/**
 	 * destructor, deletes the permutation
 	 */
-	~GaussAlgorithm()
-	{
-		delete [] _perm;
-	}
-
+	~GaussAlgorithm() { delete[] _perm; }
 	/**
 	 * Method solves the linear system \f$A x = b\f$ (based on the LU factorization)
 	 * using forward solve and backward solve
 	 * @param b at the beginning the right hand side, at the end the solution
 	 */
-	void execute (FLOAT_TYPE* b) const
+	void execute(FLOAT_TYPE* b) const
 	{
-		permuteRHS (b);
+		permuteRHS(b);
 		forwardSolve<FLOAT_TYPE>(_mat, b); // L z = b, b will be overwritten by z
 		backwardSolve<FLOAT_TYPE>(_mat, b); // U x = z, b (z) will be overwritten by x
 	}
@@ -105,10 +107,12 @@ private:
 	 * row permutations of the LU factorization
 	 * @param b the entries of the vector b are permuted
 	 */
-	void permuteRHS (FLOAT_TYPE* b) const
+	void permuteRHS(FLOAT_TYPE* b) const
 	{
-		for (size_t i = 0; i < _n; i++) {
-			if (_perm[i] != i) {
+		for (size_t i = 0; i < _n; i++)
+		{
+			if (_perm[i] != i)
+			{
 				BASELIB::swap(b[i], b[_perm[i]]);
 			}
 		}

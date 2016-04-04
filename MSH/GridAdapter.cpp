@@ -16,45 +16,42 @@
 #include <iostream>
 #include <list>
 
-GridAdapter::GridAdapter(const MeshLib::CFEMesh* mesh) :
-	_name(""), _nodes(new std::vector<GEOLIB::Point*>), _elems(new std::vector<Element*>),
-	_mesh(mesh)
+GridAdapter::GridAdapter(const MeshLib::CFEMesh* mesh)
+    : _name(""), _nodes(new std::vector<GEOLIB::Point*>), _elems(new std::vector<Element*>), _mesh(mesh)
 {
 	if (mesh)
 		this->convertCFEMesh(mesh);
 }
 
-GridAdapter::GridAdapter(const std::string &filename) :
-	_name(""), _nodes(new std::vector<GEOLIB::Point*>), _elems(new std::vector<Element*>),
-	_mesh(NULL)
+GridAdapter::GridAdapter(const std::string& filename)
+    : _name(""), _nodes(new std::vector<GEOLIB::Point*>), _elems(new std::vector<Element*>), _mesh(NULL)
 {
 	readMeshFromFile(filename);
 }
 
-GridAdapter::GridAdapter(const GridAdapter* grid) :
-	_name(""), _nodes(new std::vector<GEOLIB::Point*>), _elems(new std::vector<Element*>),
-	_mesh(NULL)
+GridAdapter::GridAdapter(const GridAdapter* grid)
+    : _name(""), _nodes(new std::vector<GEOLIB::Point*>), _elems(new std::vector<Element*>), _mesh(NULL)
 {
 	if (grid)
 	{
 		this->_name = grid->getName();
 
-		const std::vector<GEOLIB::Point*> *nodes = grid->getNodes();
+		const std::vector<GEOLIB::Point*>* nodes = grid->getNodes();
 		const size_t nNodes(nodes->size());
-		for (size_t i=0; i<nNodes; i++)
+		for (size_t i = 0; i < nNodes; i++)
 		{
-			GEOLIB::Point* pnt (new GEOLIB::Point((*nodes)[i]->getData()));
+			GEOLIB::Point* pnt(new GEOLIB::Point((*nodes)[i]->getData()));
 			this->addNode(pnt);
 		}
 
-		const std::vector<GridAdapter::Element*> *elements = grid->getElements();
+		const std::vector<GridAdapter::Element*>* elements = grid->getElements();
 		const size_t nElems(elements->size());
-		for (size_t i=0; i<nElems; i++)
+		for (size_t i = 0; i < nElems; i++)
 		{
 			GridAdapter::Element* elem = new GridAdapter::Element;
 			elem->material = (*elements)[i]->material;
-			const size_t nElemNodes ((*elements)[i]->nodes.size());
-			for (size_t j=0; j<nElemNodes; j++)
+			const size_t nElemNodes((*elements)[i]->nodes.size());
+			for (size_t j = 0; j < nElemNodes; j++)
 				elem->nodes.push_back((*elements)[i]->nodes[j]);
 			elem->type = (*elements)[i]->type;
 			this->addElement(elem);
@@ -104,7 +101,8 @@ int GridAdapter::convertCFEMesh(const MeshLib::CFEMesh* mesh)
 			_elems->push_back(newElem);
 		}
 		else
-			std::cout << "GridAdapter::convertCFEMesh() - Error recognising element type..." << "\n";
+			std::cout << "GridAdapter::convertCFEMesh() - Error recognising element type..."
+			          << "\n";
 	}
 
 	return 1;
@@ -126,7 +124,7 @@ const MeshLib::CFEMesh* GridAdapter::getCFEMesh()
 
 const MeshLib::CFEMesh* GridAdapter::toCFEMesh() const
 {
-	MeshLib::CFEMesh* mesh (new MeshLib::CFEMesh());
+	MeshLib::CFEMesh* mesh(new MeshLib::CFEMesh());
 	std::cout << "Converting mesh object ... ";
 
 	// set mesh nodes
@@ -150,27 +148,28 @@ const MeshLib::CFEMesh* GridAdapter::toCFEMesh() const
 	}
 
 	mesh->ConstructGrid();
-	std::cout << "done." << "\n";
+	std::cout << "done."
+	          << "\n";
 
 	return mesh;
 }
 
-int GridAdapter::readMeshFromFile(const std::string &filename)
+int GridAdapter::readMeshFromFile(const std::string& filename)
 {
 	std::string line;
 	std::list<std::string>::const_iterator it;
 
-	std::ifstream in( filename.c_str() );
+	std::ifstream in(filename.c_str());
 
 	if (!in.is_open())
 	{
-		std::cout << "GridAdapter::readMeshFromFile() - Could not open file..."  <<
-		"\n";
+		std::cout << "GridAdapter::readMeshFromFile() - Could not open file..."
+		          << "\n";
 		return 0;
 	}
 
 	// try to find the start of the nodes list
-	while ( getline(in, line) )
+	while (getline(in, line))
 	{
 		trim(line);
 		if (line.compare("$NODES") == 0)
@@ -182,7 +181,7 @@ int GridAdapter::readMeshFromFile(const std::string &filename)
 	trim(line);
 
 	// read all nodes
-	while ( getline(in, line) )
+	while (getline(in, line))
 	{
 		trim(line);
 		if (line.compare("$ELEMENTS") == 0)
@@ -205,14 +204,12 @@ int GridAdapter::readMeshFromFile(const std::string &filename)
 				_nodes->push_back(pnt);
 			}
 			else
-				std::cout <<
-				"GridAdapter::readMeshFromFile() - Index error while reading nodes..."
+				std::cout << "GridAdapter::readMeshFromFile() - Index error while reading nodes..."
 				          << "\n";
 		}
 		else
-			std::cout <<
-			"GridAdapter::readMeshFromFile() - Error reading node format..." <<
-			"\n";
+			std::cout << "GridAdapter::readMeshFromFile() - Error reading node format..."
+			          << "\n";
 	}
 
 	if (line.compare("$ELEMENTS") == 0)
@@ -224,7 +221,7 @@ int GridAdapter::readMeshFromFile(const std::string &filename)
 		trim(line);
 
 		// read all elements
-		while ( getline(in, line) )
+		while (getline(in, line))
 		{
 			trim(line);
 			if (line.compare("$LAYER") == 0)
@@ -259,39 +256,36 @@ int GridAdapter::readMeshFromFile(const std::string &filename)
 					}
 					else
 					{
-						std::cout <<
-						"GridAdapter::readMeshFromFile() - Error recognising element type..."
+						std::cout << "GridAdapter::readMeshFromFile() - Error recognising element type..."
 						          << "\n";
 						return 0;
 					}
 				}
 				else
 				{
-					std::cout <<
-					"GridAdapter::readMeshFromFile() - Index error while reading element " << *it << "... "
+					std::cout << "GridAdapter::readMeshFromFile() - Index error while reading element " << *it << "... "
 					          << "\n";
 					return 0;
 				}
 			}
 			else
 			{
-				std::cout <<
-				"GridAdapter::readMeshFromFile() - Error reading element format..."
+				std::cout << "GridAdapter::readMeshFromFile() - Error reading element format..."
 				          << "\n";
 				return 0;
 			}
 		}
 	}
 	else
-		std::cout <<
-		"GridAdapter::readMeshFromFile() - Index error after reading nodes..." << "\n";
+		std::cout << "GridAdapter::readMeshFromFile() - Index error after reading nodes..."
+		          << "\n";
 
 	in.close();
 
 	return 1;
 }
 
-MshElemType::type GridAdapter::getElementType(const std::string &t) const
+MshElemType::type GridAdapter::getElementType(const std::string& t) const
 {
 	if (t.compare("tri") == 0)
 		return MshElemType::TRIANGLE;

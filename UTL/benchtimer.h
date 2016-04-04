@@ -17,7 +17,6 @@
 class BenchTimer
 {
 public:
-
 	BenchTimer();
 	~BenchTimer();
 
@@ -33,7 +32,6 @@ public:
 	double precision_ms();
 
 protected:
-
 #ifndef _WIN32
 	struct timeval start_val;
 	struct timeval end_val;

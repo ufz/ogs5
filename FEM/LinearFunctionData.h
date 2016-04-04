@@ -33,22 +33,18 @@ public:
 
 	   WW 24.08.2011
 	 */
-	LinearFunctionData(std::ifstream &ins, int num_var = -1);
+	LinearFunctionData(std::ifstream& ins, int num_var = -1);
 	~LinearFunctionData();
 
 	double getValue(size_t dom_i, double x, double y, double z) const;
 	double getValue(double x, double y, double z) const;
-	size_t* getSubDomIndex() const
-	{
-		return _subdom_index;
-	}
-
+	size_t* getSubDomIndex() const { return _subdom_index; }
 private:
 	size_t _ndata;
 	size_t* _subdom_index;
 	// Coefficents for linear distribution function
 	// f = a0+b0*x+c0*y+d0*z
-	double* _a0, * _b0, * _c0, * _d0;
+	double *_a0, *_b0, *_c0, *_d0;
 };
 
 #endif /* LINEARFUNCTIONDATA_H_ */

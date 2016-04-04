@@ -30,12 +30,11 @@ class CFEMesh;
 class MeshNodesAlongPolyline
 {
 public:
-	MeshNodesAlongPolyline(GEOLIB::Polyline const* const ply,
-		CFEMesh const* mesh, double search_radius);
-	const std::vector<size_t>& getNodeIDs () const;
-	const GEOLIB::Polyline* getPolyline () const;
-	size_t getNumberOfLinearNodes () const;
-	std::vector<double> const & getDistOfProjNodeFromPlyStart() const;
+	MeshNodesAlongPolyline(GEOLIB::Polyline const* const ply, CFEMesh const* mesh, double search_radius);
+	const std::vector<size_t>& getNodeIDs() const;
+	const GEOLIB::Polyline* getPolyline() const;
+	size_t getNumberOfLinearNodes() const;
+	std::vector<double> const& getDistOfProjNodeFromPlyStart() const;
 
 private:
 	const GEOLIB::Polyline* _ply;

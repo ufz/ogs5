@@ -24,14 +24,15 @@ namespace MathLib
  * @param b at beginning the right hand side vector, at the end the solution vector
  */
 template <typename FLOAT_TYPE>
-void forwardSolve (const Matrix <FLOAT_TYPE> &L, FLOAT_TYPE* b)
+void forwardSolve(const Matrix<FLOAT_TYPE>& L, FLOAT_TYPE* b)
 {
-	size_t m (L.getNRows());
+	size_t m(L.getNRows());
 
-	for (size_t r = 0; r < m; r++) {
+	for (size_t r = 0; r < m; r++)
+	{
 		FLOAT_TYPE t(0.0);
 		for (size_t c = 0; c < r; c++)
-			t += L(r,c) * b[c];
+			t += L(r, c) * b[c];
 		b[r] = b[r] - t;
 	}
 }
@@ -43,15 +44,17 @@ void forwardSolve (const Matrix <FLOAT_TYPE> &L, FLOAT_TYPE* b)
  * @param z at beginning the right hand side, at the end the solution
  */
 template <typename FLOAT_TYPE>
-void backwardSolve (const Matrix <FLOAT_TYPE> &U, FLOAT_TYPE* z)
+void backwardSolve(const Matrix<FLOAT_TYPE>& U, FLOAT_TYPE* z)
 {
-	size_t m (U.getNRows()), n(U.getNCols());
-	for (int r = m - 1; r >= 0; r--) {
+	size_t m(U.getNRows()), n(U.getNCols());
+	for (int r = m - 1; r >= 0; r--)
+	{
 		FLOAT_TYPE t(0.0);
-		for (size_t c = r + 1; c < n; c++) {
-			t += U(r,c) * z[c];
+		for (size_t c = r + 1; c < n; c++)
+		{
+			t += U(r, c) * z[c];
 		}
-		z[r] = (z[r] - t) / U(r,r);
+		z[r] = (z[r] - t) / U(r, r);
 	}
 }
 
@@ -64,15 +67,15 @@ void backwardSolve (const Matrix <FLOAT_TYPE> &U, FLOAT_TYPE* z)
  * @param b the right hand side
  */
 template <typename FLOAT_TYPE>
-void backwardSolve ( Matrix<FLOAT_TYPE> const& mat, FLOAT_TYPE* x, FLOAT_TYPE* b)
+void backwardSolve(Matrix<FLOAT_TYPE> const& mat, FLOAT_TYPE* x, FLOAT_TYPE* b)
 {
-	size_t n_cols (mat.getNCols());
+	size_t n_cols(mat.getNCols());
 	for (int r = (n_cols - 1); r >= 0; r--)
 	{
 		FLOAT_TYPE t(0.0);
 
 		for (size_t c = r + 1; c < n_cols; c++)
-			t += mat(r,c) * b[c];
+			t += mat(r, c) * b[c];
 		x[r] = (b[r] - t) / mat(r, r);
 	}
 }

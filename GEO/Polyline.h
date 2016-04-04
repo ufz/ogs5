@@ -28,7 +28,8 @@ namespace GEOLIB
 class Location
 {
 public:
-	enum type {
+	enum type
+	{
 		LEFT,
 		RIGHT,
 		BEYOND,
@@ -59,12 +60,11 @@ public:
 	 * Copy constructor
 	 * @param ply Polyline
 	 */
-	Polyline (const Polyline& ply);
+	Polyline(const Polyline& ply);
 
 	virtual ~Polyline() {}
-
 	/** write the points to the stream */
-	void write(std::ostream &os) const;
+	void write(std::ostream& os) const;
 
 	/**
 	 * Adds an id of a point at the end of the polyline. The id have to be inside
@@ -90,8 +90,7 @@ public:
 
 	/// Constructs one polyline from a vector of connected polylines.
 	/// All polylines in this vector need to reference the same point vector.
-	static Polyline* constructPolylineFromSegments(const std::vector<Polyline*> &ply_vec,
-	                                               double prox = 0.0);
+	static Polyline* constructPolylineFromSegments(const std::vector<Polyline*>& ply_vec, double prox = 0.0);
 
 	/**
 	 * returns the number of points,
@@ -132,22 +131,23 @@ public:
 	 * */
 	const Point* getPoint(size_t i) const;
 
-	std::vector<Point*> const& getPointsVec () const;
+	std::vector<Point*> const& getPointsVec() const;
 
 	/**
 	 * returns the length of the polyline until the k-th line segment
 	 * @param k the k-th line segment
 	 * @return the length of the polyline until the k-th line segment
 	 */
-	double getLength (size_t k) const;
+	double getLength(size_t k) const;
 
 	/**
 	 * get the complete length vector
 	 * @return the length vector of the polyline
 	 */
-	const std::vector<double>& getLengthVec () const;
+	const std::vector<double>& getLengthVec() const;
 
 	friend bool operator==(Polyline const& lhs, Polyline const& rhs);
+
 protected:
 	/**
 	 * 2D method - ignores z coordinate. It calculates the location
@@ -158,15 +158,12 @@ protected:
 	 * @param pnt the point
 	 * @return a value of enum LOCATION
 	 */
-	Location::type getLocationOfPoint (size_t k, GEOLIB::Point const & pnt) const;
+	Location::type getLocationOfPoint(size_t k, GEOLIB::Point const& pnt) const;
 
-	static bool pointsAreIdentical(const std::vector<Point*> &pnt_vec,
-	                               size_t i,
-	                               size_t j,
-	                               double prox);
+	static bool pointsAreIdentical(const std::vector<Point*>& pnt_vec, size_t i, size_t j, double prox);
 
 	/** a reference to the vector of pointers to the geometric points */
-	const std::vector<Point*> &_ply_pnts;
+	const std::vector<Point*>& _ply_pnts;
 	/** position of pointers to the geometric points */
 	std::vector<size_t> _ply_pnt_ids;
 	/**
@@ -176,11 +173,11 @@ protected:
 };
 
 /** overload the output operator for class Polyline */
-std::ostream& operator<< (std::ostream &os, Polyline const& pl);
+std::ostream& operator<<(std::ostream& os, Polyline const& pl);
 
-bool containsEdge (const Polyline& ply, size_t id0, size_t id1);
+bool containsEdge(const Polyline& ply, size_t id0, size_t id1);
 
-bool isLineSegmentIntersecting (const Polyline& ply, GEOLIB::Point const& s0, GEOLIB::Point const& s1);
+bool isLineSegmentIntersecting(const Polyline& ply, GEOLIB::Point const& s0, GEOLIB::Point const& s1);
 
 /**
  * comparison operator

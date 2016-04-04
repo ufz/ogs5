@@ -20,7 +20,7 @@
 
 namespace FileIO
 {
-//CBoundaryCondition* BoundaryConditionIO::read(std::istream& in_str,
+// CBoundaryCondition* BoundaryConditionIO::read(std::istream& in_str,
 //		GEOLIB::GEOObjects const& geo_obj, std::string const& unique_fname)
 //{
 //	ProcessType pcs_type (INVALID_PROCESS);
@@ -205,27 +205,29 @@ namespace FileIO
 //	return NULL;
 //}
 
-void BoundaryConditionIO::write(std::ostream& out,
-                                CBoundaryCondition const& bc)
+void BoundaryConditionIO::write(std::ostream& out, CBoundaryCondition const& bc)
 {
 	// keyword
-	out << "#BOUNDARY_CONDITION" << "\n";
-
-	// process and primary variable
-	out << "\t$PCS_TYPE" << "\n";
-	out << "\t\t" << convertProcessTypeToString(bc.getProcessType())
+	out << "#BOUNDARY_CONDITION"
 	    << "\n";
 
-	out << "\t$PRIMARY_VARIABLE" << "\n";
-	out << "\t\t" << convertPrimaryVariableToString(
-	        bc.getProcessPrimaryVariable()) << "\n";
+	// process and primary variable
+	out << "\t$PCS_TYPE"
+	    << "\n";
+	out << "\t\t" << convertProcessTypeToString(bc.getProcessType()) << "\n";
+
+	out << "\t$PRIMARY_VARIABLE"
+	    << "\n";
+	out << "\t\t" << convertPrimaryVariableToString(bc.getProcessPrimaryVariable()) << "\n";
 
 	// geometry
-	out << "\t$GEO_TYPE" << "\n";
+	out << "\t$GEO_TYPE"
+	    << "\n";
 	out << "\t" << bc.getGeoTypeAsString() << " " << bc.geo_name << "\n";
 
 	// distribution type
-	out << "\t$DIS_TYPE" << "\n";
+	out << "\t$DIS_TYPE"
+	    << "\n";
 	out << "\t\t" << convertDisTypeToString(bc.getProcessDistributionType());
 	if (bc.getProcessDistributionType() == FiniteElement::CONSTANT)
 		out << "\t\t" << bc.geo_node_value << "\n";
@@ -233,8 +235,7 @@ void BoundaryConditionIO::write(std::ostream& out,
 	{
 		out << "\t\t" << bc._PointsHaveDistribedBC.size() << "\n";
 		for (size_t i = 0; i < bc._PointsHaveDistribedBC.size(); i++)
-			out << "\t\t" << bc._PointsHaveDistribedBC[i] << "  "
-			    << bc._DistribedBC[i] << "\n";
+			out << "\t\t" << bc._PointsHaveDistribedBC[i] << "  " << bc._DistribedBC[i] << "\n";
 	}
 	else
 		out << "\n";
@@ -242,7 +243,8 @@ void BoundaryConditionIO::write(std::ostream& out,
 	// function name
 	if (!bc.fct_name.empty())
 	{
-		out << "\t$FCT_TYPE" << "\n";
+		out << "\t$FCT_TYPE"
+		    << "\n";
 		out << "\t\t" << bc.fct_name << "\n";
 	}
 }

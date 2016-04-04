@@ -31,7 +31,7 @@ public:
 	/**
 	 * construction of object, initialization the axis aligned bounding box
 	 * */
-	AABB ();
+	AABB();
 
 	/**
 	 * copy constructor.
@@ -43,45 +43,37 @@ public:
 	/**
 	 * construction of object using vector of points
 	 * */
-	AABB ( const std::vector<GEOLIB::Point*>* points );
+	AABB(const std::vector<GEOLIB::Point*>* points);
 
-	void update (GEOLIB::Point const & pnt);
+	void update(GEOLIB::Point const& pnt);
 	/**
 	 * update axis aligned bounding box
 	 */
-	void update (double x, double y, double z);
+	void update(double x, double y, double z);
 
 	/**
 	 * update axis aligned bounding box
 	 */
-	void update (const double* pnt)
-	{
-		update (pnt[0], pnt[1], pnt[2]);
-	}
-
+	void update(const double* pnt) { update(pnt[0], pnt[1], pnt[2]); }
 	/**
 	 * check if point is in the axis aligned bounding box
 	 * (employing containsPoint (double x, double y, double z))
 	 */
-	bool containsPoint (GEOLIB::Point const & pnt,
-	                    double eps = std::numeric_limits<double>::epsilon()) const;
+	bool containsPoint(GEOLIB::Point const& pnt, double eps = std::numeric_limits<double>::epsilon()) const;
 
 	/**
 	 * wrapper for GEOLIB::Point
 	 */
-	bool containsPoint (const double* pnt, double eps =
-	                            std::numeric_limits<double>::epsilon()) const;
+	bool containsPoint(const double* pnt, double eps = std::numeric_limits<double>::epsilon()) const;
 
 	/**
 	 * check if point described by its coordinates x, y, z is in
 	 * the axis aligned bounding box
 	 */
-	bool containsPoint(double x, double y, double z, double eps =
-					std::numeric_limits<double>::epsilon()) const;
+	bool containsPoint(double x, double y, double z, double eps = std::numeric_limits<double>::epsilon()) const;
 
-	GEOLIB::Point const& getMinPoint () const { return _min_pnt; }
-	GEOLIB::Point const& getMaxPoint () const { return _max_pnt; }
-
+	GEOLIB::Point const& getMinPoint() const { return _min_pnt; }
+	GEOLIB::Point const& getMaxPoint() const { return _max_pnt; }
 protected:
 	GEOLIB::Point _min_pnt;
 	GEOLIB::Point _max_pnt;

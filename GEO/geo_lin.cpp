@@ -95,7 +95,7 @@ CGLLine* CGLLine::GEOGetLine(long number)
 CGLLine* CGLLine::Exists()
 {
 	long i = 0;
-	long node1,node2,node3,node4;
+	long node1, node2, node3, node4;
 	long line_vector_length = (long)gli_lines_vector.size();
 
 	for (i = 0; i < line_vector_length; i++)
@@ -104,7 +104,7 @@ CGLLine* CGLLine::Exists()
 		node2 = gli_lines_vector[i]->point2;
 		node3 = point1;
 		node4 = point2;
-		if ( (node1 == node3) && (node2 == node4) )
+		if ((node1 == node3) && (node2 == node4))
 		{
 			gli_line_id = gli_lines_vector[i]->gli_line_id;
 			m_point1 = gli_lines_vector[i]->m_point1;
@@ -114,8 +114,8 @@ CGLLine* CGLLine::Exists()
 			orientation = 1;
 			return gli_lines_vector[i];
 		}
-		//if ( ((node1==point1)&&(node2==point2))||((node2==point1)&&(node1==point2)) )
-		//return  gli_lines_vector[i];
+		// if ( ((node1==point1)&&(node2==point2))||((node2==point1)&&(node1==point2)) )
+		// return  gli_lines_vector[i];
 	}
 	return NULL;
 }
@@ -135,12 +135,10 @@ CGLLine* CGLLine::CheckLineOutPut()
 	for (int j = 0; j < Size; j++)
 	{
 		CGLn = gli_lines_vector[j];
-		if(CGLn->marked) // Already being output
+		if (CGLn->marked) // Already being output
 
-			if(    ((m_point1->PointDis(CGLn->m_point1) < DistTol)
-			        &&  (m_point2->PointDis(CGLn->m_point2) < DistTol))
-			       || ((m_point1->PointDis(CGLn->m_point2) < DistTol)
-			           && (m_point2->PointDis(CGLn->m_point1) < DistTol)))
+			if (((m_point1->PointDis(CGLn->m_point1) < DistTol) && (m_point2->PointDis(CGLn->m_point2) < DistTol))
+			    || ((m_point1->PointDis(CGLn->m_point2) < DistTol) && (m_point2->PointDis(CGLn->m_point1) < DistTol)))
 				return CGLn;
 	}
 	return NULL;

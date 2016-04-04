@@ -14,8 +14,8 @@
 /* Andere oeffentlich benutzte Module */
 
 /* Deklarationen */
-extern void DisplayStartMsg ( void );
+extern void DisplayStartMsg(void);
 /* Gibt Eroeffnungsbildschirm aus */
-extern void DisplayEndMsg ( void );
+extern void DisplayEndMsg(void);
 /* Schreibt Laufzeitmeldung auf Standardausgabe */
 #endif

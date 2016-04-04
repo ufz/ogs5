@@ -43,11 +43,11 @@ extern void CloseMsgFile(FILE*);
    01/2002     MK         Umleitung in MSG-Datei
  */
 /**************************************************************************/
-void DisplayMsg ( const char* s )
+void DisplayMsg(const char* s)
 {
 	FILE* f;
 	f = OpenMsgFile();
-	fprintf(f,"%s",s);
+	fprintf(f, "%s", s);
 	CloseMsgFile(f);
 }
 
@@ -59,10 +59,10 @@ void DisplayMsg ( const char* s )
 void ScreenMessage(const char* message)
 {
 #ifdef USE_MPI
-	if(myrank > 0)
+	if (myrank > 0)
 		return;
 #endif
-	printf("%s",message);
+	printf("%s", message);
 }
 
 /**************************************************************************/
@@ -83,11 +83,11 @@ void ScreenMessage(const char* message)
    01/2002     MK         Umleitung in MSG-Datei
  */
 /**************************************************************************/
-void DisplayMsgLn ( const char* s )
+void DisplayMsgLn(const char* s)
 {
 	FILE* f;
 	f = OpenMsgFile();
-	fprintf(f,"%s\n            ",s);
+	fprintf(f, "%s\n            ", s);
 	fflush(stdout);
 	CloseMsgFile(f);
 }
@@ -110,11 +110,11 @@ void DisplayMsgLn ( const char* s )
    01/2002     MK         Umleitung in MSG-Datei
  */
 /**************************************************************************/
-void DisplayMsgCR ( const char* s )
+void DisplayMsgCR(const char* s)
 {
 	FILE* f;
 	f = OpenMsgFile();
-	fprintf(f,"%s\r            ",s);
+	fprintf(f, "%s\r            ", s);
 	CloseMsgFile(f);
 }
 
@@ -140,15 +140,15 @@ void DisplayMsgCR ( const char* s )
    01/2002     MK         Umleitung in MSG-Datei
  */
 /**************************************************************************/
-void DisplayDouble ( double x, int i, int j )
+void DisplayDouble(double x, int i, int j)
 {
 	FILE* f;
 	f = OpenMsgFile();
 	if ((i == 0) && (j == 0))
 		/* printf("%f",x); */
-		fprintf(f,"%g",x);
+		fprintf(f, "%g", x);
 	else
-		fprintf(f,"% *.*g",i,j,x);
+		fprintf(f, "% *.*g", i, j, x);
 	CloseMsgFile(f);
 }
 
@@ -170,11 +170,11 @@ void DisplayDouble ( double x, int i, int j )
    01/2002     MK         Umleitung in MSG-Datei
  */
 /**************************************************************************/
-void DisplayLong ( long x )
+void DisplayLong(long x)
 {
 	FILE* f;
 	f = OpenMsgFile();
-	fprintf(f,"%ld",x);
+	fprintf(f, "%ld", x);
 	CloseMsgFile(f);
 }
 
@@ -198,7 +198,7 @@ void DisplayLong ( long x )
    01/2002     MK               Umleitung in MSG-Datei
  */
 /**************************************************************************/
-void DisplayDoubleVector ( double* vec, long grad, char* text )
+void DisplayDoubleVector(double* vec, long grad, char* text)
 {
 	FILE* f;
 	long i;
@@ -207,8 +207,8 @@ void DisplayDoubleVector ( double* vec, long grad, char* text )
 	f = OpenMsgFile();
 	for (i = 0; i < grad; i++)
 	{
-		fprintf(f,"| %+e |",vec[i]);
-		fprintf(f,"%s\n            ","");
+		fprintf(f, "| %+e |", vec[i]);
+		fprintf(f, "%s\n            ", "");
 		fflush(stdout);
 	}
 	CloseMsgFile(f);
@@ -232,11 +232,11 @@ void DisplayDoubleVector ( double* vec, long grad, char* text )
    01/2002     MK         Umleitung in MSG-Datei
  */
 /**************************************************************************/
-void DisplayErrorMsg ( const char* s )
+void DisplayErrorMsg(const char* s)
 {
 	FILE* f;
 	f = OpenMsgFile();
-	fprintf(f,"\n!!!!!!!!  %s\n\n            ",s);
+	fprintf(f, "\n!!!!!!!!  %s\n\n            ", s);
 	CloseMsgFile(f);
 }
 
@@ -258,10 +258,10 @@ void DisplayErrorMsg ( const char* s )
    01/2002     MK         Umleitung in MSG-Datei
  */
 /**************************************************************************/
-void DisplayTimeMsg ( const char* s, double d )
+void DisplayTimeMsg(const char* s, double d)
 {
 	FILE* f;
 	f = OpenMsgFile();
-	fprintf(f,"\n            %s%20ld s\n\n            ",s,((long) d));
+	fprintf(f, "\n            %s%20ld s\n\n            ", s, ((long)d));
 	CloseMsgFile(f);
 }

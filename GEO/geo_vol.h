@@ -32,9 +32,9 @@ public:
 	int display_mode;
 	int data_type;
 	Surface* m_sfc;
-	std::vector<Surface*>surface_vector; //CC
-	//list<string> surface_name_list;// todo CC
-	int layer; //OK
+	std::vector<Surface*> surface_vector; // CC
+	// list<string> surface_name_list;// todo CC
+	int layer; // OK
 	// MAT
 	int mat_group;
 	std::string mat_group_name;
@@ -54,25 +54,25 @@ public:
 	void AddSurface(Surface* P_Surface);
 	// I/O
 	std::ios::pos_type Read(std::ifstream*);
-	void Write(std::string); //CC
+	void Write(std::string); // CC
 	// GEO
-	bool PointInVolume(CGLPoint*,int);
+	bool PointInVolume(CGLPoint*, int);
 	// kg44 needed for domain decomposition with PETSC
-	void SetConditionTypeIC(const bool value) { for_ic=value;} ;
-	bool GetConditionTypeIC() const {return for_ic;} ;
+	void SetConditionTypeIC(const bool value) { for_ic = value; };
+	bool GetConditionTypeIC() const { return for_ic; };
 	//----------------------------------------------------------------------
 };
 
-extern std::vector<CGLVolume*> volume_vector; //CC
+extern std::vector<CGLVolume*> volume_vector; // CC
 extern std::vector<CGLVolume*> GEOGetVolumes(void);
 // I/O
 extern void GEOReadVolumes(std::string file_name_path_base);
-extern void GEOWriteVolumes(std::string); //CC
+extern void GEOWriteVolumes(std::string); // CC
 void GEOWriteVOL(FILE*);
-//Access
-extern CGLVolume* GEOGetVOL(std::string);  //CC//OK
-extern CGLVolume* GetVolume(long nsel);   //CC
-//Remove
+// Access
+extern CGLVolume* GEOGetVOL(std::string); // CC//OK
+extern CGLVolume* GetVolume(long nsel); // CC
+// Remove
 extern void GEORemoveAllVolumes();
-extern void GEORemoveVOL(CGLVolume*); //OK
+extern void GEORemoveVOL(CGLVolume*); // OK
 #endif

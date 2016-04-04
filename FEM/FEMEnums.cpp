@@ -16,151 +16,147 @@
 
 namespace FiniteElement
 {
-ProcessType convertProcessType ( const std::string& pcs_type_string)
+ProcessType convertProcessType(const std::string& pcs_type_string)
 {
-	if (pcs_type_string.compare ("LIQUID_FLOW") == 0)
+	if (pcs_type_string.compare("LIQUID_FLOW") == 0)
 		return LIQUID_FLOW;
-	if (pcs_type_string.compare ("FLUID_FLOW") == 0)
+	if (pcs_type_string.compare("FLUID_FLOW") == 0)
 		return FLUID_FLOW;
-	if (pcs_type_string.compare ("TWO_PHASE_FLOW") == 0)
+	if (pcs_type_string.compare("TWO_PHASE_FLOW") == 0)
 		return TWO_PHASE_FLOW;
-	if (pcs_type_string.compare ("RICHARDS_FLOW") == 0)
+	if (pcs_type_string.compare("RICHARDS_FLOW") == 0)
 		return RICHARDS_FLOW;
-	if (pcs_type_string.compare ("OVERLAND_FLOW") == 0)
+	if (pcs_type_string.compare("OVERLAND_FLOW") == 0)
 		return OVERLAND_FLOW;
-	if (pcs_type_string.compare ("GROUNDWATER_FLOW") == 0)
+	if (pcs_type_string.compare("GROUNDWATER_FLOW") == 0)
 		return GROUNDWATER_FLOW;
-	if (pcs_type_string.compare ("HEAT_TRANSPORT") == 0)
+	if (pcs_type_string.compare("HEAT_TRANSPORT") == 0)
 		return HEAT_TRANSPORT;
-	if (pcs_type_string.compare ("DEFORMATION") == 0)
+	if (pcs_type_string.compare("DEFORMATION") == 0)
 		return DEFORMATION;
-	if (pcs_type_string.compare ("DEFORMATION_FLOW") == 0)
+	if (pcs_type_string.compare("DEFORMATION_FLOW") == 0)
 		return DEFORMATION_FLOW;
-	if (pcs_type_string.compare ("DEFORMATION_DYNAMIC") == 0)
+	if (pcs_type_string.compare("DEFORMATION_DYNAMIC") == 0)
 		return DEFORMATION_DYNAMIC;
-	if (pcs_type_string.compare ("MASS_TRANSPORT") == 0)
+	if (pcs_type_string.compare("MASS_TRANSPORT") == 0)
 		return MASS_TRANSPORT;
-	if (pcs_type_string.compare ("MULTI_PHASE_FLOW") == 0)
+	if (pcs_type_string.compare("MULTI_PHASE_FLOW") == 0)
 		return MULTI_PHASE_FLOW;
-	if (pcs_type_string.compare ("DEFORMATION_H2") == 0)
+	if (pcs_type_string.compare("DEFORMATION_H2") == 0)
 		return DEFORMATION_H2;
-	if (pcs_type_string.compare ("AIR_FLOW") == 0)
+	if (pcs_type_string.compare("AIR_FLOW") == 0)
 		return AIR_FLOW;
-	if (pcs_type_string.compare ("FLUID_MOMENTUM") == 0)
+	if (pcs_type_string.compare("FLUID_MOMENTUM") == 0)
 		return FLUID_MOMENTUM;
-	if (pcs_type_string.compare ("RANDOM_WALK") == 0)
+	if (pcs_type_string.compare("RANDOM_WALK") == 0)
 		return RANDOM_WALK;
-	if (pcs_type_string.compare ("FLUX") == 0)
+	if (pcs_type_string.compare("FLUX") == 0)
 		return FLUX;
-	if (pcs_type_string.compare ("PS_GLOBAL") == 0)
+	if (pcs_type_string.compare("PS_GLOBAL") == 0)
 		return PS_GLOBAL;
-	if (pcs_type_string.compare ("NO_PCS") == 0)
+	if (pcs_type_string.compare("NO_PCS") == 0)
 		return NO_PCS;
-	if (pcs_type_string.compare ("MULTI_COMPONENTIAL_FLOW") == 0)
+	if (pcs_type_string.compare("MULTI_COMPONENTIAL_FLOW") == 0)
 		return MULTI_COMPONENTIAL_FLOW;
-	if (pcs_type_string.compare ("TNEQ") == 0)
+	if (pcs_type_string.compare("TNEQ") == 0)
 		return TNEQ;
-	if (pcs_type_string.compare ("TES") == 0)
+	if (pcs_type_string.compare("TES") == 0)
 		return TES;
-	//else
-		//std::cout << "WARNING in convertProcessType: process type #" << pcs_type_string <<
-		//"# unknown" << "\n";
+	// else
+	// std::cout << "WARNING in convertProcessType: process type #" << pcs_type_string <<
+	//"# unknown" << "\n";
 	return INVALID_PROCESS;
 }
 
-
-std::string convertProcessTypeToString ( ProcessType pcs_type )
+std::string convertProcessTypeToString(ProcessType pcs_type)
 {
 	switch (pcs_type)
 	{
-	case LIQUID_FLOW:
-		return "LIQUID_FLOW";
-	case FLUID_FLOW:
-		return "FLUID_FLOW";
-	case TWO_PHASE_FLOW:
-		return "TWO_PHASE_FLOW";
-	case RICHARDS_FLOW:
-		return "RICHARDS_FLOW";
-	case OVERLAND_FLOW:
-		return "OVERLAND_FLOW";
-	case GROUNDWATER_FLOW:
-		return "GROUNDWATER_FLOW";
-	case HEAT_TRANSPORT:
-		return "HEAT_TRANSPORT";
-	case DEFORMATION:
-		return "DEFORMATION";
-	case DEFORMATION_FLOW:
-		return "DEFORMATION_FLOW";
-	case DEFORMATION_DYNAMIC:
-		return "DEFORMATION_DYNAMIC";
-	case MASS_TRANSPORT:
-		return "MASS_TRANSPORT";
-	case MULTI_PHASE_FLOW:
-		return "MULTI_PHASE_FLOW";
-	case DEFORMATION_H2:
-		return "DEFORMATION_H2";
-	case AIR_FLOW:
-		return "AIR_FLOW";
-	case FLUID_MOMENTUM:
-		return "FLUID_MOMENTUM";
-	case RANDOM_WALK:
-		return "RANDOM_WALK";
-	case FLUX:
-		return "FLUX";
-	case PS_GLOBAL:
-		return "PS_GLOBAL";
-	case MULTI_COMPONENTIAL_FLOW:
-		return "MULTI_COMPONENTIAL_FLOW";
-	case TNEQ:
-		return "TNEQ";
-	case TES:
-		return "TES";
-	case NO_PCS:
-		return "NO_PCS";
-	default:
-		return "INVALID_PROCESS";
+		case LIQUID_FLOW:
+			return "LIQUID_FLOW";
+		case FLUID_FLOW:
+			return "FLUID_FLOW";
+		case TWO_PHASE_FLOW:
+			return "TWO_PHASE_FLOW";
+		case RICHARDS_FLOW:
+			return "RICHARDS_FLOW";
+		case OVERLAND_FLOW:
+			return "OVERLAND_FLOW";
+		case GROUNDWATER_FLOW:
+			return "GROUNDWATER_FLOW";
+		case HEAT_TRANSPORT:
+			return "HEAT_TRANSPORT";
+		case DEFORMATION:
+			return "DEFORMATION";
+		case DEFORMATION_FLOW:
+			return "DEFORMATION_FLOW";
+		case DEFORMATION_DYNAMIC:
+			return "DEFORMATION_DYNAMIC";
+		case MASS_TRANSPORT:
+			return "MASS_TRANSPORT";
+		case MULTI_PHASE_FLOW:
+			return "MULTI_PHASE_FLOW";
+		case DEFORMATION_H2:
+			return "DEFORMATION_H2";
+		case AIR_FLOW:
+			return "AIR_FLOW";
+		case FLUID_MOMENTUM:
+			return "FLUID_MOMENTUM";
+		case RANDOM_WALK:
+			return "RANDOM_WALK";
+		case FLUX:
+			return "FLUX";
+		case PS_GLOBAL:
+			return "PS_GLOBAL";
+		case MULTI_COMPONENTIAL_FLOW:
+			return "MULTI_COMPONENTIAL_FLOW";
+		case TNEQ:
+			return "TNEQ";
+		case TES:
+			return "TES";
+		case NO_PCS:
+			return "NO_PCS";
+		default:
+			return "INVALID_PROCESS";
 	}
 }
 
-
-bool isFlowProcess (ProcessType pcs_type)
+bool isFlowProcess(ProcessType pcs_type)
 {
 	switch (pcs_type)
 	{
-	case LIQUID_FLOW:
-	case FLUID_FLOW:
-	case RICHARDS_FLOW:
-	case GROUNDWATER_FLOW:
-	case PS_GLOBAL:
-	case MULTI_PHASE_FLOW:
-	case DEFORMATION_FLOW:
-	case DEFORMATION_H2:
-	case TWO_PHASE_FLOW:
-	case OVERLAND_FLOW:
-	case AIR_FLOW:
-	case MULTI_COMPONENTIAL_FLOW:
-	case TNEQ:
-	case TES:
-		return true;
-	default:
-		return false;
+		case LIQUID_FLOW:
+		case FLUID_FLOW:
+		case RICHARDS_FLOW:
+		case GROUNDWATER_FLOW:
+		case PS_GLOBAL:
+		case MULTI_PHASE_FLOW:
+		case DEFORMATION_FLOW:
+		case DEFORMATION_H2:
+		case TWO_PHASE_FLOW:
+		case OVERLAND_FLOW:
+		case AIR_FLOW:
+		case MULTI_COMPONENTIAL_FLOW:
+		case TNEQ:
+		case TES:
+			return true;
+		default:
+			return false;
 	}
 }
 
-bool isMultiFlowProcess (ProcessType pcs_type)
+bool isMultiFlowProcess(ProcessType pcs_type)
 {
-	if (pcs_type == PS_GLOBAL ||
-		pcs_type == MULTI_PHASE_FLOW ||
-		pcs_type == TWO_PHASE_FLOW ||
-		pcs_type == DEFORMATION_H2)
+	if (pcs_type == PS_GLOBAL || pcs_type == MULTI_PHASE_FLOW || pcs_type == TWO_PHASE_FLOW
+	    || pcs_type == DEFORMATION_H2)
 		return true;
 	return false;
 }
 
-bool isDeformationProcess (ProcessType pcs_type)
+bool isDeformationProcess(ProcessType pcs_type)
 {
-	if (pcs_type == DEFORMATION || pcs_type == DEFORMATION_H2 ||
-	    pcs_type == DEFORMATION_FLOW || pcs_type == DEFORMATION_DYNAMIC)
+	if (pcs_type == DEFORMATION || pcs_type == DEFORMATION_H2 || pcs_type == DEFORMATION_FLOW
+	    || pcs_type == DEFORMATION_DYNAMIC)
 		return true;
 	return false;
 }
@@ -172,101 +168,101 @@ const std::list<std::string> getAllProcessNames()
 
 	while (count != PROCESS_END)
 	{
-		enum_names.push_back( convertProcessTypeToString(static_cast<ProcessType>(count++)) );
+		enum_names.push_back(convertProcessTypeToString(static_cast<ProcessType>(count++)));
 	}
 	return enum_names;
 }
-PrimaryVariable convertPrimaryVariable ( const std::string& pcs_pv_string )
+PrimaryVariable convertPrimaryVariable(const std::string& pcs_pv_string)
 {
-	if (pcs_pv_string.compare ("PRESSURE1") == 0)
+	if (pcs_pv_string.compare("PRESSURE1") == 0)
 		return PRESSURE;
-	if (pcs_pv_string.compare ("PRESSURE2") == 0)
+	if (pcs_pv_string.compare("PRESSURE2") == 0)
 		return PRESSURE2;
-	if (pcs_pv_string.compare ("PRESSURE_RATE1") == 0)
+	if (pcs_pv_string.compare("PRESSURE_RATE1") == 0)
 		return PRESSURE_RATE1;
-	if (pcs_pv_string.compare ("SATURATION1") == 0)
+	if (pcs_pv_string.compare("SATURATION1") == 0)
 		return SATURATION;
-	if (pcs_pv_string.compare ("SATURATION2") == 0)
+	if (pcs_pv_string.compare("SATURATION2") == 0)
 		return SATURATION2;
-	if (pcs_pv_string.compare ("TEMPERATURE1") == 0)
+	if (pcs_pv_string.compare("TEMPERATURE1") == 0)
 		return TEMPERATURE;
-	if (pcs_pv_string.compare ("TEMPERATURE2") == 0)
+	if (pcs_pv_string.compare("TEMPERATURE2") == 0)
 		return TEMPERATURE2;
-	if (pcs_pv_string.compare ("DISPLACEMENT_X1") == 0)
+	if (pcs_pv_string.compare("DISPLACEMENT_X1") == 0)
 		return DISPLACEMENT_X;
-	if (pcs_pv_string.compare ("DISPLACEMENT_Y1") == 0)
+	if (pcs_pv_string.compare("DISPLACEMENT_Y1") == 0)
 		return DISPLACEMENT_Y;
-	if (pcs_pv_string.compare ("DISPLACEMENT_Z1") == 0)
+	if (pcs_pv_string.compare("DISPLACEMENT_Z1") == 0)
 		return DISPLACEMENT_Z;
-	if (pcs_pv_string.compare ("DISPLACEMENT_N") == 0)
+	if (pcs_pv_string.compare("DISPLACEMENT_N") == 0)
 		return DISPLACEMENT_N;
-	if (pcs_pv_string.compare ("CONCENTRATION1") == 0)
+	if (pcs_pv_string.compare("CONCENTRATION1") == 0)
 		return CONCENTRATION;
-	if (pcs_pv_string.compare ("HEAD") == 0)
+	if (pcs_pv_string.compare("HEAD") == 0)
 		return HEAD;
-	if (pcs_pv_string.compare ("VELOCITY_DM_X") == 0)
+	if (pcs_pv_string.compare("VELOCITY_DM_X") == 0)
 		return VELOCITY_DM_X;
-	if (pcs_pv_string.compare ("VELOCITY_DM_Y") == 0)
+	if (pcs_pv_string.compare("VELOCITY_DM_Y") == 0)
 		return VELOCITY_DM_Y;
-	if (pcs_pv_string.compare ("VELOCITY_DM_Z") == 0)
+	if (pcs_pv_string.compare("VELOCITY_DM_Z") == 0)
 		return VELOCITY_DM_Z;
-	if (pcs_pv_string.compare ("VELOCITY1_X") == 0)
+	if (pcs_pv_string.compare("VELOCITY1_X") == 0)
 		return VELOCITY1_X;
-	if (pcs_pv_string.compare ("VELOCITY1_Y") == 0)
+	if (pcs_pv_string.compare("VELOCITY1_Y") == 0)
 		return VELOCITY1_Y;
-	if (pcs_pv_string.compare ("VELOCITY1_Z") == 0)
+	if (pcs_pv_string.compare("VELOCITY1_Z") == 0)
 		return VELOCITY1_Z;
-	if (pcs_pv_string.compare ("STRESS_XX") == 0)
+	if (pcs_pv_string.compare("STRESS_XX") == 0)
 		return STRESS_XX;
-	if (pcs_pv_string.compare ("STRESS_XY") == 0)
+	if (pcs_pv_string.compare("STRESS_XY") == 0)
 		return STRESS_XY;
-	if (pcs_pv_string.compare ("STRESS_XZ") == 0)
+	if (pcs_pv_string.compare("STRESS_XZ") == 0)
 		return STRESS_XZ;
-	if (pcs_pv_string.compare ("STRESS_YY") == 0)
+	if (pcs_pv_string.compare("STRESS_YY") == 0)
 		return STRESS_YY;
-	if (pcs_pv_string.compare ("STRESS_YZ") == 0)
+	if (pcs_pv_string.compare("STRESS_YZ") == 0)
 		return STRESS_YZ;
-	if (pcs_pv_string.compare ("STRESS_ZZ") == 0)
+	if (pcs_pv_string.compare("STRESS_ZZ") == 0)
 		return STRESS_ZZ;
-	if (pcs_pv_string.compare ("ACCELERATION_X1") == 0)
+	if (pcs_pv_string.compare("ACCELERATION_X1") == 0)
 		return ACCELERATION_X1;
-	if (pcs_pv_string.compare ("ACCELERATION_Y1") == 0)
+	if (pcs_pv_string.compare("ACCELERATION_Y1") == 0)
 		return ACCELERATION_Y1;
-	if (pcs_pv_string.compare ("ACCELERATION_Z1") == 0)
+	if (pcs_pv_string.compare("ACCELERATION_Z1") == 0)
 		return ACCELERATION_Z1;
-	if (pcs_pv_string.compare ("EXCAVATION") == 0)
+	if (pcs_pv_string.compare("EXCAVATION") == 0)
 		return EXCAVATION;
-	if (pcs_pv_string.compare ("STRAIN_XX") == 0)
+	if (pcs_pv_string.compare("STRAIN_XX") == 0)
 		return STRAIN_XX;
-	if (pcs_pv_string.compare ("STRAIN_XY") == 0)
+	if (pcs_pv_string.compare("STRAIN_XY") == 0)
 		return STRAIN_XY;
-	if (pcs_pv_string.compare ("STRAIN_XZ") == 0)
+	if (pcs_pv_string.compare("STRAIN_XZ") == 0)
 		return STRAIN_XZ;
-	if (pcs_pv_string.compare ("STRAIN_YY") == 0)
+	if (pcs_pv_string.compare("STRAIN_YY") == 0)
 		return STRAIN_YY;
-	if (pcs_pv_string.compare ("STRAIN_YZ") == 0)
+	if (pcs_pv_string.compare("STRAIN_YZ") == 0)
 		return STRAIN_YZ;
-	if (pcs_pv_string.compare ("STRAIN_ZZ") == 0)
+	if (pcs_pv_string.compare("STRAIN_ZZ") == 0)
 		return STRAIN_ZZ;
-	if (pcs_pv_string.compare ("STRAIN_PLS") == 0)
+	if (pcs_pv_string.compare("STRAIN_PLS") == 0)
 		return STRAIN_PLS;
-	if (pcs_pv_string.compare ("CARBON1") == 0)
+	if (pcs_pv_string.compare("CARBON1") == 0)
 		return CARBON1;
-	if (pcs_pv_string.compare ("WATER1") == 0)
+	if (pcs_pv_string.compare("WATER1") == 0)
 		return WATER1;
-		if (pcs_pv_string.compare ("METHANE1") == 0)
+	if (pcs_pv_string.compare("METHANE1") == 0)
 		return METHANE1;
-			if (pcs_pv_string.compare ("NITROGEN1") == 0)
+	if (pcs_pv_string.compare("NITROGEN1") == 0)
 		return NITROGEN1;
-	//else
+	// else
 	//{
-		//std::cout << "convertPrimaryVariable #" << pcs_pv_string << "# not found" << "\n";
-		//exit (1);
+	// std::cout << "convertPrimaryVariable #" << pcs_pv_string << "# not found" << "\n";
+	// exit (1);
 	//}
 	return INVALID_PV;
 }
 
-std::string convertPrimaryVariableToString ( PrimaryVariable pcs_pv )
+std::string convertPrimaryVariableToString(PrimaryVariable pcs_pv)
 {
 	if (pcs_pv == PRESSURE)
 		return "PRESSURE1";
@@ -328,13 +324,20 @@ std::string convertPrimaryVariableToString ( PrimaryVariable pcs_pv )
 		return "STRESS_YZ";
 	if (pcs_pv == STRESS_ZZ)
 		return "STRESS_ZZ";
-	if (pcs_pv == STRAIN_XX) return "STRAIN_XX";
-	if (pcs_pv == STRAIN_XY) return "STRAIN_XY";
-	if (pcs_pv == STRAIN_XZ) return "STRAIN_XZ";
-	if (pcs_pv == STRAIN_YY) return "STRAIN_YY";
-	if (pcs_pv == STRAIN_YZ) return "STRAIN_YZ";
-	if (pcs_pv == STRAIN_ZZ) return "STRAIN_ZZ";
-	if (pcs_pv == STRAIN_PLS) return "STRAIN_PLS";
+	if (pcs_pv == STRAIN_XX)
+		return "STRAIN_XX";
+	if (pcs_pv == STRAIN_XY)
+		return "STRAIN_XY";
+	if (pcs_pv == STRAIN_XZ)
+		return "STRAIN_XZ";
+	if (pcs_pv == STRAIN_YY)
+		return "STRAIN_YY";
+	if (pcs_pv == STRAIN_YZ)
+		return "STRAIN_YZ";
+	if (pcs_pv == STRAIN_ZZ)
+		return "STRAIN_ZZ";
+	if (pcs_pv == STRAIN_PLS)
+		return "STRAIN_PLS";
 	if (pcs_pv == ACCELERATION_X1)
 		return "ACCELERATION_X1";
 	if (pcs_pv == ACCELERATION_Y1)
@@ -353,7 +356,7 @@ const std::list<std::string> getAllPrimaryVariableNames()
 
 	while (count != PV_END)
 	{
-		enum_names.push_back( convertPrimaryVariableToString(static_cast<PrimaryVariable>(count++)) );
+		enum_names.push_back(convertPrimaryVariableToString(static_cast<PrimaryVariable>(count++)));
 	}
 	return enum_names;
 }
@@ -398,10 +401,10 @@ DistributionType convertDisType(const std::string& dis_type_string)
 		return NODESCONSTANT;
 	if (dis_type_string.compare("CLIMATE") == 0)
 		return CLIMATE;
-	if (dis_type_string.compare("RECHARGE") == 0)	//MW
+	if (dis_type_string.compare("RECHARGE") == 0) // MW
 		return RECHARGE;
 	if (dis_type_string.compare("FUNCTION") == 0)
-		return FUNCTION;                              //24.08.2011. WW
+		return FUNCTION; // 24.08.2011. WW
 	if (dis_type_string.compare("TRANSFER_SURROUNDING") == 0)
 		return TRANSFER_SURROUNDING;
 	else
@@ -453,10 +456,10 @@ std::string convertDisTypeToString(DistributionType dis_type)
 		return "DOMAIN";
 	if (dis_type == CLIMATE)
 		return "CLIMATE";
-	if (dis_type == RECHARGE)	//MW
-			return "RECHARGE";
+	if (dis_type == RECHARGE) // MW
+		return "RECHARGE";
 	if (dis_type == FUNCTION)
-		return "FUNCTION";         //24.08.2011. WW
+		return "FUNCTION"; // 24.08.2011. WW
 	if (dis_type == TRANSFER_SURROUNDING)
 		return "TRANSFER_SURROUNDING";
 
@@ -470,7 +473,7 @@ const std::list<std::string> getAllDistributionNames()
 
 	while (count != DIS_END)
 	{
-		enum_names.push_back( convertDisTypeToString(static_cast<DistributionType>(count++)) );
+		enum_names.push_back(convertDisTypeToString(static_cast<DistributionType>(count++)));
 	}
 	return enum_names;
 }
@@ -489,13 +492,14 @@ ErrorMethod convertErrorMethod(const std::string& error_method_string)
 		return BNORM;
 	else
 	{
-		std::cout << "convertErrorMethod #" << error_method_string << "# not found"<< "\n";
+		std::cout << "convertErrorMethod #" << error_method_string << "# not found"
+		          << "\n";
 		exit(1);
 	}
 	return INVALID_ERROR_METHOD;
 }
 
-FrictionPhase convertFrictionPhase( const std::string& friction_string)
+FrictionPhase convertFrictionPhase(const std::string& friction_string)
 {
 	if (friction_string.compare("SOLID") == 0)
 		return SOLID;
@@ -506,7 +510,6 @@ FrictionPhase convertFrictionPhase( const std::string& friction_string)
 
 	std::cout << "Convert error: " << friction_string << " not found. \n";
 	return INVALID_FRICTION_TYPE;
-
 }
 std::string convertFrictionPhaseToString(FrictionPhase friction_phase)
 {
@@ -521,7 +524,7 @@ std::string convertFrictionPhaseToString(FrictionPhase friction_phase)
 	return "INVALID_FRICTION_TYPE";
 }
 
-SolidReactiveSystem convertSolidReactiveSystem( const std::string& reactive_string)
+SolidReactiveSystem convertSolidReactiveSystem(const std::string& reactive_string)
 {
 	if (reactive_string.compare("INERT") == 0)
 		return INERT;
@@ -559,103 +562,101 @@ std::string convertSolidReactiveSystemToString(SolidReactiveSystem reactive_syst
 
 TimType::type convertTimType(const std::string& str)
 {
-    if (str.compare("STEADY") == 0)
-        return TimType::STEADY;
-    if (str.compare("TRANSIENT") == 0)
-        return TimType::TRANSIENT;
-    if (str.compare("PURERWPT") == 0)
-        return TimType::PURERWPT;
-    return TimType::INVALID_TIM_TYPE;
+	if (str.compare("STEADY") == 0)
+		return TimType::STEADY;
+	if (str.compare("TRANSIENT") == 0)
+		return TimType::TRANSIENT;
+	if (str.compare("PURERWPT") == 0)
+		return TimType::PURERWPT;
+	return TimType::INVALID_TIM_TYPE;
 }
 
 std::string convertTimTypeToString(TimType::type type)
 {
-    if (type == TimType::STEADY)
-        return "STEADY";
-    if (type == TimType::TRANSIENT)
-        return "TRANSIENT";
-    if (type == TimType::PURERWPT)
-        return "PURERWPT";
-    return "INVALID_TIM_TYPE";
+	if (type == TimType::STEADY)
+		return "STEADY";
+	if (type == TimType::TRANSIENT)
+		return "TRANSIENT";
+	if (type == TimType::PURERWPT)
+		return "PURERWPT";
+	return "INVALID_TIM_TYPE";
 }
 
 IterationType::type convertIterationType(const std::string& str)
 {
-	if (str.compare("LINEAR")==0)
+	if (str.compare("LINEAR") == 0)
 		return IterationType::LINEAR;
-	else if (str.compare("NONLINEAR")==0)
+	else if (str.compare("NONLINEAR") == 0)
 		return IterationType::NONLINEAR;
-	else if (str.compare("COUPLED")==0)
+	else if (str.compare("COUPLED") == 0)
 		return IterationType::COUPLED;
 	else
 		return IterationType::INVALID;
-
 }
 
 std::string convertIterationTypeToString(IterationType::type itr_type)
 {
-    if (itr_type == IterationType::LINEAR)
-        return "LINEAR";
-    else if (itr_type == IterationType::NONLINEAR)
-        return "NONLINEAR";
-    else if (itr_type == IterationType::COUPLED)
-        return "COUPLED";
-    return "INVALID";
+	if (itr_type == IterationType::LINEAR)
+		return "LINEAR";
+	else if (itr_type == IterationType::NONLINEAR)
+		return "NONLINEAR";
+	else if (itr_type == IterationType::COUPLED)
+		return "COUPLED";
+	return "INVALID";
 }
 
-TimeControlType::type convertTimeControlType(const std::string &str)
+TimeControlType::type convertTimeControlType(const std::string& str)
 {
-    if (str == "STEPS")
-        return TimeControlType::FIXED_STEPS;
-    else if (str == "PI_AUTO_STEP_SIZE")
-        return TimeControlType::PI_AUTO_STEP_SIZE;
-    else if (str == "DYNAMIC_VARIABLE")
-        return TimeControlType::DYNAMIC_VARIABLE;
-    else if (str.find("DYNAMIC_COURANT")!=std::string::npos)
-        return TimeControlType::DYNAMIC_COURANT;
-    else if (str == "DYNAMIC_PRESSURE")
-        return TimeControlType::DYNAMIC_PRESSURE;
-    else if (str == "STEP_SIZE_RESTRICTION")
-        return TimeControlType::STEP_SIZE_RESTRICTION;
-    else if (str == "NEUMANN")
-        return TimeControlType::NEUMANN;
-    else if (str == "ERROR_CONTROL_ADAPTIVE")
-        return TimeControlType::ERROR_CONTROL_ADAPTIVE;
-    else if (str.find("SELF_ADAPTIVE")!=std::string::npos)
-        return TimeControlType::SELF_ADAPTIVE;
-    else if (str == "STABLE_ERROR_ADAPTIVE")
-        return TimeControlType::STABLE_ERROR_ADAPTIVE;
+	if (str == "STEPS")
+		return TimeControlType::FIXED_STEPS;
+	else if (str == "PI_AUTO_STEP_SIZE")
+		return TimeControlType::PI_AUTO_STEP_SIZE;
+	else if (str == "DYNAMIC_VARIABLE")
+		return TimeControlType::DYNAMIC_VARIABLE;
+	else if (str.find("DYNAMIC_COURANT") != std::string::npos)
+		return TimeControlType::DYNAMIC_COURANT;
+	else if (str == "DYNAMIC_PRESSURE")
+		return TimeControlType::DYNAMIC_PRESSURE;
+	else if (str == "STEP_SIZE_RESTRICTION")
+		return TimeControlType::STEP_SIZE_RESTRICTION;
+	else if (str == "NEUMANN")
+		return TimeControlType::NEUMANN;
+	else if (str == "ERROR_CONTROL_ADAPTIVE")
+		return TimeControlType::ERROR_CONTROL_ADAPTIVE;
+	else if (str.find("SELF_ADAPTIVE") != std::string::npos)
+		return TimeControlType::SELF_ADAPTIVE;
+	else if (str == "STABLE_ERROR_ADAPTIVE")
+		return TimeControlType::STABLE_ERROR_ADAPTIVE;
 
-    return TimeControlType::INVALID;
+	return TimeControlType::INVALID;
 }
 
 std::string convertTimeControlTypeToString(TimeControlType::type tc_type)
 {
-    if (tc_type == TimeControlType::FIXED_STEPS)
-        return "STEPS";
-    else if (tc_type == TimeControlType::PI_AUTO_STEP_SIZE)
-        return "PI_AUTO_STEP_SIZE";
-    else if (tc_type == TimeControlType::DYNAMIC_VARIABLE)
-        return "DYNAMIC_VARIABLE";
-    else if (tc_type == TimeControlType::DYNAMIC_COURANT)
-        return "DYNAMIC_COURANT";
-    else if (tc_type == TimeControlType::DYNAMIC_PRESSURE)
-        return "DYNAMIC_PRESSURE";
-    else if (tc_type == TimeControlType::STEP_SIZE_RESTRICTION)
-        return "STEP_SIZE_RESTRICTION";
-    else if (tc_type == TimeControlType::NEUMANN)
-        return "NEUMANN";
-    else if (tc_type == TimeControlType::ERROR_CONTROL_ADAPTIVE)
-        return "ERROR_CONTROL_ADAPTIVE";
-    else if (tc_type == TimeControlType::SELF_ADAPTIVE)
-        return "SELF_ADAPTIVE";
-    else if (tc_type == TimeControlType::STABLE_ERROR_ADAPTIVE)
-        return "STABLE_ERROR_ADAPTIVE";
-    return "INVALID";
-
+	if (tc_type == TimeControlType::FIXED_STEPS)
+		return "STEPS";
+	else if (tc_type == TimeControlType::PI_AUTO_STEP_SIZE)
+		return "PI_AUTO_STEP_SIZE";
+	else if (tc_type == TimeControlType::DYNAMIC_VARIABLE)
+		return "DYNAMIC_VARIABLE";
+	else if (tc_type == TimeControlType::DYNAMIC_COURANT)
+		return "DYNAMIC_COURANT";
+	else if (tc_type == TimeControlType::DYNAMIC_PRESSURE)
+		return "DYNAMIC_PRESSURE";
+	else if (tc_type == TimeControlType::STEP_SIZE_RESTRICTION)
+		return "STEP_SIZE_RESTRICTION";
+	else if (tc_type == TimeControlType::NEUMANN)
+		return "NEUMANN";
+	else if (tc_type == TimeControlType::ERROR_CONTROL_ADAPTIVE)
+		return "ERROR_CONTROL_ADAPTIVE";
+	else if (tc_type == TimeControlType::SELF_ADAPTIVE)
+		return "SELF_ADAPTIVE";
+	else if (tc_type == TimeControlType::STABLE_ERROR_ADAPTIVE)
+		return "STABLE_ERROR_ADAPTIVE";
+	return "INVALID";
 }
 
-ConstrainedType::type convertConstrainedType(const std::string &str)
+ConstrainedType::type convertConstrainedType(const std::string& str)
 {
 	if (str.compare("SMALLER") == 0)
 		return ConstrainedType::SMALLER;
@@ -681,8 +682,7 @@ std::string convertConstrainedTypeToString(ConstrainedType::type constrained_typ
 	return "INVALID_CONSTRAINED_TYPE";
 }
 
-
-ConstrainedVariable::type convertConstrainedVariable(const std::string &str)
+ConstrainedVariable::type convertConstrainedVariable(const std::string& str)
 {
 	if (str.compare("VELOCITY") == 0)
 		return ConstrainedVariable::VELOCITY;
@@ -695,4 +695,3 @@ std::string convertConstrainedVariableToString(ConstrainedVariable::type constra
 		return "VELOCITY";
 	return "INVALID_CONSTRAINED_VARIABLE";
 }
-

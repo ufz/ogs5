@@ -29,7 +29,7 @@ size_t partition_(T* array, size_t beg, size_t end, size_t* perm)
 	size_t j = end - 1;
 	T m = array[beg];
 
-	for (;; )
+	for (;;)
 	{
 		while ((i < end) && (array[i] <= m))
 			i++;
@@ -68,10 +68,11 @@ template <typename T>
 class Quicksort
 {
 public:
-	Quicksort (std::vector<T>& array, size_t beg, size_t end, std::vector<size_t>& perm)
+	Quicksort(std::vector<T>& array, size_t beg, size_t end, std::vector<size_t>& perm)
 	{
-		quicksort (array, beg, end, perm);
+		quicksort(array, beg, end, perm);
 	}
+
 private:
 	size_t partition_(std::vector<T>& array, size_t beg, size_t end, std::vector<size_t>& perm)
 	{
@@ -79,7 +80,7 @@ private:
 		size_t j = end - 1;
 		T m = array[beg];
 
-		for (;; )
+		for (;;)
 		{
 			while ((i < end) && (array[i] <= m))
 				i++;
@@ -110,17 +111,17 @@ private:
 
 // specialization for pointer types
 template <typename T>
-class Quicksort <T*>
+class Quicksort<T*>
 {
 public:
-	Quicksort (std::vector<T*>& array, size_t beg, size_t end, std::vector<size_t>& perm)
+	Quicksort(std::vector<T*>& array, size_t beg, size_t end, std::vector<size_t>& perm)
 	{
-		quicksort (array, beg, end, perm);
+		quicksort(array, beg, end, perm);
 	}
 
-	Quicksort (std::vector<size_t>& perm, size_t beg, size_t end, std::vector<T*>& array)
+	Quicksort(std::vector<size_t>& perm, size_t beg, size_t end, std::vector<T*>& array)
 	{
-		quicksort (perm, beg, end, array);
+		quicksort(perm, beg, end, array);
 	}
 
 private:
@@ -130,7 +131,7 @@ private:
 		size_t j = end - 1;
 		T* m = array[beg];
 
-		for (;; )
+		for (;;)
 		{
 			while ((i < end) && (*array[i] <= *m))
 				i++;
@@ -158,13 +159,13 @@ private:
 		}
 	}
 
-	size_t partition_(std::vector<size_t> &perm, size_t beg, size_t end, std::vector<T*>& array)
+	size_t partition_(std::vector<size_t>& perm, size_t beg, size_t end, std::vector<T*>& array)
 	{
 		size_t i = beg + 1;
 		size_t j = end - 1;
 		size_t m = perm[beg];
 
-		for (;; )
+		for (;;)
 		{
 			while ((i < end) && (perm[i] <= m))
 				i++;

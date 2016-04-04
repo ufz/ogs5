@@ -23,14 +23,13 @@ class StationIO
 {
 public:
 	/// Imports a file with station data.
-	static int readStationFile(const std::string &path,
-	                           std::string &name,
+	static int readStationFile(const std::string& path,
+	                           std::string& name,
 	                           std::vector<GEOLIB::Point*>* stations,
 	                           GEOLIB::Station::StationType type);
 
 	/// Writes a file that contains all stratigraphies for the boreholes in the given vector.
-	static void writeStratigraphyTable(const std::vector<GEOLIB::Point*>* boreholes,
-	                                   const std::string &filename);
+	static void writeStratigraphyTable(const std::vector<GEOLIB::Point*>* boreholes, const std::string& filename);
 
 private:
 };

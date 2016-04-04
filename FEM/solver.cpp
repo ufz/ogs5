@@ -40,7 +40,7 @@ using namespace std;
 #include "makros.h"
 #include "mathlib.h"
 #include "matrix_routines.h"
-#include "rf_pcs.h"                               //OK_MOD"
+#include "rf_pcs.h" //OK_MOD"
 #include "rf_tim_new.h"
 #include "solver.h"
 #include "tools.h"
@@ -58,9 +58,9 @@ using namespace std;
 #include <umfpack.h>
 #endif
 /**** Definitionen fuer Preconditioner (Ra, 3/2000) */
-#define VK_Skalierung  1
+#define VK_Skalierung 1
 #define VK_Extraktion 10
-#define VK_iLDU      100
+#define VK_iLDU 100
 #define VK_Modus(vk) ((int)(vorkond % (vk * 10) / vk))
 /* werden am Ende dieser Quelle wieder undefiniert! */
 
@@ -76,10 +76,9 @@ using namespace std;
 int loeser_flow = 2, loeser_tran = 2, loeser_temp = 2, loeser_satu = 2;
 double gls_iter_theta;
 int vorkond = 1, vorkond_flow = 100, vorkond_tran = 100, vorkond_temp = 100, vorkond_satu = 100;
-int speichertechnik_flow = 4, speichertechnik_tran = 4, speichertechnik_temp = 4,
-    speichertechnik_satu = 4;
-int linear_error_type = 6, linear_error_type_flow = 6, linear_error_type_tran = 6,
-    linear_error_type_temp = 6, linear_error_type_satu = 6;
+int speichertechnik_flow = 4, speichertechnik_tran = 4, speichertechnik_temp = 4, speichertechnik_satu = 4;
+int linear_error_type = 6, linear_error_type_flow = 6, linear_error_type_tran = 6, linear_error_type_temp = 6,
+    linear_error_type_satu = 6;
 double eps_flow = 1.e-10, eps_tran = 1.e-10, eps_temp = 1.e-10, eps_satu = 1.e-10, cg_eps = 1.e-10;
 int maxiter_flow = -1, maxiter_tran = -1, maxiter_temp = -1, maxiter_satu = -1, cg_maxiter = -1;
 int repeat_flow = 1, repeat_tran = 1, repeat_temp = 1, repeat_satu = 1, cg_repeat = 1;
@@ -124,8 +123,7 @@ double iteration_max_dt;
 IntFuncDXDXL LinearSolver;
 IntFuncDXDXLVXL NonlinearSolver;
 #ifndef USE_MPI
-IntFuncDXDXL LoeserFlow = SpBICGSTAB, LoeserTran = SpBICGSTAB, LoeserTemp = SpBICGSTAB,
-             LoeserSatu = SpBICGSTAB;
+IntFuncDXDXL LoeserFlow = SpBICGSTAB, LoeserTran = SpBICGSTAB, LoeserTemp = SpBICGSTAB, LoeserSatu = SpBICGSTAB;
 #endif
 
 /* LU Dekomposition */
@@ -157,7 +155,7 @@ void InitSolverParameter(void)
 	eps_flow = 1.e-10;
 	repeat_flow = -1;
 	vorkond_flow = VK_Extraktion + VK_iLDU; /* Ra, 3/2000 */
-	speichertechnik_flow = 4;             /* Ra, 3/2000 */
+	speichertechnik_flow = 4; /* Ra, 3/2000 */
 	linear_error_type_flow = 6;
 
 	/* #LINEAR_SOLVER_SATURATION */
@@ -258,9 +256,9 @@ void InitSolverParameter(void)
 *************************************************************************/
 int SpRichardson(double* b, double* x, long n)
 {
-	double* r,* s;
+	double *r, *s;
 	double eps = cg_eps;
-	int k = 0; //WW, max_iter = 0;
+	int k = 0; // WW, max_iter = 0;
 	double r0norm = 1., b0norm = 1., x0norm = 1.;
 
 	if (linear_error_type == 5)
@@ -272,18 +270,18 @@ int SpRichardson(double* b, double* x, long n)
 	if (vorkond)
 		MXVorkond(0, x, b);
 
-	//WW if (cg_maxiter > 0)
-	//WW   max_iter = cg_maxiter;
+// WW if (cg_maxiter > 0)
+// WW   max_iter = cg_maxiter;
 
-	//OK411    if (cg_maxiter == -1)
-	//OK411        max_iter = NodeListLength;
+// OK411    if (cg_maxiter == -1)
+// OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES1
 	DisplayMsgLn("SpRichard");
 #endif
 
-	r = (double*) Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
-	s = (double*) Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
+	r = (double*)Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
+	s = (double*)Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
 
 	MXResiduum(x, b, r);
 	if (linear_error_type == 0)
@@ -316,24 +314,24 @@ int SpRichardson(double* b, double* x, long n)
 		r0norm = VEKNORM_BICGSTAB(r, n);
 		eps = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
 	}
-	s = (double*) Free(s);
+	s = (double*)Free(s);
 
 	if (VEKNORM_BICGSTAB(r, n) <= eps)
 	{
-		r = (double*) Free(r);
+		r = (double*)Free(r);
 		/* Ggf. abschliessen der Vorkonditionierung */
 		if (vorkond)
 			MXVorkond(1, x, b);
 		return 0;
 	}
-	for (;; )
+	for (;;)
 	{
-		if VK_Modus
-		        (VK_iLDU) MXVorkond(2, r, r); /* Ra, 3/2000 */
+		if
+			VK_Modus(VK_iLDU) MXVorkond(2, r, r); /* Ra, 3/2000 */
 		MVekSum(x, gls_iter_theta, r, n);
 #ifdef SOLVER_SHOW_RESULTS
-		printf("\n%ld %f %f %f %f %f",(long)k,x[(long)(n * .1)],x[(long)(n * .3)],
-		       x[(long)(n * .5)],x[(long)(n * .7)],x[(long)(n * .9)]);
+		printf("\n%ld %f %f %f %f %f", (long)k, x[(long)(n * .1)], x[(long)(n * .3)], x[(long)(n * .5)],
+		       x[(long)(n * .7)], x[(long)(n * .9)]);
 #endif
 
 		MXResiduum(x, b, r);
@@ -347,10 +345,10 @@ int SpRichardson(double* b, double* x, long n)
 		if (k >= cg_maxiter)
 			break;
 #ifdef SOLVER_SHOW_ERROR
-		if (k % (int)MMax((cg_maxiter / 10),1.) == 1)
+		if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
 		{
 			DisplayMsg("      Iteration-Nr.: ");
-			DisplayLong((long) k);
+			DisplayLong((long)k);
 			DisplayMsg(", Fehler = ");
 			DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
 			DisplayMsgLn(" ");
@@ -358,7 +356,7 @@ int SpRichardson(double* b, double* x, long n)
 #endif
 	}
 
-	r = (double*) Free(r);
+	r = (double*)Free(r);
 	/* Ggf. abschliessen der Vorkonditionierung */
 	if (vorkond)
 		MXVorkond(1, x, b);
@@ -394,7 +392,7 @@ int SpRichardson(double* b, double* x, long n)
 *************************************************************************/
 int SpJOR(double* b, double* x, long n)
 {
-	double* r,* s;
+	double *r, *s;
 	static double eps;
 	int k = 0, max_iter = 0;
 	static double r0norm, b0norm, x0norm;
@@ -407,15 +405,15 @@ int SpJOR(double* b, double* x, long n)
 
 	if (cg_maxiter > 0)
 		max_iter = cg_maxiter;
-	//OK411    if (cg_maxiter == -1)
-	//OK411        max_iter = NodeListLength;
+// OK411    if (cg_maxiter == -1)
+// OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES1
 	DisplayMsgLn("SpJacobi");
 #endif
 
-	r = (double*) Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
-	s = (double*) Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
+	r = (double*)Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
+	s = (double*)Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
 
 	MXResiduum(x, b, r);
 	if (linear_error_type == 0)
@@ -448,17 +446,17 @@ int SpJOR(double* b, double* x, long n)
 		r0norm = VEKNORM_BICGSTAB(r, n);
 		eps = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
 	}
-	s = (double*) Free(s);
+	s = (double*)Free(s);
 
 	if (VEKNORM_BICGSTAB(r, n) <= eps)
 	{
-		r = (double*) Free(r);
+		r = (double*)Free(r);
 		/* Ggf. abschliessen der Vorkonditionierung */
 		if (vorkond)
 			MXVorkond(1, x, b);
 		return 0;
 	}
-	for (;; )
+	for (;;)
 	{
 		for (i = 0; i <= n - 1; i++)
 		{
@@ -469,7 +467,7 @@ int SpJOR(double* b, double* x, long n)
 				r[i] = r[i] / h;
 			else
 			{
-				/* Eventuell Zeilenvertauschen */
+/* Eventuell Zeilenvertauschen */
 #ifdef TESTLOES1
 				DisplayMsg("Fehler im Jacobi-Loser: Diagonalelement = 0.0 !!");
 				DisplayMsgLn("");
@@ -481,12 +479,12 @@ int SpJOR(double* b, double* x, long n)
 		if (k == -1)
 			break;
 
-		if VK_Modus
-		        (VK_iLDU) MXVorkond(2, r, r); /* Ra, 3/2000 */
+		if
+			VK_Modus(VK_iLDU) MXVorkond(2, r, r); /* Ra, 3/2000 */
 		MVekSum(x, gls_iter_theta, r, n);
 #ifdef SOLVER_SHOW_RESULTS
-		printf("\n%ld %f %f %f %f %f",(long)k,x[(long)(n * .1)],x[(long)(n * .3)],
-		       x[(long)(n * .5)],x[(long)(n * .7)],x[(long)(n * .9)]);
+		printf("\n%ld %f %f %f %f %f", (long)k, x[(long)(n * .1)], x[(long)(n * .3)], x[(long)(n * .5)],
+		       x[(long)(n * .7)], x[(long)(n * .9)]);
 #endif
 		MXResiduum(x, b, r);
 		k++;
@@ -500,10 +498,10 @@ int SpJOR(double* b, double* x, long n)
 			break;
 
 #ifdef SOLVER_SHOW_ERROR
-		if (k % (int)MMax((cg_maxiter / 10),1.) == 1)
+		if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
 		{
 			DisplayMsg("      Iteration-Nr.: ");
-			DisplayLong((long) k);
+			DisplayLong((long)k);
 			DisplayMsg(", Fehler = ");
 			DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
 			DisplayMsgLn(" ");
@@ -511,7 +509,7 @@ int SpJOR(double* b, double* x, long n)
 #endif
 	}
 
-	r = (double*) Free(r);
+	r = (double*)Free(r);
 	/* Ggf. abschliessen der Vorkonditionierung */
 	if (vorkond)
 		MXVorkond(1, x, b);
@@ -551,7 +549,7 @@ int SpJOR(double* b, double* x, long n)
 *************************************************************************/
 int SpSOR(double* b, double* x, long n)
 {
-	double* r,* s;
+	double *r, *s;
 	static double eps;
 	int k = 0, max_iter = 0;
 	static double r0norm, b0norm, x0norm;
@@ -564,15 +562,15 @@ int SpSOR(double* b, double* x, long n)
 
 	if (cg_maxiter > 0)
 		max_iter = cg_maxiter;
-	//OK411    if (cg_maxiter == -1)
-	//OK411        max_iter = NodeListLength;
+// OK411    if (cg_maxiter == -1)
+// OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES1
 	DisplayMsgLn("SpGaussSeidel");
 #endif
 
-	r = (double*) Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
-	s = (double*) Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
+	r = (double*)Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
+	s = (double*)Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
 
 	MXResiduum(x, b, r);
 	if (linear_error_type == 0)
@@ -606,17 +604,17 @@ int SpSOR(double* b, double* x, long n)
 		eps = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
 	}
 
-	s = (double*) Free(s);
+	s = (double*)Free(s);
 
 	if (VEKNORM_BICGSTAB(r, n) <= eps)
 	{
-		r = (double*) Free(r);
+		r = (double*)Free(r);
 		/* Ggf. abschliessen der Vorkonditionierung */
 		if (vorkond)
 			MXVorkond(1, x, b);
 		return 0;
 	}
-	for (;; )
+	for (;;)
 	{
 		for (i = 0; i <= n - 1; i++)
 		{
@@ -627,14 +625,13 @@ int SpSOR(double* b, double* x, long n)
 			   ?? Preconditioner ?? */
 			h = MXGet(i, i);
 
-			if (fabs(h) > MKleinsteZahl )
+			if (fabs(h) > MKleinsteZahl)
 				x[i] = x[i] - gls_iter_theta * (sum - b[i]) / h;
 			else
 			{
-				/* Eventuell Zeilenvertauschen */
+/* Eventuell Zeilenvertauschen */
 #ifdef TESTLOES1
-				DisplayMsg(
-				        "Fehler im Gauss-Seidel-Loeser: Diagonalelement = 0.0 !!");
+				DisplayMsg("Fehler im Gauss-Seidel-Loeser: Diagonalelement = 0.0 !!");
 				DisplayMsgLn("");
 #endif
 				k = -1;
@@ -642,8 +639,8 @@ int SpSOR(double* b, double* x, long n)
 			}
 		}
 #ifdef SOLVER_SHOW_RESULTS
-		printf("\n%ld %f %f %f %f %f",(long)k,x[(long)(n * .1)],x[(long)(n * .3)],
-		       x[(long)(n * .5)],x[(long)(n * .7)],x[(long)(n * .9)]);
+		printf("\n%ld %f %f %f %f %f", (long)k, x[(long)(n * .1)], x[(long)(n * .3)], x[(long)(n * .5)],
+		       x[(long)(n * .7)], x[(long)(n * .9)]);
 #endif
 		if (k == -1)
 			break;
@@ -659,10 +656,10 @@ int SpSOR(double* b, double* x, long n)
 			break;
 
 #ifdef SOLVER_SHOW_ERROR
-		if (k % (int)MMax((cg_maxiter / 10),1.) == 1)
+		if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
 		{
 			DisplayMsg("      Iteration-Nr.: ");
-			DisplayLong((long) k);
+			DisplayLong((long)k);
 			DisplayMsg(", Fehler = ");
 			DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
 			DisplayMsgLn(" ");
@@ -670,7 +667,7 @@ int SpSOR(double* b, double* x, long n)
 #endif
 	}
 
-	r = (double*) Free(r);
+	r = (double*)Free(r);
 	/* Ggf. abschliessen der Vorkonditionierung */
 	if (vorkond)
 		MXVorkond(1, x, b);
@@ -710,7 +707,7 @@ void Gauss(double* matrix, double* vecb, double* vecx, int g)
 	static int* s;
 	static double z, hilf;
 	register int k, i, j, sk;
-	s = (int*) Malloc(sizeof(int) * (g - 1));
+	s = (int*)Malloc(sizeof(int) * (g - 1));
 	/* LR-Faktorisierung */
 	for (k = 0; k < (g - 1); k++)
 	{
@@ -732,13 +729,13 @@ void Gauss(double* matrix, double* vecb, double* vecx, int g)
 			for (j = 0; j < g; j++)
 			{
 				z = matrix[k * g + j]; /* matrix[k][j] */
-				                       /* matrix[k][j], matrix[sk][j] */
+				/* matrix[k][j], matrix[sk][j] */
 				matrix[k * g + j] = matrix[sk * g + j];
 				matrix[sk * g + j] = z; /* matrix[sk][j] */
 			}
 		/* Berechnung der Eliminationskoeffizienten */
 		for (i = (k + 1); i < g; i++)
-			matrix[i * g + k] /= matrix[k * g + k];  /* matrix[i][k], matrix[k][k] */
+			matrix[i * g + k] /= matrix[k * g + k]; /* matrix[i][k], matrix[k][k] */
 		/* Spaltenweise Berechnung der neuen Restmatrix */
 		for (j = (k + 1); j < g; j++)
 			for (i = (k + 1); i < g; i++)
@@ -765,14 +762,14 @@ void Gauss(double* matrix, double* vecb, double* vecx, int g)
 	for (k = (g - 1); k >= 0; k--)
 	{
 		for (j = (k + 1); j < g; j++)
-			vecb[k] -= (matrix[k * g + j] * vecb[j]);  /* matrix[k][j] */
+			vecb[k] -= (matrix[k * g + j] * vecb[j]); /* matrix[k][j] */
 		vecb[k] /= matrix[k * g + k]; /* matrix[k][k] */
 	}
 	/* Umspeichern des Ergebnisses von vecb nach vecx */
 	for (k = 0; k < g; k++)
 		vecx[k] = vecb[k];
 	/* Speicher freigeben */
-	s = (int*) Free(s);
+	s = (int*)Free(s);
 }
 
 /*************************************************************************
@@ -798,13 +795,13 @@ int SpAMG1R5(double* b, double* x, long n)
 {
 #ifdef AMG1R5
 	/* Variablen */
-	static double* r, * t;
+	static double *r, *t;
 	long max_iter;
 	int k = 0;
 	static double r0norm, b0norm, x0norm;
 
-	double* A, * U, * F;
-	int* IA, * JA, * IG;
+	double *A, *U, *F;
+	int *IA, *JA, *IG;
 	int NDA, NDIA, NDJA, NDU, NDF, NDIG, NNU, NNA;
 	int MATRIX, IFIRST, ISWTCH, IOUT, IPRINT, IERR, MADAPT;
 	double EPS;
@@ -819,8 +816,8 @@ int SpAMG1R5(double* b, double* x, long n)
 	static double ja_size_mult = 1.;
 
 	/* Ermitteln des Residuums */
-	r = (double*) Malloc(n * sizeof(double));
-	t = (double*) Malloc(n * sizeof(double));
+	r = (double*)Malloc(n * sizeof(double));
+	t = (double*)Malloc(n * sizeof(double));
 
 	/* Ggf. starten der Vorkonditionierung */
 	if (vorkond)
@@ -831,48 +828,48 @@ int SpAMG1R5(double* b, double* x, long n)
 
 	switch (linear_error_type)
 	{
-	default:
-	case 0:
-		EPS = cg_eps;
-		break;
-	case 1:
-		EPS = cg_eps * VEKNORM_BICGSTAB(b, n);
-		break;
-	case 2:
-		EPS = cg_eps * VEKNORM_BICGSTAB(r, n);
-		break;
-	case 3:
-		if ((r0norm = VEKNORM_BICGSTAB(r, n)) > 1.)
-			EPS = cg_eps * r0norm;
-		else
+		default:
+		case 0:
 			EPS = cg_eps;
-		break;
-	case 4:
-		EPS = cg_eps * (VEKNORM_BICGSTAB(x, n));
-		break;
-	case 5:
-		b0norm = VEKNORM_BICGSTAB(b, n);
-		x0norm = VEKNORM_BICGSTAB(x, n);
-		r0norm = VEKNORM_BICGSTAB(r, n);
-		EPS = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
-		break;
-	case 6:
-		MXMatVek(x, t);
-		b0norm = VEKNORM_BICGSTAB(b, n);
-		x0norm = VEKNORM_BICGSTAB(t, n);
-		r0norm = VEKNORM_BICGSTAB(r, n);
-		EPS = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
-		break;
+			break;
+		case 1:
+			EPS = cg_eps * VEKNORM_BICGSTAB(b, n);
+			break;
+		case 2:
+			EPS = cg_eps * VEKNORM_BICGSTAB(r, n);
+			break;
+		case 3:
+			if ((r0norm = VEKNORM_BICGSTAB(r, n)) > 1.)
+				EPS = cg_eps * r0norm;
+			else
+				EPS = cg_eps;
+			break;
+		case 4:
+			EPS = cg_eps * (VEKNORM_BICGSTAB(x, n));
+			break;
+		case 5:
+			b0norm = VEKNORM_BICGSTAB(b, n);
+			x0norm = VEKNORM_BICGSTAB(x, n);
+			r0norm = VEKNORM_BICGSTAB(r, n);
+			EPS = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
+			break;
+		case 6:
+			MXMatVek(x, t);
+			b0norm = VEKNORM_BICGSTAB(b, n);
+			x0norm = VEKNORM_BICGSTAB(t, n);
+			r0norm = VEKNORM_BICGSTAB(r, n);
+			EPS = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
+			break;
 	}
 
 	switch (cg_maxiter)
 	{
-	case -1:
-		max_iter = NodeListLength;
-		break;
-	default:
-		max_iter = cg_maxiter;
-		break;
+		case -1:
+			max_iter = NodeListLength;
+			break;
+		default:
+			max_iter = cg_maxiter;
+			break;
 	}
 
 	MATRIX = 22;
@@ -882,15 +879,15 @@ int SpAMG1R5(double* b, double* x, long n)
 	IPRINT = 10606;
 	LEVELX = 0;
 	MADAPT = 0;
-	NCYC   = 102 * (long) pow(10.,(double)(1 + (int)log10((double)max_iter))) + max_iter;
-	NRD    = 0;
+	NCYC = 102 * (long)pow(10., (double)(1 + (int)log10((double)max_iter))) + max_iter;
+	NRD = 0;
 	NSOLCO = 10;
-	NRU    = 0;
-	NWT    = 2;
-	NTR    = 0;
-	ECG1   = 0.;
-	ECG2   = 0.25;
-	EWT2   = 0.35;
+	NRU = 0;
+	NWT = 2;
+	NTR = 0;
+	ECG1 = 0.;
+	ECG2 = 0.25;
+	EWT2 = 0.35;
 
 restart:
 
@@ -914,16 +911,15 @@ restart:
 
 	MXCopyToAMG1R5Structure(A, IA, JA, NDA, NDIA, NDJA, x, U, b, F);
 
-	amg1r5_(A,IA,JA,U,F,IG,&NDA,&NDIA,&NDJA,&NDU,&NDF,&NDIG,&NNU,&MATRIX,
-	        &ISWTCH,&IOUT,&IPRINT,&LEVELX,&IFIRST,&NCYC,&EPS,&MADAPT,&NRD,
-	        &NSOLCO,&NRU,&ECG1,&ECG2,&EWT2,&NWT,&NTR,&IERR);
+	amg1r5_(A, IA, JA, U, F, IG, &NDA, &NDIA, &NDJA, &NDU, &NDF, &NDIG, &NNU, &MATRIX, &ISWTCH, &IOUT, &IPRINT, &LEVELX,
+	        &IFIRST, &NCYC, &EPS, &MADAPT, &NRD, &NSOLCO, &NRU, &ECG1, &ECG2, &EWT2, &NWT, &NTR, &IERR);
 
 	/*
 	    aux1r5_(A,IA,JA,U,F,IG,&NDA,&NDIA,&NDJA,&NDU,&NDF,&NDIG,&NNU,&MATRIX,
 	           &EPS,&IFIRST,&ISWTCH,&IOUT,&IPRINT,&IERR);
 	 */
 
-	MKopierVec(U,x,n);
+	MKopierVec(U, x, n);
 
 	A = (double*)Free(A);
 	U = (double*)Free(U);
@@ -936,38 +932,53 @@ restart:
 	t = (double*)Free(t);
 	r = (double*)Free(r);
 
-	switch(IERR)
+	switch (IERR)
 	{
-	case 1: a_size_mult *= 1.2;
-		goto restart;
-	case 2: ia_size_mult *= 1.2;
-		goto restart;
-	case 3: ja_size_mult *= 1.2;
-		goto restart;
-	case 4: u_size_mult *= 1.2;
-		goto restart;
-	case 5: f_size_mult *= 1.2;
-		goto restart;
-	case 6: ig_size_mult *= 1.2;
-		goto restart;
-	case -11: printf(" \n AMG-Solver: A-entry missing!\n ");
-		break;
-	case -12: printf(" \n AMG-Solver: Parameters erroneous!\n ");
-		break;
-	case 13: printf(" \n AMG-Solver: Diagonal not stored first!\n ");
-		break;
-	case 14: printf(" \n AMG-Solver: Diagonal not positiv!\n ");
-		break;
-	case 15: printf(" \n AMG-Solver: IA erroneous!\n ");
-		break;
-	case 16: printf(" \n AMG-Solver: JA erroneous!\n ");
-		break;
-	case 17: printf(" \n AMG-Solver: ISWITCH erroneous!\n ");
-		break;
-	case 31: printf(" \n AMG-Solver: CG not defined!\n ");
-		break;
-	case -32: printf(" \n AMG-Solver: YALE-SMP not possible!\n ");
-		break;
+		case 1:
+			a_size_mult *= 1.2;
+			goto restart;
+		case 2:
+			ia_size_mult *= 1.2;
+			goto restart;
+		case 3:
+			ja_size_mult *= 1.2;
+			goto restart;
+		case 4:
+			u_size_mult *= 1.2;
+			goto restart;
+		case 5:
+			f_size_mult *= 1.2;
+			goto restart;
+		case 6:
+			ig_size_mult *= 1.2;
+			goto restart;
+		case -11:
+			printf(" \n AMG-Solver: A-entry missing!\n ");
+			break;
+		case -12:
+			printf(" \n AMG-Solver: Parameters erroneous!\n ");
+			break;
+		case 13:
+			printf(" \n AMG-Solver: Diagonal not stored first!\n ");
+			break;
+		case 14:
+			printf(" \n AMG-Solver: Diagonal not positiv!\n ");
+			break;
+		case 15:
+			printf(" \n AMG-Solver: IA erroneous!\n ");
+			break;
+		case 16:
+			printf(" \n AMG-Solver: JA erroneous!\n ");
+			break;
+		case 17:
+			printf(" \n AMG-Solver: ISWITCH erroneous!\n ");
+			break;
+		case 31:
+			printf(" \n AMG-Solver: CG not defined!\n ");
+			break;
+		case -32:
+			printf(" \n AMG-Solver: YALE-SMP not possible!\n ");
+			break;
 	}
 
 	/* Ggf. abschliessen der Vorkonditionierung */
@@ -1009,16 +1020,16 @@ int SpUMF(double* b, double* x, long n)
 {
 #ifdef UMFPACK
 	/* Variablen */
-	static double* r, * t;
+	static double *r, *t;
 	long i, j, k = 0;
 	double r0norm, b0norm, x0norm;
 	double* Ax = NULL;
-	int* Ap = NULL, * Ai = NULL;
+	int *Ap = NULL, *Ai = NULL;
 	int NA, NNA, NP, NNP, status;
 	double EPS, a;
 
-	double* Control = (double*) NULL, * Info = (double*) NULL;
-	void* Symbolic = NULL, * Numeric = NULL;
+	double *Control = (double *)NULL, *Info = (double *)NULL;
+	void *Symbolic = NULL, *Numeric = NULL;
 
 	static double a_size_mult = 1.;
 
@@ -1026,46 +1037,46 @@ int SpUMF(double* b, double* x, long n)
 	if (vorkond)
 		MXVorkond(0, x, b);
 
-	r = (double*) Malloc(n * sizeof(double));
-	t = (double*) Malloc(n * sizeof(double));
+	r = (double*)Malloc(n * sizeof(double));
+	t = (double*)Malloc(n * sizeof(double));
 
 	/* Ermitteln des Residuums */
 	MXResiduum(x, b, r);
 
 	switch (linear_error_type)
 	{
-	default:
-	case 0:
-		EPS = cg_eps;
-		break;
-	case 1:
-		EPS = cg_eps * VEKNORM_BICGSTAB(b, n);
-		break;
-	case 2:
-		EPS = cg_eps * VEKNORM_BICGSTAB(r, n);
-		break;
-	case 3:
-		if ((r0norm = VEKNORM_BICGSTAB(r, n)) > 1.)
-			EPS = cg_eps * r0norm;
-		else
+		default:
+		case 0:
 			EPS = cg_eps;
-		break;
-	case 4:
-		EPS = cg_eps * (VEKNORM_BICGSTAB(x, n));
-		break;
-	case 5:
-		b0norm = VEKNORM_BICGSTAB(b, n);
-		x0norm = VEKNORM_BICGSTAB(x, n);
-		r0norm = VEKNORM_BICGSTAB(r, n);
-		EPS = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
-		break;
-	case 6:
-		MXMatVek(x, t);
-		b0norm = VEKNORM_BICGSTAB(b, n);
-		x0norm = VEKNORM_BICGSTAB(t, n);
-		r0norm = VEKNORM_BICGSTAB(r, n);
-		EPS = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
-		break;
+			break;
+		case 1:
+			EPS = cg_eps * VEKNORM_BICGSTAB(b, n);
+			break;
+		case 2:
+			EPS = cg_eps * VEKNORM_BICGSTAB(r, n);
+			break;
+		case 3:
+			if ((r0norm = VEKNORM_BICGSTAB(r, n)) > 1.)
+				EPS = cg_eps * r0norm;
+			else
+				EPS = cg_eps;
+			break;
+		case 4:
+			EPS = cg_eps * (VEKNORM_BICGSTAB(x, n));
+			break;
+		case 5:
+			b0norm = VEKNORM_BICGSTAB(b, n);
+			x0norm = VEKNORM_BICGSTAB(x, n);
+			r0norm = VEKNORM_BICGSTAB(r, n);
+			EPS = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
+			break;
+		case 6:
+			MXMatVek(x, t);
+			b0norm = VEKNORM_BICGSTAB(b, n);
+			x0norm = VEKNORM_BICGSTAB(t, n);
+			r0norm = VEKNORM_BICGSTAB(r, n);
+			EPS = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
+			break;
 	}
 
 	/* Fehler ausgeben */
@@ -1075,8 +1086,8 @@ int SpUMF(double* b, double* x, long n)
 
 	if (VEKNORM_BICGSTAB(r, n) <= EPS)
 	{
-		r = (double*) Free(r);
-		t = (double*) Free(t);
+		r = (double*)Free(r);
+		t = (double*)Free(t);
 
 		/* Ggf. abschliessen der Vorkonditionierung */
 		if (vorkond)
@@ -1106,8 +1117,8 @@ restart:
 		for (i = 0; i < n; i++)
 		{
 			/* Ineffektiv!! Besser auf Sparse-Strukturen zugreifen */
-			a = MXGet(i,j);
-			if(fabs(a) > MFastNull)
+			a = MXGet(i, j);
+			if (fabs(a) > MFastNull)
 			{
 				/* Spalteneintraege speichern */
 				Ax[NNA] = a;
@@ -1116,9 +1127,9 @@ restart:
 				if (NNA == NA)
 				{
 					a_size_mult *= 1.2;
-					Ax = (double*) Free(Ax);
-					Ai = (int*) Free(Ai);
-					Ap = (int*) Free(Ap);
+					Ax = (double*)Free(Ax);
+					Ai = (int*)Free(Ai);
+					Ap = (int*)Free(Ap);
 					goto restart;
 				}
 			}
@@ -1129,25 +1140,25 @@ restart:
 	NNP++;
 
 #ifdef UMFPACK31
-	umfpack_i_symbolic (n, Ap, Ai, &Symbolic, Control, Info);
-	if(Symbolic == NULL)
+	umfpack_i_symbolic(n, Ap, Ai, &Symbolic, Control, Info);
+	if (Symbolic == NULL)
 		DisplayMsgLn("UMFPACK: Symbolic ist NULL!");
-	umfpack_i_numeric (Ap, Ai, Ax, Symbolic, &Numeric, Control, Info);
-	if(Numeric == NULL)
+	umfpack_i_numeric(Ap, Ai, Ax, Symbolic, &Numeric, Control, Info);
+	if (Numeric == NULL)
 		DisplayMsgLn("UMFPACK: Numeric ist NULL!");
-	status = umfpack_i_solve ("Ax=b", Ap, Ai, Ax, x, b, Numeric, Control, Info);
-	umfpack_i_report_info (Control, Info);
-	umfpack_i_report_status (Control, status);
+	status = umfpack_i_solve("Ax=b", Ap, Ai, Ax, x, b, Numeric, Control, Info);
+	umfpack_i_report_info(Control, Info);
+	umfpack_i_report_status(Control, status);
 #endif
 #ifdef UMFPACK40
-	status = umfpack_di_symbolic (n, n, Ap, Ai, &Symbolic, Control, Info);
-	umfpack_di_report_status (Control, status);
+	status = umfpack_di_symbolic(n, n, Ap, Ai, &Symbolic, Control, Info);
+	umfpack_di_report_status(Control, status);
 	if (status == UMFPACK_ERROR_out_of_memory)
 	{
 		a_size_mult *= 1.2;
-		Ax = (double*) Free(Ax);
-		Ai = (int*) Free(Ai);
-		Ap = (int*) Free(Ap);
+		Ax = (double*)Free(Ax);
+		Ai = (int*)Free(Ai);
+		Ap = (int*)Free(Ap);
 		goto restart;
 	}
 	if (status != UMFPACK_OK)
@@ -1157,11 +1168,11 @@ restart:
 		MXDumpGLS("ERROR.GLS", 1, b, NULL);
 		exit(1);
 	}
-	if(Symbolic == NULL)
+	if (Symbolic == NULL)
 		DisplayMsgLn("UMFPACK: Symbolic ist NULL!");
 
-	status = umfpack_di_numeric (Ap, Ai, Ax, Symbolic, &Numeric, Control, Info);
-	umfpack_di_report_status (Control, status);
+	status = umfpack_di_numeric(Ap, Ai, Ax, Symbolic, &Numeric, Control, Info);
+	umfpack_di_report_status(Control, status);
 	if (status != UMFPACK_OK)
 	{
 		DisplayMsgLn("UMFPACK wird abgebrochen!");
@@ -1169,12 +1180,12 @@ restart:
 		MXDumpGLS("ERROR.GLS", 1, b, NULL);
 		exit(1);
 	}
-	if(Numeric == NULL)
+	if (Numeric == NULL)
 		DisplayMsgLn("UMFPACK: Numeric ist NULL!");
 
-	status = umfpack_di_solve (UMFPACK_A, Ap, Ai, Ax, x, b, Numeric, Control, Info);
-	umfpack_di_report_info (Control, Info);
-	umfpack_di_report_status (Control, status);
+	status = umfpack_di_solve(UMFPACK_A, Ap, Ai, Ax, x, b, Numeric, Control, Info);
+	umfpack_di_report_info(Control, Info);
+	umfpack_di_report_status(Control, status);
 	if (status != UMFPACK_OK)
 	{
 		DisplayMsgLn("UMFPACK wird abgebrochen!");
@@ -1185,12 +1196,12 @@ restart:
 #endif
 
 #ifdef UMFPACK31
-	umfpack_i_free_symbolic (&Symbolic);
-	umfpack_i_free_numeric (&Numeric);
+	umfpack_i_free_symbolic(&Symbolic);
+	umfpack_i_free_numeric(&Numeric);
 #endif
 #ifdef UMFPACK40
-	umfpack_di_free_symbolic (&Symbolic);
-	umfpack_di_free_numeric (&Numeric);
+	umfpack_di_free_symbolic(&Symbolic);
+	umfpack_di_free_numeric(&Numeric);
 #endif
 
 	MXResiduum(x, b, r);
@@ -1202,12 +1213,12 @@ restart:
 	if (vorkond)
 		MXVorkond(1, x, b);
 
-	Ax = (double*) Free(Ax);
-	Ai = (int*) Free(Ai);
-	Ap = (int*) Free(Ap);
+	Ax = (double*)Free(Ax);
+	Ai = (int*)Free(Ai);
+	Ap = (int*)Free(Ap);
 
-	r = (double*) Free(r);
-	t = (double*) Free(t);
+	r = (double*)Free(r);
+	t = (double*)Free(t);
 
 	return k;
 #else // ifdef UMFPACK
@@ -1252,9 +1263,9 @@ restart:
 int SpBICG(double* b, double* x, long n)
 {
 	/* Variablen */
-	static double* r, * rs, * p, * ps, * v, * tmp;
+	static double *r, *rs, *p, *ps, *v, *tmp;
 	static double alpha, beta, rho, rho1, eps;
-	register int i;                       /* schnellere Vektoroperationen, Ra, 3/2000 */
+	register int i; /* schnellere Vektoroperationen, Ra, 3/2000 */
 	int k = 0, max_iter = 0;
 	static double r0norm, b0norm, x0norm;
 
@@ -1266,15 +1277,15 @@ int SpBICG(double* b, double* x, long n)
 
 	if (cg_maxiter > 0)
 		max_iter = cg_maxiter;
-	//OK411    if (cg_maxiter == -1)
-	//OK411        max_iter = NodeListLength;
+// OK411    if (cg_maxiter == -1)
+// OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES4
 	DisplayMsgLn("SpBICG");
 #endif
 
-	r = (double*) Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
-	rs = (double*) Malloc(n * sizeof(double));
+	r = (double*)Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
+	rs = (double*)Malloc(n * sizeof(double));
 
 	MXResiduum(x, b, r);
 
@@ -1317,28 +1328,28 @@ int SpBICG(double* b, double* x, long n)
 
 	if (VEKNORM_BICG(r, n) <= eps)
 	{
-		r = (double*) Free(r);
-		rs = (double*) Free(rs);
+		r = (double*)Free(r);
+		rs = (double*)Free(rs);
 
 		/* Ggf. abschliessen der Vorkonditionierung */
 		if (vorkond)
 			MXVorkond(1, x, b);
 		return 0;
 	}
-	p = (double*) Malloc(n * sizeof(double));
-	ps = (double*) Malloc(n * sizeof(double));
-	v = (double*) Malloc(n * sizeof(double));
-	tmp = (double*) Malloc(n * sizeof(double));
+	p = (double*)Malloc(n * sizeof(double));
+	ps = (double*)Malloc(n * sizeof(double));
+	v = (double*)Malloc(n * sizeof(double));
+	tmp = (double*)Malloc(n * sizeof(double));
 
-	if VK_Modus
-	        (VK_iLDU) MXVorkond(2, r, r); /* Ra, 3/2000 */
+	if
+		VK_Modus(VK_iLDU) MXVorkond(2, r, r); /* Ra, 3/2000 */
 	for (i = 0; i < n; i++)
 	{
 		p[i] = ps[i] = 0.0;
 		rs[i] = r[i];
 	}
 
-	for (;; )
+	for (;;)
 	{
 		rho = MSkalarprodukt(rs, r, n);
 		beta = rho / rho1;
@@ -1349,8 +1360,8 @@ int SpBICG(double* b, double* x, long n)
 		}
 
 		MXMatVek(p, v);
-		if VK_Modus
-		        (VK_iLDU) MXVorkond(2, v, v); /* Ra, 3/2000 */
+		if
+			VK_Modus(VK_iLDU) MXVorkond(2, v, v); /* Ra, 3/2000 */
 		alpha = rho / MSkalarprodukt(ps, v, n);
 		for (i = 0; i < n; i++)
 		{
@@ -1359,8 +1370,8 @@ int SpBICG(double* b, double* x, long n)
 		}
 
 #ifdef SOLVER_SHOW_RESULTS
-		printf("\n%ld %f %f %f %f %f",(long)k,x[(long)(n * .1)],x[(long)(n * .3)],
-		       x[(long)(n * .5)],x[(long)(n * .7)],x[(long)(n * .9)]);
+		printf("\n%ld %f %f %f %f %f", (long)k, x[(long)(n * .1)], x[(long)(n * .3)], x[(long)(n * .5)],
+		       x[(long)(n * .7)], x[(long)(n * .9)]);
 #endif
 
 		k++;
@@ -1369,14 +1380,14 @@ int SpBICG(double* b, double* x, long n)
 		if (VEKNORM_BICG(r, n) <= eps)
 			break;
 
-		if VK_Modus
-		        (VK_iLDU)
-		{
-			MXVorkond(3, v, ps);
-			MXMatTVek(v, tmp);
-		}
+		if
+			VK_Modus(VK_iLDU)
+			{
+				MXVorkond(3, v, ps);
+				MXMatTVek(v, tmp);
+			}
 		else
-			MXMatTVek(ps, tmp);  /* Ra, 3/2000 */
+			MXMatTVek(ps, tmp); /* Ra, 3/2000 */
 		for (i = 0; i < n; i++)
 			rs[i] -= alpha * tmp[i];
 
@@ -1384,10 +1395,10 @@ int SpBICG(double* b, double* x, long n)
 			break;
 
 #ifdef SOLVER_SHOW_ERROR
-		if (k % (int)MMax((cg_maxiter / 10),1.) == 1)
+		if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
 		{
 			DisplayMsg("      Iteration-Nr.: ");
-			DisplayLong((long) k);
+			DisplayLong((long)k);
 			DisplayMsg(", Fehler = ");
 			DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
 			DisplayMsgLn(" ");
@@ -1397,12 +1408,12 @@ int SpBICG(double* b, double* x, long n)
 		rho1 = rho;
 	}
 
-	r = (double*) Free(r);
-	rs = (double*) Free(rs);
-	p = (double*) Free(p);
-	ps = (double*) Free(ps);
-	v = (double*) Free(v);
-	tmp = (double*) Free(tmp);
+	r = (double*)Free(r);
+	rs = (double*)Free(rs);
+	p = (double*)Free(p);
+	ps = (double*)Free(ps);
+	v = (double*)Free(v);
+	tmp = (double*)Free(tmp);
 	/* msr: evtl. Speicher immer nur vergroessern, nie ganz freigeben
 	   (wie bei masscont geplant) */
 
@@ -1452,35 +1463,34 @@ int SpBICGSTAB(double* restrict b, double* restrict x, long n)
 int SpBICGSTAB(double* b, double* x, long n)
 #endif
 {
-	/* Variablen */
+/* Variablen */
 #ifdef SX
-	double* restrict r, * restrict r2, * restrict rs, * restrict p, * restrict s, * restrict t,
-	* restrict v;
+	double *restrict r, *restrict r2, *restrict rs, *restrict p, *restrict s, *restrict t, *restrict v;
 #else
-	double* r, * r2, * rs, * p, * s, * t, * v;
+	double *r, *r2, *rs, *p, *s, *t, *v;
 #endif
 	double alpha, beta, omega, rho, rho1, eps = 0.;
-	register long i;                      /* schnellere Vektoroperationen, Ra, 3/2000 */
+	register long i; /* schnellere Vektoroperationen, Ra, 3/2000 */
 	int k = 0, max_iter = 0, repeat = 0;
 	double r0norm = 0., b0norm = 0., x0norm = 0., tt, ts, rsv;
-	//WW double error_rel;
-	//MXDumpGLS("rf_pcs.txt",1,b,x); abort();
+	// WW double error_rel;
+	// MXDumpGLS("rf_pcs.txt",1,b,x); abort();
 	/* Ggf. starten der Vorkonditionierung */
 	if (vorkond)
-		//WW      cout << "        Preconditioning" << "\n";
-		MXVorkond(0,x,b);
-	r = (double*) Malloc(n * sizeof(double));
-	r2 = (double*) Malloc(n * sizeof(double));
-	rs = (double*) Malloc(n * sizeof(double));
-	p = (double*) Malloc(n * sizeof(double));
-	s = (double*) Malloc(n * sizeof(double));
-	t = (double*) Malloc(n * sizeof(double));
-	v = (double*) Malloc(n * sizeof(double));
+		// WW      cout << "        Preconditioning" << "\n";
+		MXVorkond(0, x, b);
+	r = (double*)Malloc(n * sizeof(double));
+	r2 = (double*)Malloc(n * sizeof(double));
+	rs = (double*)Malloc(n * sizeof(double));
+	p = (double*)Malloc(n * sizeof(double));
+	s = (double*)Malloc(n * sizeof(double));
+	t = (double*)Malloc(n * sizeof(double));
+	v = (double*)Malloc(n * sizeof(double));
 
 	if (cg_maxiter > 0)
 		max_iter = cg_maxiter;
-	//OK411    if (cg_maxiter == -1)
-	//OK411        max_iter = NodeListLength;
+// OK411    if (cg_maxiter == -1)
+// OK411        max_iter = NodeListLength;
 
 restart:
 
@@ -1525,10 +1535,10 @@ restart:
 		r0norm = VEKNORM_BICGSTAB(r, n);
 		eps = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
 	}
-	//OK
-	r0norm = VEKNORM_BICGSTAB(r,n);
-	//WW error_rel = r0norm/eps;
-	//WW    cout << "\n  SpBICGSTAB iteration: 0/" << max_iter << " Error: " << error_rel << "\n";
+	// OK
+	r0norm = VEKNORM_BICGSTAB(r, n);
+// WW error_rel = r0norm/eps;
+// WW    cout << "\n  SpBICGSTAB iteration: 0/" << max_iter << " Error: " << error_rel << "\n";
 #ifdef TESTLOES4
 	DisplayMsg("eps = ");
 	DisplayDouble(eps, 22, 20);
@@ -1538,14 +1548,14 @@ restart:
 	if ((k >= max_iter) || (VEKNORM_BICGSTAB(r, n) <= eps))
 		goto end;
 
-	if VK_Modus
-	        (VK_iLDU) MXVorkond(2, r, r);
+	if
+		VK_Modus(VK_iLDU) MXVorkond(2, r, r);
 
-	MKopierVec(r,rs,n);
-	MKopierVec(r,p,n);
-	MNulleVec(v,n);
+	MKopierVec(r, rs, n);
+	MKopierVec(r, p, n);
+	MNulleVec(v, n);
 
-	for (;; )
+	for (;;)
 	{
 		/* Zaehler fuer Wiederholungen innerhalb des Loesers */
 		k++;
@@ -1558,7 +1568,7 @@ restart:
 			/* Bei rho==0 ist eigentlich alles hoffnungslos, wir versuchen einen Restart ... */
 			goto restart;
 
-		if(k > 1)
+		if (k > 1)
 		{
 			beta = (rho / rho1) * (alpha / omega);
 #ifdef SX
@@ -1569,8 +1579,8 @@ restart:
 		}
 
 		MXMatVek(p, v);
-		if VK_Modus
-		        (VK_iLDU) MXVorkond(2, v, v); /* Ra, 3/2000 */
+		if
+			VK_Modus(VK_iLDU) MXVorkond(2, v, v); /* Ra, 3/2000 */
 
 		rsv = MSkalarprodukt(rs, v, n);
 
@@ -1584,7 +1594,7 @@ restart:
 		/* Erste Abbruchmoeglichkeit */
 		if (VEKNORM_BICGSTAB(s, n) <= eps)
 		{
-			/* Die Loesung nochmal updaten */
+/* Die Loesung nochmal updaten */
 #ifdef SX
 #pragma cdir nodep
 #endif
@@ -1595,8 +1605,8 @@ restart:
 
 		MXMatVek(s, t);
 
-		if VK_Modus
-		        (VK_iLDU) MXVorkond(2, t, t); /* Ra, 3/2000 */
+		if
+			VK_Modus(VK_iLDU) MXVorkond(2, t, t); /* Ra, 3/2000 */
 
 		ts = MSkalarprodukt(t, s, n);
 		tt = MSkalarprodukt(t, t, n);
@@ -1629,22 +1639,22 @@ restart:
 			r[i] = s[i] - omega * t[i];
 
 #ifdef SOLVER_SHOW_RESULTS
-		printf("\n%ld %f %f %f %f %f",(long)k,x[(long)(n * .1)],x[(long)(n * .3)],
-		       x[(long)(n * .5)],x[(long)(n * .7)],x[(long)(n * .9)]);
+		printf("\n%ld %f %f %f %f %f", (long)k, x[(long)(n * .1)], x[(long)(n * .3)], x[(long)(n * .5)],
+		       x[(long)(n * .7)], x[(long)(n * .9)]);
 #endif
-		//OK
-		//WW error_rel = VEKNORM_BICGSTAB(r2,n)/eps;
-		//WW    printf("\r        SpBICGSTAB iteration: %i/%i Error: %f",k,max_iter,error_rel);
+		// OK
+		// WW error_rel = VEKNORM_BICGSTAB(r2,n)/eps;
+		// WW    printf("\r        SpBICGSTAB iteration: %i/%i Error: %f",k,max_iter,error_rel);
 		if (linear_error_type == 4)
 			eps = cg_eps * (VEKNORM_BICGSTAB(x, n));
 		if (VEKNORM_BICGSTAB(r2, n) <= eps)
 			break;
 
 #ifdef SOLVER_SHOW_ERROR
-		if (k % (int)MMax((max_iter / 10),1.) == 1)
+		if (k % (int)MMax((max_iter / 10), 1.) == 1)
 		{
 			DisplayMsg("      Iteration-Nr.: ");
-			DisplayLong((long) k);
+			DisplayLong((long)k);
 			DisplayMsg(", Fehler = ");
 			DisplayDouble(VEKNORM_BICGSTAB(r2, n) / eps, 4, 1);
 			DisplayMsgLn(" ");
@@ -1661,20 +1671,20 @@ restart:
 		goto end;
 
 end:
-	r = (double*) Free(r);
-	r2 = (double*) Free(r2);
-	rs = (double*) Free(rs);
-	p = (double*) Free(p);
-	s = (double*) Free(s);
-	t = (double*) Free(t);
-	v = (double*) Free(v);
+	r = (double*)Free(r);
+	r2 = (double*)Free(r2);
+	rs = (double*)Free(rs);
+	p = (double*)Free(p);
+	s = (double*)Free(s);
+	t = (double*)Free(t);
+	v = (double*)Free(v);
 
 	/* Ggf. abschliessen der Vorkonditionierung */
 	if (vorkond)
 		MXVorkond(1, x, b);
 
-	//WW
-	printf("\t  SpBICGSTAB iteration: %i/%i \n",k,max_iter);
+	// WW
+	printf("\t  SpBICGSTAB iteration: %i/%i \n", k, max_iter);
 
 	return k;
 }
@@ -1711,10 +1721,10 @@ end:
 int SpQMRCGSTAB(double* b, double* x, long n)
 {
 	/* Variablen */
-	static double* r, * rs, * d, * ds, * p, * s, * t, * v, * xs;
+	static double *r, *rs, *d, *ds, *p, *s, *t, *v, *xs;
 	static double alpha, beta, omega, rho, rho1, eps;
 	static double tau, teta, eta, taus, tetas, etas, c;
-	register int i;                       /* schnellere Vektoroperationen, Ra, 3/2000 */
+	register int i; /* schnellere Vektoroperationen, Ra, 3/2000 */
 	int k = 0, max_iter = 0;
 	static double r0norm, b0norm, x0norm;
 
@@ -1729,15 +1739,15 @@ int SpQMRCGSTAB(double* b, double* x, long n)
 
 	if (cg_maxiter > 0)
 		max_iter = cg_maxiter;
-	//OK411    if (cg_maxiter == -1)
-	//OK411        max_iter = NodeListLength;
+// OK411    if (cg_maxiter == -1)
+// OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES4
 	DisplayMsgLn("SpQMRCGSTAB");
 #endif
 
-	r = (double*) Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
-	s = (double*) Malloc(n * sizeof(double));
+	r = (double*)Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
+	s = (double*)Malloc(n * sizeof(double));
 	MXResiduum(x, b, r);
 
 	if (linear_error_type == 0)
@@ -1774,38 +1784,38 @@ int SpQMRCGSTAB(double* b, double* x, long n)
 
 	if (VEKNORM_QMRCGSTAB(r, n) <= eps)
 	{
-		r = (double*) Free(r);
-		s = (double*) Free(s);
+		r = (double*)Free(r);
+		s = (double*)Free(s);
 		/* Ggf. abschliessen der Vorkonditionierung */
 		if (vorkond)
 			MXVorkond(1, x, b);
 		return 0;
 	}
-	rs = (double*) Malloc(n * sizeof(double));
-	d = (double*) Malloc(n * sizeof(double));
-	ds = (double*) Malloc(n * sizeof(double));
-	p = (double*) Malloc(n * sizeof(double));
-	s = (double*) Malloc(n * sizeof(double));
-	t = (double*) Malloc(n * sizeof(double));
-	v = (double*) Malloc(n * sizeof(double));
-	xs = (double*) Malloc(n * sizeof(double));
+	rs = (double*)Malloc(n * sizeof(double));
+	d = (double*)Malloc(n * sizeof(double));
+	ds = (double*)Malloc(n * sizeof(double));
+	p = (double*)Malloc(n * sizeof(double));
+	s = (double*)Malloc(n * sizeof(double));
+	t = (double*)Malloc(n * sizeof(double));
+	v = (double*)Malloc(n * sizeof(double));
+	xs = (double*)Malloc(n * sizeof(double));
 	for (i = 0; i < n; i++)
 		d[i] = p[i] = v[i] = 0.0;
 
-	if VK_Modus
-	        (VK_iLDU) MXVorkond(2, r, r); /* Ra, 3/2000 */
+	if
+		VK_Modus(VK_iLDU) MXVorkond(2, r, r); /* Ra, 3/2000 */
 	for (i = 0; i < n; i++)
 		rs[i] = r[i];
 
-	for (;; )
+	for (;;)
 	{
 		rho = MSkalarprodukt(rs, r, n);
 		beta = (rho / rho1) * (alpha / omega);
 		for (i = 0; i < n; i++)
 			p[i] = r[i] + beta * (p[i] - omega * v[i]);
 		MXMatVek(p, v);
-		if VK_Modus
-		        (VK_iLDU) MXVorkond(2, v, v); /* Ra, 3/2000 */
+		if
+			VK_Modus(VK_iLDU) MXVorkond(2, v, v); /* Ra, 3/2000 */
 		alpha = rho / MSkalarprodukt(rs, v, n);
 		for (i = 0; i < n; i++)
 			s[i] = r[i] - alpha * v[i];
@@ -1822,8 +1832,8 @@ int SpQMRCGSTAB(double* b, double* x, long n)
 		}
 		/* update r */
 		MXMatVek(s, t);
-		if VK_Modus
-		        (VK_iLDU) MXVorkond(2, t, t); /* Ra, 3/2000 */
+		if
+			VK_Modus(VK_iLDU) MXVorkond(2, t, t); /* Ra, 3/2000 */
 		omega = MSkalarprodukt(t, s, n) / MSkalarprodukt(t, t, n);
 		for (i = 0; i < n; i++)
 			r[i] = s[i] - omega * t[i];
@@ -1841,8 +1851,8 @@ int SpQMRCGSTAB(double* b, double* x, long n)
 		}
 
 #ifdef SOLVER_SHOW_RESULTS
-		printf("\n%ld %f %f %f %f %f",(long)k,x[(long)(n * .1)],x[(long)(n * .3)],
-		       x[(long)(n * .5)],x[(long)(n * .7)],x[(long)(n * .9)]);
+		printf("\n%ld %f %f %f %f %f", (long)k, x[(long)(n * .1)], x[(long)(n * .3)], x[(long)(n * .5)],
+		       x[(long)(n * .7)], x[(long)(n * .9)]);
 #endif
 		k++;
 
@@ -1855,10 +1865,10 @@ int SpQMRCGSTAB(double* b, double* x, long n)
 			break;
 
 #ifdef SOLVER_SHOW_ERROR
-		if (k % (int)MMax((cg_maxiter / 10),1.) == 1)
+		if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
 		{
 			DisplayMsg("      Iteration-Nr.: ");
-			DisplayLong((long) k);
+			DisplayLong((long)k);
 			DisplayMsg(", Fehler = ");
 			DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
 			DisplayMsgLn(" ");
@@ -1867,15 +1877,15 @@ int SpQMRCGSTAB(double* b, double* x, long n)
 		rho1 = rho;
 	}
 
-	r = (double*) Free(r);
-	rs = (double*) Free(rs);
-	d = (double*) Free(d);
-	ds = (double*) Free(ds);
-	p = (double*) Free(p);
-	s = (double*) Free(s);
-	t = (double*) Free(t);
-	v = (double*) Free(v);
-	xs = (double*) Free(xs);
+	r = (double*)Free(r);
+	rs = (double*)Free(rs);
+	d = (double*)Free(d);
+	ds = (double*)Free(ds);
+	p = (double*)Free(p);
+	s = (double*)Free(s);
+	t = (double*)Free(t);
+	v = (double*)Free(v);
+	xs = (double*)Free(xs);
 	/* msr: evtl. Speicher immer nur vergroessern, nie ganz freigeben
 	   (wie bei masscont geplant) */
 
@@ -1912,38 +1922,38 @@ int SpQMRCGSTAB(double* b, double* x, long n)
 int SpMGMRES(double* b, double* x, long n)
 {
 #ifdef GMRES_WORKS
-	double* V, * U, * r, * x0, * y, * c, * cs, * sn, * s, ** v, * w, * help;
+	double *V, *U, *r, *x0, *y, *c, *cs, *sn, *s, **v, *w, *help;
 	double beta, tol = cg_eps, resid, normb;
 	long max_iter, i, i1, i2, j, k;
 	const long m = 30;
 	double H[31][31];
 
-	if ( n <= 0 )
+	if (n <= 0)
 		return -1;
 
-	V  = MMachVec(n * (m + 1));
-	U  = MMachVec(m * (m + 1) / 2);
-	r  = MMachVec(n);
+	V = MMachVec(n * (m + 1));
+	U = MMachVec(m * (m + 1) / 2);
+	r = MMachVec(n);
 	x0 = MMachVec(n);
-	w  = MMachVec(n);
+	w = MMachVec(n);
 	help = MMachVec(n);
-	y  = MMachVec(m + 1);
-	c  = MMachVec(m);
-	s  = MMachVec(m + 1);
-	cs  = MMachVec(m + 1);
-	sn  = MMachVec(m + 1);
-	v  = (double**)Malloc((m + 1) * sizeof(double*)); /* Pointerfeld auf V */
+	y = MMachVec(m + 1);
+	c = MMachVec(m);
+	s = MMachVec(m + 1);
+	cs = MMachVec(m + 1);
+	sn = MMachVec(m + 1);
+	v = (double**)Malloc((m + 1) * sizeof(double*)); /* Pointerfeld auf V */
 
-	for (i = 0; i <= m; ++i )
-		v[i] = V + i * n;         /* Zuweisen */
+	for (i = 0; i <= m; ++i)
+		v[i] = V + i * n; /* Zuweisen */
 
 	if (cg_maxiter >= 0)
 		max_iter = cg_maxiter;
 	if (cg_maxiter == -1)
 		max_iter = NodeListLength;
 
-	if VK_Modus
-	        (VK_iLDU) MXVorkond(2, b, help);
+	if
+		VK_Modus(VK_iLDU) MXVorkond(2, b, help);
 	normb = VEKNORM_BICGSTAB(help, n);
 
 	if (normb == 0.0)
@@ -1960,8 +1970,8 @@ int SpMGMRES(double* b, double* x, long n)
 		   r = M.solve(b - A * x);
 		 */
 		MXResiduum(x0, b, r);
-		if VK_Modus
-		        (VK_iLDU) MXVorkond(2, r, r);
+		if
+			VK_Modus(VK_iLDU) MXVorkond(2, r, r);
 
 		beta = VEKNORM_BICGSTAB(r, n);
 
@@ -1980,8 +1990,8 @@ int SpMGMRES(double* b, double* x, long n)
 		{
 			/*      w = M.solve(A * v[i]); */
 			MXMatVek(v[i], w);
-			if VK_Modus
-			        (VK_iLDU) MXVorkond(2, w, w);
+			if
+				VK_Modus(VK_iLDU) MXVorkond(2, w, w);
 
 			for (k = 0; k <= i; k++)
 			{
@@ -2030,7 +2040,7 @@ end:
 	MLoeschVec(y);
 	MLoeschVec(c);
 	MLoeschVec(s);
-	v  = (double**) Free(v);
+	v = (double**)Free(v);
 
 	return max_iter;
 #else // ifdef GMRES_WORKS
@@ -2055,13 +2065,13 @@ void GeneratePlaneRotation(double* dx, double* dy, double* cs, double* sn)
 	else if (abs(*dy) > abs(*dx))
 	{
 		temp = *dx / *dy;
-		*sn = 1.0 / sqrt( 1.0 + temp * temp );
+		*sn = 1.0 / sqrt(1.0 + temp * temp);
 		*cs = temp * *sn;
 	}
 	else
 	{
 		temp = *dy / *dx;
-		*cs = 1.0 / sqrt( 1.0 + temp * temp );
+		*cs = 1.0 / sqrt(1.0 + temp * temp);
 		*sn = temp * *cs;
 	}
 }
@@ -2069,7 +2079,7 @@ void GeneratePlaneRotation(double* dx, double* dy, double* cs, double* sn)
 void ApplyPlaneRotation(double* dx, double* dy, double* cs, double* sn)
 {
 	static double temp;
-	temp  =  *cs * *dx + *sn * *dy;
+	temp = *cs * *dx + *sn * *dy;
 	*dy = -*sn * *dx + *cs * *dy;
 	*dx = temp;
 }
@@ -2101,10 +2111,10 @@ void ApplyPlaneRotation(double* dx, double* dy, double* cs, double* sn)
 int SpCG(double* b, double* x, long n)
 {
 	/* Variablen */
-	static double* d, * r,* s, * tmp;
+	static double *d, *r, *s, *tmp;
 	static double alpha, beta, tmpr, eps;
 	int k = 0, max_iter = 0;
-	register int i;                       /* schnellere Vektoroperationen, Ra, 3/2000 */
+	register int i; /* schnellere Vektoroperationen, Ra, 3/2000 */
 	static double r0norm, b0norm, x0norm;
 
 	/* Ggf. starten der Vorkonditionierung */
@@ -2113,15 +2123,15 @@ int SpCG(double* b, double* x, long n)
 
 	if (cg_maxiter > 0)
 		max_iter = cg_maxiter;
-	//OK411    if (cg_maxiter == -1)
-	//OK411        max_iter = NodeListLength;
+// OK411    if (cg_maxiter == -1)
+// OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES4
 	DisplayMsgLn("SpCG");
 #endif
 
-	r = (double*) Malloc(n * sizeof(double));
-	s = (double*) Malloc(n * sizeof(double));
+	r = (double*)Malloc(n * sizeof(double));
+	s = (double*)Malloc(n * sizeof(double));
 
 	MXResiduum(x, b, r);
 	if (linear_error_type == 0)
@@ -2150,7 +2160,7 @@ int SpCG(double* b, double* x, long n)
 		eps = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
 	}
 
-	s = (double*) Free(s);
+	s = (double*)Free(s);
 
 #ifdef TESTLOES4
 	DisplayMsg("eps = ");
@@ -2160,25 +2170,25 @@ int SpCG(double* b, double* x, long n)
 
 	if (VEKNORM_CG(r, n) <= eps)
 	{
-		r = (double*) Free(r);
+		r = (double*)Free(r);
 		/* Ggf. abschliessen der Vorkonditionierung */
 		if (vorkond)
 			MXVorkond(1, x, b);
 		return 0;
 	}
-	tmp = (double*) Malloc(n * sizeof(double));
-	d = (double*) Malloc(n * sizeof(double));
+	tmp = (double*)Malloc(n * sizeof(double));
+	d = (double*)Malloc(n * sizeof(double));
 
-	if VK_Modus
-	        (VK_iLDU) MXVorkond(2, r, r); /* Ra, 3/2000 */
+	if
+		VK_Modus(VK_iLDU) MXVorkond(2, r, r); /* Ra, 3/2000 */
 	for (i = 0; i < n; i++)
 		d[i] = r[i];
 
-	for (;; )
+	for (;;)
 	{
 		MXMatVek(d, tmp);
-		if VK_Modus
-		        (VK_iLDU) MXVorkond(2, tmp, tmp); /* Ra, 3/2000 */
+		if
+			VK_Modus(VK_iLDU) MXVorkond(2, tmp, tmp); /* Ra, 3/2000 */
 
 		alpha = (tmpr = MSkalarprodukt(r, r, n)) / MSkalarprodukt(d, tmp, n);
 		for (i = 0; i < n; i++)
@@ -2188,8 +2198,8 @@ int SpCG(double* b, double* x, long n)
 		}
 
 #ifdef SOLVER_SHOW_RESULTS
-		printf("\n%ld %f %f %f %f %f",(long)k,x[(long)(n * .1)],x[(long)(n * .3)],
-		       x[(long)(n * .5)],x[(long)(n * .7)],x[(long)(n * .9)]);
+		printf("\n%ld %f %f %f %f %f", (long)k, x[(long)(n * .1)], x[(long)(n * .3)], x[(long)(n * .5)],
+		       x[(long)(n * .7)], x[(long)(n * .9)]);
 #endif
 
 		k++;
@@ -2201,10 +2211,10 @@ int SpCG(double* b, double* x, long n)
 			break;
 
 #ifdef SOLVER_SHOW_ERROR
-		if (k % (int)MMax((cg_maxiter / 10),1.) == 1)
+		if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
 		{
 			DisplayMsg("      Iteration-Nr.: ");
-			DisplayLong((long) k);
+			DisplayLong((long)k);
 			DisplayMsg(", Fehler = ");
 			DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
 			DisplayMsgLn(" ");
@@ -2216,15 +2226,15 @@ int SpCG(double* b, double* x, long n)
 			d[i] = r[i] + beta * d[i];
 	}
 
-	r = (double*) Free(r);
-	tmp = (double*) Free(tmp);
-	d = (double*) Free(d);
+	r = (double*)Free(r);
+	tmp = (double*)Free(tmp);
+	d = (double*)Free(d);
 
 	/* Ggf. abschliessen der Vorkonditionierung */
 	if (vorkond)
 		MXVorkond(1, x, b);
 
-    printf("\t  SpCG iteration: %i/%i \n",k,max_iter);
+	printf("\t  SpCG iteration: %i/%i \n", k, max_iter);
 
 	return k;
 }
@@ -2262,10 +2272,10 @@ int SpCG(double* b, double* x, long n)
 int SpCGNR(double* b, double* x, long n)
 {
 	/* Variablen */
-	static double* d, * r,* s, * tmp, * h = NULL;
+	static double *d, *r, *s, *tmp, *h = NULL;
 	static double alpha, beta, tmpr, tmpr1, eps;
 	int k = 0, max_iter = 0;
-	register int i;                       /* schnellere Vektoroperationen, Ra, 3/2000 */
+	register int i; /* schnellere Vektoroperationen, Ra, 3/2000 */
 	static double r0norm, b0norm, x0norm;
 
 	/* Ggf. starten der Vorkonditionierung */
@@ -2274,15 +2284,15 @@ int SpCGNR(double* b, double* x, long n)
 
 	if (cg_maxiter > 0)
 		max_iter = cg_maxiter;
-	//OK411    if (cg_maxiter == -1)
-	//OK411        max_iter = NodeListLength;
+// OK411    if (cg_maxiter == -1)
+// OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES4
 	DisplayMsgLn("SpCGNE");
 #endif
 
-	r = (double*) Malloc(n * sizeof(double));
-	s = (double*) Malloc(n * sizeof(double));
+	r = (double*)Malloc(n * sizeof(double));
+	s = (double*)Malloc(n * sizeof(double));
 
 	MXResiduum(x, b, r);
 	if (linear_error_type == 0)
@@ -2311,28 +2321,28 @@ int SpCGNR(double* b, double* x, long n)
 		eps = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
 	}
 
-	s = (double*) Free(s);
+	s = (double*)Free(s);
 
 	if (VEKNORM_CG(r, n) <= eps)
 	{
-		r = (double*) Free(r);
+		r = (double*)Free(r);
 		/* Ggf. abschliessen der Vorkonditionierung */
 		if (vorkond)
 			MXVorkond(1, x, b);
 		return 0;
 	}
-	tmp = (double*) Malloc(n * sizeof(double));
-	d = (double*) Malloc(n * sizeof(double));
-	if VK_Modus
-	        (VK_iLDU) h = (double*) Malloc(n * sizeof(double));
+	tmp = (double*)Malloc(n * sizeof(double));
+	d = (double*)Malloc(n * sizeof(double));
+	if
+		VK_Modus(VK_iLDU) h = (double*)Malloc(n * sizeof(double));
 
-	if VK_Modus
-	        (VK_iLDU)
-	{
-		MXVorkond(2, r, r);
-		MXVorkond(3, h, r);       /* Ra, 3/2000 */
-		MXMatTVek(h, tmp);
-	}
+	if
+		VK_Modus(VK_iLDU)
+		{
+			MXVorkond(2, r, r);
+			MXVorkond(3, h, r); /* Ra, 3/2000 */
+			MXMatTVek(h, tmp);
+		}
 	else
 		MXMatTVek(r, tmp);
 
@@ -2340,11 +2350,11 @@ int SpCGNR(double* b, double* x, long n)
 	for (i = 0; i < n; i++)
 		d[i] = tmp[i];
 
-	for (;; )
+	for (;;)
 	{
 		MXMatVek(d, tmp);
-		if VK_Modus
-		        (VK_iLDU) MXVorkond(2, tmp, tmp); /* Ra, 3/2000 */
+		if
+			VK_Modus(VK_iLDU) MXVorkond(2, tmp, tmp); /* Ra, 3/2000 */
 
 		alpha = tmpr / MSkalarprodukt(tmp, tmp, n);
 		for (i = 0; i < n; i++)
@@ -2354,8 +2364,8 @@ int SpCGNR(double* b, double* x, long n)
 		}
 
 #ifdef SOLVER_SHOW_RESULTS
-		printf("\n%ld %f %f %f %f %f",(long)k,x[(long)(n * .1)],x[(long)(n * .3)],
-		       x[(long)(n * .5)],x[(long)(n * .7)],x[(long)(n * .9)]);
+		printf("\n%ld %f %f %f %f %f", (long)k, x[(long)(n * .1)], x[(long)(n * .3)], x[(long)(n * .5)],
+		       x[(long)(n * .7)], x[(long)(n * .9)]);
 #endif
 		k++;
 		if (linear_error_type == 4)
@@ -2366,22 +2376,22 @@ int SpCGNR(double* b, double* x, long n)
 			break;
 
 #ifdef SOLVER_SHOW_ERROR
-		if (k % (int)MMax((cg_maxiter / 10),1.) == 1)
+		if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
 		{
 			DisplayMsg("      Iteration-Nr.: ");
-			DisplayLong((long) k);
+			DisplayLong((long)k);
 			DisplayMsg(", Fehler = ");
 			DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
 			DisplayMsgLn(" ");
 		}
 #endif
 
-		if VK_Modus
-		        (VK_iLDU)
-		{
-			MXVorkond(3, h, r); /* Ra, 3/2000 */
-			MXMatTVek(h, tmp);
-		}
+		if
+			VK_Modus(VK_iLDU)
+			{
+				MXVorkond(3, h, r); /* Ra, 3/2000 */
+				MXMatTVek(h, tmp);
+			}
 		else
 			MXMatTVek(r, tmp);
 		beta = (tmpr1 = MSkalarprodukt(tmp, tmp, n)) / tmpr;
@@ -2390,10 +2400,10 @@ int SpCGNR(double* b, double* x, long n)
 		tmpr = tmpr1;
 	}
 
-	r = (double*) Free(r);
-	tmp = (double*) Free(tmp);
-	d = (double*) Free(d);
-	h = (double*) Free(h);
+	r = (double*)Free(r);
+	tmp = (double*)Free(tmp);
+	d = (double*)Free(d);
+	h = (double*)Free(h);
 
 	/* Ggf. abschliessen der Vorkonditionierung */
 	if (vorkond)
@@ -2431,11 +2441,11 @@ int SpCGNR(double* b, double* x, long n)
 int SpCGS(double* b, double* x, long n)
 {
 	/* Variablen */
-	static double* r, * s, * rs, * p, * q, * u, * v, * w, * us, * tmp;
+	static double *r, *s, *rs, *p, *q, *u, *v, *w, *us, *tmp;
 	static double alpha, beta, rho, rho1;
 	static double eps;
 	static double r0norm, b0norm, x0norm;
-	register int i;                       /* schnellere Vektoroperationen, Ra, 3/2000 */
+	register int i; /* schnellere Vektoroperationen, Ra, 3/2000 */
 	int k = 0, max_iter = 0;
 
 	/* Ggf. starten der Vorkonditionierung */
@@ -2446,15 +2456,15 @@ int SpCGS(double* b, double* x, long n)
 
 	if (cg_maxiter > 0)
 		max_iter = cg_maxiter;
-	//OK411    if (cg_maxiter == -1)
-	//OK411        max_iter = NodeListLength;
+// OK411    if (cg_maxiter == -1)
+// OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES4
 	DisplayMsgLn("SpCGS");
 #endif
 
-	r = (double*) Malloc(n * sizeof(double));
-	s = (double*) Malloc(n * sizeof(double));
+	r = (double*)Malloc(n * sizeof(double));
+	s = (double*)Malloc(n * sizeof(double));
 
 	MXResiduum(x, b, r);
 	if (linear_error_type == 0)
@@ -2482,31 +2492,31 @@ int SpCGS(double* b, double* x, long n)
 		r0norm = VEKNORM_BICGSTAB(r, n);
 		eps = cg_eps * MMax(MMax(x0norm, b0norm), r0norm);
 	}
-	s = (double*) Free(s);
+	s = (double*)Free(s);
 
 	if (VEKNORM_CG(r, n) <= eps)
 	{
-		r = (double*) Free(r);
+		r = (double*)Free(r);
 		/* Ggf. abschliessen der Vorkonditionierung */
 		if (vorkond)
 			MXVorkond(1, x, b);
 		return 0;
 	}
-	rs = (double*) Malloc(n * sizeof(double));
-	p = (double*) Malloc(n * sizeof(double));
-	q = (double*) Malloc(n * sizeof(double));
-	u = (double*) Malloc(n * sizeof(double));
-	v = (double*) Malloc(n * sizeof(double));
-	w = (double*) Malloc(n * sizeof(double));
-	us = (double*) Malloc(n * sizeof(double));
-	tmp = (double*) Malloc(n * sizeof(double));
+	rs = (double*)Malloc(n * sizeof(double));
+	p = (double*)Malloc(n * sizeof(double));
+	q = (double*)Malloc(n * sizeof(double));
+	u = (double*)Malloc(n * sizeof(double));
+	v = (double*)Malloc(n * sizeof(double));
+	w = (double*)Malloc(n * sizeof(double));
+	us = (double*)Malloc(n * sizeof(double));
+	tmp = (double*)Malloc(n * sizeof(double));
 
-	if VK_Modus
-	        (VK_iLDU) MXVorkond(2, r, r); /* Ra, 3/2000 */
+	if
+		VK_Modus(VK_iLDU) MXVorkond(2, r, r); /* Ra, 3/2000 */
 	for (i = 0; i < n; i++)
 		rs[i] = r[i];
 
-	for (;; )
+	for (;;)
 	{
 		rho = MSkalarprodukt(rs, r, n);
 		beta = rho / rho1;
@@ -2517,8 +2527,8 @@ int SpCGS(double* b, double* x, long n)
 			p[i] = u[i] + alpha * p[i] + beta * q[i];
 		}
 		MXMatVek(p, v);
-		if VK_Modus
-		        (VK_iLDU) MXVorkond(2, v, v); /* Ra, 3/2000 */
+		if
+			VK_Modus(VK_iLDU) MXVorkond(2, v, v); /* Ra, 3/2000 */
 		alpha = rho / MSkalarprodukt(rs, v, n);
 		for (i = 0; i < n; i++)
 		{
@@ -2527,12 +2537,12 @@ int SpCGS(double* b, double* x, long n)
 			x[i] += alpha * us[i];
 		}
 #ifdef SOLVER_SHOW_RESULTS
-		printf("\n%ld %f %f %f %f %f",(long)k,x[(long)(n * .1)],x[(long)(n * .3)],
-		       x[(long)(n * .5)],x[(long)(n * .7)],x[(long)(n * .9)]);
+		printf("\n%ld %f %f %f %f %f", (long)k, x[(long)(n * .1)], x[(long)(n * .3)], x[(long)(n * .5)],
+		       x[(long)(n * .7)], x[(long)(n * .9)]);
 #endif
 		MXMatVek(us, tmp);
-		if VK_Modus
-		        (VK_iLDU) MXVorkond(2, tmp, tmp); /* Ra, 3/2000 */
+		if
+			VK_Modus(VK_iLDU) MXVorkond(2, tmp, tmp); /* Ra, 3/2000 */
 		for (i = 0; i < n; i++)
 			r[i] -= alpha * tmp[i];
 
@@ -2544,10 +2554,10 @@ int SpCGS(double* b, double* x, long n)
 			break;
 
 #ifdef SOLVER_SHOW_ERROR
-		if (k % (int)MMax((cg_maxiter / 10),1.) == 1)
+		if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
 		{
 			DisplayMsg("      Iteration-Nr.: ");
-			DisplayLong((long) k);
+			DisplayLong((long)k);
 			DisplayMsg(", Fehler = ");
 			DisplayDouble(VEKNORM_QMRCGSTAB(r, n) / eps, 4, 1);
 			DisplayMsgLn(" ");
@@ -2559,15 +2569,15 @@ int SpCGS(double* b, double* x, long n)
 		rho1 = rho;
 	}
 
-	r = (double*) Free(r);
-	rs = (double*) Free(rs);
-	p = (double*) Free(p);
-	q = (double*) Free(q);
-	u = (double*) Free(u);
-	v = (double*) Free(v);
-	w = (double*) Free(w);
-	us = (double*) Free(us);
-	tmp = (double*) Free(tmp);
+	r = (double*)Free(r);
+	rs = (double*)Free(rs);
+	p = (double*)Free(p);
+	q = (double*)Free(q);
+	u = (double*)Free(u);
+	v = (double*)Free(v);
+	w = (double*)Free(w);
+	us = (double*)Free(us);
+	tmp = (double*)Free(tmp);
 
 	/* Ggf. abschliessen der Vorkonditionierung */
 	if (vorkond)
@@ -2624,7 +2634,7 @@ int SpGauss(double* vecb, double* vecx, long g)
 #ifdef TESTLOES
 	DisplayMsgLn("SpGAUSS");
 #endif
-	s = (int*) Malloc(sizeof(int) * (g - 1));
+	s = (int*)Malloc(sizeof(int) * (g - 1));
 	/* LR-Faktorisierung */
 	for (k = 0; k < (g - 1); k++)
 	{
@@ -2651,7 +2661,7 @@ int SpGauss(double* vecb, double* vecx, long g)
 			}
 		/* Berechnung der Eliminationskoeffizienten */
 		for (i = (k + 1); i < g; i++)
-			MXDiv(i, k, MXGet(k, k));  /* matrix[i][k], matrix[k][k] */
+			MXDiv(i, k, MXGet(k, k)); /* matrix[i][k], matrix[k][k] */
 		/* Spaltenweise Berechnung der neuen Restmatrix */
 		for (j = (k + 1); j < g; j++)
 			for (i = (k + 1); i < g; i++)
@@ -2678,14 +2688,14 @@ int SpGauss(double* vecb, double* vecx, long g)
 	for (k = (g - 1); k >= 0; k--)
 	{
 		for (j = (k + 1); j < g; j++)
-			vecb[k] -= (MXGet(k, j) * vecb[j]);  /* matrix[k][j] */
-		vecb[k] /= MXGet(k, k);   /* matrix[k][k] */
+			vecb[k] -= (MXGet(k, j) * vecb[j]); /* matrix[k][j] */
+		vecb[k] /= MXGet(k, k); /* matrix[k][k] */
 	}
 	/* Umspeichern des Ergebnisses von vecb nach vecx */
 	for (k = 0; k < g; k++)
 		vecx[k] = vecb[k];
 	/* Speicher freigeben */
-	s = (int*) Free(s);
+	s = (int*)Free(s);
 	/* Ende */
 	return 0;
 }
@@ -2743,9 +2753,7 @@ int SpGauss(double* vecb, double* vecx, long g)
    10/1997     C.Thorenz  Variables Abbruchkriterium fuer CG-Loeser
 
 *************************************************************************/
-int NonLinearSolve(long cas, double* b, double* x, long n, void (* f)(double*,
-                                                                      double*,
-                                                                      double), long ind)
+int NonLinearSolve(long cas, double* b, double* x, long n, void (*f)(double*, double*, double), long ind)
 {
 	/* Variablen */
 	static long iter;
@@ -2759,23 +2767,23 @@ int NonLinearSolve(long cas, double* b, double* x, long n, void (* f)(double*,
 		/* Gleichungssystem-Parameter setzen */
 		switch (loeser_flow)
 		{
-		case 1:
-			LinearSolver = SpGauss;
-			break;
-		case 2:
+			case 1:
+				LinearSolver = SpGauss;
+				break;
+			case 2:
 #ifndef USE_MPI
-			LinearSolver = SpBICGSTAB;
+				LinearSolver = SpBICGSTAB;
 #endif
-			break;
-		case 3:
-			LinearSolver = SpBICG;
-			break;
-		case 4:
-			LinearSolver = SpQMRCGSTAB;
-			break;
-		case 5:
-			LinearSolver = SpCG;
-			break;
+				break;
+			case 3:
+				LinearSolver = SpBICG;
+				break;
+			case 4:
+				LinearSolver = SpQMRCGSTAB;
+				break;
+			case 5:
+				LinearSolver = SpCG;
+				break;
 		}
 		cg_maxiter = maxiter_flow;
 		cg_eps = eps_flow;
@@ -2785,12 +2793,12 @@ int NonLinearSolve(long cas, double* b, double* x, long n, void (* f)(double*,
 		/* Nichtlinearer-Loeser-Parameter setzen */
 		switch (nonlinear_method_flow)
 		{
-		case 1:
-			NonlinearSolver = SpPICARD;
-			break;
-		case 2:
-			NonlinearSolver = SpNEWTON;
-			break;
+			case 1:
+				NonlinearSolver = SpPICARD;
+				break;
+			case 2:
+				NonlinearSolver = SpNEWTON;
+				break;
 		}
 		nonlinear_maxiter = nonlinear_maxiter_flow;
 		nonlinear_convergence_type = nonlinear_convergence_type_flow;
@@ -2801,12 +2809,12 @@ int NonLinearSolve(long cas, double* b, double* x, long n, void (* f)(double*,
 #ifdef TESTLOES6
 		switch (nonlinear_method_flow)
 		{
-		case 1:
-			strcpy(text, "SpPICARD");
-			break;
-		case 2:
-			strcpy(text, "SpNEWTON");
-			break;
+			case 1:
+				strcpy(text, "SpPICARD");
+				break;
+			case 2:
+				strcpy(text, "SpNEWTON");
+				break;
 		}
 		DisplayMsgLn(text);
 #endif
@@ -2816,23 +2824,23 @@ int NonLinearSolve(long cas, double* b, double* x, long n, void (* f)(double*,
 		/* Gleichungssystem-Parameter setzen */
 		switch (loeser_tran)
 		{
-		case 1:
-			LinearSolver = SpGauss;
-			break;
-		case 2:
+			case 1:
+				LinearSolver = SpGauss;
+				break;
+			case 2:
 #ifndef USE_MPI
-			LinearSolver = SpBICGSTAB;
+				LinearSolver = SpBICGSTAB;
 #endif
-			break;
-		case 3:
-			LinearSolver = SpBICG;
-			break;
-		case 4:
-			LinearSolver = SpQMRCGSTAB;
-			break;
-		case 5:
-			LinearSolver = SpCG;
-			break;
+				break;
+			case 3:
+				LinearSolver = SpBICG;
+				break;
+			case 4:
+				LinearSolver = SpQMRCGSTAB;
+				break;
+			case 5:
+				LinearSolver = SpCG;
+				break;
 		}
 		cg_maxiter = maxiter_tran;
 		cg_eps = eps_tran;
@@ -2842,12 +2850,12 @@ int NonLinearSolve(long cas, double* b, double* x, long n, void (* f)(double*,
 		/* Nichtlinearer-Loeser-Parameter setzen */
 		switch (nonlinear_method_tran)
 		{
-		case 1:
-			NonlinearSolver = SpPICARD;
-			break;
-		case 2:
-			NonlinearSolver = SpNEWTON;
-			break;
+			case 1:
+				NonlinearSolver = SpPICARD;
+				break;
+			case 2:
+				NonlinearSolver = SpNEWTON;
+				break;
 		}
 		nonlinear_maxiter = nonlinear_maxiter_tran;
 		nonlinear_convergence_type = nonlinear_convergence_type_tran;
@@ -2859,12 +2867,12 @@ int NonLinearSolve(long cas, double* b, double* x, long n, void (* f)(double*,
 #ifdef TESTLOES
 		switch (nonlinear_method_tran)
 		{
-		case 1:
-			strcpy(text, "SpPICARD");
-			break;
-		case 2:
-			strcpy(text, "SpNEWTON");
-			break;
+			case 1:
+				strcpy(text, "SpPICARD");
+				break;
+			case 2:
+				strcpy(text, "SpNEWTON");
+				break;
 		}
 		DisplayMsgLn(text);
 #endif
@@ -2911,23 +2919,22 @@ int NonLinearSolve(long cas, double* b, double* x, long n, void (* f)(double*,
  */
 
 /**************************************************************************/
-int SpPICARD(double* b, double* x, long n, void (* f)(double* b,
-                                                      double* x,
-                                                      double aktuelle_zeit), long ind)
+int SpPICARD(double* b, double* x, long n, void (*f)(double* b, double* x, double aktuelle_zeit), long ind)
 /*int SpPICARD ( double *b, double *x, long n, void (*f)(), long ind ) */
 {
-	ind = ind;                            //OK411
+	ind = ind; // OK411
 	/* Variablen */
-	static double* r, * xs, * rs;
+	static double *r, *xs, *rs;
 	int k = 0;
 	static long iter;
 	static double error;
 	static double nonlinear_eps;
 
 	static int iterations_old_timestep = -1;
-	static double cg_eps_original;        /* Hilfsspeicher fuer die urspruengliche Loesungsgenauigkeit */
-	static int dirty;                     /* Kennzeichnet, dass die Iteration trotz unterschreiten der Fehlerschranke nicht abgebrochen werden darf */
-	static int rebuild_matrix;            /* Kennzeichnet, dass die Systemmatrix neu aufgebaut werden muss */
+	static double cg_eps_original; /* Hilfsspeicher fuer die urspruengliche Loesungsgenauigkeit */
+	static int dirty; /* Kennzeichnet, dass die Iteration trotz unterschreiten der Fehlerschranke nicht abgebrochen
+	                     werden darf */
+	static int rebuild_matrix; /* Kennzeichnet, dass die Systemmatrix neu aufgebaut werden muss */
 
 #define GERMAN
 
@@ -2947,19 +2954,19 @@ int SpPICARD(double* b, double* x, long n, void (* f)(double* b,
 	   Speicherreservierung fuer temporaere Felder */
 	if (nonlinear_convergence_type == 1)
 	{
-		xs = (double*) Malloc(n * sizeof(double));
+		xs = (double*)Malloc(n * sizeof(double));
 		MKopierVec(x, xs, n);
 	}
 	if (nonlinear_convergence_type == 2)
 	{
-		r = (double*) Malloc(n * sizeof(double));
-		rs = (double*) Malloc(n * sizeof(double));
+		r = (double*)Malloc(n * sizeof(double));
+		rs = (double*)Malloc(n * sizeof(double));
 		MXResiduum(x, b, r);
 		MKopierVec(r, rs, n);
 	}
 	if (nonlinear_convergence_type == 3)
 	{
-		xs = (double*) Malloc(n * sizeof(double));
+		xs = (double*)Malloc(n * sizeof(double));
 		MKopierVec(x, xs, n);
 	}
 	/*  bs  = (double *) Malloc(n*sizeof(double));
@@ -2969,7 +2976,7 @@ int SpPICARD(double* b, double* x, long n, void (* f)(double* b,
 
 	/****************************************************************************/
 	/* Loesen des Gleichungssystems und Fehlerberechnung */
-	for (;; )
+	for (;;)
 	{
 		k++;
 		dirty = 0;
@@ -2993,42 +3000,40 @@ int SpPICARD(double* b, double* x, long n, void (* f)(double* b,
 		iter = LinearSolver(b, x, n);
 
 		/* Speichern des Ergebnisses des Iterationsschritts in nval[ind] */
-		//OK411        TransferNodeVals(x, ind);
+		// OK411        TransferNodeVals(x, ind);
 
 		/* Fehlerberechnung */
 		switch (nonlinear_convergence_type)
 		{
-		case 1:
-			error = MVekDist(x, xs, n);
-			nonlinear_eps = nonlinear_abs_eps + \
-			                nonlinear_rel_eps* VEKNORM_BICG(xs, n);
-			break;
-		case 2:
-			MXResiduum(x, b, r);
-			error = VEKNORM_BICG(r, n);
-			nonlinear_eps = nonlinear_abs_eps + \
-			                nonlinear_rel_eps* VEKNORM_BICG(rs, n);
-			break;
-		case 3:
-			error = MVekDist(x, xs, n);
-			nonlinear_eps = nonlinear_rel_eps * VEKNORM_BICG(x, n);
-			break;
+			case 1:
+				error = MVekDist(x, xs, n);
+				nonlinear_eps = nonlinear_abs_eps + nonlinear_rel_eps * VEKNORM_BICG(xs, n);
+				break;
+			case 2:
+				MXResiduum(x, b, r);
+				error = VEKNORM_BICG(r, n);
+				nonlinear_eps = nonlinear_abs_eps + nonlinear_rel_eps * VEKNORM_BICG(rs, n);
+				break;
+			case 3:
+				error = MVekDist(x, xs, n);
+				nonlinear_eps = nonlinear_rel_eps * VEKNORM_BICG(x, n);
+				break;
 		}
 
 #ifdef GERMAN
 		DisplayMsg("      Iteration-Nr.: ");
-		DisplayLong((long) k);
+		DisplayLong((long)k);
 		DisplayMsg(", GLS-Iter. = ");
-		DisplayLong((long) iter);
+		DisplayLong((long)iter);
 		DisplayMsg(", Fehler/Abbruchf. = ");
 		DisplayDouble(error / nonlinear_eps, 4, 1);
 		DisplayMsgLn(" ");
 #endif
 #ifdef ENGLISH
 		DisplayMsg("      Iteration-Nr.: ");
-		DisplayLong((long) k);
+		DisplayLong((long)k);
 		DisplayMsg(", Linear solver iterations = ");
-		DisplayLong((long) iter);
+		DisplayLong((long)iter);
 		DisplayMsg(", error/errorcrit. = ");
 		DisplayDouble(error / nonlinear_eps, 4, 1);
 		DisplayMsgLn("");
@@ -3044,9 +3049,7 @@ int SpPICARD(double* b, double* x, long n, void (* f)(double* b,
 				cg_eps = cg_eps_original;
 			}
 			else
-				cg_eps =
-				        (error /
-				         nonlinear_eps) * nonlinear_rel_eps * nonlinear_rel_cg_eps;
+				cg_eps = (error / nonlinear_eps) * nonlinear_rel_eps * nonlinear_rel_cg_eps;
 			if (cg_eps < cg_eps_original)
 				cg_eps = cg_eps_original;
 		}
@@ -3076,11 +3079,11 @@ int SpPICARD(double* b, double* x, long n, void (* f)(double* b,
 
 	/* Speicherfreigabe */
 	if ((nonlinear_convergence_type == 1) || (nonlinear_convergence_type == 3))
-		xs = (double*) Free(xs);
+		xs = (double*)Free(xs);
 	else if (nonlinear_convergence_type == 2)
 	{
-		r = (double*) Free(r);
-		rs = (double*) Free(rs);
+		r = (double*)Free(r);
+		rs = (double*)Free(rs);
 	}
 	/*  bs= Free(bs); */
 
@@ -3121,29 +3124,29 @@ int SpPICARD(double* b, double* x, long n, void (* f)(double* b,
 
 *************************************************************************/
 #ifdef ksdjfjdshashdhahsfgkfdg
-int SpNEWTON(double* b, double* x, long n, void (* f)(double* b, double* x, double dummy), long ind)
+int SpNEWTON(double* b, double* x, long n, void (*f)(double* b, double* x, double dummy), long ind)
 #else
 int SpNEWTON(double*, double*, long, void (*)(double*, double*, double), long)
 #endif
 /*int SpNEWTON ( double *b, double *x, long n, void (*f)(), long ind ) */
 {
-	//WW double ddummy;
-	//WW long ldummy;
-	//WW void (*g) (double *b, double *x, double dummy);
+	// WW double ddummy;
+	// WW long ldummy;
+	// WW void (*g) (double *b, double *x, double dummy);
 
 	DisplayMsgLn("Newton noch nicht implementiert !!! ");
 
-	//WW ddummy = b[0];
-	//WW ddummy = x[0];
-	//WW ldummy = n;
-	//WW ldummy = ind;
-	//WW g = f;
+	// WW ddummy = b[0];
+	// WW ddummy = x[0];
+	// WW ldummy = n;
+	// WW ldummy = ind;
+	// WW g = f;
 
 	return nonlinear_maxiter;
 
 #ifdef ksdjfjdshashdhahsfgkfdg
 	/* Variablen */
-	static double* r, * dx, * xs;
+	static double *r, *dx, *xs;
 	static double eps;
 	int k = 0, max_iter = 0;
 	static float omega = 0.5;
@@ -3154,9 +3157,9 @@ int SpNEWTON(double*, double*, long, void (*)(double*, double*, double), long)
 #endif
 
 	k = 0;
-	r = (double*) Malloc(n * sizeof(double));
-	dx = (double*) Malloc(n * sizeof(double));
-	xs = (double*) Malloc(n * sizeof(double));
+	r = (double*)Malloc(n * sizeof(double));
+	dx = (double*)Malloc(n * sizeof(double));
+	xs = (double*)Malloc(n * sizeof(double));
 
 #ifdef RELATIVE_EPS
 	eps = VEKNORM_BICG(b, n);
@@ -3174,12 +3177,12 @@ int SpNEWTON(double*, double*, long, void (*)(double*, double*, double), long)
 	MXResiduum(x, b, r);
 	if (VEKNORM_BICG(r, n) <= eps)
 	{
-		r = (double*) Free(r);
-		dx = (double*) Free(r);
-		xs = (double*) Free(xs);
+		r = (double*)Free(r);
+		dx = (double*)Free(r);
+		xs = (double*)Free(xs);
 		return k;
 	}
-	for (;; )
+	for (;;)
 	{
 		k++;
 		MKopierVec(x, xs, n);
@@ -3189,12 +3192,12 @@ int SpNEWTON(double*, double*, long, void (*)(double*, double*, double), long)
 		MXResiduum(x, b, r);
 		switch (nonlinear_convergence_type)
 		{
-		case 1:
-			error = MVekDist(x, xs, n);
-			break;
-		case 2:
-			error = VEKNORM_BICG(r, n);
-			break;
+			case 1:
+				error = MVekDist(x, xs, n);
+				break;
+			case 2:
+				error = VEKNORM_BICG(r, n);
+				break;
 		}
 		if (error <= nonlinear_abs_eps)
 			break;
@@ -3204,9 +3207,9 @@ int SpNEWTON(double*, double*, long, void (*)(double*, double*, double), long)
 			f(b, x, ind);
 	}
 
-	r = (double*) Free(r);
-	dx = (double*) Free(dx);
-	xs = (double*) Free(xs);
+	r = (double*)Free(r);
+	dx = (double*)Free(dx);
+	xs = (double*)Free(xs);
 
 	return k;
 #endif

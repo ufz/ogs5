@@ -32,7 +32,8 @@ namespace GEOLIB
 class EdgeType
 {
 public:
-	enum value {
+	enum value
+	{
 		TOUCHING, //!< TOUCHING
 		CROSSING, //!< CROSSING
 		INESSENTIAL //!< INESSENTIAL
@@ -52,9 +53,9 @@ public:
 	 * @param init if true, check if polyline is closed, calculate bounding box
 	 * @return
 	 */
-	Polygon(const Polyline &ply, bool init = true);
+	Polygon(const Polyline& ply, bool init = true);
 
-	Polygon (const std::vector<Point*>& pnt_vec);
+	Polygon(const std::vector<Point*>& pnt_vec);
 
 	virtual ~Polygon();
 
@@ -62,7 +63,7 @@ public:
 	 *
 	 * @return
 	 */
-	bool initialise ();
+	bool initialise();
 
 	/**
 	 * Method checks if the given point is inside the polygon.
@@ -70,7 +71,7 @@ public:
 	 * @param pnt the Point
 	 * @return if point is inside the polygon true, else false
 	 */
-	bool isPntInPolygon (const GEOLIB::Point& pnt) const;
+	bool isPntInPolygon(const GEOLIB::Point& pnt) const;
 	/**
 	 * wrapper for method isPntInPolygon (const GEOLIB::Point&)
 	 * @param x x coordinate of point
@@ -78,13 +79,13 @@ public:
 	 * @param z z coordinate of point
 	 * @return if point is inside the polygon true, else false
 	 */
-	bool isPntInPolygon (double x, double y, double z) const;
+	bool isPntInPolygon(double x, double y, double z) const;
 	/**
 	 * Method checks if all points of the polyline ply are inside of the polygon.
 	 * @param ply the polyline that should be checked
 	 * @return
 	 */
-	bool isPolylineInPolygon (const Polyline& ply) const;
+	bool isPolylineInPolygon(const Polyline& ply) const;
 	/**
 	 * Method checks first if at least one (end!) point of a line segment of the polyline
 	 * is inside of the polygon. If this test fails each line segment of the polyline will
@@ -92,7 +93,7 @@ public:
 	 * @param ply the polyline that should be checked
 	 * @return true if a part of the polyline is within the polygon
 	 */
-	bool isPartOfPolylineInPolygon (const Polyline& ply) const;
+	bool isPartOfPolylineInPolygon(const Polyline& ply) const;
 
 	/**
 	 * Calculates the next intersection point between the line segment (a,b) and the
@@ -102,16 +103,16 @@ public:
 	 * @param intersection_pnt (output) next intersection point
 	 * @param seg_num (input/output) the number of the polygon segment that is intersecting
 	 */
-	bool getNextIntersectionPointPolygonLine(GEOLIB::Point const & a,
-									GEOLIB::Point const & b,
-									GEOLIB::Point* intersection_pnt,
-									size_t& seg_num) const;
+	bool getNextIntersectionPointPolygonLine(GEOLIB::Point const& a,
+	                                         GEOLIB::Point const& b,
+	                                         GEOLIB::Point* intersection_pnt,
+	                                         size_t& seg_num) const;
 
-
-	void computeListOfSimplePolygons ();
-	const std::list<Polygon*>& getListOfSimplePolygons ();
+	void computeListOfSimplePolygons();
+	const std::list<Polygon*>& getListOfSimplePolygons();
 
 	friend bool operator==(Polygon const& lhs, Polygon const& rhs);
+
 private:
 	/**
 	 * from book: Computational Geometry and Computer Graphics in C++, page 119
@@ -120,13 +121,13 @@ private:
 	 * @param pnt point that is edge type computed for
 	 * @return a value of enum EdgeType
 	 */
-	EdgeType::value getEdgeType (size_t k, GEOLIB::Point const & pnt) const;
+	EdgeType::value getEdgeType(size_t k, GEOLIB::Point const& pnt) const;
 
-	void calculateAxisAlignedBoundingBox ();
-	void ensureCWOrientation ();
+	void calculateAxisAlignedBoundingBox();
+	void ensureCWOrientation();
 
-	void splitPolygonAtIntersection (std::list<Polygon*>::iterator polygon_it);
-	void splitPolygonAtPoint (std::list<Polygon*>::iterator polygon_it);
+	void splitPolygonAtIntersection(std::list<Polygon*>::iterator polygon_it);
+	void splitPolygonAtPoint(std::list<Polygon*>::iterator polygon_it);
 	std::list<Polygon*> _simple_polygon_list;
 	AABB _aabb;
 };
@@ -139,10 +140,10 @@ private:
  * @param resolution number of point to use for approximation
  * @return a pointer to a polygon
  */
-GEOLIB::Polygon* createPolygonFromCircle (GEOLIB::Point const& middle_pnt,
-                                          double radius,
-                                          std::vector<GEOLIB::Point*> & pnts,
-                                          size_t resolution = 12);
+GEOLIB::Polygon* createPolygonFromCircle(GEOLIB::Point const& middle_pnt,
+                                         double radius,
+                                         std::vector<GEOLIB::Point*>& pnts,
+                                         size_t resolution = 12);
 
 /**
  * comparison operator for polygons

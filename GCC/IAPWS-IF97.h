@@ -7,20 +7,19 @@
  *
  */
 
-//IAPWS-IF97 for density and viscosity
+// IAPWS-IF97 for density and viscosity
 class IF97
 {
 private:
-
 public:
 	IF97(void);
 	~IF97(void);
 
-/* Data */
+	/* Data */
 	static double R, Rm, M, Tc, Pc, Dc, Tt, Pt, Tb;
 	static double TT, PP;
 
-/* Methods */
+	/* Methods */
 	static void ReferenceConstants(void);
 	static double Psat(double);
 	static double Tsat(double);
@@ -28,15 +27,13 @@ public:
 	static double Tb23(double);
 	static int region(double, double);
 
-	static double G(double, double);     //(T K, P Mpa)
-	static double H(double, double);     //(T K, P Mpa)
-	static double S(double, double);     //(T K, P Mpa)
+	static double G(double, double); //(T K, P Mpa)
+	static double H(double, double); //(T K, P Mpa)
+	static double S(double, double); //(T K, P Mpa)
 
-
-	static double density(double, double);   //density (kg m^-3) (T K, P Mpa)
-	static double viscosity(double, double); //viscosity (Pa s)  (T K, P Mpa)
-	static double dielectric(double, double);//dielectric constant ()
-
+	static double density(double, double); // density (kg m^-3) (T K, P Mpa)
+	static double viscosity(double, double); // viscosity (Pa s)  (T K, P Mpa)
+	static double dielectric(double, double); // dielectric constant ()
 
 	static double g1PT(double, double);
 	static double g2PT(double, double);
@@ -44,6 +41,3 @@ public:
 	static double dpressure(double);
 	static void entrance(void);
 };
-
-
-

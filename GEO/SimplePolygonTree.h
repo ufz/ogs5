@@ -31,14 +31,14 @@ public:
 	SimplePolygonTree(Polygon* polygon, SimplePolygonTree* parent);
 	virtual ~SimplePolygonTree();
 
-	bool isPolygonInside (const SimplePolygonTree* polygon_tree) const;
-	void insertSimplePolygonTree (SimplePolygonTree* polygon_tree);
+	bool isPolygonInside(const SimplePolygonTree* polygon_tree) const;
+	void insertSimplePolygonTree(SimplePolygonTree* polygon_tree);
 
 	/**
 	 * get the polygon represented by the tree node
 	 * @return the polygon
 	 */
-	const Polygon* getPolygon () const;
+	const Polygon* getPolygon() const;
 
 protected:
 	/**
@@ -55,11 +55,9 @@ protected:
 	 * in the _node_polygon
 	 */
 	std::list<SimplePolygonTree*> _childs;
+
 private:
-	void setParent(SimplePolygonTree* parent)
-	{
-		_parent = parent;
-	}
+	void setParent(SimplePolygonTree* parent) { _parent = parent; }
 };
 
 /**
@@ -67,18 +65,24 @@ private:
  * @param list_of_simple_polygon_trees
  */
 template <typename POLYGONTREETYPE>
-void createPolygonTrees (std::list<POLYGONTREETYPE*>& list_of_simple_polygon_hierarchies)
+void createPolygonTrees(std::list<POLYGONTREETYPE*>& list_of_simple_polygon_hierarchies)
 {
-	typename std::list<POLYGONTREETYPE*>::iterator it0 (list_of_simple_polygon_hierarchies.begin()), it1;
-	while (it0 != list_of_simple_polygon_hierarchies.end()) {
+	typename std::list<POLYGONTREETYPE *>::iterator it0(list_of_simple_polygon_hierarchies.begin()), it1;
+	while (it0 != list_of_simple_polygon_hierarchies.end())
+	{
 		it1 = it0;
 		it1++;
-		while (it1 != list_of_simple_polygon_hierarchies.end()) {
-			if ((*it0)->isPolygonInside(*it1)) {
+		while (it1 != list_of_simple_polygon_hierarchies.end())
+		{
+			if ((*it0)->isPolygonInside(*it1))
+			{
 				(*it0)->insertSimplePolygonTree(*it1);
 				it1 = list_of_simple_polygon_hierarchies.erase(it1);
-			} else {
-				if ((*it1)->isPolygonInside(*it0)) {
+			}
+			else
+			{
+				if ((*it1)->isPolygonInside(*it0))
+				{
 					(*it1)->insertSimplePolygonTree(*it0);
 					it0 = list_of_simple_polygon_hierarchies.erase(it0);
 				}
@@ -89,7 +93,6 @@ void createPolygonTrees (std::list<POLYGONTREETYPE*>& list_of_simple_polygon_hie
 		it0++;
 	}
 }
-
 
 } // end namespace GEOLIB
 

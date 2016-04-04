@@ -21,12 +21,10 @@
 class InitialCondition : public FEMCondition
 {
 public:
-	InitialCondition(const std::string &geometry_name)
-		: FEMCondition(geometry_name, FEMCondition::INITIAL_CONDITION) {};
-	InitialCondition(const CInitialCondition &ic, const std::string &geometry_name);
-	InitialCondition(const FEMCondition &cond)
-		: FEMCondition(cond, FEMCondition::INITIAL_CONDITION) {};
+	InitialCondition(const std::string& geometry_name) : FEMCondition(geometry_name, FEMCondition::INITIAL_CONDITION){};
+	InitialCondition(const CInitialCondition& ic, const std::string& geometry_name);
+	InitialCondition(const FEMCondition& cond) : FEMCondition(cond, FEMCondition::INITIAL_CONDITION){};
 	~InitialCondition() {}
 };
 
-#endif //INITIALCONDITION_H
+#endif // INITIALCONDITION_H

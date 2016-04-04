@@ -7,7 +7,7 @@
  *
  */
 
- #ifndef STIFF_BULIRSCH_STOER
+#ifndef STIFF_BULIRSCH_STOER
 #define STIFF_BULIRSCH_STOER
 
 /* Deklarationen */

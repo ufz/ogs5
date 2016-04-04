@@ -21,7 +21,7 @@
 #include "files0.h"
 #include "geo_dom.h"
 // Vector
-std::vector<CGLDomain*> domain_vector; //CC
+std::vector<CGLDomain*> domain_vector; // CC
 
 /**************************************************************************
    GeoLib-Method: CGLDomain::Insert
@@ -61,9 +61,9 @@ CGLDomain::~CGLDomain(void)
    Programing:
    07/2003 OK Implementation
 **************************************************************************/
-int CGLDomain::Read(char* data,FILE* f)
+int CGLDomain::Read(char* data, FILE* f)
 {
-	int pos = 0,pos_s = 0;
+	int pos = 0, pos_s = 0;
 	int p = 0;
 	char* sub;
 	int begin;
@@ -73,20 +73,20 @@ int CGLDomain::Read(char* data,FILE* f)
 	double ddummy;
 
 	LineFeed(f);
-	FilePrintString(f,"; ------------------------------------------");
+	FilePrintString(f, "; ------------------------------------------");
 	LineFeed(f);
-	FilePrintString(f,"; GeoLib - Domain");
+	FilePrintString(f, "; GeoLib - Domain");
 	LineFeed(f);
 
 	//---------------------------------------------------------------------
 	// Loop over all volumes
-	while (StrTestHash(&data[p += pos],&pos))
+	while (StrTestHash(&data[p += pos], &pos))
 	{
 		CGLDomain* m_domain = NULL;
 		m_domain = new CGLDomain;
 		/* Write keyword */
 		LineFeed(f);
-		FilePrintString(f,"#DOMAIN");
+		FilePrintString(f, "#DOMAIN");
 		LineFeed(f);
 		//-------------------------------------------------------------------
 		// Check sub keywords
@@ -98,7 +98,7 @@ int CGLDomain::Read(char* data,FILE* f)
 			//-----------------------------------------------------------------
 			if (!strcmp(name, "$NAME"))
 			{
-				ok = (StrReadStr(name,&sub[p_sub],f,/*TFString,*/ &pos) && ok);
+				ok = (StrReadStr(name, &sub[p_sub], f, /*TFString,*/ &pos) && ok);
 				LineFeed(f);
 				m_domain->name = name;
 			}
@@ -106,13 +106,13 @@ int CGLDomain::Read(char* data,FILE* f)
 			if (!strcmp(name, "$COORDINATES"))
 			{
 				pos_s = 0;
-				ok = (StrReadDouble(&ddummy,&sub[p_sub += pos_s],f,&pos_s) && ok);
+				ok = (StrReadDouble(&ddummy, &sub[p_sub += pos_s], f, &pos_s) && ok);
 				m_domain->x_min = ddummy;
-				ok = (StrReadDouble(&ddummy,&sub[p_sub += pos_s],f,&pos_s) && ok);
+				ok = (StrReadDouble(&ddummy, &sub[p_sub += pos_s], f, &pos_s) && ok);
 				m_domain->x_max = ddummy;
-				ok = (StrReadDouble(&ddummy,&sub[p_sub += pos_s],f,&pos_s) && ok);
+				ok = (StrReadDouble(&ddummy, &sub[p_sub += pos_s], f, &pos_s) && ok);
 				m_domain->y_min = ddummy;
-				ok = (StrReadDouble(&ddummy,&sub[p_sub += pos_s],f,&pos_s) && ok);
+				ok = (StrReadDouble(&ddummy, &sub[p_sub += pos_s], f, &pos_s) && ok);
 				m_domain->y_max = ddummy;
 				LineFeed(f);
 			}
@@ -126,12 +126,12 @@ int CGLDomain::Read(char* data,FILE* f)
 	return 1;
 }
 
-int GEOReadDomain(char* data,int found,FILE* f)
+int GEOReadDomain(char* data, int found, FILE* f)
 {
 	CGLDomain* m_domain = NULL;
-	m_domain->Read(data,f);
+	m_domain->Read(data, f);
 	found = found;
-	//delete(m_domain);
+	// delete(m_domain);
 	return 1;
 }
 /**************************************************************************
@@ -143,11 +143,11 @@ int GEOReadDomain(char* data,int found,FILE* f)
 CGLDomain* CGLDomain::Get(std::string name)
 {
 	CGLDomain* m_domain;
-	std::vector<CGLDomain*>::iterator p = domain_vector.begin(); //CC
-	while(p != domain_vector.end())
+	std::vector<CGLDomain*>::iterator p = domain_vector.begin(); // CC
+	while (p != domain_vector.end())
 	{
 		m_domain = *p;
-		if(m_domain->name == name)
+		if (m_domain->name == name)
 			return m_domain;
 		++p;
 	}

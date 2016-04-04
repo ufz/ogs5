@@ -21,19 +21,20 @@
 #include "rf_pcs.h"
 
 // Strong discontinuity
-extern bool Localizing;                           // for tracing localization
+extern bool Localizing; // for tracing localization
 typedef struct
 {
 	int ElementIndex;
-	int NumInterFace;                     // Number of intersection faces
+	int NumInterFace; // Number of intersection faces
 	// Local indeces of intersection faces (3D)
 	int* InterFace;
 } DisElement;
-extern std::vector<DisElement*> LastElement;      // Last discontinuity element correponding to SeedElement
-extern std::vector<long> ElementOnPath;           // Element on the discontinuity path
+extern std::vector<DisElement*> LastElement; // Last discontinuity element correponding to SeedElement
+extern std::vector<long> ElementOnPath; // Element on the discontinuity path
 
 namespace FiniteElement
-{class CFiniteElementVec;
+{
+class CFiniteElementVec;
 }
 using FiniteElement::CFiniteElementVec;
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012. WW
@@ -42,12 +43,21 @@ class CPARDomain;
 
 namespace process
 {
-
-enum InitDataReadWriteType {none, read_write, read_all_binary, write_all_binary,
-                                  read_all_asci, write_all_asci,
-                                  read_stress_binary, write_stress_binary,
-                                  read_displacement, write_displacement,
-                                  read_pressure, write_pressure};
+enum InitDataReadWriteType
+{
+	none,
+	read_write,
+	read_all_binary,
+	write_all_binary,
+	read_all_asci,
+	write_all_asci,
+	read_stress_binary,
+	write_stress_binary,
+	read_displacement,
+	write_displacement,
+	read_pressure,
+	write_pressure
+};
 
 // Elasto-plastic Deformation
 class CRFProcessDeformation : public CRFProcess
@@ -57,8 +67,8 @@ public:
 	virtual ~CRFProcessDeformation();
 
 	void Initialization();
-	void InitialNodeValueHpcs();//WX:08.2011
-	void CalIniTotalStress();//WX:04.2013
+	void InitialNodeValueHpcs(); // WX:08.2011
+	void CalIniTotalStress(); // WX:04.2013
 
 	// Assemble system equation
 	void GlobalAssembly();
@@ -68,8 +78,7 @@ public:
 	double Execute(int loop_process_number);
 
 	// Aux. Memory
-	double* GetAuxArray() const {return ARRAY; }
-
+	double* GetAuxArray() const { return ARRAY; }
 	void ScalingNodeForce(const double SFactor);
 	void InitGauss();
 	//
@@ -81,7 +90,7 @@ public:
 	void RecoverSolution(const int ty = 0);
 	double NormOfDisp();
 #if !defined(USE_PETSC) && !defined(NEW_EQS) // && defined(other parallel libs)//03~04.3012. WW
-  //#ifndef NEW_EQS
+	//#ifndef NEW_EQS
 	double NormOfUnkonwn_orRHS(bool isUnknowns = true);
 #endif
 	// Stress
@@ -108,13 +117,11 @@ public:
 	void ReadElementStress();
 
 	// Access members
-	CFiniteElementVec* GetFEM_Assembler() const {return fem_dm; }
-
-	//WX:07.2011
+	CFiniteElementVec* GetFEM_Assembler() const { return fem_dm; }
+	// WX:07.2011
 	void PostExcavation();
-	//WX:10.2011
+	// WX:10.2011
 	void UpdateIniStateValue();
-
 
 private:
 	CFiniteElementVec* fem_dm;
@@ -141,9 +148,9 @@ private:
 	void Trace_Discontinuity();
 	long MarkBifurcatedNeighbor(const int PathIndex);
 };
-}                                                 // end namespace
+} // end namespace
 
-extern void CalStressInvariants(const long Node_Inex,double* StressInv);
+extern void CalStressInvariants(const long Node_Inex, double* StressInv);
 // For visualization
 extern void CalMaxiumStressInvariants(double* StressInv);
 extern double LoadFactor;

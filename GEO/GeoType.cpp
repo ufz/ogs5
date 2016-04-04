@@ -14,24 +14,24 @@
 
 namespace GEOLIB
 {
-GEOTYPE convertGeoType (const std::string& geo_type_str)
+GEOTYPE convertGeoType(const std::string& geo_type_str)
 {
-	if (geo_type_str.compare ("POINT") == 0)
+	if (geo_type_str.compare("POINT") == 0)
 		return POINT;
-	if (geo_type_str.compare ("POLYLINE") == 0)
+	if (geo_type_str.compare("POLYLINE") == 0)
 		return POLYLINE;
-	if (geo_type_str.compare ("SURFACE") == 0)
+	if (geo_type_str.compare("SURFACE") == 0)
 		return SURFACE;
-	if (geo_type_str.compare ("VOLUME") == 0)
+	if (geo_type_str.compare("VOLUME") == 0)
 		return VOLUME;
-	if (geo_type_str.compare ("DOMAIN") == 0)
+	if (geo_type_str.compare("DOMAIN") == 0)
 		return GEODOMAIN;
-	if (geo_type_str.compare ("GEODOMAIN") == 0)
+	if (geo_type_str.compare("GEODOMAIN") == 0)
 		return GEODOMAIN;
 	return INVALID;
 }
 
-std::string convertGeoTypeToString (GEOTYPE geo_type)
+std::string convertGeoTypeToString(GEOTYPE geo_type)
 {
 	if (geo_type == POINT)
 		return "POINT";

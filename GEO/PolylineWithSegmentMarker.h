@@ -15,9 +15,10 @@
 
 #include "Polyline.h"
 
-namespace GEOLIB {
-
-class PolylineWithSegmentMarker: public GEOLIB::Polyline {
+namespace GEOLIB
+{
+class PolylineWithSegmentMarker : public GEOLIB::Polyline
+{
 public:
 	PolylineWithSegmentMarker(GEOLIB::Polyline const& polyline);
 	virtual ~PolylineWithSegmentMarker();
@@ -52,7 +53,6 @@ public:
 private:
 	std::vector<bool> _marker;
 };
-
 }
 
 #endif /* POLYLINEWITHSEGMENTMARKER_H_ */

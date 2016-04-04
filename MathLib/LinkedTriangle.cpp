@@ -14,10 +14,9 @@
 
 namespace MathLib
 {
-LinkedTriangle::LinkedTriangle(std::vector<GEOLIB::Point*> const &pnt_vec,
-                               size_t pnt_a, size_t pnt_b, size_t pnt_c, LinkedTriangle* tri_a,
-                               LinkedTriangle* tri_b, LinkedTriangle* tri_c) :
-	GEOLIB::Triangle(pnt_vec, pnt_a, pnt_b, pnt_c)
+LinkedTriangle::LinkedTriangle(std::vector<GEOLIB::Point*> const& pnt_vec, size_t pnt_a, size_t pnt_b, size_t pnt_c,
+                               LinkedTriangle* tri_a, LinkedTriangle* tri_b, LinkedTriangle* tri_c)
+    : GEOLIB::Triangle(pnt_vec, pnt_a, pnt_b, pnt_c)
 {
 	if (tri_a)
 		_neighbor_triangles[0] = tri_a;
@@ -39,16 +38,16 @@ void LinkedTriangle::setNeighborTriangle(size_t idx, LinkedTriangle* tri)
 	_neighbor_triangles[idx] = tri;
 }
 
-void LinkedTriangle::setNeighborTriangleByPointIdx (size_t idx, LinkedTriangle* tri)
+void LinkedTriangle::setNeighborTriangleByPointIdx(size_t idx, LinkedTriangle* tri)
 {
 	if (idx == _pnt_ids[0])
-		setNeighborTriangle (0, tri);
+		setNeighborTriangle(0, tri);
 	else
 	{
 		if (idx == _pnt_ids[1])
-			setNeighborTriangle (1, tri);
+			setNeighborTriangle(1, tri);
 		else
-			setNeighborTriangle (2, tri);
+			setNeighborTriangle(2, tri);
 	}
 }
 
@@ -69,7 +68,7 @@ size_t LinkedTriangle::getIdxOfNeighborTriangle(LinkedTriangle* tri)
 	return 3;
 }
 
-size_t LinkedTriangle::getIdxOfPoint (size_t i) const
+size_t LinkedTriangle::getIdxOfPoint(size_t i) const
 {
 	if (_pnt_ids[0] == i)
 		return 0;
@@ -80,12 +79,12 @@ size_t LinkedTriangle::getIdxOfPoint (size_t i) const
 	return 3;
 }
 
-void LinkedTriangle::writeNeighbor (std::ostream &os, size_t idx) const
+void LinkedTriangle::writeNeighbor(std::ostream& os, size_t idx) const
 {
 	if (_neighbor_triangles[idx])
 	{
 		os << "[";
-		(_neighbor_triangles[idx])->write (os);
+		(_neighbor_triangles[idx])->write(os);
 		os << "]";
 	}
 	else
@@ -97,9 +96,9 @@ LinkedTriangle::~LinkedTriangle()
 	// TODO Auto-generated destructor stub
 }
 
-std::ostream& operator<< (std::ostream &os, const LinkedTriangle &tri)
+std::ostream& operator<<(std::ostream& os, const LinkedTriangle& tri)
 {
-	tri.write (os);
+	tri.write(os);
 	return os;
 }
 } // end namespace MathLib

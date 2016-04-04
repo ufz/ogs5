@@ -8,7 +8,7 @@
  *              http://www.opengeosys.org/project/license
  */
 
-//RapidXML
+// RapidXML
 #include "RapidXMLInterface.h"
 #include <iostream>
 
@@ -17,14 +17,14 @@
 
 namespace FileIO
 {
-
-std::vector<GEOLIB::Point*> *RapidXMLInterface::readStationFile(const std::string &fileName)
+std::vector<GEOLIB::Point*>* RapidXMLInterface::readStationFile(const std::string& fileName)
 {
-	std::vector<GEOLIB::Point*> *stations = new std::vector<GEOLIB::Point*>;
+	std::vector<GEOLIB::Point*>* stations = new std::vector<GEOLIB::Point*>;
 	std::ifstream in(fileName.c_str());
 	if (in.fail())
 	{
-		std::cout << "XmlStnInterface::rapidReadFile() - Can't open xml-file." << "\n";
+		std::cout << "XmlStnInterface::rapidReadFile() - Can't open xml-file."
+		          << "\n";
 		return NULL;
 	}
 
@@ -32,7 +32,7 @@ std::vector<GEOLIB::Point*> *RapidXMLInterface::readStationFile(const std::strin
 	in.seekg(0, std::ios::end);
 	size_t length = in.tellg();
 	in.seekg(0, std::ios::beg);
-	char* buffer = new char[length+1];
+	char* buffer = new char[length + 1];
 	in.read(buffer, length);
 	buffer[in.gcount()] = '\0';
 	in.close();
@@ -44,17 +44,20 @@ std::vector<GEOLIB::Point*> *RapidXMLInterface::readStationFile(const std::strin
 	// parse content
 	if (std::string(doc.first_node()->name()).compare("OpenGeoSysSTN"))
 	{
-		std::cout << "XmlStnInterface::readFile() - Unexpected XML root." << "\n";
+		std::cout << "XmlStnInterface::readFile() - Unexpected XML root."
+		          << "\n";
 		return NULL;
 	}
 
 	// iterate over all station lists
-	for (rapidxml::xml_node<>* station_list = doc.first_node()->first_node(); station_list; station_list = station_list->next_sibling())
+	for (rapidxml::xml_node<>* station_list = doc.first_node()->first_node(); station_list;
+	     station_list = station_list->next_sibling())
 	{
 		std::string stnName("[NN]");
 
 		stnName = station_list->first_node("name")->value();
-		for (rapidxml::xml_node<>* list_item = station_list->first_node(); list_item; list_item = list_item->next_sibling())
+		for (rapidxml::xml_node<>* list_item = station_list->first_node(); list_item;
+		     list_item = list_item->next_sibling())
 		{
 			std::string b(list_item->name());
 			if (std::string(list_item->name()).compare("stations") == 0)
@@ -65,75 +68,81 @@ std::vector<GEOLIB::Point*> *RapidXMLInterface::readStationFile(const std::strin
 	}
 
 	doc.clear();
-	delete [] buffer;
+	delete[] buffer;
 
 	return stations;
 }
 /*
 int RapidXMLInterface::rapidReadFile(const std::string &fileName)
 {
-	GEOLIB::GEOObjects* geoObjects = _project->getGEOObjects();
+    GEOLIB::GEOObjects* geoObjects = _project->getGEOObjects();
 
-	std::ifstream in(fileName.c_str());
-	if (in.fail())
-	{
-		std::cout << "XmlStnInterface::rapidReadFile() - Can't open xml-file." << "\n";
-		return 0;
-	}
+    std::ifstream in(fileName.c_str());
+    if (in.fail())
+    {
+        std::cout << "XmlStnInterface::rapidReadFile() - Can't open xml-file." << "\n";
+        return 0;
+    }
 
-	// buffer file
-	in.seekg(0, std::ios::end);
-	size_t length = in.tellg();
-	in.seekg(0, std::ios::beg);
-	char* buffer = new char[length+1];
-	in.read(buffer, length);
-	buffer[in.gcount()] = '\0';
-	in.close();
+    // buffer file
+    in.seekg(0, std::ios::end);
+    size_t length = in.tellg();
+    in.seekg(0, std::ios::beg);
+    char* buffer = new char[length+1];
+    in.read(buffer, length);
+    buffer[in.gcount()] = '\0';
+    in.close();
 
-	// build DOM tree
-	rapidxml::xml_document<> doc;
-	doc.parse<0>(buffer);
+    // build DOM tree
+    rapidxml::xml_document<> doc;
+    doc.parse<0>(buffer);
 
-	// parse content
-	if (std::string(doc.first_node()->name()).compare("OpenGeoSysSTN"))
-	{
-		std::cout << "XmlStnInterface::readFile() - Unexpected XML root." << "\n";
-		return 0;
-	}
+    // parse content
+    if (std::string(doc.first_node()->name()).compare("OpenGeoSysSTN"))
+    {
+        std::cout << "XmlStnInterface::readFile() - Unexpected XML root." << "\n";
+        return 0;
+    }
 
-	// iterate over all station lists
-	for (rapidxml::xml_node<>* station_list = doc.first_node()->first_node(); station_list; station_list = station_list->next_sibling())
-	{
-		std::vector<GEOLIB::Point*>* stations = new std::vector<GEOLIB::Point*>;
-		std::string stnName("[NN]");
+    // iterate over all station lists
+    for (rapidxml::xml_node<>* station_list = doc.first_node()->first_node(); station_list; station_list =
+station_list->next_sibling())
+    {
+        std::vector<GEOLIB::Point*>* stations = new std::vector<GEOLIB::Point*>;
+        std::string stnName("[NN]");
 
-		stnName = station_list->first_node("name")->value();
-		for (rapidxml::xml_node<>* list_item = station_list->first_node(); list_item; list_item = list_item->next_sibling())
-		{
-			std::string b(list_item->name());
-			if (std::string(list_item->name()).compare("stations") == 0)
-				XmlStnInterface::rapidReadStations(list_item, stations, fileName);
-			if (std::string(list_item->name()).compare("boreholes") == 0)
-				XmlStnInterface::rapidReadStations(list_item, stations, fileName);
-		}
+        stnName = station_list->first_node("name")->value();
+        for (rapidxml::xml_node<>* list_item = station_list->first_node(); list_item; list_item =
+list_item->next_sibling())
+        {
+            std::string b(list_item->name());
+            if (std::string(list_item->name()).compare("stations") == 0)
+                XmlStnInterface::rapidReadStations(list_item, stations, fileName);
+            if (std::string(list_item->name()).compare("boreholes") == 0)
+                XmlStnInterface::rapidReadStations(list_item, stations, fileName);
+        }
 
-		if (!stations->empty())
-			geoObjects->addStationVec(stations, stnName);
-		else
-			delete stations;
-	}
+        if (!stations->empty())
+            geoObjects->addStationVec(stations, stnName);
+        else
+            delete stations;
+    }
 
-	doc.clear();
-	delete [] buffer;
+    doc.clear();
+    delete [] buffer;
 
-	return 1;
+    return 1;
 }
 */
-void RapidXMLInterface::readStations(const rapidxml::xml_node<>* station_root, std::vector<GEOLIB::Point*> *stations, const std::string &file_name)
+void RapidXMLInterface::readStations(const rapidxml::xml_node<>* station_root,
+                                     std::vector<GEOLIB::Point*>* stations,
+                                     const std::string& file_name)
 {
-	for (rapidxml::xml_node<>* station_node = station_root->first_node(); station_node; station_node = station_node->next_sibling())
+	for (rapidxml::xml_node<>* station_node = station_root->first_node(); station_node;
+	     station_node = station_node->next_sibling())
 	{
-		if (station_node->first_attribute("id") && station_node->first_attribute("x") && station_node->first_attribute("y"))
+		if (station_node->first_attribute("id") && station_node->first_attribute("x")
+		    && station_node->first_attribute("y"))
 		{
 			double zVal(0.0);
 			if (station_node->first_attribute("z"))
@@ -151,11 +160,10 @@ void RapidXMLInterface::readStations(const rapidxml::xml_node<>* station_root, s
 
 			if (std::string(station_node->name()).compare("station") == 0)
 			{
-				GEOLIB::Station* s = new GEOLIB::Station(
-							strtod(station_node->first_attribute("x")->value(), 0),
-				            strtod(station_node->first_attribute("y")->value(), 0),
-				            zVal,
-							station_name);
+				GEOLIB::Station* s = new GEOLIB::Station(strtod(station_node->first_attribute("x")->value(), 0),
+				                                         strtod(station_node->first_attribute("y")->value(), 0),
+				                                         zVal,
+				                                         station_name);
 				s->setStationValue(station_value);
 				if (!sensor_data_file_name.empty())
 					s->addSensorDataFromCSV(BaseLib::copyPathToFileName(sensor_data_file_name, file_name));
@@ -169,58 +177,61 @@ void RapidXMLInterface::readStations(const rapidxml::xml_node<>* station_root, s
 					bdate_str = station_node->first_node("bdate")->value();
 				/* add other borehole features here */
 
-				GEOLIB::StationBorehole* s = GEOLIB::StationBorehole::createStation(
-				        station_name,
-				        strtod(station_node->first_attribute("x")->value(), 0),
-				        strtod(station_node->first_attribute("y")->value(), 0),
-				        zVal,
-				        borehole_depth,
-				        bdate_str);
+				GEOLIB::StationBorehole* s
+				    = GEOLIB::StationBorehole::createStation(station_name,
+				                                             strtod(station_node->first_attribute("x")->value(), 0),
+				                                             strtod(station_node->first_attribute("y")->value(), 0),
+				                                             zVal,
+				                                             borehole_depth,
+				                                             bdate_str);
 				s->setStationValue(station_value);
 
 				if (station_node->first_node("strat"))
 					RapidXMLInterface::readStratigraphy(station_node->first_node("strat"), s);
 
 				stations->push_back(s);
-
 			}
 		}
 		else
-			std::cout << "XmlStnInterface::rapidReadStations() - Attribute missing in <station> tag ..." << "\n";
+			std::cout << "XmlStnInterface::rapidReadStations() - Attribute missing in <station> tag ..."
+			          << "\n";
 	}
 }
 
-void RapidXMLInterface::readStratigraphy( const rapidxml::xml_node<>* strat_root, GEOLIB::StationBorehole* borehole )
+void RapidXMLInterface::readStratigraphy(const rapidxml::xml_node<>* strat_root, GEOLIB::StationBorehole* borehole)
 {
 	double depth_check((*borehole)[2]);
 
-	for (rapidxml::xml_node<>* horizon_node = strat_root->first_node("horizon"); horizon_node; horizon_node = horizon_node->next_sibling())
+	for (rapidxml::xml_node<>* horizon_node = strat_root->first_node("horizon"); horizon_node;
+	     horizon_node = horizon_node->next_sibling())
 	{
-		if (horizon_node->first_attribute("id") && horizon_node->first_attribute("x") &&
-		    horizon_node->first_attribute("y")  && horizon_node->first_attribute("z"))
+		if (horizon_node->first_attribute("id") && horizon_node->first_attribute("x")
+		    && horizon_node->first_attribute("y")
+		    && horizon_node->first_attribute("z"))
 		{
 			std::string horizon_name("[NN]");
 			if (horizon_node->first_node("name"))
 				horizon_name = horizon_node->first_node("name")->value();
 			/* add other horizon features here */
 
-			double depth (strtod(horizon_node->first_attribute("z")->value(), 0));
-			if (fabs(depth - depth_check) > std::numeric_limits<double>::epsilon()) // skip soil-layer if its thickness is zero
+			double depth(strtod(horizon_node->first_attribute("z")->value(), 0));
+			if (fabs(depth - depth_check)
+			    > std::numeric_limits<double>::epsilon()) // skip soil-layer if its thickness is zero
 			{
 				borehole->addSoilLayer(strtod(horizon_node->first_attribute("x")->value(), 0),
-									   strtod(horizon_node->first_attribute("y")->value(), 0),
-									   depth,
-									   horizon_name);
+				                       strtod(horizon_node->first_attribute("y")->value(), 0),
+				                       depth,
+				                       horizon_name);
 				depth_check = depth;
 			}
 			else
-				std::cout << "Warning: Skipped layer \"" << horizon_name << "\" in borehole \""
-					      << borehole->getName() << "\" because of thickness 0.0." << "\n";
+				std::cout << "Warning: Skipped layer \"" << horizon_name << "\" in borehole \"" << borehole->getName()
+				          << "\" because of thickness 0.0."
+				          << "\n";
 		}
 		else
-			std::cout <<
-			"XmlStnInterface::rapidReadStratigraphy() - Attribute missing in <horizon> tag ..." << "\n";
+			std::cout << "XmlStnInterface::rapidReadStratigraphy() - Attribute missing in <horizon> tag ..."
+			          << "\n";
 	}
 }
-
 }
