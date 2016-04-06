@@ -266,7 +266,7 @@ void CFluidMomentum::SolveDarcyVelocityOnNode()
 				elem = m_msh->ele_vector[i];
 				if (elem->GetMark()) // Marked for use
 				{
-					fem->ConfigElement(elem, m_num->ele_gauss_points);
+					fem->ConfigElement(elem);
 					fem->Assembly(0, d);
 				}
 			}

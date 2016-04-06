@@ -3722,13 +3722,12 @@ void COutput::CalculateTotalFlux(CFEMesh* msh, vector<long>& nodes_on_geo, vecto
 	double fac, nodesFVal[8], nodesFVal_adv[8], flux[3]; // , poro;
 	// CMediumProperties *MediaProp;
 
-	int Axisymm = 1; // ani-axisymmetry
-	if (msh->isAxisymmetry())
-		Axisymm = -1; // Axisymmetry is true
-
 	CElem* elem = NULL;
 	CElem* face = new CElem(1);
-	FiniteElement::CElement* element = new FiniteElement::CElement(Axisymm * msh->GetCoordinateFlag());
+
+	FiniteElement::CElement* fem_assembler = m_pcs_flow->getLinearFEMAssembler();
+	assert(fem_assembler);
+
 	CNode* e_node = NULL;
 	CElem* e_nei = NULL;
 	set<long> set_nodes_on_geo;
@@ -3799,8 +3798,8 @@ void COutput::CalculateTotalFlux(CFEMesh* msh, vector<long>& nodes_on_geo, vecto
 			face->ComputeVolume();
 			face->SetNormalVector();
 			face->DirectNormalVector();
-			element->setOrder(msh->getOrder() + 1);
-			element->ConfigElement(face, m_pcs_flow->m_num->ele_gauss_points, true); // 2D fem
+			fem_assembler->setOrder(msh->getOrder() + 1);
+			fem_assembler->ConfigElement(face, true); // 2D fem
 
 			for (k = 0; k < nfn; k++)
 			{
@@ -3818,10 +3817,8 @@ void COutput::CalculateTotalFlux(CFEMesh* msh, vector<long>& nodes_on_geo, vecto
 					                   * mfp_vector[0]->SpecificHeatCapacity() * mfp_vector[0]->Density();
 			}
 			///
-			element->FaceNormalFluxIntegration(elements_at_geo[i], nodesFVal, nodesFVal_adv, nodesFace, face, m_pcs,
-			                                   face->normal_vector);
-			for (k = 0; k < nfn; k++)
-			{
+			fem_assembler->FaceNormalFluxIntegration(elements_at_geo[i], nodesFVal, nodesFVal_adv, nodesFace, face, m_pcs, face->normal_vector);
+			for (k = 0; k < nfn; k++) {
 				e_node = elem->GetNode(nodesFace[k]);
 				// -->PETSC
 				NVal_diff[G2L[e_node->GetIndex()]] += fac * nodesFVal[k];
@@ -3841,7 +3838,6 @@ void COutput::CalculateTotalFlux(CFEMesh* msh, vector<long>& nodes_on_geo, vecto
 	NVal_diff.clear();
 	NVal_adv.clear();
 	G2L.clear();
-	delete element;
 	delete face;
 }
 

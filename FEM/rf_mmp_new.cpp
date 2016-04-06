@@ -124,14 +124,14 @@ CMediumProperties::CMediumProperties() : geo_dimension(0), _mesh(NULL), _geo_typ
 	vol_bio_model = 0;
 	foc = 0.0;
 	alpha_t_model = -1;
-	graindiameter = 0; // CB Chiogna et al alpha-t model
+	graindiameter = 0; //CB Chiogna et al alpha-t model
 	hydraulicrad = 0;
 	betaexpo = 0;
-	ElementVolumeMultiplyer = 1.0; // SB / JOD 2014-11-10
+	ElementVolumeMultiplyer = 1.0; //SB / JOD 2014-11-10
 
-	permeability_pressure_model = -1; // 01.09.2011. WW
-	permeability_strain_model = -1; // 01.09.2011. WW
-	forchheimer_cf = 0.0; // NW
+	permeability_pressure_model = -1; //01.09.2011. WW
+	permeability_strain_model = -1; //01.09.2011. WW
+	forchheimer_cf = 0.0; //NW
 	forchheimer_De = .0;
 	forchheimer_a1 = .0;
 	forchheimer_a2 = .0;
@@ -3772,10 +3772,11 @@ double CMediumProperties::Porosity(long number, double theta)
 		nidx1 = nidx0 + 1;
 		if (mode == 0) // Gauss point values
 		{
-			assem->ComputeShapefct(1);
-			primary_variable[i]
-			    = (1. - theta) * assem->interpolate(nidx0, pcs_temp) + theta * assem->interpolate(nidx1, pcs_temp);
-		} // Node values
+			//assem->ComputeShapefct(1);
+			primary_variable[i] = (1. - theta) * assem->interpolate(nidx0,
+			                                                        pcs_temp) +
+			                      theta* assem->interpolate(nidx1, pcs_temp);
+		}                         // Node values
 		else if (mode == 1)
 			primary_variable[i]
 			    = (1. - theta) * pcs_temp->GetNodeValue(number, nidx0) + theta * pcs_temp->GetNodeValue(number, nidx1);
@@ -3971,9 +3972,10 @@ double CMediumProperties::Porosity(CElement* assem)
 		nidx1 = nidx0 + 1;
 		if (mode == 0) // Gauss point values
 		{
-			assem->ComputeShapefct(1);
-			primary_variable[i]
-			    = (1. - theta) * assem->interpolate(nidx0, pcs_temp) + theta * assem->interpolate(nidx1, pcs_temp);
+
+			//assem->ComputeShapefct(1);
+			primary_variable[i] = (1. - theta) * assem->interpolate(nidx0,pcs_temp)
+			                      + theta* assem->interpolate(nidx1,pcs_temp);
 		}
 		else if (mode == 1) // Node values
 

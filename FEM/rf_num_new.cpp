@@ -197,8 +197,8 @@ bool NUMRead(string file_base_name)
 	num_file.seekg(0L, ios::beg);
 	//========================================================================
 	// Keyword loop
-	cout << "NUMRead"
-	     << "\n";
+	cout << "NUMRead" << "\n";
+	int max_num_integration_pnts = 0;
 	while (!num_file.eof())
 	{
 		num_file.getline(line, MAX_ZEILE);
@@ -216,11 +216,22 @@ bool NUMRead(string file_base_name)
 		{
 			m_num = new CNumerics("default");
 			position = m_num->Read(&num_file);
+
+			max_num_integration_pnts = std::max(max_num_integration_pnts,
+				                            m_num->ele_gauss_points);
+
 			num_vector.push_back(m_num);
-			num_file.seekg(position, ios::beg);
-			m_num->NumConfigure(overall_coupling_exists); // JT2012
-		} // keyword found
-	} // eof
+			num_file.seekg(position,ios::beg);
+			m_num->NumConfigure(overall_coupling_exists);					  // JT2012
+		}                         // keyword found
+	}                                     // eof
+
+	// Unify the number of integration points.
+	for (std::size_t i=0; i<num_vector.size(); i++)
+	{
+		num_vector[i]->ele_gauss_points = max_num_integration_pnts;
+	}
+
 	return true;
 }
 

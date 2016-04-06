@@ -31,6 +31,10 @@
 class CNumerics
 {
 public:
+	int getNumIntegrationSamplePoints () const
+	{
+		return ele_gauss_points;
+	}
 	// method
 	std::string method_name; // OK
 	// PCS

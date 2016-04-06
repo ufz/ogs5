@@ -2741,7 +2741,7 @@ void CRFProcessDeformation::GlobalAssembly_DM()
 			continue;
 
 		elem->SetOrder(true);
-		fem_dm->ConfigElement(elem, m_num->ele_gauss_points);
+		fem_dm->ConfigElement(elem);
 		fem_dm->LocalAssembly(0);
 	}
 }

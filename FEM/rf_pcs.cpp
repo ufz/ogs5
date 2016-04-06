@@ -1001,9 +1001,6 @@ void initializeConstrainedProcesses(std::vector<CRFProcess*>& pcs_vector)
 
 void CRFProcess::SetBoundaryConditionAndSourceTerm()
 {
-#ifndef WIN32
-	BaseLib::MemWatch mem_watch;
-#endif
 	std::string pcs_type_name(
 	        convertProcessTypeToString(this->getProcessType()));
 
@@ -1049,9 +1046,6 @@ void CRFProcess::SetBoundaryConditionAndSourceTerm()
 			if(WriteProcessed_BC == 1)
 				Write_Processed_BC();
 		}
-#ifndef WIN32
-		ScreenMessaged("\tcurrent mem: %d MB\n", mem_watch.getVirtMemUsage() / (1024*1024) );
-#endif
 		// ST - create ST groups for each process
 		ScreenMessage("-> Create ST\n");
 		CSourceTermGroup* m_st_group = NULL;
