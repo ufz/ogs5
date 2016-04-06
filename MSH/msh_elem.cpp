@@ -460,38 +460,44 @@ void CElem::SetFace(CElem* onwer, const int Face)
 	owner = onwer;
 	size_t n = owner->GetElementFaceNodes(Face, nodeIndex_loc);
 	face_index = Face;
-	switch (owner->geo_type)
+	patch_index = owner->patch_index;
+	switch(owner->geo_type)
 	{
-		// case MshElemType::LINE:  // 1-D bar element
-		case MshElemType::QUAD: // 2-D quadrilateral element
-			this->setElementProperties(MshElemType::LINE, true); // JOD 2014-11-10
-			break;
-		case MshElemType::HEXAHEDRON: // 3-D hexahedral element
-			this->setElementProperties(MshElemType::QUAD, true);
-			break;
-		// case MshElemType::TRIANGLE:  // 2-D triagular element
-		case MshElemType::TETRAHEDRON: // 3-D tetrahedral element
+	//case MshElemType::LINE:  // 1-D bar element
+	case MshElemType::QUAD: // 2-D quadrilateral element
+		this->setElementProperties(MshElemType::LINE, true); // JOD 2014-11-10
+		break;
+	case MshElemType::HEXAHEDRON:             // 3-D hexahedral element
+		this->setElementProperties(MshElemType::QUAD8, true);
+		break;
+	//case MshElemType::TRIANGLE:  // 2-D triagular element
+	case MshElemType::TETRAHEDRON:            // 3-D tetrahedral element
+		this->setElementProperties(MshElemType::TRIANGLE, true);
+		break;
+	case MshElemType::PRISM:
+		if(Face < 2)
 			this->setElementProperties(MshElemType::TRIANGLE, true);
-			break;
-		case MshElemType::PRISM:
-			if (Face < 2)
-				this->setElementProperties(MshElemType::TRIANGLE, true);
-			else
-				this->setElementProperties(MshElemType::QUAD, true);
-			break; // 3-D prismatic element
-		case MshElemType::PYRAMID:
-			if (Face < 1)
-				this->setElementProperties(MshElemType::QUAD, true);
-			else
-				this->setElementProperties(MshElemType::TRIANGLE, true);
-			break; // 3-D pyramid element
-		default:
-			std::cerr << "CElem::SetFace MshElemType not handled"
-			          << "\n";
+		else
+			this->setElementProperties(MshElemType::QUAD8, true);
+		break;                            // 3-D prismatic element
+	case MshElemType::PYRAMID:
+		if(Face < 1)
+			this->setElementProperties(MshElemType::QUAD8, true);
+		else
+			this->setElementProperties(MshElemType::TRIANGLE, true);
+		break;                           // 3-D pyramid element
+	default:
+		std::cerr << "CElem::SetFace MshElemType not handled" << "\n";
+		break;
 	}
 
-	for (size_t i = 0; i < n; i++)
+	if (nodes.Size()<n)
+		nodes.resize(n);
+	for(size_t i = 0; i < n; i++)
+	{
 		nodes[i] = owner->nodes[nodeIndex_loc[i]];
+		nodes_index[i] = nodes[i]->GetIndex();
+	}
 }
 /**************************************************************************
    MSHLib-Method:
