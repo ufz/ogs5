@@ -409,6 +409,9 @@ public:
 		return orig_size;
 	}
 
+	FiniteElement::CFiniteElementStd* getLinearFEMAssembler()
+	{ return fem; }
+
 	//....................................................................
 	// 7-MFP
 	//....................................................................
@@ -461,6 +464,9 @@ public:
 	//....................................................................
 	// 6-ST
 	void CreateSTGroup();
+
+	void SetBoundaryConditionAndSourceTerm();
+
 	//....................................................................
 	// 7-MFP
 	//....................................................................
@@ -691,10 +697,10 @@ public:
 	void AllocateLocalMatrixMemory();
 	virtual void GlobalAssembly(); // Make as a virtul function. //10.09.201l. WW
 	/// For all PDEs excluding that for deformation. 24.11.2010l. WW
-	void GlobalAssembly_std(bool is_quad, bool Check2D3D = false);
+	void GlobalAssembly_std(const bool is_mixed_order, bool Check2D3D = false);
 	/// Assemble EQS for deformation process.
-	virtual void GlobalAssembly_DM(){};
-#if defined(NEW_EQS) && defined(JFNK_H2M)
+	virtual void GlobalAssembly_DM() {};
+#if defined (NEW_EQS) && defined(JFNK_H2M)
 	/// Jacobian free methid to calculate J*v.
 	// 11.08.2010.
 	void Jacobian_Multi_Vector_JFNK(double* v = NULL, double* Jv = NULL);

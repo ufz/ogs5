@@ -804,76 +804,6 @@ void CRFProcess::Create()
 		m_msh->SwitchOnQuadraticNodes(true);
 	else
 		m_msh->SwitchOnQuadraticNodes(false);
-	//
-	if (pcs_type_name_vector.size() && pcs_type_name_vector[0].find("DYNAMIC") != string::npos) // WW
-	{
-		setBC_danymic_problems();
-		setST_danymic_problems();
-	}
-	else
-	{
-		// BC - create BC groups for each process
-		cout << "->Create BC" << '\n';
-		CBoundaryConditionsGroup* m_bc_group = NULL;
-
-		// 25.08.2011. WW
-		if (WriteProcessed_BC == 2)
-			Read_Processed_BC();
-		else
-		{
-			for (int i = 0; i < DOF; i++)
-			{
-				// OKm_bc_group = BCGetGroup(_pcs_type_name,pcs_primary_function_name[i]);
-				// OKif(!m_bc_group){
-				BCGroupDelete(pcs_type_name, pcs_primary_function_name[i]);
-				m_bc_group = new CBoundaryConditionsGroup();
-				// OK
-				m_bc_group->setProcessTypeName(pcs_type_name);
-				m_bc_group->setProcessPrimaryVariableName(pcs_primary_function_name[i]); // OK
-				m_bc_group->Set(this, Shift[i]);
-
-				bc_group_list.push_back(m_bc_group); // Useless, to be removed. WW
-				m_bc_group = NULL;
-				// OK}
-			}
-			if (bc_node_value.size() < 1) // WW
-				cout << "Warning: no boundary conditions specified for " << pcs_type_name << "\n";
-
-			if (WriteProcessed_BC == 1)
-				Write_Processed_BC();
-		}
-		// ST - create ST groups for each process
-		cout << "->Create ST" << '\n';
-		CSourceTermGroup* m_st_group = NULL;
-
-		if (WriteSourceNBC_RHS == 2) // Read from file
-			ReadRHS_of_ST_NeumannBC();
-		else // WW // Calculate directly
-		{
-			for (int i = 0; i < DOF; i++)
-			{
-				// OK m_st_group = m_st_group->Get(pcs_primary_function_name[i]);
-				m_st_group = STGetGroup(pcs_type_name, pcs_primary_function_name[i]);
-				if (!m_st_group)
-				{
-					m_st_group = new CSourceTermGroup();
-					// OK
-					m_st_group->pcs_type_name = pcs_type_name;
-					// OK
-					m_st_group->pcs_pv_name = pcs_primary_function_name[i];
-					m_st_group->Set(this, Shift[i]);
-					// Useless, to be removed. WW
-					st_group_list.push_back(m_st_group);
-				}
-			}
-			if (WriteSourceNBC_RHS == 1) // WW
-				WriteRHS_of_ST_NeumannBC();
-		}
-		m_st_group = NULL;
-	}
-	// Write BC/ST nodes for vsualization.WW
-	if (write_boundary_condition && WriteSourceNBC_RHS != 2)
-		WriteBC();
 
 	// ELE - config and create element values
 	cout << "->Config ELE values" << '\n';
@@ -974,8 +904,10 @@ void CRFProcess::Create()
 		{
 			int Axisymm = 1; // ani-axisymmetry
 			if (m_msh->isAxisymmetry())
-				Axisymm = -1; // Axisymmetry is true
-			fem = new CFiniteElementStd(this, Axisymm * m_msh->GetCoordinateFlag());
+				Axisymm = -1;  // Axisymmetry is true
+			fem = new CFiniteElementStd(this, Axisymm
+			                            * m_msh->GetCoordinateFlag());
+			fem->SetGaussPointNumber(m_num->ele_gauss_points);
 		}
 	}
 
@@ -1065,6 +997,95 @@ void initializeConstrainedProcesses(std::vector<CRFProcess*>& pcs_vector)
 			}
 		}
 	}
+}
+
+void CRFProcess::SetBoundaryConditionAndSourceTerm()
+{
+#ifndef WIN32
+	BaseLib::MemWatch mem_watch;
+#endif
+	std::string pcs_type_name(
+	        convertProcessTypeToString(this->getProcessType()));
+
+	if (pcs_type_name_vector.size() && pcs_type_name_vector[0].find("DYNAMIC")
+	    != string::npos)                  //WW
+	{
+		setBC_danymic_problems();
+		setST_danymic_problems();
+	}
+	else
+	{
+		const int DOF = GetPrimaryVNumber();
+		// BC - create BC groups for each process
+		ScreenMessage("-> Create BC\n");
+		CBoundaryConditionsGroup* m_bc_group = NULL;
+
+		//25.08.2011. WW
+		if(WriteProcessed_BC == 2)
+			Read_Processed_BC();
+		else
+		{
+			for (int i = 0; i < DOF; i++)
+			{
+				//OKm_bc_group = BCGetGroup(_pcs_type_name,pcs_primary_function_name[i]);
+				//OKif(!m_bc_group){
+				BCGroupDelete(pcs_type_name, pcs_primary_function_name[i]);
+				m_bc_group = new CBoundaryConditionsGroup();
+				//OK
+				m_bc_group->setProcessTypeName(pcs_type_name);
+				m_bc_group->setProcessPrimaryVariableName(
+				        pcs_primary_function_name[i]); //OK
+				m_bc_group->Set(this, Shift[i]);
+
+				bc_group_list.push_back(m_bc_group); //Useless, to be removed. WW
+				m_bc_group = NULL;
+				//OK}
+			}
+#ifndef USE_PETSC
+			if (bc_node_value.size() < 1) //WW
+				cout << "Warning: no boundary conditions specified for "
+				     << pcs_type_name << endl;
+#endif
+			if(WriteProcessed_BC == 1)
+				Write_Processed_BC();
+		}
+#ifndef WIN32
+		ScreenMessaged("\tcurrent mem: %d MB\n", mem_watch.getVirtMemUsage() / (1024*1024) );
+#endif
+		// ST - create ST groups for each process
+		ScreenMessage("-> Create ST\n");
+		CSourceTermGroup* m_st_group = NULL;
+
+		if (WriteSourceNBC_RHS == 2) // Read from file
+			ReadRHS_of_ST_NeumannBC();
+		else                      // WW // Calculate directly
+		{
+			for (int i = 0; i < DOF; i++)
+			{
+				//OK m_st_group = m_st_group->Get(pcs_primary_function_name[i]);
+				m_st_group = STGetGroup(pcs_type_name,
+				                        pcs_primary_function_name[i]);
+
+				if (!m_st_group)
+				{
+					m_st_group = new CSourceTermGroup();
+					//OK
+					m_st_group->pcs_type_name = pcs_type_name;
+					//OK
+					m_st_group->pcs_pv_name = pcs_primary_function_name[i];
+					m_st_group->Set(this, Shift[i]);
+					//Useless, to be removed. WW
+					st_group_list.push_back(m_st_group);
+				}
+			}
+			if (WriteSourceNBC_RHS == 1) // WW
+				WriteRHS_of_ST_NeumannBC();
+		}
+		m_st_group = NULL;
+	}
+	// Write BC/ST nodes for vsualization.WW
+	if (write_boundary_condition && WriteSourceNBC_RHS != 2)
+		WriteBC();
 }
 
 /**************************************************************************
@@ -5568,8 +5589,8 @@ void CRFProcess::GlobalAssembly()
 				elem->SetOrder(false);
 				// WW
 				fem->SetElementNodesDomain(m_dom->element_nodes_dom[i]);
-				fem->ConfigElement(elem, m_num->ele_gauss_points, Check2D3D);
-				fem->m_dom = m_dom; // OK
+				fem->ConfigElement(elem, Check2D3D);
+				fem->m_dom = m_dom; //OK
 				fem->Assembly();
 			}
 		}
@@ -5611,16 +5632,22 @@ else
 			// Marked for use //WX: modified for coupled excavation
 			if (elem->GetMark() && elem->GetExcavState() == -1)
 			{
-				elem->SetOrder(false);
-				fem->ConfigElement(elem, m_num->ele_gauss_points, Check2D3D);
-				fem->Assembly();
-				// NEUMANN CONTROL---------
-				if (Tim->time_control_type == TimeControlType::NEUMANN)
 				{
-					Tim->time_step_length_neumann = MMin(Tim->time_step_length_neumann, timebuffer);
-					Tim->time_step_length_neumann *= 0.5 * elem->GetVolume() * elem->GetVolume();
-					if (Tim->time_step_length_neumann < MKleinsteZahl)
-						Tim->time_step_length_neumann = 1.0e-5;
+					elem->SetOrder(false);
+					fem->ConfigElement(elem, Check2D3D);
+					fem->Assembly();
+					// NEUMANN CONTROL---------
+					if (Tim->time_control_type == TimeControlType::NEUMANN)
+					{
+						Tim->time_step_length_neumann = MMin(
+						        Tim->time_step_length_neumann, timebuffer);
+						Tim->time_step_length_neumann *= 0.5
+						                                 * elem->GetVolume()
+						                                 * elem->GetVolume();
+						if (Tim->time_step_length_neumann < MKleinsteZahl)
+							Tim->time_step_length_neumann = 1.0e-5;
+					}
+					//------------------------------
 				}
 				//------------------------------
 			}
@@ -5702,7 +5729,7 @@ cpu_time_assembly += v2 - v1;
 
      24.11.2010. WW
  */
-void CRFProcess::GlobalAssembly_std(bool is_quad, bool Check2D3D)
+void CRFProcess::GlobalAssembly_std(const bool is_mixed_order, bool Check2D3D)
 {
 	long i;
 	CElem* elem = NULL;
@@ -5713,8 +5740,9 @@ void CRFProcess::GlobalAssembly_std(bool is_quad, bool Check2D3D)
 		if (!elem->GetMark()) // Marked for use
 			continue; // For OpenMP. WW
 
-		elem->SetOrder(is_quad);
-		fem->ConfigElement(elem, m_num->ele_gauss_points, Check2D3D);
+		elem->SetOrder(m_msh->getOrder());
+		fem->setMixedOrderFlag(is_mixed_order);
+		fem->ConfigElement(elem,Check2D3D);
 		fem->Assembly();
 	}
 }
@@ -5752,7 +5780,7 @@ void CRFProcess::Integration(vector<double>& node_velue)
 			n_val[k] = node_velue[elem->GetNodeIndex(k)];
 
 		elem->SetOrder(false);
-		fem->ConfigElement(elem, m_num->ele_gauss_points, Check2D3D);
+		fem->ConfigElement(elem, Check2D3D);
 		fem->FaceIntegration(n_val);
 
 		for (k = 0; k < elem->GetNodesNumber(false); k++)
@@ -5822,50 +5850,61 @@ void CRFProcess::CalIntegrationPointValue()
 		const size_t mesh_ele_vector_size(m_msh->ele_vector.size());
 		for (size_t i = 0; i < mesh_ele_vector_size; i++)
 		{
-			elem = m_msh->ele_vector[i];
-			if (elem->GetMark()) // Marked for use
-			{
-				if ((getProcessType() == FiniteElement::HEAT_TRANSPORT
-				     || getProcessType() == FiniteElement::MASS_TRANSPORT)
-				    && !elem->selected)
-					continue; // not selected for TOTAL_FLUX calculation JOD 2014-11-10
-				fem->ConfigElement(elem, m_num->ele_gauss_points);
-				fem->Config(); // OK4709
-				// fem->m_dom = NULL; // To be used for parallization
-				if (getProcessType() == FiniteElement::MULTI_COMPONENTIAL_FLOW)
-					fem->Cal_VelocityMCF();
-				else
-					fem->Cal_Velocity();
+			if ((getProcessType() == FiniteElement::HEAT_TRANSPORT || getProcessType() == FiniteElement::MASS_TRANSPORT) && !elem->selected)
+				continue;   // not selected for TOTAL_FLUX calculation JOD 2014-11-10
+			fem->ConfigElement(elem);
+			fem->Config(); //OK4709
+			// fem->m_dom = NULL; // To be used for parallization
+			if(getProcessType() == FiniteElement::MULTI_COMPONENTIAL_FLOW)
+				fem->Cal_VelocityMCF();
+			else
+				fem->Cal_Velocity();
 
-				// moved here from additional lower loop
-				if (getProcessType() == FiniteElement::TNEQ || getProcessType() == FiniteElement::TES)
-				{
-					fem->CalcSolidDensityRate(); // HS, thermal storage reactions
-				}
+			//moved here from additional lower loop
+			if (getProcessType() == FiniteElement::TNEQ || getProcessType() == FiniteElement::TES)
+			{
+				fem->CalcSolidDensityRate(); // HS, thermal storage reactions
 			}
 		}
 	}
-	else
-	{ // NW
-		const size_t mesh_ele_vector_size(m_msh->ele_vector.size());
-		const size_t v_itr_max(this->m_num->local_picard1_max_iterations);
-		double pre_v[3] = {};
-		double new_v[3] = {};
-		// std::cout << "  Start local Picard iteration: tolerance = " << this->m_num->local_picard1_tolerance <<
-		// std::endl;
-		size_t i_itr = 0;
-		double vel_error = .0;
-		for (i_itr = 0; i_itr < v_itr_max; ++i_itr)
-		{
-			// std::cout << "  non-linear iteration: " << i_itr << "/" << v_itr_max << std::endl;
-			vel_error = .0;
-			for (size_t i = 0; i < mesh_ele_vector_size; i++)
-			{
-				elem = m_msh->ele_vector[i];
-				if (elem->GetMark()) // Marked for use
-				{
-					ElementValue* gp_ele = ele_gp_value[i];
-					gp_ele->GetEleVelocity(pre_v);
+   } else { //NW
+       const size_t mesh_ele_vector_size(m_msh->ele_vector.size());
+       const size_t v_itr_max(this->m_num->local_picard1_max_iterations);
+       double pre_v[3] = {};
+       double new_v[3] = {};
+       //std::cout << "  Start local Picard iteration: tolerance = " << this->m_num->local_picard1_tolerance << std::endl;
+       size_t i_itr = 0;
+       double vel_error = .0;
+       for (i_itr=0; i_itr<v_itr_max; ++i_itr)
+       {
+           //std::cout << "  non-linear iteration: " << i_itr << "/" << v_itr_max << std::endl;
+           vel_error = .0;
+           for (size_t i = 0; i < mesh_ele_vector_size; i++)
+           {
+               elem = m_msh->ele_vector[i];
+               if (elem->GetMark())                        // Marked for use
+               {
+                   ElementValue* gp_ele = ele_gp_value[i];
+                   gp_ele->GetEleVelocity(pre_v);
+
+                   fem->ConfigElement(elem);
+                   fem->Config();                           //OK4709
+                   // fem->m_dom = NULL; // To be used for parallization
+
+                   fem->Cal_Velocity();
+
+                   gp_ele->GetEleVelocity(new_v);
+                   vel_error = max(vel_error, fabs(new_v[0]-pre_v[0]));
+                   vel_error = max(vel_error, fabs(new_v[1]-pre_v[1]));
+                   vel_error = max(vel_error, fabs(new_v[2]-pre_v[2]));
+               }
+           }
+           //std::cout << "  error (max. norm): " << vel_error << std::endl;
+           bool isConverged = (vel_error < this->m_num->local_picard1_tolerance);
+           if (isConverged) break;
+       }
+       std::cout << "  Local Picard iteration: itr. count = " << i_itr << "/" << v_itr_max << ", error(max. norm)=" << vel_error << std::endl;
+   }
 
 					fem->ConfigElement(elem, m_num->ele_gauss_points);
 					fem->Config(); // OK4709
@@ -5956,7 +5995,7 @@ void CRFProcess::CalGPVelocitiesfromFluidMomentum()
 		elem = m_msh->ele_vector[i]; // get element
 		if (elem->GetMark()) // Marked for use
 		{
-			fem->ConfigElement(elem, m_num->ele_gauss_points);
+			fem->ConfigElement(elem);
 			fem->Cal_GP_Velocity_FM(i_ind);
 		}
 	} // end element loop
@@ -7380,8 +7419,8 @@ bool CRFProcess::checkConstrainedBC(CBoundaryCondition const& bc, CBoundaryCondi
 					    = m_msh->nod_vector[bc_node.geo_node_number]->getConnectedNodes()[j];
 					if (connected_node_id == static_cast<std::size_t>(bc_node.geo_node_number))
 					{
-						std::valarray<double> temp_vel(this->getNodeVelocityVector(connected_node_id));
-						temp_vel *= (no_connected_nodes - 1);
+						std::valarray<double>temp_vel(this->getNodeVelocityVector(connected_node_id));
+						temp_vel *= static_cast<double>(no_connected_nodes - 1);
 						vel += temp_vel;
 					}
 					else
@@ -7977,10 +8016,13 @@ void CRFProcess::IncorporateSourceTerms(const int rank)
 					elem = m_msh->ele_vector[ele_index];
 					if (elem->GetMark())
 					{
-						fem->ConfigElement(elem, m_num->ele_gauss_points);
-						if (getProcessType() == FiniteElement::MULTI_COMPONENTIAL_FLOW)
-							fem->Cal_VelocityMCF();
-						else
+						long ele_index = m_st->element_st_vector[i_st];
+						elem = m_msh->ele_vector[ele_index];
+						if (elem->GetMark())
+						{
+							fem->ConfigElement(elem);
+							if(getProcessType() == FiniteElement::MULTI_COMPONENTIAL_FLOW)	fem->Cal_VelocityMCF();
+							else
 							fem->Cal_Velocity();
 					}
 					gp_ele = ele_gp_value[ele_index];
@@ -10109,9 +10151,13 @@ void CRFProcess::Extropolation_GaussValue()
 		elem = m_msh->ele_vector[i];
 		if (elem->GetMark()) // Marked for use
 		{
-			fem->ConfigElement(elem, m_num->ele_gauss_points);
-			for (k = 0; k < NS; k++)
-				fem->ExtropolateGauss(this, k);
+			elem = m_msh->ele_vector[i];
+			if (elem->GetMark()) // Marked for use
+			{
+				fem->ConfigElement(elem);
+				for(k = 0; k < NS; k++)
+					fem->ExtropolateGauss(this, k);
+			}
 		}
 	}
 }
@@ -10164,8 +10210,12 @@ void CRFProcess::Extropolation_MatValue()
 		elem = m_msh->ele_vector[i];
 		if (elem->GetMark()) // Marked for use
 		{
-			fem->ConfigElement(elem, m_num->ele_gauss_points);
-			fem->CalcNodeMatParatemer();
+			elem = m_msh->ele_vector[i];
+			if (elem->GetMark()) // Marked for use
+			{
+				fem->ConfigElement(elem);
+				fem->CalcNodeMatParatemer();
+			}
 		}
 	}
 }
@@ -10674,9 +10724,13 @@ void CRFProcess::CalcSecondaryVariablesUnsaturatedFlow(bool initial)
 			elem = m_msh->ele_vector[i];
 			if (elem->GetMark()) // Marked for use
 			{
-				elem->SetOrder(false);
-				fem->ConfigElement(elem, m_num->ele_gauss_points, false);
-				fem->CalcSatution();
+				elem = m_msh->ele_vector[i];
+				if (elem->GetMark()) // Marked for use
+				{
+					elem->SetOrder(false);
+					fem->ConfigElement(elem, false);
+					fem->CalcSatuation();
+				}
 			}
 		}
 	}
@@ -10726,9 +10780,9 @@ void CRFProcess::CalcSecondaryVariablesTNEQ()
 		elem = m_msh->ele_vector[i];
 		if (elem->GetMark()) // Marked for use
 		{
-			fem->ConfigElement(elem, m_num->ele_gauss_points);
-			fem->UpdateSolidDensity(i); // HS, thermal storage reactions
-			fem->ExtrapolateGauss_ReactRate_TNEQ_TES(this); // HS added 19.02.2013
+			fem->ConfigElement(elem);
+			fem->UpdateSolidDensity(i);          // HS, thermal storage reactions
+			fem->ExtrapolateGauss_ReactRate_TNEQ_TES( this ); // HS added 19.02.2013
 		}
 	}
 }
@@ -10764,9 +10818,9 @@ void CRFProcess::CalcSecondaryVariablesTES()
 		CElem* const elem = m_msh->ele_vector[i];
 		if (elem->GetMark()) // Marked for use
 		{
-			fem->ConfigElement(elem, m_num->ele_gauss_points);
-			fem->UpdateSolidDensity(i); // HS, thermal storage reactions
-			fem->ExtrapolateGauss_ReactRate_TNEQ_TES(this); // HS added 19.02.2013
+			fem->ConfigElement(elem);
+			fem->UpdateSolidDensity(i);          // HS, thermal storage reactions
+			fem->ExtrapolateGauss_ReactRate_TNEQ_TES( this ); // HS added 19.02.2013
 		}
 	}
 }
@@ -11691,14 +11745,31 @@ void CRFProcess::CalcELEFluxes(const GEOLIB::Polyline* const ply, double* result
 	else
 		m_pcs_flow = PCSGet(FiniteElement::GROUNDWATER_FLOW);
 
-	// calculates element velocity based on 1 GP
-	// CalcELEVelocities();
-
-	int v_eidx[3];
-	int v_eidx_2[3];
-	v_eidx[0] = m_pcs_flow->GetElementValueIndex("VELOCITY1_X");
-	v_eidx[1] = m_pcs_flow->GetElementValueIndex("VELOCITY1_Y");
-	v_eidx[2] = m_pcs_flow->GetElementValueIndex("VELOCITY1_Z");
+			// Configure Element for interpolation of node velocities to GP velocities
+			fem->ConfigElement(m_ele);
+			// velocity vector
+			for (size_t j = 0; j < 3; j++) {
+				//v[j] = m_pcs_flow->GetElementValue(m_ele->GetIndex(), v_eidx[j]);
+				// Calculate Element velocity
+				v[j] = fem->Get_Element_Velocity(m_ele->GetIndex(), m_pcs_flow, 0, j);
+			}
+			//Test mit Knotengeschwindigkeiten
+			//double temp_v[3];
+			//temp_v[0] = temp_v[1] = temp_v[2] = 0.0;
+			//int variable_index[3];
+			//variable_index[0] = m_pcs_flow->GetNodeValueIndex("VELOCITY_X1");
+			//variable_index[1] = m_pcs_flow->GetNodeValueIndex("VELOCITY_Y1");
+			//variable_index[2] = m_pcs_flow->GetNodeValueIndex("VELOCITY_Z1");
+			//
+			//for (size_t j = 0; j < 3; j++)
+			//{
+			//	for (size_t k = 0; k < m_ele->GetNodesNumber(false); k++)
+			//	{
+			//		temp_v[j] += m_pcs_flow->GetNodeValue(element_nodes[k], variable_index[j]);
+			//	}
+			//	temp_v[j] /=  m_ele->GetNodesNumber(false);
+			//	v[j] = temp_v[j];
+			//}
 
 	if (pcs_type == FiniteElement::MULTI_PHASE_FLOW)
 	{
@@ -12636,9 +12707,9 @@ void CRFProcess::AssembleParabolicEquationRHSVector(CNode* m_nod)
 				if (m_ele->GetMark())
 				{
 					cout << m_ele->GetIndex() << "\n";
-					// WW ldummy = m_nod->GetIndex();
-					// WW ddummy = eqs->b[m_nod->GetIndex()];
-					fem->ConfigElement(m_ele, m_num->ele_gauss_points, false);
+					//WW ldummy = m_nod->GetIndex();
+					//WW ddummy = eqs->b[m_nod->GetIndex()];
+					fem->ConfigElement(m_ele, false);
 					fem->AssembleParabolicEquationRHSVector();
 					// WW ddummy = eqs->b[m_nod->GetIndex()];
 				}
@@ -12656,8 +12727,8 @@ void CRFProcess::AssembleParabolicEquationRHSVector(CNode* m_nod)
 				if (check_sign < 0.0)
 					continue;
 				{
-					// cout << m_ele->GetIndex() << "\n";
-					fem->ConfigElement(m_ele, m_num->ele_gauss_points, false);
+					//cout << m_ele->GetIndex() << "\n";
+					fem->ConfigElement(m_ele, false);
 					fem->AssembleParabolicEquationRHSVector();
 				}
 				break;
@@ -13311,17 +13382,25 @@ bool CRFProcess::ELERelations()
 			succeed = false;
 	}
 
-	// Element matrix output. WW
-	if (Write_Matrix)
-	{
-		cout << "->Write Matrix" << '\n';
-		string m_file_name
-		    = FileName + "_" + convertProcessTypeToString(this->getProcessType()) + "_element_matrix.txt";
-		matrix_file = new fstream(m_file_name.c_str(), ios::trunc | ios::out);
-		if (!matrix_file->good())
-			cout << "Warning in GlobalAssembly: Matrix files are not found"
-			     << "\n";
-	}
+		// FEM
+		if (type == 4 || type == 41)
+		{
+			// Set initialization function
+			CRFProcessDeformation* dm_pcs = (CRFProcessDeformation*) this;
+			dm_pcs->Initialization();
+			if (!dm_pcs->GetFEMAssembler())
+				succeed = false;
+		}
+		else                      // Initialize FEM calculator
+		{
+			int Axisymm = 1; // ani-axisymmetry
+			if (m_msh->isAxisymmetry())
+				Axisymm = -1;  // Axisymmetry is true
+			//OK4801 needs NUM
+			fem = new CFiniteElementStd(this, Axisymm * m_msh->GetCoordinateFlag());
+			if (!fem)
+				succeed = false;
+		}
 
 	// FEM
 	if (type == 4 || type == 41)
@@ -14784,7 +14863,7 @@ void CRFProcess::CalGPVelocitiesfromECLIPSE(string path, int timestep, int phase
 			tempstring += "; " + temp.str();
 
 			// Configure Element for interpolation of node velocities to GP velocities
-			fem->ConfigElement(elem, m_num->ele_gauss_points);
+			fem->ConfigElement(elem);
 			// Interpolate from nodes to GP of actual element
 			// cout << "Element: " << i << "\n";
 			tempstring = fem->Cal_GP_Velocity_ECLIPSE(tempstring, true, phase_index, phase);

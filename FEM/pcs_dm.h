@@ -81,6 +81,9 @@ public:
 	double* GetAuxArray() const { return ARRAY; }
 	void ScalingNodeForce(const double SFactor);
 	void InitGauss();
+
+	bool isDynamic() const;
+
 	//
 	void SetInitialGuess_EQS_VEC();
 	void UpdateIterativeStep(const double damp, const int u_type);
@@ -117,8 +120,9 @@ public:
 	void ReadElementStress();
 
 	// Access members
-	CFiniteElementVec* GetFEM_Assembler() const { return fem_dm; }
-	// WX:07.2011
+	CFiniteElementVec* GetFEMAssembler() {return fem_dm; }
+
+	//WX:07.2011
 	void PostExcavation();
 	// WX:10.2011
 	void UpdateIniStateValue();

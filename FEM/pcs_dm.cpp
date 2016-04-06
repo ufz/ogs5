@@ -7,6 +7,8 @@
  *
  */
 
+#include "pcs_dm.h"
+
 #include "makros.h"
 
 #include <cfloat>
@@ -34,7 +36,6 @@
 #include "matrix_routines.h"
 #endif
 #include "fem_ele_vec.h"
-#include "pcs_dm.h"
 #include "rf_msp_new.h"
 #include "rf_tim_new.h"
 // Excavation
@@ -161,6 +162,7 @@ void CRFProcessDeformation::Initialization()
 	if (m_msh->isAxisymmetry())
 		Axisymm = -1; // Axisymmetry is true
 	fem_dm = new CFiniteElementVec(this, Axisymm * m_msh->GetCoordinateFlag());
+	fem_dm->SetGaussPointNumber(m_num->ele_gauss_points);
 	//
 	// Monolithic scheme
 	if (type / 10 == 4)
@@ -186,7 +188,6 @@ void CRFProcessDeformation::Initialization()
 		return;
 	}
 	InitialMBuffer();
-	InitGauss();
 	////////////////////////////////////
 	// WX:08.2011 initialise node value of h_pcs
 	if (Neglect_H_ini == 2)
@@ -810,26 +811,14 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 				if (myrank == 0)
 				{
 #endif
-					// Screan printing:
-					std::cout << "      -->End of Newton-Raphson iteration: " << ite_steps << "/" << MaxIteration
-					          << "\n";
-					cout.width(8);
-					cout.precision(2);
-					cout.setf(ios::scientific);
-					cout << "         NR-Error"
-					     << "  "
-					     << "RHS Norm 0"
-					     << "  "
-					     << "RHS Norm  "
-					     << "  "
-					     << "Unknowns Norm"
-					     << "  "
-					     << "Damping"
-					     << "\n";
-					cout << "         " << Error << "  " << InitialNorm << "  " << Norm << "   " << NormU << "   "
-					     << "   " << damping << "\n";
-					std::cout << "      ------------------------------------------------"
-					          << "\n";
+				//Screan printing:
+				std::cout<<"      -->End of Newton-Raphson iteration: "<<ite_steps<<"/"<< MaxIteration <<"\n";
+				cout.width(8);
+ 				cout.precision(2);
+				cout.setf(ios::scientific);
+				cout<<"         NR-Error"<<"  "<<"RHS Norm 0"<<"  "<<"RHS Norm  "<<"  "<<"Unknowns Norm"<<"  "<<"Damping"<<"\n";
+				cout<<"         "<<Error<<"  "<<InitialNorm<<"  "<<Norm<<"   "<<NormU<<"   "<<"   "<<damping<<"\n";
+				std::cout <<"      ------------------------------------------------"<<"\n";
 #if defined(USE_MPI) || defined(USE_PETSC)
 				}
 #endif
@@ -898,11 +887,9 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 	if (myrank == 0)
 	{
 #endif
-		std::cout << "      CPU time elapsed in deformation: " << (double)dm_time / CLOCKS_PER_SEC << "s"
-		          << "\n";
-		std::cout << "      ------------------------------------------------"
-		          << "\n";
-#if defined(USE_MPI) || defined(USE_PETSC) // WW
+		std::cout <<"      CPU time elapsed in deformation: " << (double)dm_time / CLOCKS_PER_SEC<<"s"<<"\n";
+		std::cout <<"      ------------------------------------------------"<<"\n";
+#if defined( USE_MPI) || defined( USE_PETSC)                             //WW
 	}
 #endif
 	// Recovery the old solution.  Temp --> u_n	for flow proccess
@@ -1106,7 +1093,6 @@ void CRFProcessDeformation::InitGauss(void)
 			MatGroup = elem->GetPatchIndex();
 			SMat = msp_vector[MatGroup];
 			elem->SetOrder(true);
-			fem_dm->ConfigElement(elem, m_num->ele_gauss_points);
 			eleV_DM = ele_value_dm[i];
 			*(eleV_DM->Stress0) = 0.0;
 			*(eleV_DM->Stress) = 0.0;
@@ -1144,18 +1130,21 @@ void CRFProcessDeformation::InitGauss(void)
 				 */
 			}
 
-			//
-			// if 2D //ToDo: Set option for 3D
-			// Loop over Gauss points
+			fem_dm->setElement(elem);
+			fem_dm->setOrder(2);
+			fem_dm->SetIntegrationPointNumber(elem->GetElementType());
 			NGS = fem_dm->GetNumGaussPoints();
-			// WW NGSS = fem_dm->GetNumGaussSamples();
+			//
+			if (ccounter > 0)
+			{
+				fem_dm->getShapeFunctionPtr(elem->GetElementType());
+			}
 
 			for (gp = 0; gp < NGS; gp++)
 			{
 				if (ccounter > 0)
 				{
-					fem_dm->GetGaussData(gp, gp_r, gp_s, gp_t);
-					fem_dm->ComputeShapefct(2);
+					fem_dm->getShapefunctValues(gp, 2);
 					fem_dm->RealCoordinates(xyz);
 					for (j = 0; j < NS; j++)
 					{
@@ -1211,10 +1200,12 @@ void CRFProcessDeformation::InitGauss(void)
 			int gp_r, gp_s, gp_t;
 			double z = 0.0;
 			double xyz[3];
+			fem_dm->getShapeFunctionPtr(elem->GetElementType(), 1);
+
 			for (gp = 0; gp < NGS; gp++)
 			{
 				fem_dm->GetGaussData(gp, gp_r, gp_s, gp_t);
-				fem_dm->ComputeShapefct(2);
+				fem_dm->getShapefunctValues(gp, 2);
 				fem_dm->RealCoordinates(xyz);
 				/*
 				   //THM2
@@ -1870,16 +1861,12 @@ double CRFProcessDeformation::NormOfUnkonwn_orRHS(bool isUnknowns)
 //#define Modified_B_matrix
 double CRFProcessDeformation::CaclMaxiumLoadRatio(void)
 {
-	int j, gp, gp_r, gp_s; //, gp_t;
-	int PModel = 1;
-	long i = 0;
 	double* dstrain;
 
 	double S0 = 0.0, p0 = 0.0;
 	double MaxS = 0.000001;
 	double EffS = 0.0;
 
-	MeshLib::CElem* elem = NULL;
 	ElementValue_DM* eleV_DM = NULL;
 	CSolidProperties* SMat = NULL;
 
@@ -1891,21 +1878,20 @@ double CRFProcessDeformation::CaclMaxiumLoadRatio(void)
 	double PRatio = 0.0;
 	const double MaxR = 20.0;
 
-	int NGS, NGPS;
+	//gp_t = 0;
 
-	// gp_t = 0;
-
-	for (i = 0; i < (long)m_msh->ele_vector.size(); i++)
+	for (std::size_t i = 0; i < m_msh->ele_vector.size(); i++)
 	{
-		elem = m_msh->ele_vector[i];
-		if (elem->GetMark()) // Marked for use
+		MeshLib::CElem* elem = m_msh->ele_vector[i];
+		if (elem->GetMark())      // Marked for use
 		{
-			fem_dm->ConfigElement(elem, m_num->ele_gauss_points);
+			fem_dm->ConfigElement(elem);
 			fem_dm->SetMaterial();
 			eleV_DM = ele_value_dm[i];
 			SMat = fem_dm->smat;
 			SMat->axisymmetry = m_msh->isAxisymmetry();
-			PModel = SMat->Plasticity_type;
+			const int PModel = SMat->Plasticity_type;
+
 			//
 			switch (PModel)
 			{
@@ -1935,29 +1921,19 @@ double CRFProcessDeformation::CaclMaxiumLoadRatio(void)
 					S0 = (*Mat)(3);
 					break;
 			}
-			NGS = fem_dm->GetNumGaussPoints();
-			NGPS = fem_dm->GetNumGaussSamples();
+			const int NGS = fem_dm->GetNumGaussPoints();
 			//
-			for (gp = 0; gp < NGS; gp++)
+			for (int gp = 0; gp < NGS; gp++)
 			{
-				switch (elem->GetElementType())
+				if (!(    elem->GetElementType() == MshElemType::TRIANGLE
+				       || elem->GetElementType() == MshElemType::QUAD) )
 				{
-					case MshElemType::TRIANGLE: // Triangle
-						SamplePointTriHQ(gp, fem_dm->unit);
-						break;
-					case MshElemType::QUAD: // Quadralateral
-						gp_r = (int)(gp / NGPS);
-						gp_s = gp % NGPS;
-						fem_dm->unit[0] = MXPGaussPkt(NGPS, gp_r);
-						fem_dm->unit[1] = MXPGaussPkt(NGPS, gp_s);
-						break;
-					default:
-						std::cerr << "CRFProcessDeformation::CaclMaxiumLoadRatio MshElemType not handled"
-						          << "\n";
+					std::cerr <<
+					"CRFProcessDeformation::CaclMaxiumLoadRatio MshElemType not handled"
+					          << std::endl;
 				}
-				fem_dm->computeJacobian(2);
-				fem_dm->ComputeGradShapefct(2);
-				fem_dm->ComputeStrain();
+				fem_dm->getGradShapefunctValues(gp, 2);
+				fem_dm->ComputeStrain(gp);
 
 				dstrain = fem_dm->GetStrain();
 
@@ -1976,8 +1952,8 @@ double CRFProcessDeformation::CaclMaxiumLoadRatio(void)
 				}
 
 				// Stress of the previous time step
-				for (j = 0; j < fem_dm->ns; j++)
-					fem_dm->dstress[j] = (*eleV_DM->Stress)(j, gp);
+				for(int j = 0; j < fem_dm->ns; j++)
+					fem_dm->dstress[j] = (*eleV_DM->Stress)(j,gp);
 
 				// Compute try stress, stress incremental:
 				fem_dm->De->multi(dstrain, fem_dm->dstress);
@@ -2124,7 +2100,10 @@ void CRFProcessDeformation::Extropolation_GaussValue()
 		elem = m_msh->ele_vector[i];
 		if (elem->GetMark()) // Marked for use
 		{
-			fem_dm->ConfigElement(elem, m_num->ele_gauss_points);
+			fem_dm->setElement(elem);
+			fem_dm->setOrder(2);
+			fem_dm->SetIntegrationPointNumber(elem->GetElementType());
+
 			fem_dm->SetMaterial();
 			//         eval_DM = ele_value_dm[i];
 			// TEST        (*eval_DM->Stress) += (*eval_DM->Stress0);
@@ -2307,8 +2286,8 @@ void CRFProcessDeformation::Trace_Discontinuity()
 				}
 			}
 
-			fem_dm->ConfigElement(elem, m_num->ele_gauss_points);
-			// 2D
+			fem_dm->ConfigElement(elem);
+			//2D
 			elem->GetElementFaceNodes(bFaces, FNodes0);
 			if (elem->GetElementType() == MshElemType::QUAD || elem->GetElementType() == MshElemType::TRIANGLE)
 				nPathNodes = 2;
@@ -2472,7 +2451,7 @@ long CRFProcessDeformation::MarkBifurcatedNeighbor(const int PathIndex)
 			adjacent = false;
 			numf1 = elem1->GetFacesNumber();
 			eleV_DM1 = ele_value_dm[nb];
-			fem_dm->ConfigElement(elem1, m_num->ele_gauss_points);
+			fem_dm->ConfigElement(elem1);
 			// Search faces of neighbor's neighbors
 			for (j = 0; j < numf1; j++)
 			{
@@ -2556,7 +2535,7 @@ void CRFProcessDeformation::DomainAssembly(CPARDomain* m_dom)
 			elem->SetOrder(true);
 			// WW
 			fem_dm->SetElementNodesDomain(m_dom->element_nodes_dom[i]);
-			fem_dm->ConfigElement(elem, m_num->ele_gauss_points);
+			fem_dm->ConfigElement(elem);
 			fem_dm->m_dom = m_dom;
 			fem_dm->LocalAssembly(0);
 		}
@@ -2575,7 +2554,7 @@ void CRFProcessDeformation::DomainAssembly(CPARDomain* m_dom)
 				elem->SetOrder(false);
 				// WW
 				fem->SetElementNodesDomain(m_dom->element_nodes_dom[i]);
-				fem->ConfigElement(elem, m_num->ele_gauss_points);
+				fem->ConfigElement(elem);
 				fem->m_dom = m_dom;
 				fem->Assembly();
 			}
@@ -3052,7 +3031,7 @@ void CRFProcessDeformation::UpdateStress()
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012. WW
 			fem_dm->m_dom = NULL;
 #endif
-			fem_dm->ConfigElement(elem, m_num->ele_gauss_points);
+			fem_dm->ConfigElement(elem);
 			fem_dm->LocalAssembly(1);
 		}
 	}
@@ -3277,7 +3256,7 @@ void CRFProcessDeformation::ReleaseLoadingByExcavation()
 		elem = m_msh->ele_vector[i];
 		if (elem->GetMark()) // Marked for use
 		{
-			fem_dm->ConfigElement(elem, m_num->ele_gauss_points);
+			fem_dm->ConfigElement(elem);
 			fem_dm->LocalAssembly(0);
 			ele_val = ele_value_dm[i];
 			// Clear stresses in excavated domain
@@ -3608,4 +3587,8 @@ bool CRFProcessDeformation::CalcBC_or_SecondaryVariable_Dynamics(bool BC)
 
 	return BC;
 }
-} // end namespace
+
+bool CRFProcessDeformation::isDynamic() const
+{return fem_dm->dynamic;}
+
+}                                                 // end namespace
