@@ -57,7 +57,7 @@ void CFiniteElementStd::CalcMassTES()
 		// Compute Jacobian matrix and its determinate
 		double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
 		// Compute geometry
-		ComputeShapefct(1); // Linear interpolation function
+		getShapefunctValues(gp, 1);       // Linear interpolation function
 
 		for (int in = 0; in < pcs->dof; in++)
 		{
@@ -122,9 +122,9 @@ void CFiniteElementStd::CalcLumpedMassTES()
 	// Initialize
 	(*Mass2) = 0.0;
 	// Center of the reference element
-	SetCenterGP();
-	ComputeShapefct(1);
-	for (int in = 0; in < nDF; in++)
+	getShapeFunctionCentroid();               // Linear interpolation function
+
+	for(int in = 0; in < nDF; in++)
 	{
 		const int ish = in * nnodes;
 		for (int jn = 0; jn < nDF; jn++)
@@ -387,8 +387,8 @@ void CFiniteElementStd::CalcAdvectionTES()
 	for (gp = 0; gp < nGaussPoints; gp++)
 	{
 		double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
-		ComputeGradShapefct(1);
-		ComputeShapefct(1);
+		getShapefunctValues(gp, 1);
+		getGradShapefunctValues(gp, 1);
 
 		// Velocity
 		// TODO [CL] vel includes porosity? cf. \tilde w
@@ -513,7 +513,7 @@ void CFiniteElementStd::CalcContentTES()
 	for (gp = 0; gp < nGaussPoints; gp++)
 	{
 		double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
-		ComputeShapefct(1);
+		getShapefunctValues(gp, 1);
 
 		for (int in = 0; in < pcs->dof; in++)
 		{
@@ -605,7 +605,7 @@ void CFiniteElementStd::Assemble_RHS_TES()
 		double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
 
 		// Compute geometry
-		ComputeShapefct(1);
+		getShapefunctValues(gp, 1);
 
 		for (int ii = 0; ii < pcs->dof; ii++)
 		{

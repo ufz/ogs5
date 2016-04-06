@@ -106,7 +106,7 @@ public:
 	bool GlobalAssembly();
 
 	// Compute strains
-	void ComputeStrain();
+	void ComputeStrain(const int ip);
 
 	// Set material data
 	void SetMaterial();

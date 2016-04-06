@@ -135,8 +135,10 @@ public:
 	void CalcStorage();
 	// 9. Content matrix
 	void CalcContent();
-	void CalcContentTNEQ(); // NW
-	void CalcContentTES(); // NW
+	void CalcContentTNEQ(); //NW
+	void CalcContentTES(); //NW
+	//
+	void CalcSatuation();                  //WW
 	//
 	void CalcSatution(); // WW
 //

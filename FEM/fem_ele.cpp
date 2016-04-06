@@ -12,22 +12,16 @@
    Designed and programmed by WW, 06/2004
  */
 
-//#include "makros.h"
-//#include <iostream>
-#include "fem_ele_std.h"
-#include <cfloat>
-/* Objekte */
-#include "rf_pcs.h"
+#include "fem_ele.h"
 
+#include <cfloat>
+
+#include "msh_elem.h"
+#include "rf_pcs.h"
 #include "femlib.h"
 #include "mathlib.h"
-//#include "matrix_class.h"
-// MSHLib
-//#include "msh_elem.h"
-// Will be removed when new FEM is ready
-//=============================================
-FiniteElement::CElement* elem_dm = NULL;
-//=============================================
+
+#include "ShapeFunctionPool.h"
 
 namespace FiniteElement
 {
@@ -41,13 +35,19 @@ namespace FiniteElement
    Last modified:
 **************************************************************************/
 CElement::CElement(int CoordFlag, const int order)
-    : MeshElement(NULL), Order(order), ele_dim(1), nGaussPoints(1), nGauss(1), ShapeFunction(NULL),
-      ShapeFunctionHQ(NULL), GradShapeFunction(NULL), GradShapeFunctionHQ(NULL), T_Flag(false), C_Flag(false),
-      F_Flag(false), D_Flag(0), RD_Flag(false), extrapo_method(ExtrapolationMethod::EXTRAPO_LINEAR)
+	: MeshElement(NULL), Order(order), ele_dim(1), nGaussPoints(1), nGauss(3),
+	  ShapeFunction(NULL), ShapeFunctionHQ(NULL),
+	  GradShapeFunction(NULL), GradShapeFunctionHQ(NULL), _is_mixed_order(false),
+	  T_Flag(false), C_Flag(false), F_Flag(false), D_Flag(0), RD_Flag(false),
+	  extrapo_method(ExtrapolationMethod::EXTRAPO_LINEAR), invJacobian(NULL)
 {
-	int i;
-	//
-	nGauss = 3;
+	for (int i=0; i<2; i++)
+	{
+		_shape_function_pool_ptr[i] = NULL;
+		_shape_function_result_ptr[i] = NULL;
+		_grad_shape_function_result_ptr[i] = NULL;
+	}
+
 	//
 	if (CoordFlag < 0) // Axisymmetry
 	{
@@ -59,39 +59,42 @@ CElement::CElement(int CoordFlag, const int order)
 	//
 	dim = CoordFlag / 10;
 	coordinate_system = CoordFlag;
-	for (i = 0; i < 4; i++)
+	for(int i = 0; i < 4; i++)
 		unit[i] = 0.0;
-	switch (dim)
+
+	int dim_jacobian = 1;
+	int size_dshapefct = 6;
+	int size_dshapefctHQ = 9;
+	int max_intgration_points = 27;
+	switch(dim)
 	{
-		case 1: // OK
-			// Memory allocated for maxium 3 nodes elements
-			Jacobian = new double[1];
-			invJacobian = new double[1];
-			shapefct = new double[2];
-			shapefctHQ = new double[3];
-			dshapefct = new double[6];
-			dshapefctHQ = new double[9];
-			break;
-		case 2:
-			// Memory allocated for maxium 9 nodes elements
-			Jacobian = new double[4];
-			invJacobian = new double[4];
-			shapefct = new double[4];
-			shapefctHQ = new double[9];
-			dshapefct = new double[18];
-			dshapefctHQ = new double[18];
-			break;
-		case 3:
-			// Memory allocated for maxium 20 nodes elements
-			Jacobian = new double[9];
-			invJacobian = new double[9];
-			shapefct = new double[8];
-			shapefctHQ = new double[20];
-			dshapefct = new double[24];
-			dshapefctHQ = new double[60];
-			//
-			break;
+	case 1:                               //OK
+		// Memory allocated for maxium 3 nodes elements
+		dim_jacobian = 1;
+		size_dshapefct = 3 * max_intgration_points;
+		size_dshapefctHQ = 3 * max_intgration_points;
+		break;
+	case 2:
+		// Memory allocated for maxium 9 nodes elements
+		dim_jacobian = 4;
+		size_dshapefct = 18 * max_intgration_points;
+		size_dshapefctHQ = 18 * max_intgration_points;
+		break;
+	case 3:
+		// Memory allocated for maxium 20 nodes elements
+		dim_jacobian = 9;
+		size_dshapefct = 24 * max_intgration_points;
+		size_dshapefctHQ = 60 * max_intgration_points;
+		//
+		break;
 	}
+
+	Jacobian = new double[dim_jacobian];
+	_determinants_all = new double[max_intgration_points];
+	_inv_jacobian_all = new double[max_intgration_points * dim_jacobian];
+	_dshapefct_all = new double[size_dshapefct];
+	_dshapefctHQ_all = new double[size_dshapefctHQ];
+
 	time_unit_factor = 1.0;
 
 	if (M_Process)
@@ -112,22 +115,22 @@ CElement::CElement(int CoordFlag, const int order)
 // local_matrix = NULL; //>  local matrix
 // local_vec = NULL; //>  local vector
 #endif
+	element_nodes_dom = NULL;
+	Index = 0;
+	nnodes = nnodesHQ = nNodes = 0;
+	Radius = .0;
+	Xi_p = .0;
 }
 
 //  Destructor of class Element
 CElement::~CElement()
 {
-	delete[] Jacobian;
-	delete[] invJacobian;
-	delete[] shapefct;
-	delete[] shapefctHQ;
-	delete[] dshapefct;
-	delete[] dshapefctHQ;
-	Jacobian = NULL;
-	shapefct = NULL;
-	dshapefct = NULL;
-	dshapefctHQ = NULL;
-	shapefctHQ = NULL;
+	if (Jacobian)
+		delete  [] Jacobian;
+	delete [] _determinants_all;
+	delete [] _inv_jacobian_all;
+	delete [] _dshapefct_all;
+	delete [] _dshapefctHQ_all;
 
 #if defined(USE_PETSC) // || defined(other parallel libs)//03~04.3012. WW
 	if (idxm)
@@ -151,15 +154,15 @@ CElement::~CElement()
    05/2007 WW 1D in 2D
    Last modified:
 **************************************************************************/
-void CElement::ConfigElement(CElem* MElement, const int nquadrature_points, bool FaceIntegration)
+void CElement::ConfigElement(CElem* MElement, const bool FaceIntegration)
 {
 	CNode* a_node = NULL; // 07.04.2009. WW
 	MeshElement = MElement;
 	Index = MeshElement->GetIndex();
 	nnodes = MeshElement->nnodes;
 	nnodesHQ = MeshElement->nnodesHQ;
+	ele_dim = MeshElement->GetDimension();
 	bool done = false;
-	ConfigNumerics(MeshElement->GetElementType(), nquadrature_points);
 	if (MeshElement->quadratic)
 		nNodes = nnodesHQ;
 	else
@@ -236,19 +239,11 @@ void CElement::ConfigElement(CElem* MElement, const int nquadrature_points, bool
 				case 2:
 					if (coordinate_system % 10 == 2)
 					{
-						for (int i = 0; i < nNodes; i++)
-						{
-							// 07.04.2007. WW
-							//                        a_node = MeshElement->nodes[i];
-							//                        X[i] = a_node->X();
-							//                        Y[i] = a_node->Z();
-							//                        Z[i] = a_node->Y();
-							double const* const coords_node_i(MeshElement->nodes[i]->getData());
-							X[i] = coords_node_i[0];
-							Y[i] = coords_node_i[2];
-							Z[i] = coords_node_i[1];
-						}
-						done = true;
+						double const* const coords_node_i (
+						        MeshElement->nodes[i]->getData());
+						X[i] = coords_node_i[0];
+						Y[i] = coords_node_i[2];
+						Z[i] = coords_node_i[1];
 					}
 					break;
 			}
@@ -268,29 +263,41 @@ void CElement::ConfigElement(CElem* MElement, const int nquadrature_points, bool
 	}
 
 #if defined(USE_PETSC) // || defined(other parallel libs)//03~04.3012. WW
-	if (!FaceIntegration)
+	if(!FaceIntegration)
 	{
-		if (MeshElement->g_index) // ghost nodes pcs->pcs_number_of_primary_nvals
+		if(MeshElement->g_index) // ghost nodes pcs->pcs_number_of_primary_nvals
 		{
 			act_nodes = MeshElement->g_index[0];
 			act_nodes_h = MeshElement->g_index[1];
 
-			for (int i = 0; i < act_nodes_h; i++)
+			for(int i = 0; i < act_nodes_h; i++)
 			{
-				local_idx[i] = MeshElement->g_index[i + 2];
+				local_idx[i] = MeshElement->g_index[i+2];
 			}
 		}
 		else
 		{
 			act_nodes = nnodes;
 			act_nodes_h = nnodesHQ;
-			for (int i = 0; i < act_nodes_h; i++)
+			for(int i = 0; i < act_nodes_h; i++)
 			{
 				local_idx[i] = i;
 			}
 		}
 	}
 #endif
+
+	// WW
+	const MshElemType::type elem_type = MeshElement->GetElementType();
+	getShapeFunctionPtr(elem_type);
+	getGradShapeFunctionPtr(elem_type);
+
+	SetIntegrationPointNumber(elem_type);
+	if (_is_mixed_order)
+	{
+		Order = 1;
+	}
+	ComputeGradShapefctInElement(FaceIntegration);
 }
 
 /**************************************************************************
@@ -300,11 +307,11 @@ void CElement::ConfigElement(CElem* MElement, const int nquadrature_points, bool
    06/2004 WW Implementation
    Last modified:
 **************************************************************************/
-void CElement::CalculateRadius()
+void CElement::calculateRadius(const int gp)
 {
 	Radius = 0.0;
-	ComputeShapefct(1);
-	for (int i = 0; i < nnodes; i++)
+	getShapefunctValues(gp, 1);
+	for(int i = 0; i < nnodes; i++)
 		Radius += shapefct[i] * X[i];
 }
 
@@ -324,6 +331,47 @@ void CElement::setOrder(const int order)
 		nNodes = nnodesHQ;
 }
 
+void CElement::SetIntegrationPointNumber(const MshElemType::type elem_type)
+{
+	switch(elem_type)
+	{
+	case MshElemType::LINE:
+		//nGauss = 2;
+		nGaussPoints = nGauss;
+		return;
+	case MshElemType::QUAD:
+	case MshElemType::QUAD8:
+		nGaussPoints = nGauss * nGauss;
+		return;
+	case MshElemType::HEXAHEDRON:
+		nGaussPoints = nGauss * nGauss * nGauss;
+		return;
+	case MshElemType::TRIANGLE:
+		nGaussPoints = 3; //nGauss = 3; // Fixed to 3
+		return;
+	case MshElemType::TETRAHEDRON:
+		//	   nGaussPoints = nGauss = 15;  // Fixed to 15
+		nGaussPoints = 5; //nGauss = 5; // Fixed to 5
+		return;
+	case MshElemType::PRISM:
+		nGaussPoints = 6;         // Fixed to 6
+		//nGauss = 3;               // Fixed to 3
+		return;
+	case MshElemType::PYRAMID:
+		if (Order == 1)
+			nGaussPoints = 5; //nGauss = 5;
+		else
+			nGaussPoints = 8; //nGauss = 8;  //13;
+		return;
+	case MshElemType::INVALID:
+		std::cerr << "[CElement::ConfigNumerics] invalid element type" << std::endl;
+		break;
+	default:
+		std::cerr << "[CElement::ConfigNumerics] unknown element type" << std::endl;
+		break;
+	}
+}
+
 /**************************************************************************
    FEMLib-Method:
    Task:
@@ -333,90 +381,96 @@ void CElement::setOrder(const int order)
    01/2010 NW Higher order line elements
    Last modified:
 **************************************************************************/
-void CElement::ConfigNumerics(MshElemType::type ele_type, const int nquadrature_points)
+void CElement::ConfigShapefunction(MshElemType::type elem_type)
 {
-	assert(nquadrature_points > 0);
-	// nGauss = GetNumericsGaussPoints(ElementType);
-	switch (ele_type)
+	SetIntegrationPointNumber(elem_type);
+
+	switch(elem_type)
 	{
-		case MshElemType::LINE:
-			ele_dim = 1;
-			nGauss = 2;
-			nGaussPoints = nGauss;
-			ShapeFunction = ShapeFunctionLine;
-			ShapeFunctionHQ = ShapeFunctionLineHQ;
-			GradShapeFunction = GradShapeFunctionLine;
-			GradShapeFunctionHQ = GradShapeFunctionLineHQ;
-			extrapo_method = ExtrapolationMethod::EXTRAPO_LINEAR;
-			return;
-		case MshElemType::QUAD:
-			ele_dim = 2;
-			nGauss = nquadrature_points;
-			nGaussPoints = nGauss * nGauss;
-			ShapeFunction = ShapeFunctionQuad;
-			ShapeFunctionHQ = ShapeFunctionQuadHQ;
-			GradShapeFunction = GradShapeFunctionQuad;
-			GradShapeFunctionHQ = GradShapeFunctionQuadHQ;
-			extrapo_method = ExtrapolationMethod::EXTRAPO_LINEAR;
-			return;
-		case MshElemType::HEXAHEDRON:
-			ele_dim = 3;
-			nGauss = nquadrature_points;
-			nGaussPoints = nGauss * nGauss * nGauss;
-			ShapeFunction = ShapeFunctionHex;
-			ShapeFunctionHQ = ShapeFunctionHexHQ;
-			GradShapeFunction = GradShapeFunctionHex;
-			GradShapeFunctionHQ = GradShapeFunctionHexHQ;
-			extrapo_method = ExtrapolationMethod::EXTRAPO_LINEAR;
-			return;
-		case MshElemType::TRIANGLE:
-			ele_dim = 2;
-			nGaussPoints = nGauss = 3; // Fixed to 3
-			ShapeFunction = ShapeFunctionTri;
-			ShapeFunctionHQ = ShapeFunctionTriHQ;
-			GradShapeFunction = GradShapeFunctionTri;
-			GradShapeFunctionHQ = GradShapeFunctionTriHQ;
-			extrapo_method = ExtrapolationMethod::EXTRAPO_LINEAR;
-			return;
-		case MshElemType::TETRAHEDRON:
-			ele_dim = 3;
-			//	   nGaussPoints = nGauss = 15;  // Fixed to 15
-			nGaussPoints = nGauss = 5; // Fixed to 5
-			ShapeFunction = ShapeFunctionTet;
-			ShapeFunctionHQ = ShapeFunctionTetHQ;
-			GradShapeFunction = GradShapeFunctionTet;
-			GradShapeFunctionHQ = GradShapeFunctionTetHQ;
-			extrapo_method = ExtrapolationMethod::EXTRAPO_LINEAR;
-			return;
-		case MshElemType::PRISM:
-			ele_dim = 3;
-			nGaussPoints = 6; // Fixed to 6
-			nGauss = 3; // Fixed to 3
-			ShapeFunction = ShapeFunctionPri;
-			ShapeFunctionHQ = ShapeFunctionPriHQ;
-			GradShapeFunction = GradShapeFunctionPri;
-			GradShapeFunctionHQ = GradShapeFunctionPriHQ;
-			extrapo_method = ExtrapolationMethod::EXTRAPO_AVERAGE;
-			return;
-		case MshElemType::PYRAMID:
-			ele_dim = 3;
-			if (Order == 1)
-				nGaussPoints = nGauss = 5;
-			else
-				nGaussPoints = nGauss = 8; // 13;
-			ShapeFunction = ShapeFunctionPyra;
-			ShapeFunctionHQ = ShapeFunctionPyraHQ13;
-			GradShapeFunction = GradShapeFunctionPyra;
-			GradShapeFunctionHQ = GradShapeFunctionPyraHQ13;
-			extrapo_method = ExtrapolationMethod::EXTRAPO_AVERAGE;
-			return;
-		case MshElemType::INVALID:
-			std::cerr << "[CElement::ConfigNumerics] invalid element type"
-			          << "\n";
-			break;
-		default:
-			std::cerr << "[CElement::ConfigNumerics] unknown element type"
-			          << "\n";
+	case MshElemType::LINE:
+		ele_dim = 1;
+		//nGauss = 2;
+		nGaussPoints = nGauss;
+		ShapeFunction = ShapeFunctionLine;
+		ShapeFunctionHQ = ShapeFunctionLineHQ;
+		GradShapeFunction = GradShapeFunctionLine;
+		GradShapeFunctionHQ = GradShapeFunctionLineHQ;
+		extrapo_method = ExtrapolationMethod::EXTRAPO_LINEAR;
+		return;
+	case MshElemType::QUAD:
+		ele_dim = 2;
+		nGaussPoints = nGauss * nGauss;
+		ShapeFunction = ShapeFunctionQuad;
+		ShapeFunctionHQ = ShapeFunctionQuadHQ;
+		GradShapeFunction = GradShapeFunctionQuad;
+		GradShapeFunctionHQ = GradShapeFunctionQuadHQ;
+		extrapo_method = ExtrapolationMethod::EXTRAPO_LINEAR;
+		return;
+	case MshElemType::QUAD8:
+		ele_dim = 2;
+		nGaussPoints = nGauss * nGauss;
+		ShapeFunction = ShapeFunctionQuad;
+		ShapeFunctionHQ = ShapeFunctionQuadHQ8;
+		GradShapeFunction = GradShapeFunctionQuad;
+		GradShapeFunctionHQ = GradShapeFunctionQuadHQ8;
+		extrapo_method = ExtrapolationMethod::EXTRAPO_LINEAR;
+		return;
+	case MshElemType::HEXAHEDRON:
+		ele_dim = 3;
+		nGaussPoints = nGauss * nGauss * nGauss;
+		ShapeFunction = ShapeFunctionHex;
+		ShapeFunctionHQ = ShapeFunctionHexHQ;
+		GradShapeFunction = GradShapeFunctionHex;
+		GradShapeFunctionHQ = GradShapeFunctionHexHQ;
+		extrapo_method = ExtrapolationMethod::EXTRAPO_LINEAR;
+		return;
+	case MshElemType::TRIANGLE:
+		ele_dim = 2;
+		nGaussPoints = 3; //nGauss = 3; // Fixed to 3
+		ShapeFunction = ShapeFunctionTri;
+		ShapeFunctionHQ = ShapeFunctionTriHQ;
+		GradShapeFunction = GradShapeFunctionTri;
+		GradShapeFunctionHQ = GradShapeFunctionTriHQ;
+		extrapo_method = ExtrapolationMethod::EXTRAPO_LINEAR;
+		return;
+	case MshElemType::TETRAHEDRON:
+		ele_dim = 3;
+		//	   nGaussPoints = nGauss = 15;  // Fixed to 15
+		nGaussPoints = 5; //nGauss = 5; // Fixed to 5
+		ShapeFunction = ShapeFunctionTet;
+		ShapeFunctionHQ = ShapeFunctionTetHQ;
+		GradShapeFunction = GradShapeFunctionTet;
+		GradShapeFunctionHQ = GradShapeFunctionTetHQ;
+		extrapo_method = ExtrapolationMethod::EXTRAPO_LINEAR;
+		return;
+	case MshElemType::PRISM:
+		ele_dim = 3;
+		nGaussPoints = 6;         // Fixed to 6
+		//nGauss = 3;               // Fixed to 3
+		ShapeFunction = ShapeFunctionPri;
+		ShapeFunctionHQ = ShapeFunctionPriHQ;
+		GradShapeFunction = GradShapeFunctionPri;
+		GradShapeFunctionHQ = GradShapeFunctionPriHQ;
+		extrapo_method = ExtrapolationMethod::EXTRAPO_AVERAGE;
+		return;
+	case MshElemType::PYRAMID:
+		ele_dim = 3;
+		if (Order == 1)
+			nGaussPoints = 5; //nGauss = 5;
+		else
+			nGaussPoints = 8; //nGauss = 8;  //13;
+		ShapeFunction = ShapeFunctionPyra;
+		ShapeFunctionHQ = ShapeFunctionPyraHQ13;
+		GradShapeFunction = GradShapeFunctionPyra;
+		GradShapeFunctionHQ = GradShapeFunctionPyraHQ13;
+		extrapo_method = ExtrapolationMethod::EXTRAPO_AVERAGE;
+		return;
+	case MshElemType::INVALID:
+		std::cerr << "[CElement::ConfigNumerics] invalid element type" << std::endl;
+		break;
+	default:
+		std::cerr << "[CElement::ConfigNumerics] unknown element type" << std::endl;
+		break;
 	}
 }
 
@@ -429,13 +483,8 @@ void CElement::ConfigNumerics(MshElemType::type ele_type, const int nquadrature_
 **************************************************************************/
 double CElement::interpolate(double const* const nodalVal, const int order) const
 {
-	int nn = nnodes;
-	double* inTerpo = shapefct;
-	if (order == 2)
-	{
-		nn = nnodes;
-		inTerpo = shapefctHQ;
-	}
+	const int nn = (order == 2) ? nnodesHQ : nnodes;
+	double const * const inTerpo = (order == 2) ? shapefctHQ : shapefct;
 	double val = 0.0;
 	for (int i = 0; i < nn; i++)
 		val += nodalVal[i] * inTerpo[i];
@@ -503,88 +552,95 @@ double CElement::elemnt_average(const int idx, CRFProcess* m_pcs, const int orde
    01/2006 WW Axisymmtry
    09/2006 WW 1D element in 3D
 **************************************************************************/
-double CElement::computeJacobian(const int order)
+void CElement::computeJacobian(const int gp, const int order, const bool inverse)
 {
-	int k = 0;
 	int nodes_number = nnodes;
 	double DetJac = 0.0;
-	double* dN = dshapefct;
-	//    double *sh = shapefct;
-	double dx, dy, dz;
-	dx = dy = dz = 0.0;
 
-	if (order == 2) // OK4104
+	double* dN = NULL;
+	if(order == 2)
 	{
 		nodes_number = nnodesHQ;
 		dN = dshapefctHQ;
-		GradShapeFunctionHQ(dN, unit);
 	}
 	else
-		GradShapeFunction(dN, unit);
-	for (size_t i = 0; i < ele_dim * ele_dim; i++)
+	{
+		dN = dshapefct;
+	}
+
+	for(size_t i = 0; i < ele_dim*ele_dim; i++)
 		Jacobian[i] = 0.0;
 	//--------------------------------------------------------------------
 	switch (ele_dim)
 	{
-		//................................................................
-		case 1:
+	//................................................................
+	case 1:
+		{
 			// If Line in X or Z direction, coordinate is saved in local X
 			// If Line in 3D space, a transform is applied and cast coordinate in local X
-			dx = X[1] - X[0]; //+Y[1]-Y[0];
+			const double dx = X[1] - X[0];         //+Y[1]-Y[0];
 			Jacobian[0] = 0.5 * dx;
+
+			if (!inverse)
+			return;
+
+			invJacobian = &_inv_jacobian_all[gp * 1];
 			invJacobian[0] = 2.0 / dx;
 			DetJac = Jacobian[0];
-			// WW
-			// if(MeshElement->area>0)
+			//WW
+			//if(MeshElement->area>0)
 			DetJac *= MeshElement->area;
-			// WW          DetJac*=MeshElement->GetFluxArea();//CMCD
-			if (axisymmetry)
+			//WW          DetJac*=MeshElement->GetFluxArea();//CMCD
+			if(axisymmetry)
 			{
-				CalculateRadius();
-				DetJac *= Radius; // 2.0*pai*Radius;
+				calculateRadius(gp);
+				DetJac *= Radius; //2.0*pai*Radius;
 			}
-			break;
-		//................................................................
-		case 2:
-			for (int i = 0, j = nodes_number; i < nodes_number; i++, j++)
-			{
-				Jacobian[0] += X[i] * dN[i];
-				Jacobian[1] += Y[i] * dN[i];
-				Jacobian[2] += X[i] * dN[j];
-				Jacobian[3] += Y[i] * dN[j];
-			}
-
-			DetJac = Jacobian[0] * Jacobian[3] - Jacobian[1] * Jacobian[2];
-			if (fabs(DetJac) < MKleinsteZahl)
-			{
-				std::cout << "\n*** Jacobian: Det == 0 " << DetJac << "\n";
-				abort();
-			}
-			invJacobian[0] = Jacobian[3];
-			invJacobian[1] = -Jacobian[1];
-			invJacobian[2] = -Jacobian[2];
-			invJacobian[3] = Jacobian[0];
-			for (size_t i = 0; i < ele_dim * ele_dim; i++)
-				invJacobian[i] /= DetJac;
-			//
-			// By WW
-			// if(MeshElement->area>0)
-			DetJac *= MeshElement->area;
-			// WW          DetJac*=MeshElement->GetFluxArea();//CMCD
-			if (axisymmetry)
-			{
-				CalculateRadius();
-				DetJac *= Radius; // 2.0*pai*Radius;
-			}
-			break;
-		//................................................................
-		case 3:
+		}
+		break;
+	//................................................................
+	case 2:
+		for(int i = 0,j = nodes_number; i < nodes_number; i++,j++)
 		{
-			int j;
-			for (int i = 0; i < nodes_number; i++)
-			{
-				j = i + nodes_number;
-				k = i + 2 * nodes_number;
+			Jacobian[0] += X[i] * dN[i];
+			Jacobian[1] += Y[i] * dN[i];
+			Jacobian[2] += X[i] * dN[j];
+			Jacobian[3] += Y[i] * dN[j];
+		}
+
+		if (!inverse)
+			return;
+
+		invJacobian = &_inv_jacobian_all[gp * 4];
+		DetJac =  Jacobian[0] * Jacobian[3] - Jacobian[1] * Jacobian[2];
+		if (fabs(DetJac) < MKleinsteZahl)
+		{
+			std::cout << "\n*** Jacobian: Det == 0 " << DetJac << "\n";
+			abort();
+		}
+		invJacobian[0] = Jacobian[3];
+		invJacobian[1] = -Jacobian[1];
+		invJacobian[2] = -Jacobian[2];
+		invJacobian[3] = Jacobian[0];
+		for(size_t i = 0; i < ele_dim * ele_dim; i++)
+			invJacobian[i] /= DetJac;
+		//
+		//By WW
+		//if(MeshElement->area>0)
+		DetJac *= MeshElement->area;
+		//WW          DetJac*=MeshElement->GetFluxArea();//CMCD
+		if(axisymmetry)
+		{
+			calculateRadius(gp);
+			DetJac *= Radius; //2.0*pai*Radius;
+		}
+		break;
+	//................................................................
+	case 3: {
+		for(int i = 0; i < nodes_number; i++)
+		{
+			const int j = i + nodes_number;
+			const int k = i + 2 * nodes_number;
 
 				Jacobian[0] += X[i] * dN[i];
 				Jacobian[1] += Y[i] * dN[i];
@@ -594,38 +650,46 @@ double CElement::computeJacobian(const int order)
 				Jacobian[4] += Y[i] * dN[j];
 				Jacobian[5] += Z[i] * dN[j];
 
-				Jacobian[6] += X[i] * dN[k];
-				Jacobian[7] += Y[i] * dN[k];
-				Jacobian[8] += Z[i] * dN[k];
-			}
-			DetJac = Jacobian[0] * (Jacobian[4] * Jacobian[8] - Jacobian[7] * Jacobian[5])
-			         + Jacobian[6] * (Jacobian[1] * Jacobian[5] - Jacobian[4] * Jacobian[2])
-			         + Jacobian[3] * (Jacobian[2] * Jacobian[7] - Jacobian[8] * Jacobian[1]);
+			Jacobian[6] += X[i] * dN[k];
+			Jacobian[7] += Y[i] * dN[k];
+			Jacobian[8] += Z[i] * dN[k];
+		}
 
-			if (fabs(DetJac) < MKleinsteZahl)
-			{
-				std::cout << "\n*** Jacobian: DetJac == 0 " << DetJac << "\n";
-				abort();
-			}
-			invJacobian[0] = Jacobian[4] * Jacobian[8] - Jacobian[7] * Jacobian[5];
-			invJacobian[1] = Jacobian[2] * Jacobian[7] - Jacobian[1] * Jacobian[8];
-			invJacobian[2] = Jacobian[1] * Jacobian[5] - Jacobian[2] * Jacobian[4];
-			//
-			invJacobian[3] = Jacobian[5] * Jacobian[6] - Jacobian[8] * Jacobian[3];
-			invJacobian[4] = Jacobian[0] * Jacobian[8] - Jacobian[6] * Jacobian[2];
-			invJacobian[5] = Jacobian[2] * Jacobian[3] - Jacobian[5] * Jacobian[0];
-			//
-			invJacobian[6] = Jacobian[3] * Jacobian[7] - Jacobian[6] * Jacobian[4];
-			invJacobian[7] = Jacobian[1] * Jacobian[6] - Jacobian[7] * Jacobian[0];
-			invJacobian[8] = Jacobian[0] * Jacobian[4] - Jacobian[3] * Jacobian[1];
-			for (size_t i = 0; i < ele_dim * ele_dim; i++)
-				invJacobian[i] /= DetJac;
-			break;
-		} // end case 3
+		if (!inverse)
+			return;
+
+		invJacobian = &_inv_jacobian_all[gp * 9];
+		DetJac = Jacobian[0] *
+		         (Jacobian[4] * Jacobian[8] - Jacobian[7] * Jacobian[5])
+		         + Jacobian[6] *
+		         (Jacobian[1] * Jacobian[5] - Jacobian[4] * Jacobian[2])
+		         + Jacobian[3] *
+		         (Jacobian[2] * Jacobian[7] - Jacobian[8] * Jacobian[1]);
+
+		if (fabs(DetJac) < MKleinsteZahl)
+		{
+			std::cout << "\n*** Jacobian: DetJac == 0 " << DetJac << "\n";
+			abort();
+		}
+		invJacobian[0] =  Jacobian[4] * Jacobian[8] - Jacobian[7] * Jacobian[5];
+		invJacobian[1] =  Jacobian[2] * Jacobian[7] - Jacobian[1] * Jacobian[8];
+		invJacobian[2] =  Jacobian[1] * Jacobian[5] - Jacobian[2] * Jacobian[4];
+		//
+		invJacobian[3] =  Jacobian[5] * Jacobian[6] - Jacobian[8] * Jacobian[3];
+		invJacobian[4] =  Jacobian[0] * Jacobian[8] - Jacobian[6] * Jacobian[2];
+		invJacobian[5] =  Jacobian[2] * Jacobian[3] - Jacobian[5] * Jacobian[0];
+		//
+		invJacobian[6] =  Jacobian[3] * Jacobian[7] - Jacobian[6] * Jacobian[4];
+		invJacobian[7] =  Jacobian[1] * Jacobian[6] - Jacobian[7] * Jacobian[0];
+		invJacobian[8] =  Jacobian[0] * Jacobian[4] - Jacobian[3] * Jacobian[1];
+		for(size_t i = 0; i < ele_dim * ele_dim; i++)
+			invJacobian[i] /= DetJac;
+		break;
+	} // end case 3
 	}
 	//--------------------------------------------------------------------
 	// Use absolute value (for grids by gmsh, whose orientation is clockwise)
-	return fabs(DetJac);
+	_determinants_all[gp] =  fabs(DetJac);
 }
 /***************************************************************************
    GeoSys - Funktion: CElement::RealCoordinates
@@ -701,57 +765,69 @@ void CElement::UnitCoordinates(double* realXYZ)
 	for (size_t i = 0; i < ele_dim; i++)
 		realXYZ[i] = unit[i];
 }
+
+void CElement::SetGaussPoint(const int gp, int& gp_r,
+	                             int& gp_s, int& gp_t)
+{
+	SetGaussPoint(MeshElement->GetElementType(), 
+		          gp, gp_r, gp_s, gp_t);
+}
+
 /***************************************************************************
 
    08/2005     WW        Prism element
  **************************************************************************/
-void CElement::SetGaussPoint(const int gp, int& gp_r, int& gp_s, int& gp_t)
+void CElement::SetGaussPoint(const MshElemType::type elem_type, 
+	                         const int gp, int& gp_r, int& gp_s, int& gp_t)
 {
-	switch (MeshElement->GetElementType())
+	switch(elem_type)
 	{
-		case MshElemType::LINE: // Line
-			gp_r = gp;
-			unit[0] = MXPGaussPkt(nGauss, gp_r);
-			return;
-		case MshElemType::QUAD: // Quadralateral
-			gp_r = (int)(gp / nGauss);
-			gp_s = gp % nGauss;
-			unit[0] = MXPGaussPkt(nGauss, gp_r);
-			unit[1] = MXPGaussPkt(nGauss, gp_s);
-			return;
-		case MshElemType::HEXAHEDRON: // Hexahedra
-			gp_r = (int)(gp / (nGauss * nGauss));
-			gp_s = (gp % (nGauss * nGauss));
-			gp_t = gp_s % nGauss;
-			gp_s /= nGauss;
-			unit[0] = MXPGaussPkt(nGauss, gp_r);
-			unit[1] = MXPGaussPkt(nGauss, gp_s);
-			unit[2] = MXPGaussPkt(nGauss, gp_t);
-			return;
-		case MshElemType::TRIANGLE: // Triangle
-			SamplePointTriHQ(gp, unit);
-			break;
-		case MshElemType::TETRAHEDRON: // Tedrahedra
-			// To be flexible          SamplePointTet15(gp, unit);
-			SamplePointTet5(gp, unit);
-			return;
-		case MshElemType::PRISM: // Prism
-			gp_r = gp % nGauss;
-			SamplePointTriHQ(gp_r, unit);
-			//
-			gp_s = nGaussPoints / nGauss;
-			gp_t = (int)(gp / nGauss);
-			unit[2] = MXPGaussPkt(gp_s, gp_t);
-			return;
-		case MshElemType::PYRAMID: // Pyramid
-			if (Order == 1)
-				SamplePointPyramid5(gp, unit);
-			else
-				SamplePointPyramid8(gp, unit); // SamplePointPyramid13(gp, unit);
-			return;
-		default:
-			std::cerr << "CElement::SetGaussPoint invalid mesh element type given"
-			          << "\n";
+	case MshElemType::LINE:               // Line
+		gp_r = gp;
+		unit[0] = MXPGaussPkt(nGauss, gp_r);
+		return;
+	case MshElemType::QUAD8:               // Quadralateral
+	case MshElemType::QUAD:               // Quadralateral
+		gp_r = (int)(gp / nGauss);
+		gp_s = gp % nGauss;
+		unit[0] = MXPGaussPkt(nGauss, gp_r);
+		unit[1] = MXPGaussPkt(nGauss, gp_s);
+		return;
+	case MshElemType::HEXAHEDRON:         // Hexahedra
+		gp_r = (int)(gp / (nGauss * nGauss));
+		gp_s = (gp % (nGauss * nGauss));
+		gp_t = gp_s % nGauss;
+		gp_s /= nGauss;
+		unit[0] = MXPGaussPkt(nGauss, gp_r);
+		unit[1] = MXPGaussPkt(nGauss, gp_s);
+		unit[2] = MXPGaussPkt(nGauss, gp_t);
+		return;
+	case MshElemType::TRIANGLE:           // Triangle
+		SamplePointTriHQ(gp, unit);
+		break;
+	case MshElemType::TETRAHEDRON:        // Tedrahedra
+		//To be flexible          SamplePointTet15(gp, unit);
+		SamplePointTet5(gp, unit);
+		return;
+	case MshElemType::PRISM:              // Prism
+		// nGaussPoints = 6;         // Fixed to 6
+		// nGauss = 3;               // Fixed to 3
+		gp_r = gp % 3; // gp % nGauss
+		SamplePointTriHQ(gp_r, unit);		
+		//
+		gp_s = nGaussPoints/3; // nGaussPoints/nGauss
+		gp_t = (int)(gp / 3);  // gp/nGauss
+		unit[2] = MXPGaussPkt(gp_s,  gp_t);
+		return;
+	case MshElemType::PYRAMID: // Pyramid
+		if (Order == 1)
+			SamplePointPyramid5(gp, unit);
+		else
+			SamplePointPyramid8(gp, unit);  //SamplePointPyramid13(gp, unit);
+		return;
+	default:
+		std::cerr << "CElement::SetGaussPoint invalid mesh element type given" << std::endl;
+		break;
 	}
 }
 /***************************************************************************
@@ -772,44 +848,50 @@ void CElement::SetGaussPoint(const int gp, int& gp_r, int& gp_s, int& gp_t)
  **************************************************************************/
 double CElement::GetGaussData(int gp, int& gp_r, int& gp_s, int& gp_t)
 {
-	double fkt = 0.0;
-	SetGaussPoint(gp, gp_r, gp_s, gp_t);
-	switch (MeshElement->GetElementType())
+	switch(MeshElement->GetElementType())
 	{
-		case MshElemType::LINE: // Line
-			fkt = computeJacobian(Order) * MXPGaussFkt(nGauss, gp_r);
-			break;
-		case MshElemType::QUAD: // Quadralateral
-			fkt = computeJacobian(Order);
-			fkt *= MXPGaussFkt(nGauss, gp_r) * MXPGaussFkt(nGauss, gp_s);
-			break;
-		case MshElemType::HEXAHEDRON: // Hexahedra
-			fkt = computeJacobian(Order);
-			fkt *= MXPGaussFkt(nGauss, gp_r) * MXPGaussFkt(nGauss, gp_s) * MXPGaussFkt(nGauss, gp_t);
-			break;
-		case MshElemType::TRIANGLE: // Triangle
-			fkt = computeJacobian(Order);
-			fkt *= unit[2]; // Weights
-			break;
-		case MshElemType::TETRAHEDRON: // Tedrahedra
-			// To be flexible          SamplePointTet15(gp, unit);
-			fkt = computeJacobian(Order);
-			fkt *= unit[3]; // Weights
-			break;
-		case MshElemType::PRISM: // Prism
-			fkt = computeJacobian(Order);
-			// Weights
-			fkt *= MXPGaussFktTri(nGauss, gp_r) * MXPGaussFkt(gp_s, gp_t);
-			break;
-		case MshElemType::PYRAMID: // Pyramid
-			fkt = computeJacobian(Order);
-			fkt *= unit[3]; // Weights
-			break;
-		default:
-			std::cerr << "CElement::GetGaussData invalid mesh element type given"
-			          << "\n";
+	case MshElemType::LINE:               // Line
+		gp_r = gp;
+		return _determinants_all[gp] * MXPGaussFkt(nGauss, gp_r);
+	case MshElemType::QUAD8:               // Quadralateral
+	case MshElemType::QUAD:               // Quadralateral
+		gp_r = (int)(gp / nGauss);
+		gp_s = gp % nGauss;
+		return _determinants_all[gp] *
+			  MXPGaussFkt(nGauss, gp_r) * MXPGaussFkt(nGauss, gp_s);
+	case MshElemType::HEXAHEDRON:         // Hexahedra
+		gp_r = (int)(gp / (nGauss * nGauss));
+		gp_s = (gp % (nGauss * nGauss));
+		gp_t = gp_s % nGauss;
+		gp_s /= nGauss;
+		return _determinants_all[gp]
+			  * MXPGaussFkt(nGauss, gp_r) * MXPGaussFkt(nGauss, gp_s)
+		      * MXPGaussFkt(nGauss, gp_t);
+	case MshElemType::TRIANGLE:           // Triangle
+		SamplePointTriHQ(gp, unit);
+		return _determinants_all[gp] * unit[2];           // Weights
+	case MshElemType::TETRAHEDRON:        // Tedrahedra
+		//To be flexible          SamplePointTet15(gp, unit);
+		SamplePointTet5(gp, unit);
+		return _determinants_all[gp] * unit[3];           // Weights
+	case MshElemType::PRISM:              // Prism nGauss=3
+		gp_r = gp % 3; // gp % nGauss
+		//
+		gp_s = nGaussPoints/3; // nGaussPoints/nGauss
+		gp_t = (int)(gp / 3);  // gp/nGauss
+		return _determinants_all[gp] * MXPGaussFktTri(3, gp_r)
+			  * MXPGaussFkt(gp_s, gp_t);
+	case MshElemType::PYRAMID: // Pyramid
+		if (Order == 1)
+			SamplePointPyramid5(gp, unit);
+		else
+			SamplePointPyramid8(gp, unit);  //SamplePointPyramid13(gp, unit);
+		return _determinants_all[gp] * unit[3];           // Weights
+	default:
+		std::cerr << "CElement::GetGaussData invalid mesh element type given" << std::endl;
+		return 0.;
 	}
-	return fkt;
+	return 0.;
 }
 
 /***************************************************************************
@@ -823,22 +905,16 @@ double CElement::GetGaussData(int gp, int& gp_r, int& gp_s, int& gp_t)
  **************************************************************************/
 void CElement::FaceIntegration(double* NodeVal)
 {
-	int i, gp, gp_r, gp_s;
-	double fkt = 0.0, det, val;
-	double* sf = shapefct;
-
 	setOrder(Order);
-	if (Order == 2)
-	{
-		sf = shapefctHQ;
-		if (MeshElement->GetElementType() == MshElemType::QUAD)
-			ShapeFunctionHQ = ShapeFunctionQuadHQ8;
-	}
 
-	det = MeshElement->GetVolume();
-	for (i = 0; i < nNodes; i++)
+	getShapeFunctionPtr(MeshElement->GetElementType());
+
+	for (int i = 0; i < nNodes; i++)
 		dbuff[i] = 0.0;
 	// Loop over Gauss points
+	int gp, gp_r, gp_s;
+	double fkt = 0.0;
+	const double det = MeshElement->GetVolume();
 	for (gp = 0; gp < nGaussPoints; gp++)
 	{
 		//---------------------------------------------------------
@@ -847,61 +923,165 @@ void CElement::FaceIntegration(double* NodeVal)
 		//---------------------------------------------------------
 		switch (MeshElement->GetElementType())
 		{
-			case MshElemType::LINE: // Line
-				gp_r = gp;
-				unit[0] = MXPGaussPkt(nGauss, gp_r);
-				fkt = 0.5 * det * MXPGaussFkt(nGauss, gp_r);
-				break;
-			case MshElemType::TRIANGLE: // Triangle
-				SamplePointTriHQ(gp, unit);
-				fkt = 2.0 * det * unit[2]; // Weights
-				break;
-			case MshElemType::QUAD: // Quadralateral
-				gp_r = (int)(gp / nGauss);
-				gp_s = gp % nGauss;
-				unit[0] = MXPGaussPkt(nGauss, gp_r);
-				unit[1] = MXPGaussPkt(nGauss, gp_s);
-				fkt = 0.25 * det * MXPGaussFkt(nGauss, gp_r) * MXPGaussFkt(nGauss, gp_s);
-				break;
-			default:
-				std::cerr << "CElement::FaceIntegration element type not handled"
-				          << "\n";
+		case MshElemType::LINE:   // Line
+			gp_r = gp;
+			unit[0] = MXPGaussPkt(nGauss, gp_r);
+			fkt = 0.5* det* MXPGaussFkt(nGauss, gp_r);
+			break;
+		case MshElemType::TRIANGLE: // Triangle
+			SamplePointTriHQ(gp, unit);
+			fkt = 2.0 * det * unit[2]; // Weights
+			break;
+		case MshElemType::QUAD8:   // Quadralateral
+		case MshElemType::QUAD:   // Quadralateral
+			gp_r = (int)(gp / nGauss);
+			gp_s = gp % nGauss;
+			unit[0] = MXPGaussPkt(nGauss, gp_r);
+			unit[1] = MXPGaussPkt(nGauss, gp_s);
+			fkt = 0.25* det* MXPGaussFkt(nGauss, gp_r) * MXPGaussFkt(nGauss, gp_s);
+			break;
+		default:
+			std::cerr << "CElement::FaceIntegration element type not handled" <<
+			std::endl;
+			break;
 		}
 
-		ComputeShapefct(Order);
-		val = 0.0;
+		getShapefunctValues(gp, Order);
+		double* sf = (Order == 1)? shapefct : shapefctHQ;
+
+		if (this->axisymmetry)
+		{
+			double radius = 0.0;
+			for (int ii = 0; ii < nNodes; ii++)
+				radius += sf[ii] * MeshElement->GetNode(ii)->getData()[0];
+			fkt *= radius;         //2.0*pai*radius;
+		}
+
+		double val = 0.0;
 		// Interpolation of value at Gauss point
-		for (i = 0; i < nNodes; i++)
+		for (int i = 0; i < nNodes; i++)
 			val += NodeVal[i] * sf[i];
 		// Integration
-		for (i = 0; i < nNodes; i++)
+		for (int i = 0; i < nNodes; i++)
 			dbuff[i] += val * sf[i] * fkt;
 	}
-	for (i = 0; i < nNodes; i++)
+	for (int i = 0; i < nNodes; i++)
 		NodeVal[i] = dbuff[i];
 }
 
-/***************************************************************************
-   GeoSys - Funktion:
-           CElement::ComputeShapefct(const double *unit, const int order)
-
-   Aufgabe:
-         Compute values of shape function at integral point unit.
-   Formalparameter:
-           E:
-             const double *u    : Array of size 2, unit coordiantes
-             const int order    : 1, linear
-                               2, quadratic
-
-   Programming:
-   06/2004     WW        Erste Version
- **************************************************************************/
-void CElement::ComputeShapefct(const int order)
+void CElement::DomainIntegration(double* NodeVal)
 {
-	if (order == 1)
-		ShapeFunction(shapefct, unit);
-	else if (order == 2)
-		ShapeFunctionHQ(shapefctHQ, unit);
+	setOrder(Order);
+
+	getShapeFunctionPtr(MeshElement->GetElementType());
+
+	//double det = MeshElement->GetVolume();
+	for (int i = 0; i < nNodes; i++)
+		dbuff[i] = 0.0;
+	// Loop over Gauss points
+	for (int gp = 0; gp < nGaussPoints; gp++)
+	{
+		//---------------------------------------------------------
+		//  Get local coordinates and weights
+		//---------------------------------------------------------
+		int gp_r, gp_s, gp_t;	
+		const double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
+
+		getShapefunctValues(gp, Order);
+		double* sf = (Order == 1)? shapefct : shapefctHQ;
+
+		double val = 0.0;
+		// Interpolation of value at Gauss point
+		for (int i = 0; i < nNodes; i++)
+			val += NodeVal[i] * sf[i];
+		// Integration
+		for (int i = 0; i < nNodes; i++)
+			dbuff[i] += val * sf[i] * fkt;
+	}
+	for (int i = 0; i < nNodes; i++)
+		NodeVal[i] = dbuff[i];
+}
+
+void CElement::getShapefunctValues(const int gp, const int order) const
+{
+	if(order == 1)
+	{
+		shapefct = &_shape_function_result_ptr[0][nnodes * gp];
+	}
+	else if(order == 2)
+	{
+		shapefctHQ = &_shape_function_result_ptr[1][nnodesHQ * gp];
+	}
+}
+
+void CElement::ComputeShapefct(const int order, double shape_fucntion[])
+{
+	if(order == 1)
+		ShapeFunction(shape_fucntion, unit);
+	else if(order == 2)
+		ShapeFunctionHQ(shape_fucntion, unit);
+}
+
+void CElement::computeGradShapefctLocal(const int order, double grad_shape_fucntion[])
+{
+	if(order == 1)
+		GradShapeFunction(grad_shape_fucntion, unit);
+	else if(order == 2)
+		GradShapeFunctionHQ(grad_shape_fucntion, unit);
+}
+
+void CElement::getShapeFunctionCentroid()
+{
+	if (_shape_function_pool_ptr[0])
+		shapefct
+		= (_shape_function_pool_ptr[0])->getShapeFunctionCenterValues(MeshElement->GetElementType());
+	if (_shape_function_pool_ptr[1])
+		shapefctHQ
+			= (_shape_function_pool_ptr[1])->getShapeFunctionCenterValues(MeshElement->GetElementType());
+
+}
+
+void CElement::getGradShapeFunctionCentroid()
+{
+	if (_shape_function_pool_ptr[0])
+		dshapefct
+		= (_shape_function_pool_ptr[0])->getGradShapeFunctionCenterValues(MeshElement->GetElementType());
+	if (_shape_function_pool_ptr[1])
+		dshapefctHQ
+			= (_shape_function_pool_ptr[1])->getGradShapeFunctionCenterValues(MeshElement->GetElementType());
+
+}
+
+void CElement::getShapeFunctionPtr(const MshElemType::type elem_type)
+{
+	if (_shape_function_pool_ptr[0])
+		_shape_function_result_ptr[0]
+			= (_shape_function_pool_ptr[0])->getShapeFunctionValues(elem_type);
+	if (_shape_function_pool_ptr[1])
+		_shape_function_result_ptr[1]
+			= (_shape_function_pool_ptr[1])->getShapeFunctionValues(elem_type);
+}
+
+void CElement::getGradShapeFunctionPtr(const MshElemType::type elem_type)
+{
+	if (_shape_function_pool_ptr[0])
+		_grad_shape_function_result_ptr[0]
+			= (_shape_function_pool_ptr[0])->getGradShapeFunctionValues(elem_type);
+	if (_shape_function_pool_ptr[1])
+		_grad_shape_function_result_ptr[1]
+			= (_shape_function_pool_ptr[1])->getGradShapeFunctionValues(elem_type);
+}
+
+void CElement::getGradShapefunctValues(const int gp, const int order) const
+{
+	if(order == 1)
+	{
+		dshapefct = &_dshapefct_all[nnodes * ele_dim * gp];
+	}
+	else
+	{
+		dshapefctHQ = &_dshapefctHQ_all[nnodesHQ * ele_dim * gp];
+	}
 }
 
 /***************************************************************************
@@ -921,68 +1101,104 @@ void CElement::ComputeShapefct(const int order)
    10/2005     WW        2D element transform in 3D space
    06/2007     WW        1D in 2D
  **************************************************************************/
-void CElement::ComputeGradShapefct(int order)
+void CElement::ComputeGradShapefct(const int gp, const int order,
+	                               const bool is_face_integration)
 {
-	int j_times_ele_dim_plus_k, j_times_nNodes_plus_i;
-	static double Var[3];
-	double* dN = dshapefct;
-
-	if (order == 2)
-		dN = dshapefctHQ;
-
 	setOrder(order);
-	for (int i = 0; i < nNodes; i++)
+
+	double* dshp_fct_local = NULL;
+	double* dshp_fct = NULL;
+	if(order == 1)
+	{
+		dshp_fct_local = dshapefct;
+		dshp_fct = &_dshapefct_all[nNodes * ele_dim * gp];
+	}
+	else
+	{
+		dshp_fct_local = dshapefctHQ;
+		dshp_fct = &_dshapefctHQ_all[nNodes * ele_dim * gp];
+	}
+
+	int j_times_ele_dim_plus_k, j_times_nNodes_plus_i;
+	double Var[3];
+	for(int i = 0; i < nNodes; i++)
 	{
 		size_t j(0);
-		for (j = 0, j_times_nNodes_plus_i = i; j < ele_dim; j++, j_times_nNodes_plus_i += nNodes)
-		{
-			Var[j] = dN[j_times_nNodes_plus_i];
-			dN[j_times_nNodes_plus_i] = 0.0;
+		for (j = 0, j_times_nNodes_plus_i = i; j < ele_dim; j++, j_times_nNodes_plus_i += nNodes) {
+			Var[j] = dshp_fct_local[j_times_nNodes_plus_i];
+			dshp_fct[j_times_nNodes_plus_i] = 0.0;
 		}
-		for (j = 0, j_times_ele_dim_plus_k = 0, j_times_nNodes_plus_i = i; j < ele_dim;
-		     j++, j_times_nNodes_plus_i += nNodes)
-		{
-			for (size_t k = 0; k < ele_dim; k++, j_times_ele_dim_plus_k++)
-			{
-				dN[j_times_nNodes_plus_i] += invJacobian[j_times_ele_dim_plus_k] * Var[k];
+		for (j = 0, j_times_ele_dim_plus_k = 0, j_times_nNodes_plus_i = i; j < ele_dim; j++, j_times_nNodes_plus_i
+						+= nNodes) {
+			for (size_t k = 0; k < ele_dim; k++, j_times_ele_dim_plus_k++) {
+				dshp_fct[j_times_nNodes_plus_i] += invJacobian[j_times_ele_dim_plus_k] * Var[k];
 			}
 		}
 	}
+
+	if (is_face_integration)
+		return;
+
 	// 1D element in 3D
 	if ((dim == 3 && ele_dim == 1) || (dim == 2 && ele_dim == 1))
 		for (int i = 0; i < nNodes; i++)
 		{
-			for (size_t j = 1; j < dim; j++)
-				dN[j * nNodes + i] = (*MeshElement->transform_tensor)(j)*dN[i];
-			dN[i] *= (*MeshElement->transform_tensor)(0);
+			for(size_t j = 1; j < dim; j++)
+				dshp_fct[j * nNodes + i] = (*MeshElement->transform_tensor)(j) * dshp_fct[i];
+			dshp_fct[i] *= (*MeshElement->transform_tensor)(0);
 		}
 	// 2D element in 3D
 	if (dim == 3 && ele_dim == 2)
 	{
 		const size_t n_nodes_times_ele_dim(nNodes * ele_dim);
 		for (size_t i = 0; i < n_nodes_times_ele_dim; i++)
-			dShapefct[i] = dN[i];
+			dbuff0[i] = dshp_fct[i];
 		for (int i = 0; i < nNodes; i++)
-			for (size_t j = 0; j < dim; j++)
-			{
-				dN[j * nNodes + i] = 0.0;
+			for (size_t j = 0; j < dim; j++) {
+				dshp_fct[j * nNodes + i] = 0.0;
 				for (size_t k = 0; k < ele_dim; k++)
-					dN[j * nNodes + i] += (*MeshElement->transform_tensor)(j, k) * dShapefct[k * nNodes + i];
+					dshp_fct[j * nNodes + i] += (*MeshElement->transform_tensor)(j, k) * dbuff0[k
+									* nNodes + i];
 			}
 	}
 }
+
+void CElement::getLocalGradShapefunctValues(const int gp, const int order)
+{
+	if(order == 1)
+	{
+		dshapefct = &_grad_shape_function_result_ptr[0][nnodes * ele_dim * gp];
+	}
+	else if(order == 2)
+	{
+		dshapefctHQ = &_grad_shape_function_result_ptr[1][nnodesHQ * ele_dim * gp];
+	}
+}
+
+void CElement::ComputeGradShapefctInElement(const bool is_face_integration)
+{
+	for (int gp = 0; gp < nGaussPoints; gp++)
+	{
+		getLocalGradShapefunctValues(gp, Order);
+		computeJacobian(gp, Order);
+		ComputeGradShapefct(gp, Order, is_face_integration);
+	}
+}
+
 /***************************************************************************
    Center of reference element
    Programming:
    09/2005     WW        Erste Version
  **************************************************************************/
-void CElement::SetCenterGP()
+void CElement::SetCenterGP(const MshElemType::type elem_type)
 {
+	const MshElemType::type e_type = (elem_type == MshElemType::INVALID)
+		? MeshElement->GetElementType() : elem_type;
 	// Center of the reference element
 	unit[0] = unit[1] = unit[2] = 0.0;
-	if (MeshElement->GetElementType() == MshElemType::TRIANGLE)
+	if(e_type == MshElemType::TRIANGLE)
 		unit[0] = unit[1] = 1.0 / 3.0;
-	else if (MeshElement->GetElementType() == MshElemType::TETRAHEDRON)
+	else if(e_type == MshElemType::TETRAHEDRON)
 		unit[0] = unit[1] = unit[2] = 0.25;
 }
 /***************************************************************************
@@ -1027,72 +1243,13 @@ int CElement::GetLocalIndex(const int gp_r, const int gp_s, int gp_t)
 			else if (r > 0.0 && fabs(s) < MKleinsteZahl)
 				LoIndex = 7;
 			else if (fabs(r) < MKleinsteZahl && fabs(s) < MKleinsteZahl)
-				LoIndex = 8;
-			break;
-		case MshElemType::HEXAHEDRON: // Hexahedra
-			r = MXPGaussPkt(nGauss, gp_r);
-			s = MXPGaussPkt(nGauss, gp_s);
-			t = MXPGaussPkt(nGauss, gp_t);
-
-			if (t > 0.0)
-			{
-				if (r > 0.0 && s > 0.0)
-					LoIndex = 0;
-				else if (r < 0.0 && s > 0.0)
-					LoIndex = 1;
-				else if (r < 0.0 && s < 0.0)
-					LoIndex = 2;
-				else if (r > 0.0 && s < 0.0)
-					LoIndex = 3;
-				else if (fabs(r) < MKleinsteZahl && s > 0.0)
-					LoIndex = 8;
-				else if (r < 0.0 && fabs(s) < MKleinsteZahl)
-					LoIndex = 9;
-				else if (fabs(r) < MKleinsteZahl && s < 0.0)
-					LoIndex = 10;
-				else if (r > 0.0 && fabs(s) < MKleinsteZahl)
-					LoIndex = 11;
-				else if (fabs(r) < MKleinsteZahl && fabs(s) < MKleinsteZahl)
-					return -1;
-			}
-			else if (fabs(t) < MKleinsteZahl)
-			{
-				if (fabs(r) < MKleinsteZahl || fabs(s) < MKleinsteZahl)
-					return -1;
-				if (r > 0.0 && s > 0.0)
-					LoIndex = 16;
-				else if (r < 0.0 && s > 0.0)
-					LoIndex = 17;
-				else if (r < 0.0 && s < 0.0)
-					LoIndex = 18;
-				else if (r > 0.0 && s < 0.0)
-					LoIndex = 19;
-			}
-			if (t < 0.0)
-			{
-				if (r > 0.0 && s > 0.0)
-					LoIndex = 4;
-				else if (r < 0.0 && s > 0.0)
-					LoIndex = 5;
-				else if (r < 0.0 && s < 0.0)
-					LoIndex = 6;
-				else if (r > 0.0 && s < 0.0)
-					LoIndex = 7;
-				else if (fabs(r) < MKleinsteZahl && s > 0.0)
-					LoIndex = 12;
-				else if (r < 0.0 && fabs(s) < MKleinsteZahl)
-					LoIndex = 13;
-				else if (fabs(r) < MKleinsteZahl && s < 0.0)
-					LoIndex = 14;
-				else if (r > 0.0 && fabs(s) < MKleinsteZahl)
-					LoIndex = 15;
-				else if (fabs(r) < MKleinsteZahl && fabs(s) < MKleinsteZahl)
-					return -1;
-			}
-			break;
-		default:
-			std::cerr << "CElement::GetLocalIndex invalid mesh element type given"
-			          << "\n";
+				return -1;
+		}
+		break;
+	default:
+		std::cerr << "CElement::GetLocalIndex invalid mesh element type given"
+		          << std::endl;
+		break;
 	}
 	return LoIndex;
 }
@@ -1108,77 +1265,64 @@ void CElement::SetExtropoGaussPoints(const int i)
 	//
 	switch (ElementType)
 	{
-		case MshElemType::TRIANGLE: // Triangle
-			// Compute values at verteces
-			// Compute values at verteces
-			switch (i)
-			{
-				case 0:
-					unit[0] = -0.1666666666667;
-					unit[1] = -0.1666666666667;
-					break;
-				case 1:
-					unit[0] = 1.6666666666667;
-					unit[1] = -0.1666666666667;
-					break;
-				case 2:
-					unit[0] = -0.1666666666667;
-					unit[1] = 1.6666666666667;
-					break;
-			}
+	case MshElemType::TRIANGLE:           // Triangle
+		// Compute values at verteces
+		// Compute values at verteces
+		switch (i)
+		{
+		case 0:
+			unit[0] = -0.1666666666667;
+			unit[1] = -0.1666666666667;
 			break;
-		case MshElemType::QUAD: // Quadralateral element
-			// Extropolation over nodes
-			switch (i)
-			{
-				case 0:
-					unit[0] = Xi_p;
-					unit[1] = Xi_p;
-					break;
-				case 1:
-					unit[0] = -Xi_p;
-					unit[1] = Xi_p;
-					break;
-				case 2:
-					unit[0] = -Xi_p;
-					unit[1] = -Xi_p;
-					break;
-				case 3:
-					unit[0] = Xi_p;
-					unit[1] = -Xi_p;
-					break;
-			}
+		case 1:
+			unit[0] = 1.6666666666667;
+			unit[1] = -0.1666666666667;
 			break;
-		case MshElemType::HEXAHEDRON: // Hexahedra
-			if (i < 4)
-			{
-				j = i;
-				unit[2] = Xi_p;
-			}
-			else
-			{
-				j = i - 4;
-				unit[2] = -Xi_p;
-			}
-			switch (j)
-			{
-				case 0:
-					unit[0] = Xi_p;
-					unit[1] = Xi_p;
-					break;
-				case 1:
-					unit[0] = -Xi_p;
-					unit[1] = Xi_p;
-					break;
-				case 2:
-					unit[0] = -Xi_p;
-					unit[1] = -Xi_p;
-					break;
-				case 3:
-					unit[0] = Xi_p;
-					unit[1] = -Xi_p;
-					break;
-			}
+		case 2:
+			unit[0] = -0.1666666666667;
+			unit[1] = 1.6666666666667;
+			break;
+		}
+		break;
+	case MshElemType::QUAD8:               // Quadralateral element
+	case MshElemType::QUAD:               // Quadralateral element
+		// Extropolation over nodes
+		switch (i)
+		{
+		case 0:
+			unit[0] = Xi_p;
+			unit[1] = Xi_p;
+			break;
+		case 1:
+			unit[0] = -Xi_p;
+			unit[1] = Xi_p;
+			break;
+		case 2:
+			unit[0] = -Xi_p;
+			unit[1] = -Xi_p;
+			break;
+		case 3:
+			unit[0] = Xi_p;
+			unit[1] = -Xi_p;
+			break;
+		}
+		break;
+	case MshElemType::HEXAHEDRON:         // Hexahedra
+		if (i < 4)
+		{
+			j = i;
+			unit[2] = Xi_p;
+		}
+		else
+		{
+			j = i - 4;
+			unit[2] = -Xi_p;
+		}
+		switch (j)
+		{
+		case 0:
+			unit[0] = Xi_p;
+			unit[1] = Xi_p;
 			break;
 		case MshElemType::TETRAHEDRON: // Tedrahedra
 			// Compute values at verteces
@@ -1382,20 +1526,11 @@ Programming:
 void CElement::FaceNormalFluxIntegration(long /*element_index*/, double* NodeVal, double* NodeVal_adv,
                                          int* /*nodesFace*/, CElem* /*face*/, CRFProcess* m_pcs, double* normal_vector)
 {
-	int gp, gp_r, gp_s;
-	double fkt = 0.0, det;
-	double* sf = shapefct;
 	double normal_diff_flux_interpol, normal_adv_flux_interpol;
 	double dbuff_adv[10], flux[3];
 	// ElementValue* gp_ele = ele_gp_value[element_index];
 
 	setOrder(Order);
-	if (Order == 2)
-	{
-		sf = shapefctHQ;
-		if (MeshElement->GetElementType() == MshElemType::QUAD)
-			ShapeFunctionHQ = ShapeFunctionQuadHQ8;
-	}
 
 	for (int i = 0; i < nNodes; i++)
 	{
@@ -1403,38 +1538,14 @@ void CElement::FaceNormalFluxIntegration(long /*element_index*/, double* NodeVal
 		dbuff_adv[i] = 0.0;
 	}
 
-	det = MeshElement->GetVolume();
 	// Loop over Gauss points
 	for (gp = 0; gp < nGaussPoints; gp++)
 	{
-		//---------------------------------------------------------
-		//  Get local coordinates and weights
-		//  Compute Jacobian matrix and its determinate
-		//---------------------------------------------------------
-		switch (MeshElement->GetElementType())
-		{
-			case MshElemType::LINE: // Line
-				gp_r = gp;
-				unit[0] = MXPGaussPkt(nGauss, gp_r);
-				fkt = 0.5 * det * MXPGaussFkt(nGauss, gp_r);
-				break;
-			case MshElemType::TRIANGLE: // Triangle
-				SamplePointTriHQ(gp, unit);
-				fkt = 2.0 * det * unit[2]; // Weights
-				break;
-			case MshElemType::QUAD: // Quadrilateral
-				gp_r = (int)(gp / nGauss);
-				gp_s = gp % nGauss;
-				unit[0] = MXPGaussPkt(nGauss, gp_r);
-				unit[1] = MXPGaussPkt(nGauss, gp_s);
-				fkt = 0.25 * det * MXPGaussFkt(nGauss, gp_r) * MXPGaussFkt(nGauss, gp_s);
-				break;
-			default:
-				std::cerr << "Error in mass balance calculation: CElement::FaceIntegration element type not supported"
-				          << "\n";
-		}
-		//---------------------------------------------------------
-		ComputeShapefct(Order);
+		int gp_r, gp_s, gp_t;	
+		const double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
+
+		getShapefunctValues(gp, Order);
+		double const* sf = (Order == 1)? shapefct : shapefctHQ;
 
 		normal_diff_flux_interpol = 0.0;
 

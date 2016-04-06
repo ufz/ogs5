@@ -57,7 +57,7 @@ void CFiniteElementStd::CalcMassTNEQ()
 		// Compute Jacobian matrix and its determinate
 		double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
 		// Compute geometry
-		ComputeShapefct(1); // Linear interpolation function
+		getShapefunctValues(gp, 1);
 
 		for (int in = 0; in < pcs->dof; in++)
 		{
@@ -388,8 +388,8 @@ void CFiniteElementStd::CalcAdvectionTNEQ()
 	for (gp = 0; gp < nGaussPoints; gp++)
 	{
 		double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
-		ComputeGradShapefct(1);
-		ComputeShapefct(1);
+		getShapefunctValues(gp, 1);
+		getGradShapefunctValues(gp, 1);
 
 		// Velocity
 		double vel[] = {gp_ele->Velocity(0, gp), gp_ele->Velocity(1, gp), gp_ele->Velocity(2, gp)};
@@ -540,7 +540,7 @@ void CFiniteElementStd::CalcContentTNEQ()
 	for (gp = 0; gp < nGaussPoints; gp++)
 	{
 		double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
-		ComputeShapefct(1);
+		getShapefunctValues(gp, 1);
 
 		for (int in = 0; in < pcs->dof; in++)
 		{
@@ -661,8 +661,8 @@ void CFiniteElementStd::Assemble_RHS_TNEQ()
 		const double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
 
 		// Compute geometry
-		ComputeShapefct(1);
-		ComputeGradShapefct(1); // this is needed for CalCoef_RHS_TNEQ() !!
+		getShapefunctValues(gp, 1);
+		getGradShapefunctValues(gp, 1);
 
 		for (int ii = 0; ii < pcs->dof; ii++)
 		{
