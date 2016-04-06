@@ -20,6 +20,17 @@ class CRFProcess;
 // GEOLIB
 #include "GEOObjects.h"
 
+
+namespace FiniteElement
+{
+class ShapeFunctionPool;
+}
+namespace FiniteElement
+{
+class CFiniteElementStd;
+class CFiniteElementVec;
+}
+
 //---------------------------------------------------------------------
 // Pointers to member functions
 class Problem;
@@ -101,6 +112,11 @@ private:
 	bool CalcVelocities;
 	bool conducted;
 
+	/// Caches for shape functions and their derivatives with respect to
+	/// the local coordinates.
+	FiniteElement::ShapeFunctionPool* _line_shapefunction_pool;
+	FiniteElement::ShapeFunctionPool* _quadr_shapefunction_pool;
+
 	// Print flag
 	bool print_result;
 	// Processes
@@ -146,6 +162,7 @@ private:
 	void OutputMassOfComponentInModel(std::vector<CRFProcess*> flow_pcs, CRFProcess* transport_pcs); // BG
 	void OutputMassOfGasInModel(CRFProcess* m_pcs); // BG
 
+	void createShapeFunctionPool();
 	/**
 	 * pointer to an instance of class GEOObjects,
 	 * that manages geometric entities

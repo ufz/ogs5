@@ -69,7 +69,8 @@ extern int ReadData(char*, GEOLIB::GEOObjects& geo_obj, std::string& unique_name
 #include "Eclipse.h" //BG 09/2009
 #include "Output.h"
 #include "fem_ele_std.h"
-#include "files0.h" // GetLineFromFile1
+#include "fem_ele_vec.h"
+#include "files0.h"                               // GetLineFromFile1
 #include "rf_bc_new.h"
 #include "rf_node.h"
 #include "rf_out_new.h"
@@ -92,6 +93,8 @@ extern int ReadData(char*, GEOLIB::GEOObjects& geo_obj, std::string& unique_name
 #endif
 #include "rf_kinreact.h"
 
+#include "ShapeFunctionPool.h"
+
 #if defined(USE_PETSC) // || defined(other parallel libs)//03.3012. WW
 #include "PETSC/PETScLinearSolver.h"
 #endif
@@ -109,8 +112,9 @@ using process::CRFProcessDeformation;
             PreTimeloop
    Modification:
  ***************************************************************************/
-Problem::Problem(char* filename)
-    : dt0(0.), print_result(true), _geo_obj(new GEOLIB::GEOObjects), _geo_name(filename), mrank(0), msize(0)
+Problem::Problem (char* filename) :
+	dt0(0.), print_result(true), _geo_obj (new GEOLIB::GEOObjects), _geo_name (filename),
+    _line_shapefunction_pool(NULL), _quadr_shapefunction_pool(NULL), mrank(0), msize(0)
 {
 	if (filename != NULL)
 	{
@@ -216,24 +220,22 @@ Problem::Problem(char* filename)
 	// OK if (!Check()) return; //OK
 	//----------------------------------------------------------------------
 	// REACTIONS
-	// CB before the first time step
-	if (REACTINT_vec.size() == 0)
+	//CB before the first time step
+	if(REACTINT_vec.size()==0)
 	{
-		for (size_t i = 0; i < mmp_vector.size(); i++)
+		for(size_t i=0; i<mmp_vector.size(); i++)
 		{
-			if (mmp_vector[i]->porosity_model == 13)
+			if(mmp_vector[i]->porosity_model==13)
 			{
-				std::cout << " Error in Model setup: Porosity model 13 is used, "
-				          << "\n";
-				std::cout << " but no reaction interface is defined! Exiting now..."
-				          << "\n";
+				std::cout << " Error in Model setup: Porosity model 13 is used, " << "\n";
+				std::cout << " but no reaction interface is defined! Exiting now..." << "\n";
 				exit(0);
-			}
+ 			}
 		}
 	}
-	// if(MASS_TRANSPORT_Process) // if(MASS_TRANSPORT_Process&&NAPL_Dissolution) //CB Todo
+	//if(MASS_TRANSPORT_Process) // if(MASS_TRANSPORT_Process&&NAPL_Dissolution) //CB Todo
 	CreateClockTime(); // CB time
-	if (transport_processes.size() > 0) // 12.12.2008. WW
+	if(transport_processes.size() > 0)    //12.12.2008. WW
 	{
 		// set the id variable flow_pcs_type for Saturation and velocity calculation
 		// in mass transport element matrices
@@ -242,36 +244,35 @@ Problem::Problem(char* filename)
 		KRConfig(*_geo_obj, _geo_name);
 
 		// initialyse the reaction interface if  not done yet
-		if (REACTINT_vec.size() > 0)
+		if(REACTINT_vec.size()>0)
 		{
-			if (REACTINT_vec[0]->unitconversion)
+			if(REACTINT_vec[0]->unitconversion)
 			{
 				CRFProcess* flow_pcs = NULL;
 				flow_pcs = PCSGetFlow();
-				if (flow_pcs->type == 1212) // in case of mutlltiphase flow, sat water must be calculated here, required
-					// by pgc interface
+				if( flow_pcs->type==1212) // in case of mutlltiphase flow, sat water must be calculated here, required by pgc interface
 					flow_pcs->CalcSecondaryVariables(true);
 			}
 			REACTINT_vec[0]->InitREACTINT();
 		}
-		//----------------------------------------------------------------------
-		if (KinReactData_vector.size() > 0)
+		//----------------------------------------------------------------------	
+		if(KinReactData_vector.size() > 0)
 		{
 			// Configure Data for Blobs (=>NAPL dissolution)
 			KBlobConfig(*_geo_obj, _geo_name);
 			KBlobCheck();
 			// in case of Twophaseflow before the first time step
-			if (total_processes[3] || total_processes[4])
-				if (KNaplDissCheck()) // 3: TWO_PHASE_FLOW. 12.12.2008. WW
-					KNaplCalcDensity(); // PCSCalcSecondaryVariables();
+			if(total_processes[3] || total_processes[4])
+				if(KNaplDissCheck())  // 3: TWO_PHASE_FLOW. 12.12.2008. WW
+					KNaplCalcDensity();  //PCSCalcSecondaryVariables();
 			// CB _drmc_ data for microbes
-			if (MicrobeData_vector.size() > 0)
+			if(MicrobeData_vector.size()>0)
 				MicrobeConfig();
 		}
 	}
-//----------------------------------------------------------------------
-// REACTIONS
-// Initialization of REACT structure for rate exchange between MTM2 and Reactions
+	//----------------------------------------------------------------------
+	// REACTIONS
+	// Initialization of REACT structure for rate exchange between MTM2 and Reactions
 
 //--------------------------------------------------
 // HB, for the GEM chemical reaction engine 05.2007
@@ -359,9 +360,9 @@ Problem::Problem(char* filename)
 		}
 		//  delete rc;
 	}
-	// CB merge CAP 0311
+	//CB merge CAP 0311
 	// Initialize using ChemApp
-	if (REACT_CAP_vec.size() > 0)
+	if(REACT_CAP_vec.size() > 0) 
 	{
 		// SB 10/2009 do a first equilibrium calculation
 		REACT_CAP_vec[0]->ExecuteReactionsChemApp(0, -1); // DL/SB 11/2008 //DL 2011.11.24 comment for AGU
@@ -390,7 +391,7 @@ Problem::Problem(char* filename)
 #endif
 	//  delete rc;
 
-	if (REACTINT_vec.size() > 0)
+	if(REACTINT_vec.size()>0)
 		REACTINT_vec[0]->ReactionPostProcessing(true);
 	//----------------------------------------------------------------------
 	// DDC
@@ -614,9 +615,25 @@ Problem::~Problem()
 	delete m_vec_BRNS;
 #endif
 
-#if defined(USE_PETSC) || defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) \
-    || defined(USE_MPI_GEMS)
-	if (mrank == 0)
+	if (_line_shapefunction_pool)
+	{
+		if (_line_shapefunction_pool == _quadr_shapefunction_pool)
+		{
+			delete _line_shapefunction_pool;
+			_line_shapefunction_pool = NULL;
+			_quadr_shapefunction_pool = NULL;
+		}
+		else
+		{
+			delete _line_shapefunction_pool;
+			_line_shapefunction_pool = NULL;
+		}
+	}
+	if (_quadr_shapefunction_pool)
+		delete _quadr_shapefunction_pool;
+
+#if defined(USE_PETSC) ||defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS)
+	if(mrank == 0)
 #endif
 		std::cout << "\n^O^: Your simulation is terminated normally ^O^ "
 		          << "\n";
@@ -956,6 +973,23 @@ void Problem::PCSCreate()
 
 		pcs_vector[i]->Create();
 	}
+
+	createShapeFunctionPool(); //WW
+
+	for (size_t i = 0; i < no_processes; i++)
+	{//WW
+		CRFProcess* pcs = pcs_vector[i];
+		pcs->SetBoundaryConditionAndSourceTerm();
+
+		if (   pcs->getProcessType() == FiniteElement::DEFORMATION_DYNAMIC
+			|| pcs->getProcessType() == FiniteElement::DEFORMATION_FLOW
+			|| pcs->getProcessType() == FiniteElement::DEFORMATION_H2)
+		{
+			CRFProcessDeformation* dm_pcs = dynamic_cast<CRFProcessDeformation*>(pcs);
+			dm_pcs->InitGauss();
+		}
+	}
+
 
 #if defined(USE_PETSC) // || defined(other solver libs)//03.3012. WW
 	CreateEQS_LinearSolver();
@@ -1539,7 +1573,7 @@ if(has_constrained_bc > 0)
 		{
 			std::cout << "\n";
 			break;
-		}
+	    	}
 		//
 		if (cpl_overall_max_iterations > 1)
 		{
@@ -3640,10 +3674,12 @@ inline double Problem::Deformation()
 	// Error
 	if (dm_pcs->type / 10 == 4)
 	{
-		m_pcs->cal_integration_point_value = true;
-		dm_pcs->CalIntegrationPointValue();
-
-		if (dm_pcs->type == 42) // H2M. 07.2011. WW
+		if (!dm_pcs->isDynamic())
+		{
+			m_pcs->cal_integration_point_value = true;
+			dm_pcs->CalIntegrationPointValue();
+		}
+		if(dm_pcs->type == 42) // H2M. 07.2011. WW
 			dm_pcs->CalcSecondaryVariablesUnsaturatedFlow();
 	}
 	return error;
@@ -4249,6 +4285,153 @@ bool Problem::Check()
 			return false;
 	}
 	return true;
+}
+
+void Problem::createShapeFunctionPool()
+{
+	CRFProcess* pcs_0c_fem = NULL;
+	CRFProcess* pcs_1c_fem = NULL;
+	for (std::size_t i = 0; i < pcs_vector.size(); i++)
+	{
+		CRFProcess* pcs = pcs_vector[i];
+		if (   pcs->getProcessType() == FiniteElement::DEFORMATION
+			|| pcs->getProcessType() == FiniteElement::DEFORMATION_DYNAMIC
+			|| pcs->getProcessType() == FiniteElement::DEFORMATION_FLOW
+			|| pcs->getProcessType() == FiniteElement::DEFORMATION_H2)
+		{
+			pcs_1c_fem = pcs;
+		}
+		else
+		{
+			pcs_0c_fem = pcs;
+		}
+	}
+
+	CFiniteElementStd* lin_fem_assembler = NULL;
+	CFiniteElementVec* fem_assembler = NULL;
+	if (pcs_0c_fem)
+	{
+		lin_fem_assembler = pcs_0c_fem->getLinearFEMAssembler();
+		lin_fem_assembler->setOrder(1);
+	}
+	if (pcs_1c_fem)
+	{
+		if (!lin_fem_assembler)
+		{
+			lin_fem_assembler = pcs_1c_fem->getLinearFEMAssembler();
+			if(lin_fem_assembler)
+				lin_fem_assembler->setOrder(1);
+		}
+
+		CRFProcessDeformation* dm_pcs = dynamic_cast<CRFProcessDeformation*>(pcs_1c_fem);
+		fem_assembler = dm_pcs->GetFEMAssembler();
+		fem_assembler->setOrder(2);
+	}
+
+	// Check element types of meshes
+	std::vector<MshElemType::type> elem_types;
+	elem_types.reserve(MshElemType::LAST);
+ 
+	for (std::size_t i=0; i<static_cast<std::size_t>(MshElemType::LAST); i++)
+	{
+		elem_types.push_back(MshElemType::INVALID);
+	}
+
+	for (std::size_t i=0; i<fem_msh_vector.size(); i++)
+	{
+		MeshLib::CFEMesh* mesh = fem_msh_vector[i];
+		if (mesh->getNumberOfLines() > 0)
+			elem_types[static_cast<int>(MshElemType::LINE)-1] = MshElemType::LINE;
+		if (mesh->getNumberOfTris() > 0)
+		{
+			elem_types[static_cast<int>(MshElemType::TRIANGLE)-1] = MshElemType::TRIANGLE;
+			elem_types[static_cast<int>(MshElemType::LINE)-1] = MshElemType::LINE;
+		}
+		if (mesh->getNumberOfQuads() > 0)
+		{
+			elem_types[static_cast<int>(MshElemType::QUAD)-1] = MshElemType::QUAD;
+			elem_types[static_cast<int>(MshElemType::LINE)-1] = MshElemType::LINE;
+		}
+		if (mesh->getNumberOfHexs() > 0)
+		{
+			elem_types[static_cast<int>(MshElemType::HEXAHEDRON)-1] = MshElemType::HEXAHEDRON;
+			elem_types[static_cast<int>(MshElemType::QUAD8)-1] = MshElemType::QUAD8;
+			elem_types[static_cast<int>(MshElemType::LINE)-1] = MshElemType::LINE;
+		}
+		if (mesh->getNumberOfTets() > 0)
+		{
+			elem_types[static_cast<int>(MshElemType::TETRAHEDRON)-1] = MshElemType::TETRAHEDRON;
+			elem_types[static_cast<int>(MshElemType::TRIANGLE)-1] = MshElemType::TRIANGLE;
+			elem_types[static_cast<int>(MshElemType::LINE)-1] = MshElemType::LINE;
+		}
+		if (mesh->getNumberOfPrisms() > 0)
+		{
+			elem_types[static_cast<int>(MshElemType::PRISM)-1] = MshElemType::PRISM;
+			elem_types[static_cast<int>(MshElemType::QUAD8)-1] = MshElemType::QUAD8;
+			elem_types[static_cast<int>(MshElemType::TRIANGLE)-1] = MshElemType::TRIANGLE;
+			elem_types[static_cast<int>(MshElemType::LINE)-1] = MshElemType::LINE;
+		}
+		if (mesh->getNumberOfPyramids() > 0)
+		{
+			elem_types[static_cast<int>(MshElemType::PYRAMID)-1] = MshElemType::PYRAMID;
+			elem_types[static_cast<int>(MshElemType::QUAD8)-1] = MshElemType::QUAD8;
+			elem_types[static_cast<int>(MshElemType::TRIANGLE)-1] = MshElemType::TRIANGLE;
+			elem_types[static_cast<int>(MshElemType::LINE)-1] = MshElemType::LINE;
+		}
+	}
+
+
+	const int num_gauss_sample_pnts
+		     = num_vector[0]->getNumIntegrationSamplePoints();
+	if (lin_fem_assembler)
+		_line_shapefunction_pool = 
+		new FiniteElement::ShapeFunctionPool(elem_types, *lin_fem_assembler,
+		                                     num_gauss_sample_pnts);
+	if (fem_assembler)
+	{
+		_quadr_shapefunction_pool = 
+		new FiniteElement::ShapeFunctionPool(elem_types, *fem_assembler,
+		                                     num_gauss_sample_pnts);
+		if (!_line_shapefunction_pool)
+		{
+			fem_assembler->setOrder(1);
+			_line_shapefunction_pool = 
+			new FiniteElement::ShapeFunctionPool(elem_types, *fem_assembler,
+		                                     num_gauss_sample_pnts);
+			fem_assembler->setOrder(2);
+		}
+	}
+
+	// Set ShapeFunctionPool
+	for (std::size_t i = 0; i < pcs_vector.size(); i++)
+	{
+		CRFProcess* pcs = pcs_vector[i];
+		if ( pcs->getProcessType() == FiniteElement::DEFORMATION )
+		{
+			CRFProcessDeformation* dm_pcs = dynamic_cast<CRFProcessDeformation*>(pcs);
+			CFiniteElementVec* fem_assem_h = dm_pcs->GetFEMAssembler();
+			fem_assem_h->setShapeFunctionPool(_line_shapefunction_pool,
+				                              _quadr_shapefunction_pool);
+		}
+		else if (   pcs->getProcessType() == FiniteElement::DEFORMATION_DYNAMIC
+			|| pcs->getProcessType() == FiniteElement::DEFORMATION_FLOW
+			|| pcs->getProcessType() == FiniteElement::DEFORMATION_H2)
+		{
+			CRFProcessDeformation* dm_pcs = dynamic_cast<CRFProcessDeformation*>(pcs);
+			CFiniteElementVec* fem_assem_h = dm_pcs->GetFEMAssembler();
+			fem_assem_h->setShapeFunctionPool(_line_shapefunction_pool, _quadr_shapefunction_pool);
+			CFiniteElementStd* fem_assem = dm_pcs->getLinearFEMAssembler();
+			fem_assem->setShapeFunctionPool(_line_shapefunction_pool, _quadr_shapefunction_pool);
+		}
+		else
+		{
+			CFiniteElementStd* fem_assem = pcs->getLinearFEMAssembler();
+			if (!_quadr_shapefunction_pool)
+				_quadr_shapefunction_pool = _line_shapefunction_pool;
+			fem_assem->setShapeFunctionPool(_line_shapefunction_pool,
+				                            _quadr_shapefunction_pool);
+		}
+	}
 }
 
 /**************************************************************************
