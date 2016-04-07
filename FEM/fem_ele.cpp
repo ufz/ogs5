@@ -912,49 +912,18 @@ void CElement::FaceIntegration(double* NodeVal)
 	for (int i = 0; i < nNodes; i++)
 		dbuff[i] = 0.0;
 	// Loop over Gauss points
-	int gp, gp_r, gp_s;
-	double fkt = 0.0;
-	const double det = MeshElement->GetVolume();
 	for (gp = 0; gp < nGaussPoints; gp++)
 	{
-		//---------------------------------------------------------
-		//  Get local coordinates and weights
-		//  Compute Jacobian matrix and its determinate
-		//---------------------------------------------------------
-		switch (MeshElement->GetElementType())
-		{
-		case MshElemType::LINE:   // Line
-			gp_r = gp;
-			unit[0] = MXPGaussPkt(nGauss, gp_r);
-			fkt = 0.5* det* MXPGaussFkt(nGauss, gp_r);
-			break;
-		case MshElemType::TRIANGLE: // Triangle
-			SamplePointTriHQ(gp, unit);
-			fkt = 2.0 * det * unit[2]; // Weights
-			break;
-		case MshElemType::QUAD8:   // Quadralateral
-		case MshElemType::QUAD:   // Quadralateral
-			gp_r = (int)(gp / nGauss);
-			gp_s = gp % nGauss;
-			unit[0] = MXPGaussPkt(nGauss, gp_r);
-			unit[1] = MXPGaussPkt(nGauss, gp_s);
-			fkt = 0.25* det* MXPGaussFkt(nGauss, gp_r) * MXPGaussFkt(nGauss, gp_s);
-			break;
-		default:
-			std::cerr << "CElement::FaceIntegration element type not handled" <<
-			std::endl;
-			break;
-		}
+		int gp_r, gp_s, gp_t;
+		double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
 
 		getShapefunctValues(gp, Order);
 		double* sf = (Order == 1)? shapefct : shapefctHQ;
 
 		if (this->axisymmetry)
 		{
-			double radius = 0.0;
-			for (int ii = 0; ii < nNodes; ii++)
-				radius += sf[ii] * MeshElement->GetNode(ii)->getData()[0];
-			fkt *= radius;         //2.0*pai*radius;
+			calculateRadius(gp);
+			fkt *= Radius;         //2.0*pai*radius;
 		}
 
 		double val = 0.0;
@@ -984,10 +953,14 @@ void CElement::DomainIntegration(double* NodeVal)
 		//---------------------------------------------------------
 		//  Get local coordinates and weights
 		//---------------------------------------------------------
-		int gp_r, gp_s, gp_t;	
-		const double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
-
+		int gp_r, gp_s, gp_t;
+		double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
 		getShapefunctValues(gp, Order);
+		if (this->axisymmetry)
+		{
+			calculateRadius(gp);
+			fkt *= Radius;         //2.0*pai*radius;
+		}
 		double* sf = (Order == 1)? shapefct : shapefctHQ;
 
 		double val = 0.0;

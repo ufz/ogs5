@@ -50,6 +50,7 @@
 // FEM
 #include "fem_ele.h"
 #include "files0.h"
+#include "ShapeFunctionPool.h"
 
 using FiniteElement::CElement;
 
@@ -4143,7 +4144,21 @@ void CFEMesh::TopSurfaceIntegration()
 	ofile_asci.setf(std::ios::scientific, std::ios::floatfield);
 	ofile_asci.precision(14);
 
-	for (i = 0; i < (long)face_vector.size(); i++)
+	// Compute shape functions
+	// Check element types of meshes
+	std::vector<MshElemType::type> elem_types;
+	elem_types.reserve(MshElemType::LAST);
+	for (std::size_t i=0; i<static_cast<std::size_t>(MshElemType::LAST); i++)
+	{
+		elem_types.push_back(MshElemType::INVALID);
+	}
+	elem_types[static_cast<int>(MshElemType::QUAD)-1] = MshElemType::QUAD;
+	elem_types[static_cast<int>(MshElemType::TRIANGLE)-1] = MshElemType::TRIANGLE;
+	FiniteElement::ShapeFunctionPool* line_shapefunction_pool =
+		new FiniteElement::ShapeFunctionPool(elem_types, *fem, 3);
+	fem->setShapeFunctionPool(line_shapefunction_pool, line_shapefunction_pool);
+
+	for(i = 0; i < (long)face_vector.size(); i++)
 	{
 		elem = face_vector[i];
 		if (!elem->GetMark())
@@ -4179,6 +4194,8 @@ void CFEMesh::TopSurfaceIntegration()
 	ofile_asci.close();
 	delete fem;
 	fem = NULL;
+	delete line_shapefunction_pool;
+	line_shapefunction_pool = NULL;
 	val.clear();
 }
 
