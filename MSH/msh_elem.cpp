@@ -459,6 +459,7 @@ void CElem::SetFace(CElem* onwer, const int Face)
 	no_faces_on_surface = 0;
 	owner = onwer;
 	size_t n = owner->GetElementFaceNodes(Face, nodeIndex_loc);
+	quadratic = owner->quadratic;
 	face_index = Face;
 	patch_index = owner->patch_index;
 	switch(owner->geo_type)
@@ -1665,7 +1666,7 @@ void CElem::setElementProperties(MshElemType::type t, bool isFace)
 			std::cerr << "CElem::setElementProperties MshElemType not handled"
 			          << "\n";
 	}
-	this->nodes_index.resize(nnodes);
+	this->nodes_index.resize(quadratic ? nnodesHQ : nnodes);
 }
 
 // NW

@@ -112,7 +112,7 @@ public:
 	// Get the pointer to the shape function array in the shape function pool
 	void getShapeFunctionPtr(const MshElemType::type elem_type);
 	// Compute values of shape function at integral point unit
-	void ComputeShapefct(const int order, double shape_fucntion[]);
+	void ComputeShapefct(const int order, double shape_function[]);
 	// Compute the Jacobian matrix. Return its determinate
 	void computeJacobian(const int gp, const int order,
 		                 const bool inverse = true);

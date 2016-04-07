@@ -1787,8 +1787,6 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const &node
    //vec<CNode*> e_nodes(20);
    // vec<CElem*> e_neis(6);
 
-   CElem* face = new CElem(1);
-   face->SetFace();
    this_number_of_nodes = (long) nodes_on_sfc.size();
    int nSize = (long) msh->nod_vector.size();
    std::vector<long> G2L(nSize);
@@ -1865,6 +1863,8 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const &node
 
    int count;
    double fac = 1.0;
+   CElem* face = new CElem(1);
+  // face->SetFace();
    for (i = 0; i < (long) vec_possible_elements.size(); i++)
    {
       elem = msh->ele_vector[vec_possible_elements[i]];
@@ -1907,7 +1907,6 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const &node
             fac = 0.5;
          face->SetFace(elem, j);
          face->SetOrder(msh->getOrder());
-         face->ComputeVolume();
          fem_assembler->setOrder(msh->getOrder() ? 2 : 1);
          fem_assembler->ConfigElement(face, true);
          fem_assembler->FaceIntegration(nodesFVal);

@@ -39,7 +39,7 @@ CElement::CElement(int CoordFlag, const int order)
 	  ShapeFunction(NULL), ShapeFunctionHQ(NULL),
 	  GradShapeFunction(NULL), GradShapeFunctionHQ(NULL), _is_mixed_order(false),
 	  T_Flag(false), C_Flag(false), F_Flag(false), D_Flag(0), RD_Flag(false),
-	  extrapo_method(ExtrapolationMethod::EXTRAPO_LINEAR), invJacobian(NULL)
+	  extrapo_method(ExtrapolationMethod::EXTRAPO_LINEAR)
 {
 	for (int i=0; i<2; i++)
 	{
@@ -987,12 +987,12 @@ void CElement::getShapefunctValues(const int gp, const int order) const
 	}
 }
 
-void CElement::ComputeShapefct(const int order, double shape_fucntion[])
+void CElement::ComputeShapefct(const int order, double shape_function[])
 {
 	if(order == 1)
-		ShapeFunction(shape_fucntion, unit);
+		ShapeFunction(shape_function, unit);
 	else if(order == 2)
-		ShapeFunctionHQ(shape_fucntion, unit);
+		ShapeFunctionHQ(shape_function, unit);
 }
 
 void CElement::computeGradShapefctLocal(const int order, double grad_shape_fucntion[])

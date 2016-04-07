@@ -9405,7 +9405,11 @@ void CFiniteElementStd::ExtropolateGauss(CRFProcess* m_pcs, const int idof)
 	}
 	// For strain and stress extrapolation all element types
 	// Number of elements associated to nodes
-	for (i = 0; i < nnodes; i++)
+	nnodes = MeshElement->nnodes;
+	// Node indices
+	for(int i = 0; i < nnodes; i++)
+		nodes[i] = MeshElement->nodes[i]->GetIndex();
+	for(i = 0; i < nnodes; i++)
 		dbuff[i] = (double)MeshElement->nodes[i]->getConnectedElementIDs().size();
 	//
 	gp_r = gp_s = gp_t = gp = 0;
@@ -9523,7 +9527,11 @@ void CFiniteElementStd::ExtrapolateGauss_ReactRate_TNEQ_TES(CRFProcess* m_pcs)
 	MshElemType::type ElementType = MeshElement->GetElementType();
 
 	// Number of elements associated to nodes
-	for (i = 0; i < nnodes; i++)
+	nnodes = MeshElement->nnodes;
+	// Node indices
+	for(int i = 0; i < nnodes; i++)
+		nodes[i] = MeshElement->nodes[i]->GetIndex();
+	for(i=0; i<nnodes; i++)
 		dbuff[i] = (double)MeshElement->nodes[i]->getConnectedElementIDs().size();
 
 	gp_r = gp_s = gp_t = gp = 0;
@@ -9753,6 +9761,12 @@ void CFiniteElementStd::CalcNodeMatParatemer()
 	setOrder(1);
 	// Set material
 	SetMaterial();
+
+	nnodes = MeshElement->nnodes;
+	// Node indices
+	for(int i = 0; i < nnodes; i++)
+		nodes[i] = MeshElement->nodes[i]->GetIndex();
+
 	//----------------------------------------------------------------------
 	// Node value of the previous time step
 	int idx11 = idx1;

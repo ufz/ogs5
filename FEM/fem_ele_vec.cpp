@@ -2758,38 +2758,63 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		}
 	}
 
-	/***************************************************************************
-	   GeoSys - Funktion:
-	           CFiniteElementVec::ExtropolateGuassStress()
-	   Aufgabe:
-	           Extropolate the Gauss point strains to nodes
-	   Formalparameter:
-	           E:
+/***************************************************************************
+   GeoSys - Funktion:
+           CFiniteElementVec::ExtropolateGuassStress()
+   Aufgabe:
+           Extropolate the Gauss point strains to nodes
+   Formalparameter:
+           E:
 
-	   Programming:
-	   06/2004   WW
-	   03/2007   WW  Generize for all 2nd variables
-	 **************************************************************************/
-	void CFiniteElementVec::ExtropolateGuassStress()
+   Programming:
+   06/2004   WW
+   03/2007   WW  Generize for all 2nd variables
+ **************************************************************************/
+void CFiniteElementVec::ExtropolateGuassStress()
+{
+	int i, j, gp_r, gp_s, gp_t;
+	// int l1,l2,l3,l4; //, counter;
+	double ESxx, ESyy, ESzz, ESxy, ESxz, ESyz, Pls;
+	double avgESxx, avgESyy, avgESzz, avgESxy, avgESxz, avgESyz, avgPls;
+	int i_s, i_e, ish, k = 0;
+	MshElemType::type ElementType = MeshElement->GetElementType();
+	long node_i = 0;
+	// For strain and stress extropolation all element types
+	// Number of elements associated to nodes
+	nnodes = MeshElement->nnodes;
+	// Node indices
+	for(int i = 0; i < nnodes; i++)
+		nodes[i] = MeshElement->nodes[i]->GetIndex();
+
+	for(i = 0; i < nnodes; i++)
+		dbuff[i] = (double)MeshElement->nodes[i]->getConnectedElementIDs().size();
+	//
+	gp = gp_r = gp_s = gp_t = 0;
+	eleV_DM = ele_value_dm[MeshElement->GetIndex()];
+	if(eleV_DM->pStrain)                  //08.02.2008 WW
+		idx_pls =  pcs->GetNodeValueIndex("STRAIN_PLS");
+	//
+	for(gp = 0; gp < nGaussPoints; gp++)
 	{
-		int i, j, gp_r, gp_s, gp_t;
-		// int l1,l2,l3,l4; //, counter;
-		double ESxx, ESyy, ESzz, ESxy, ESxz, ESyz, Pls;
-		double avgESxx, avgESyy, avgESzz, avgESxy, avgESxz, avgESyz, avgPls;
-		int i_s, i_e, ish, k = 0;
-		MshElemType::type ElementType = MeshElement->GetElementType();
-		long node_i = 0;
-		// For strain and stress extropolation all element types
-		// Number of elements associated to nodes
-		for (i = 0; i < nnodes; i++)
-			dbuff[i] = (double)MeshElement->nodes[i]->getConnectedElementIDs().size();
-		//
-		gp = gp_r = gp_s = gp_t = 0;
-		eleV_DM = ele_value_dm[MeshElement->GetIndex()];
-		if (eleV_DM->pStrain) // 08.02.2008 WW
-			idx_pls = pcs->GetNodeValueIndex("STRAIN_PLS");
-		//
-		for (gp = 0; gp < nGaussPoints; gp++)
+		if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
+		{
+			SetGaussPoint(gp, gp_r, gp_s, gp_t);
+			i = GetLocalIndex(gp_r, gp_s, gp_t);
+			if(i == -1)
+				continue;
+		}
+		else
+			i = gp;
+
+		Sxx[i] = (*eleV_DM->Stress)(0,gp);
+		Syy[i] = (*eleV_DM->Stress)(1,gp);
+		Szz[i] = (*eleV_DM->Stress)(2,gp);
+		Sxy[i] = (*eleV_DM->Stress)(3,gp);
+		if(eleV_DM->pStrain)
+			pstr[i] = (*eleV_DM->pStrain)(gp);
+		else
+			pstr[i] = 0.0;  //08.02.2008 WW
+		if(ele_dim == 3)
 		{
 			if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
 			{
