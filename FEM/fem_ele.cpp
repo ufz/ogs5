@@ -589,7 +589,7 @@ void CElement::computeJacobian(const int gp, const int order, const bool inverse
 			DetJac = Jacobian[0];
 			//WW
 			//if(MeshElement->area>0)
-			DetJac *= MeshElement->area;
+			//DetJac *= MeshElement->area;// Moved to CFiniteElementStd::setMaterial() 
 			//WW          DetJac*=MeshElement->GetFluxArea();//CMCD
 			if(axisymmetry)
 			{
@@ -627,7 +627,7 @@ void CElement::computeJacobian(const int gp, const int order, const bool inverse
 		//
 		//By WW
 		//if(MeshElement->area>0)
-		DetJac *= MeshElement->area;
+			//DetJac *= MeshElement->area;// Moved to CFiniteElementStd::setMaterial() 
 		//WW          DetJac*=MeshElement->GetFluxArea();//CMCD
 		if(axisymmetry)
 		{

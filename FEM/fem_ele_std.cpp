@@ -917,8 +917,16 @@ void CFiniteElementStd::SetMaterial(int /*phase*/)
 	MediaProp->Fem_Ele_Std = this;
 	MeshElement->area = MediaProp->geo_area; // NW
 
-	if (MediaProp->storage_model == 7) // 29.11.2011. WW
-		SolidProp->Calculate_Lame_Constant();
+	if (ele_dim != 3)
+	{
+		for (gp = 0; gp < nGaussPoints; gp++)
+		{
+			_determinants_all[gp] *= MeshElement->area;
+		}
+	}
+
+    if(MediaProp->storage_model ==7 )   // 29.11.2011. WW
+       SolidProp->Calculate_Lame_Constant();
 
 	//----------------------------------------------------------------------
 	// MSP
@@ -6908,13 +6916,11 @@ void CFiniteElementStd::Cal_Velocity_2()
 	int k;
 	static double vel[3], vel_g[3];
 	// ---- Gauss integral
-	int gp_r = 0, gp_s = 0, gp_t;
 	double coef = 0.0;
 	int dof_n = 1;
 	if (PcsType == EPT_MULTIPHASE_FLOW)
 		dof_n = 2;
 	//
-	gp_t = 0;
 
 	// Get room in the memory for local matrices
 	SetMemory();
