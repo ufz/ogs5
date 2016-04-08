@@ -27,11 +27,11 @@
 #include "rf_REACT_GEM.h"
 #endif // GEM_REACT
 
-#include <string>
 #include <iomanip>
+#include <string>
 
-#include "Output.h"
 #include "FileTools.h"
+#include "Output.h"
 
 using namespace std;
 
@@ -864,7 +864,7 @@ void LegacyVtkInterface::WriteVTKCellData(fstream& vtk_file) const
    10/2006 WW Output secondary variables
    08/2008 OK MAT values
    06/2009 WW/OK WriteELEVelocity for different coordinate systems
-   11/2012 WW   Rewrite this fucntion in order to have a correct vec/teosor output
+   11/2012 WW   Rewrite this fucntion in order to have a correct vec/tensor output
 **************************************************************************/
 void LegacyVtkInterface::WriteVTKDataArrays(fstream& vtk_file) const
 {
@@ -886,180 +886,88 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream& vtk_file) const
 
 	for (size_t k = 0; k < numPointArrays; k++)
 	{
-		bool toNext = false;
-
-		// Write X, Y and Z arrays as vectors
-		// WW. 11.2012. if(k + 1 < numPointArrays)
+		// Write tensors
+		// XX, XY, YY, ZZ, XZ, YZ must be present in that order
+		if (_pointArrayNames[k].find("_XX") != string::npos)
 		{
-			if (_pointArrayNames[k].find("_X") != string::npos
-			    && (k + 1 < numPointArrays && _pointArrayNames[k + 1].find("_Y") != string::npos))
+			string arrayName = _pointArrayNames[k];
+			CRFProcess* pcs = PCSGet(arrayName, true);
+			if (!pcs)
+				continue;
+
+			tensor_val_idx[0] = pcs->GetNodeValueIndex(arrayName);
+			for (int kk = 1; kk < tensor_com; kk++)
 			{
-				string arrayName = _pointArrayNames[k];
-				CRFProcess* pcs = PCSGet(arrayName, true);
-				if (!pcs)
-					continue;
-
-				if (pcs->getProcessType() == FiniteElement::FLUID_MOMENTUM) // 23.11.2012. WW
-				{
-					vec_val_idx[0] = pcs->GetNodeValueIndex(arrayName) + 1;
-					for (int kk = 1; kk < space_dim; kk++)
-					{
-						vec_val_idx[kk] = vec_val_idx[kk - 1] + 2;
-					}
-				}
-				else
-				{
-					vec_val_idx[0] = pcs->GetNodeValueIndex(arrayName);
-					for (int kk = 1; kk < space_dim; kk++)
-					{
-						vec_val_idx[kk] = vec_val_idx[0] + kk;
-					}
-				}
-
-				std::cout << "ArrayName: " << arrayName << "\n";
-				vtk_file << "VECTORS " << arrayName.substr(0, arrayName.size() - 2) << " double"
-				         << "\n";
-
-				for (long j = 0l; j < numNodes; j++)
-				{
-					const long node_id = _mesh->nod_vector[j]->GetIndex();
-					for (int kk = 0; kk < space_dim; kk++)
-					{
-						vtk_file << pcs->GetNodeValue(node_id, vec_val_idx[kk]) << " ";
-					}
-
-					for (int kk = space_dim; kk < 3; kk++)
-					{
-						vtk_file << "0.0  ";
-					}
-
-					vtk_file << "\n";
-				}
-
-				k += space_dim;
-				toNext = true;
+				tensor_val_idx[kk] = tensor_val_idx[0] + kk;
 			}
-			// Write tensors as Eigenvectors
-			// XX, XY, YY, ZZ, XZ, YZ must be present in that order
-			else if (_pointArrayNames[k].find("_XX") != string::npos)
+
+			std::string fieldName = arrayName.substr(0, arrayName.size() - 3);
+			std::cout << "Writing VTK tensor: " << fieldName << "\n";
+			vtk_file << "TENSORS " << fieldName << " double"
+			         << "\n";
+
+			for (long j = 0l; j < numNodes; j++)
 			{
-				string arrayName = _pointArrayNames[k];
-				CRFProcess* pcs = PCSGet(arrayName, true);
-				if (!pcs)
-					continue;
+				const long node_id = _mesh->nod_vector[j]->GetIndex();
+				double vector6[6];
+				for (size_t component = 0; component < tensor_com; ++component)
+					vector6[component] = pcs->GetNodeValue(node_id, tensor_val_idx[component]);
 
-				tensor_val_idx[0] = pcs->GetNodeValueIndex(arrayName);
-				for (int kk = 1; kk < tensor_com; kk++)
-				{
-					tensor_val_idx[kk] = tensor_val_idx[0] + kk;
-				}
-
-				{
-#if defined(VTK_FOUND) && defined(OGS_USE_QT)
-
-					vector<vector<double> > eigenvectors_1, eigenvectors_2, eigenvectors_3;
-
-					// Iterate over nodes
-					for (long j = 0l; j < numNodes; j++)
-					{
-						const long node_id = _mesh->nod_vector[j]->GetIndex();
-						double vector6[6];
-						// Iterate over the tensor 6 arrays
-						for (size_t component = 0; component < tensor_com; ++component)
-						{
-							vector6[component] = pcs->GetNodeValue(node_id, tensor_val_idx[component]);
-							// std::cout << "vector " << component << " : " << vector6[component] << "\n";
-						}
-
-						double* tensor[3];
-						double tensor0[3];
-						double tensor1[3];
-						double tensor2[3];
-						tensor[0] = tensor0;
-						tensor[1] = tensor1;
-						tensor[2] = tensor2;
-
-						if (tensor_com == 6)
-						{
-							tensor0[0] = vector6[0];
-							tensor0[1] = vector6[1];
-							tensor0[2] = vector6[4];
-							tensor1[0] = vector6[1];
-							tensor1[1] = vector6[2];
-							tensor1[2] = vector6[5];
-							tensor2[0] = vector6[4];
-							tensor2[1] = vector6[5];
-							tensor2[2] = vector6[3];
-						}
-						else
-						{
-							continue;
-							// std::cout << " To be finished / " << "\n";
-						}
-						// std::cout << "TensorMat:" << "\n";
-						// std::cout << tensor0[0] << " " << tensor0[1] << " " << tensor0[2] << "\n";
-						// std::cout << tensor1[0] << " " << tensor1[1] << " " << tensor1[2] << "\n";
-						// std::cout << tensor2[0] << " " << tensor2[1] << " " << tensor2[2] << "\n";
-						// std::cout << "\n" << "\n";
-
-						double* eigenvectors[3];
-						double eigenvectors0[3];
-						double eigenvectors1[3];
-						double eigenvectors2[3];
-
-						eigenvectors[0] = eigenvectors0;
-						eigenvectors[1] = eigenvectors1;
-						eigenvectors[2] = eigenvectors2;
-						double eigenvalues[3];
-
-						vtkMath::Jacobi(tensor, eigenvalues, eigenvectors);
-
-						// Multiply normalized eigenvector with eigenvalues
-						std::vector<double> eigenvector_1, eigenvector_2, eigenvector_3;
-						eigenvector_1.push_back(eigenvectors[0][0] * eigenvalues[0]);
-						eigenvector_1.push_back(eigenvectors[0][1] * eigenvalues[1]);
-						eigenvector_1.push_back(eigenvectors[0][2] * eigenvalues[2]);
-						eigenvectors_1.push_back(eigenvector_1);
-						eigenvector_2.push_back(eigenvectors[1][0] * eigenvalues[0]);
-						eigenvector_2.push_back(eigenvectors[1][1] * eigenvalues[1]);
-						eigenvector_2.push_back(eigenvectors[1][2] * eigenvalues[2]);
-						eigenvectors_2.push_back(eigenvector_2);
-						eigenvector_3.push_back(eigenvectors[2][0] * eigenvalues[0]);
-						eigenvector_3.push_back(eigenvectors[2][1] * eigenvalues[1]);
-						eigenvector_3.push_back(eigenvectors[2][2] * eigenvalues[2]);
-						eigenvectors_3.push_back(eigenvector_3);
-					}
-
-					vtk_file << "VECTORS " << arrayName.substr(0, arrayName.size() - 3) << "_Eigenvector_1"
-					         << " double"
-					         << "\n";
-					for (vector<vector<double> >::iterator it = eigenvectors_1.begin(); it != eigenvectors_1.end();
-					     ++it)
-						vtk_file << (*it)[0] << " " << (*it)[1] << " " << (*it)[2] << "\n";
-
-					vtk_file << "VECTORS " << arrayName.substr(0, arrayName.size() - 3) << "_Eigenvector_2"
-					         << " double"
-					         << "\n";
-					for (vector<vector<double> >::iterator it = eigenvectors_2.begin(); it != eigenvectors_2.end();
-					     ++it)
-						vtk_file << (*it)[0] << " " << (*it)[1] << " " << (*it)[2] << "\n";
-
-					vtk_file << "VECTORS " << arrayName.substr(0, arrayName.size() - 3) << "_Eigenvector_3"
-					         << " double"
-					         << "\n";
-					for (vector<vector<double> >::iterator it = eigenvectors_3.begin(); it != eigenvectors_3.end();
-					     ++it)
-						vtk_file << (*it)[0] << " " << (*it)[1] << " " << (*it)[2] << "\n";
-					k += tensor_com;
-					toNext = true;
-#else
-// TBD
-#endif
-				}
+				vtk_file << vector6[0] << " " << vector6[1] << " " << vector6[4] << "\n";
+				vtk_file << vector6[1] << " " << vector6[2] << " " << vector6[5] << "\n";
+				vtk_file << vector6[4] << " " << vector6[5] << " " << vector6[3] << "\n";
 			}
+
+			k += tensor_com - 1;
 		}
+		else if (_pointArrayNames[k].find("_X") != string::npos
+		         && (k + 1 < numPointArrays && _pointArrayNames[k + 1].find("_Y") != string::npos))
+		{
+			string arrayName = _pointArrayNames[k];
+			CRFProcess* pcs = PCSGet(arrayName, true);
+			if (!pcs)
+				continue;
 
-		if (!toNext)
+			if (pcs->getProcessType() == FiniteElement::FLUID_MOMENTUM) // 23.11.2012. WW
+			{
+				vec_val_idx[0] = pcs->GetNodeValueIndex(arrayName) + 1;
+				for (int kk = 1; kk < space_dim; kk++)
+				{
+					vec_val_idx[kk] = vec_val_idx[kk - 1] + 2;
+				}
+			}
+			else
+			{
+				vec_val_idx[0] = pcs->GetNodeValueIndex(arrayName);
+				for (int kk = 1; kk < space_dim; kk++)
+				{
+					vec_val_idx[kk] = vec_val_idx[0] + kk;
+				}
+			}
+
+			std::cout << "Writing VTK vector: " << arrayName << "\n";
+			vtk_file << "VECTORS " << arrayName << " double"
+			         << "\n";
+
+			for (long j = 0l; j < numNodes; j++)
+			{
+				const long node_id = _mesh->nod_vector[j]->GetIndex();
+				for (int kk = 0; kk < space_dim; kk++)
+				{
+					vtk_file << pcs->GetNodeValue(node_id, vec_val_idx[kk]) << " ";
+				}
+
+				for (int kk = space_dim; kk < 3; kk++)
+				{
+					vtk_file << "0.0  ";
+				}
+
+				vtk_file << "\n";
+			}
+
+			k += space_dim - 1;
+		}
+		else
 			printScalarArray(_pointArrayNames[k], vtk_file);
 	}
 	//======================================================================
@@ -1274,6 +1182,7 @@ void LegacyVtkInterface::printScalarArray(string arrayName, std::fstream& vtk_fi
 	int indexDataArray = pcs->GetNodeValueIndex(arrayName);
 	long numNodes = _mesh->GetNodesNumber(false);
 
+	std::cout << "Writing VTK scalar: " << arrayName << "\n";
 	vtk_file << "SCALARS " << arrayName << " double 1"
 	         << "\n";
 	vtk_file << "LOOKUP_TABLE default"
