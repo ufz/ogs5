@@ -5326,6 +5326,7 @@ void CFiniteElementStd::CalcAdvectionMCF()
 	int gp_r = 0, gp_s = 0, gp_t = 0, i, j, in, jn, nDF = pcs->dof, Index = MeshElement->GetIndex();
 	double fkt, vel[3];
 	ElementValue* gp_ele = ele_gp_value[Index];
+	getShapeFunctionCentroid();
 	CalCoefAdvectionMCF();
 	for (gp = 0; gp < nGaussPoints; gp++)
 	{
@@ -5369,6 +5370,7 @@ void CFiniteElementStd::CalcContentMCF()
 {
 	int gp_r = 0, gp_s = 0, gp_t = 0, in, i, j, nDF = pcs->dof;
 	double fkt;
+	getShapeFunctionCentroid();
 	CalCoefContentMCF();
 	for (gp = 0; gp < nGaussPoints; gp++)
 	{
@@ -5403,7 +5405,6 @@ void CFiniteElementStd::CalCoefContentMCF()
 		ContentMatrixElements[in] = 0.0;
 	if (FluidProp->cmpN > 0)
 	{
-	getShapefunctValues(gp, 1);       // Linear interpolation N....var shapefct
 	for(in = 0; in < nDF; in++) arg_PV[in] = interpolate(NodalValue[in]);
 	rho = FluidProp->Density(arg_PV);
 	poro = MediaProp->Porosity(Index, pcs->m_num->ls_theta);

@@ -25,6 +25,7 @@ ShapeFunctionPool::ShapeFunctionPool(
 {
 	const std::size_t n_ele_types = elem_types.size();
 	_shape_function.reserve(n_ele_types);
+	_shape_function_size.reserve(n_ele_types);
 	_shape_function_center.reserve(n_ele_types);
 	_grad_shape_function.reserve(n_ele_types);
 	_grad_shape_function_center.reserve(n_ele_types);
@@ -32,6 +33,7 @@ ShapeFunctionPool::ShapeFunctionPool(
 	for (std::size_t i=0; i<n_ele_types; i++)
 	{
 		_shape_function.push_back(NULL);
+		_shape_function_size.push_back(0);
 		_shape_function_center.push_back(NULL);
 		_grad_shape_function.push_back(NULL);
 		_grad_shape_function_center.push_back(NULL);
@@ -96,6 +98,7 @@ ShapeFunctionPool::ShapeFunctionPool(
 		_shape_function_center[type_id] = new double[num_nodes];
 		const int size_shape_fct = num_nodes * num_int_pnts;
 		_shape_function[type_id] = new double[size_shape_fct];
+		_shape_function_size[type_id] = size_shape_fct;
 		_grad_shape_function[type_id] = new double[dim_elem[type_id] * size_shape_fct];
 		_grad_shape_function_center[type_id] = new double[dim_elem[type_id] * num_nodes];
 	}
@@ -150,8 +153,8 @@ void ShapeFunctionPool::
 		const int type_id = static_cast<int>(e_type) - 1;
 		quadrature.ConfigShapefunction(e_type);
 
-    	const int nnodes = num_elem_nodes[order-1][type_id];
-    	const int elem_dim = dim_elem[type_id];
+		const int nnodes = num_elem_nodes[order-1][type_id];
+		const int elem_dim = dim_elem[type_id];
 
 		double* shape_function_center_values = _shape_function_center[type_id];
 		quadrature.SetCenterGP(e_type);
@@ -185,6 +188,12 @@ getShapeFunctionValues(const MshElemType::type elem_type) const
 {
 	assert(_shape_function[static_cast<int>(elem_type)-1]);
 	return _shape_function[static_cast<int>(elem_type)-1];
+}
+
+unsigned ShapeFunctionPool::
+getShapeFunctionArraySize(const MshElemType::type elem_type) const
+{
+	return _shape_function_size[static_cast<int>(elem_type)-1];
 }
 
 double* ShapeFunctionPool::

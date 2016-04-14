@@ -15,6 +15,7 @@
 #include "fem_ele.h"
 
 #include <cfloat>
+#include <cassert>
 
 #include "msh_elem.h"
 #include "rf_pcs.h"
@@ -979,10 +980,16 @@ void CElement::getShapefunctValues(const int gp, const int order) const
 {
 	if(order == 1)
 	{
+		assert(static_cast<unsigned>(gp * nnodes)
+			< _shape_function_pool_ptr[0]->getShapeFunctionArraySize(MeshElement->GetElementType()));
+
 		shapefct = &_shape_function_result_ptr[0][nnodes * gp];
 	}
 	else if(order == 2)
 	{
+		assert(static_cast<unsigned>(gp * nnodesHQ)
+			< _shape_function_pool_ptr[1]->getShapeFunctionArraySize(MeshElement->GetElementType()));
+
 		shapefctHQ = &_shape_function_result_ptr[1][nnodesHQ * gp];
 	}
 }
