@@ -984,6 +984,7 @@ void Problem::PCSCreate()
 		pcs->SetBoundaryConditionAndSourceTerm();
 
 		if (   pcs->getProcessType() == FiniteElement::DEFORMATION_DYNAMIC
+			|| pcs->getProcessType() == FiniteElement::DEFORMATION
 			|| pcs->getProcessType() == FiniteElement::DEFORMATION_FLOW
 			|| pcs->getProcessType() == FiniteElement::DEFORMATION_H2)
 		{
