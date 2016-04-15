@@ -1022,7 +1022,6 @@ void CRFProcessDeformation::InitGauss(void)
 	size_t i;
 	int j, k, gp, NGS, MatGroup, n_dom;
 	int PModel = 1;
-	int gp_r = 0, gp_s = 0, gp_t = 0;
 	//  double z=0.0;
 	double xyz[3];
 	static double Strs[6];

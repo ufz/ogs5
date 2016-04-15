@@ -113,8 +113,10 @@ using process::CRFProcessDeformation;
    Modification:
  ***************************************************************************/
 Problem::Problem (char* filename) :
-	dt0(0.), print_result(true), _geo_obj (new GEOLIB::GEOObjects), _geo_name (filename),
-    _line_shapefunction_pool(NULL), _quadr_shapefunction_pool(NULL), mrank(0), msize(0)
+	dt0(0.), print_result(true),
+	_line_shapefunction_pool(NULL), _quadr_shapefunction_pool(NULL),
+	_geo_obj (new GEOLIB::GEOObjects), _geo_name (filename),
+	mrank(0), msize(0)
 {
 	if (filename != NULL)
 	{

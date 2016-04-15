@@ -112,15 +112,15 @@ private:
 	bool CalcVelocities;
 	bool conducted;
 
+	// Print flag
+	bool print_result;
+
 	/// Caches for shape functions and their derivatives with respect to
 	/// the local coordinates.
 	FiniteElement::ShapeFunctionPool* _line_shapefunction_pool;
 	FiniteElement::ShapeFunctionPool* _quadr_shapefunction_pool;
 
-	// Print flag
-	bool print_result;
 	// Processes
-
 	std::vector<CRFProcess*> total_processes;
 	std::vector<CRFProcess*> transport_processes;
 	std::vector<CRFProcess*> multiphase_processes;
