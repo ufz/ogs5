@@ -1129,15 +1129,11 @@ void CRFProcessDeformation::InitGauss(void)
 				 */
 			}
 
-			fem_dm->setElement(elem);
+			fem_dm->ConfigElement(elem);
 			fem_dm->setOrder(2);
 			fem_dm->SetIntegrationPointNumber(elem->GetElementType());
 			NGS = fem_dm->GetNumGaussPoints();
 			//
-			if (ccounter > 0)
-			{
-				fem_dm->getShapeFunctionPtr(elem->GetElementType());
-			}
 
 			for (gp = 0; gp < NGS; gp++)
 			{

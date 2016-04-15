@@ -711,9 +711,11 @@ void CElement::RealCoordinates(double* realXYZ)
 {
 	int i;
 	double* df = shapefct;
-	if (Order == 2)
+	if(Order == 2)
+	{
 		df = shapefctHQ;
-	for (i = 0; i < 3; i++)
+	}
+	for(i = 0; i < 3; i++)
 		realXYZ[i] = 0.0;
 
 	for (i = 0; i < nNodes; i++)
