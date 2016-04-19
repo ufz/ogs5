@@ -1722,7 +1722,7 @@ void CRFProcess::InterpolateTempGP(CRFProcess* m_pcs, std::string name)
 	long group;
 	double T_ele;
 	double GP[3];
-	static double Node_T[8];
+	//WW static double Node_T[8];
 	static double dbuff0[20];
 	int index1;                           //idxp,idxcp,idxS;
 	CMediumProperties* m_mmp = NULL;
@@ -1777,8 +1777,8 @@ void CRFProcess::ExtropolateTempGP(CRFProcess* m_pcs, std::string name)
 //	double GP[3];
 	static double Node_T[8];
 	double T_sum = 0.0;
-	int index1, index_nod; // idxp,idxcp,idxS;
-	CMediumProperties* m_mmp = NULL;
+	int index1, index_nod;                //idxp,idxcp,idxS;
+	//WW CMediumProperties* m_mmp = NULL;
 	MeshLib::CElem* elem = NULL;
 
 	index1 = m_pcs->GetElementValueIndex(name) + 1; //->fem->interpolate(
