@@ -4169,7 +4169,7 @@ void CFEMesh::TopSurfaceIntegration()
 
 		elem->ComputeVolume();
 		fem->setOrder(getOrder() + 1);
-		fem->ConfigElement(elem, 3);
+		fem->ConfigElement(elem, true);
 		fem->FaceIntegration(node_val);
 		for (k = 0; k < elem->nnodes; k++)
 		{

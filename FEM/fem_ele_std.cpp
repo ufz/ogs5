@@ -9358,7 +9358,7 @@ void CFiniteElementStd::Assembly(int option, int dimension)
 **************************************************************************/
 void CFiniteElementStd::UpdateSolidDensity(size_t elem_idx)
 {
-	ElementValue* gp_ele = ele_gp_value[Index];
+	ElementValue* gp_ele = ele_gp_value[elem_idx];
 
 	double rho_s_elem = 0.0;
 	double qR_elem = 0.0;
@@ -9386,16 +9386,15 @@ void CFiniteElementStd::UpdateSolidDensity(size_t elem_idx)
    Programing:
    18/02/2006 WW Implementation
 **************************************************************************/
-void CFiniteElementStd::ExtropolateGauss(CRFProcess* m_pcs, const int idof)
+void CFiniteElementStd::ExtropolateGauss(MeshLib::CElem& elem, CRFProcess* m_pcs, const int idof)
 {
-	int i, j, gp, gp_r, gp_s, gp_t, idx_v2 = 0;
-	int i_s, i_e, ish;
-	double EV, EV1 = 0.0, varx = 0.0;
+	MeshElement = &elem;
 	//
 	MshElemType::type ElementType = MeshElement->GetElementType();
 
 	// Multi-phase flow 03.2009 PCH
-	if (m_pcs->type == 1212 || m_pcs->type == 1313 || m_pcs->type == 42)
+	int idx_v2 = 0;
+	if(m_pcs->type == 1212 || m_pcs->type == 1313 || m_pcs->type == 42)
 	{
 		switch (idof)
 		{
@@ -9415,24 +9414,28 @@ void CFiniteElementStd::ExtropolateGauss(CRFProcess* m_pcs, const int idof)
 	nnodes = MeshElement->nnodes;
 	// Node indices
 	for(int i = 0; i < nnodes; i++)
+	{
 		nodes[i] = MeshElement->nodes[i]->GetIndex();
-	for(i = 0; i < nnodes; i++)
 		dbuff[i] = (double)MeshElement->nodes[i]->getConnectedElementIDs().size();
+	}
+
+	ElementValue* gp_ele = ele_gp_value[MeshElement->GetIndex()];
 	//
+	int gp, gp_r, gp_s, gp_t;
+	int i_s, i_e, ish;
+	double EV, EV1 = 0.0, varx = 0.0;
 	gp_r = gp_s = gp_t = gp = 0;
-	ElementValue* gp_ele = ele_gp_value[Index];
 	//
 	for (gp = 0; gp < nGaussPoints; gp++)
 	{
-		if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
+		int i = gp;
+		SetGaussPoint(gp, gp_r, gp_s, gp_t);
+		if(ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
 		{
-			SetGaussPoint(gp, gp_r, gp_s, gp_t);
 			i = GetLocalIndex(gp_r, gp_s, gp_t);
 			if (i == -1)
 				continue;
 		}
-		else
-			i = gp;
 
 		NodalVal1[i] = gp_ele->Velocity(idof, gp) * time_unit_factor;
 		//
@@ -9470,7 +9473,7 @@ void CFiniteElementStd::ExtropolateGauss(CRFProcess* m_pcs, const int idof)
 	}
 
 	ConfigShapefunction(ElementType);
-	for(i = 0; i < nnodes; i++)
+	for(int i = 0; i < nnodes; i++)
 	{
 		EV = EV1 = varx = 0.0;
 
@@ -9480,7 +9483,7 @@ void CFiniteElementStd::ExtropolateGauss(CRFProcess* m_pcs, const int idof)
 			SetExtropoGaussPoints(i);
 			//
 			ComputeShapefct(1, dbuff0); // Linear interpolation function
-			for(j = i_s; j < i_e; j++)
+			for(int j = i_s; j < i_e; j++)
 				EV += NodalVal1[j] * dbuff0[j - ish];
 		}
 		else if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_AVERAGE)
@@ -9499,7 +9502,7 @@ void CFiniteElementStd::ExtropolateGauss(CRFProcess* m_pcs, const int idof)
 		{
 			// Calculate values at nodes
 			if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_LINEAR)
-				for(j = i_s; j < i_e; j++)
+				for(int j = i_s; j < i_e; j++)
 					EV1 += NodalVal2[j] * dbuff0[j - ish];
 			else if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_AVERAGE)
 				// average
@@ -9519,7 +9522,8 @@ void CFiniteElementStd::ExtropolateGauss(CRFProcess* m_pcs, const int idof)
 This function is needed to extrapolate the nodal reaction rate values,
 using the gauss point calculated reaction rates.
 ***********************************************************************/
-void CFiniteElementStd::ExtrapolateGauss_ReactRate_TNEQ_TES(CRFProcess* m_pcs)
+void CFiniteElementStd::ExtrapolateGauss_ReactRate_TNEQ_TES
+			(MeshLib::CElem& elem, CRFProcess *m_pcs)
 {
 	int i, j, gp, gp_r, gp_s, gp_t;
 	int i_s, i_e, ish;
@@ -9530,6 +9534,7 @@ void CFiniteElementStd::ExtrapolateGauss_ReactRate_TNEQ_TES(CRFProcess* m_pcs)
 	// get the index pointing to solid density.
 	const int idx_nodal_solid_density = m_pcs->GetNodeValueIndex("SOLID_DENSITY_N");
 
+	MeshElement = &elem;
 	// get element type
 	MshElemType::type ElementType = MeshElement->GetElementType();
 
@@ -9537,19 +9542,20 @@ void CFiniteElementStd::ExtrapolateGauss_ReactRate_TNEQ_TES(CRFProcess* m_pcs)
 	nnodes = MeshElement->nnodes;
 	// Node indices
 	for(int i = 0; i < nnodes; i++)
+	{
 		nodes[i] = MeshElement->nodes[i]->GetIndex();
-	for(i=0; i<nnodes; i++)
 		dbuff[i] = (double)MeshElement->nodes[i]->getConnectedElementIDs().size();
+	}
 
-	gp_r = gp_s = gp_t = gp = 0;
-	ElementValue* gp_ele = ele_gp_value[Index];
+	gp_r=gp_s=gp_t=gp=0;
+	ElementValue* gp_ele = ele_gp_value[MeshElement->GetIndex()];
 
 	// loop over all gauss points
 	for (gp = 0; gp < nGaussPoints; gp++)
 	{
-		if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
+		SetGaussPoint(gp, gp_r, gp_s, gp_t);
+		if(ElementType==MshElemType::QUAD||ElementType==MshElemType::HEXAHEDRON)
 		{
-			SetGaussPoint(gp, gp_r, gp_s, gp_t);
 			i = GetLocalIndex(gp_r, gp_s, gp_t);
 			if (i == -1)
 				continue;
@@ -9620,18 +9626,11 @@ void CFiniteElementStd::ExtrapolateGauss_ReactRate_TNEQ_TES(CRFProcess* m_pcs)
 /***********************************************************************
    27.03.2007 WW
 ***********************************************************************/
-void CFiniteElementStd::CalcSatuation()
+void CFiniteElementStd::CalcSatuation(MeshLib::CElem& elem)
 {
-	int i, j, gp, gp_r, gp_s, gp_t, idx_cp, idx_S;
-	int i_s, i_e, ish;
-	//  int l1,l2,l3,l4; //, counter;
-	double sign, eS = 0.0;
-	// CB_merge_0513
-	double* tens = NULL;
-	int Index;
+	MeshElement = &elem;
 	Index = MeshElement->GetIndex();
 
-	MshElemType::type ElementType = MeshElement->GetElementType();
 	//----------------------------------------------------------------------
 	// Media
 	int mmp_index = 0;
@@ -9648,10 +9647,10 @@ void CFiniteElementStd::CalcSatuation()
 	MediaProp = mmp_vector[mmp_index];
 	MediaProp->m_pcs = pcs;
 	MediaProp->Fem_Ele_Std = this;
-	// CB_merge_0513
-	tens = MediaProp->PermeabilityTensor(Index);
+    // CB_merge_0513
+	double* tens = MediaProp->PermeabilityTensor(Index);
 	//
-	sign = -1.0;
+	int idx_cp, idx_S;
 	idx_cp = pcs->GetNodeValueIndex("PRESSURE1") + 1;
 	idx_S = pcs->GetNodeValueIndex("SATURATION1", true);
 	// Dual Richards
@@ -9660,11 +9659,14 @@ void CFiniteElementStd::CalcSatuation()
 		idx_cp = pcs->GetNodeValueIndex("PRESSURE2") + 1;
 		idx_S = pcs->GetNodeValueIndex("SATURATION2") + 1;
 	}
-	if (pcs->type == 1212 || pcs->type == 42)
+	double sign = -1.0;
+	if(pcs->type == 1212 || pcs->type == 42)
 		sign = 1.0;
 	//
-	for (i = 0; i < nnodes; i++)
+	nnodes = MeshElement->nnodes;
+	for(int i = 0; i < nnodes; i++)
 	{
+		nodes[i] = MeshElement->nodes[i]->GetIndex();
 		// Number of elements associated to nodes
 		dbuff[i] = (double)MeshElement->nodes[i]->getConnectedElementIDs().size();
 		// pressure
@@ -9672,19 +9674,22 @@ void CFiniteElementStd::CalcSatuation()
 	}
 
 	//
+	int gp, gp_r, gp_s, gp_t;
 	gp_r = gp_s = gp_t = gp = 0;
 	// for PG = interpolate(NodalVal0);
-	getShapeFunctionPtr(MeshElement->GetElementType());
+	const MshElemType::type ElementType = MeshElement->GetElementType();
+	getShapeFunctionPtr(ElementType);
 	for(gp = 0; gp < nGaussPoints; gp++)
 	{
+		SetGaussPoint(gp, gp_r, gp_s, gp_t);
+		int i = gp;
 		if(ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
 		{
 			i = GetLocalIndex(gp_r, gp_s, gp_t);
 			if (i == -1)
 				continue;
 		}
-		else
-			i = gp;
+
 		//
 		if (i > nnodes)
 			continue;
@@ -9700,6 +9705,7 @@ void CFiniteElementStd::CalcSatuation()
 		Xi_p = CalcXi_p();
 
 	//
+	int i_s, i_e, ish;
 	i_s = 0;
 	i_e = nnodes;
 	ish = 0;
@@ -9719,16 +9725,16 @@ void CFiniteElementStd::CalcSatuation()
 		avgSat = CalcAverageGaussPointValues(NodalVal_Sat);
 
 	ConfigShapefunction(ElementType);
-	for(i = 0; i < nnodes; i++)
+	for(int i = 0; i < nnodes; i++)
 	{
-		eS = 0.0;
+		double eS = 0.0;
 		// Calculate values at nodes
 		if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_LINEAR)
 		{
 			SetExtropoGaussPoints(i);
 			//
 			ComputeShapefct(1, dbuff0); // Linear interpolation function
-			for(j = i_s; j < i_e; j++)
+			for(int j = i_s; j < i_e; j++)
 				eS += NodalVal_Sat[j] * dbuff0[j - ish];
 		}
 		else if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_AVERAGE)
@@ -9753,16 +9759,17 @@ void CFiniteElementStd::CalcSatuation()
    Programing:
    04/2007 WW Implementation
 **************************************************************************/
-void CFiniteElementStd::CalcNodeMatParatemer()
+void CFiniteElementStd::CalcNodeMatParatemer(MeshLib::CElem& elem)
 {
 	int i, gp_r, gp_s, gp_t, idx_perm[3], idxp = 0;
 	int i_s, i_e, ish;
 	double w[3], nval = 0.0;
 	//
+	MeshElement = &elem;
 	MshElemType::type ElementType = MeshElement->GetElementType();
 	//----------------------------------------------------------------------
 	gp = 0;
-	index = Index;
+	index = MeshElement->GetIndex();
 	w[0] = w[1] = w[2] = 1.0;
 	//----------------------------------------------------------------------
 	setOrder(1);
