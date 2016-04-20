@@ -9021,8 +9021,7 @@ void CFiniteElementStd::Config()
 **************************************************************************/
 void CFiniteElementStd::Assembly()
 {
-	int i;
-	Config(); // 26.08.2008
+	Config();                             //26.08.2008
 
 	// If output matrices and vectors. 07.2011. WW
 	if (pcs->Write_Matrix)
@@ -9070,31 +9069,28 @@ void CFiniteElementStd::Assembly()
 				// Turn off the partial-pressure-based model for Snw equation
 				pcs->PartialPS = 0;
 
-				pcs->ML_Cap = 0;
-				AssembleParabolicEquation();
-				pcs->ML_Cap = 0;
-
-				AssembleRHSVector();
-				Assemble_Gravity_Multiphase();
-			}
-			add2GlobalMatrixII();
-			break;
-		//....................................................................
-		case EPT_COMPONENTAL_FLOW: // Componental flow
-			for (i = 0; i < nnodes; i++)
-				NodalVal_Sat[i] = pcs->GetNodeValue(nodes[i], idxS);
-			break;
-		//....................................................................
-		case EPT_HEAT_TRANSPORT: // Heat transport
-			heat_phase_change = false; // ?2WW
-			//  if(SolidProp->GetCapacityModel()==2) // Boiling model
-			//    CalNodalEnthalpy();
-			// CMCD4213
-			AssembleMixedHyperbolicParabolicEquation();
-			if (FluidProp->density_model == 14 && MediaProp->heat_diffusion_model == 1 && cpl_pcs)
-				Assemble_RHS_HEAT_TRANSPORT(); // This include when need pressure terms n dp/dt + nv.Nabla p//AKS
-			if (MediaProp->evaporation == 647)
-				Assemble_RHS_HEAT_TRANSPORT2(); // AKS
+			AssembleRHSVector();
+			Assemble_Gravity_Multiphase();
+		}
+		add2GlobalMatrixII();
+		break;
+	//....................................................................
+	case EPT_COMPONENTAL_FLOW:                               // Componental flow
+		for(int i = 0; i < nnodes; i++)
+			NodalVal_Sat[i] = pcs->GetNodeValue(nodes[i], idxS);
+		break;
+	//....................................................................
+	case EPT_HEAT_TRANSPORT:                               // Heat transport
+		heat_phase_change = false; // ?2WW
+		//  if(SolidProp->GetCapacityModel()==2) // Boiling model
+		//    CalNodalEnthalpy();
+		//CMCD4213
+		AssembleMixedHyperbolicParabolicEquation();
+		if(FluidProp->density_model == 14 && MediaProp->heat_diffusion_model == 1 &&
+		   cpl_pcs )
+			Assemble_RHS_HEAT_TRANSPORT();  // This include when need pressure terms n dp/dt + nv.Nabla p//AKS
+		if(MediaProp->evaporation == 647)
+			Assemble_RHS_HEAT_TRANSPORT2();  //AKS
 
 #if defined(USE_PETSC) // || defined(other parallel libs)//03~04.3012. WW
 			add2GlobalMatrixII();

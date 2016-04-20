@@ -1907,8 +1907,9 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const &node
             fac = 0.5;
          face->SetFace(elem, j);
          face->SetOrder(msh->getOrder());
+		 face->FillTransformMatrix();
          fem_assembler->setOrder(msh->getOrder() ? 2 : 1);
-         fem_assembler->ConfigElement(face, true);
+         fem_assembler->ConfigElement(face);
          fem_assembler->FaceIntegration(nodesFVal);
 
          for (k = 0; k < nfn; k++)

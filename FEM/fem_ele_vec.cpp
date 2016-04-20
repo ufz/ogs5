@@ -2659,21 +2659,15 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	   06/2004   WW
 	   02/2007   Make it work for all 2nd variables
 	 **************************************************************************/
-	void CFiniteElementVec::ExtropolateGuassStrain()
+void CFiniteElementVec::ExtropolateGuassStrain()
+{
+	//WX:03.2012. if excavation dbuff changed
+	if(pcs->ExcavMaterialGroup>-1)
 	{
-		int i, j;
-		//  int l1,l2,l3,l4; //, counter;
-		double ESxx, ESyy, ESzz, ESxy, ESxz, ESyz;
-		double avgESxx, avgESyy, avgESzz, avgESxy, avgESxz, avgESyz;
-		int i_s, i_e, ish, k = 0;
-		gp = 0;
-		// double Area1, Area2, Tol=10e-9;
-
-		// WX:03.2012. if excavation dbuff changed
-		if (pcs->ExcavMaterialGroup > -1)
+		int tmp_excavstate=-1;
+		for(int i=0;i<nnodes;i++)
 		{
-			int tmp_excavstate = -1;
-			for (i = 0; i < nnodes; i++)
+			for(size_t jj=0;jj<MeshElement->nodes[i]->getConnectedElementIDs().size();jj++)
 			{
 				for (size_t jj = 0; jj < MeshElement->nodes[i]->getConnectedElementIDs().size(); jj++)
 				{
@@ -2687,13 +2681,37 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			}
 		}
 
-		// l1=l2=l3=l4=0;
-		MshElemType::type ElementType = MeshElement->GetElementType();
-		if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
-			Xi_p = CalcXi_p();
+	//
+	int i_s, i_e, ish;
+	i_s = 0;
+	i_e = nnodes;
+	ish = 0;
+	if (ElementType == MshElemType::TETRAHEDRON) // tet
+	{
+		i_s = 1;
+		i_e = nnodes + 1;
+		ish = 1;
+	}
+	//---------------------------------------------------------
+	// Mapping Gauss point strains to nodes and update nodes
+	// strains:
+	//---------------------------------------------------------
+	double ESxx, ESyy, ESzz, ESxy, ESxz, ESyz;
+	double avgESxx, avgESyy, avgESzz, avgESxy, avgESxz, avgESyz;
+	avgESxx = avgESyy = avgESzz = avgESxy = avgESxz = avgESyz = 0.0;
+	if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_AVERAGE)
+	{
+		// average
+		avgESxx = CalcAverageGaussPointValues(Sxx);
+		avgESyy = CalcAverageGaussPointValues(Syy);
+		avgESzz = CalcAverageGaussPointValues(Szz);
+		avgESxy = CalcAverageGaussPointValues(Sxy);
+		avgESxz = CalcAverageGaussPointValues(Sxz);
+		avgESyz = CalcAverageGaussPointValues(Syz);
+	}
 
 	ConfigShapefunction(ElementType);
-	for(i = 0; i < nnodes; i++)
+	for(int i = 0; i < nnodes; i++)
 	{
 		ESxx = ESyy = ESzz = ESxy = ESxz = ESyz = 0.0;
 
@@ -2702,9 +2720,9 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			SetExtropoGaussPoints(i);
 			ComputeShapefct(1, dbuff0); // Linear interpolation function
 			//
-			for(j = i_s; j < i_e; j++)
+			for(int j = i_s; j < i_e; j++)
 			{
-				k = j - ish;
+				const int k = j - ish;
 				ESxx += Sxx[j] * dbuff0[k];
 				ESyy += Syy[j] * dbuff0[k];
 				ESxy += Sxy[j] * dbuff0[k];
@@ -2772,39 +2790,33 @@ void CFiniteElementVec::GlobalAssembly_RHS()
  **************************************************************************/
 void CFiniteElementVec::ExtropolateGuassStress()
 {
-	int i, j, gp_r, gp_s, gp_t;
-	// int l1,l2,l3,l4; //, counter;
-	double ESxx, ESyy, ESzz, ESxy, ESxz, ESyz, Pls;
-	double avgESxx, avgESyy, avgESzz, avgESxy, avgESxz, avgESyz, avgPls;
-	int i_s, i_e, ish, k = 0;
-	MshElemType::type ElementType = MeshElement->GetElementType();
-	long node_i = 0;
 	// For strain and stress extropolation all element types
 	// Number of elements associated to nodes
 	nnodes = MeshElement->nnodes;
 	// Node indices
 	for(int i = 0; i < nnodes; i++)
+	{
 		nodes[i] = MeshElement->nodes[i]->GetIndex();
-
-	for(i = 0; i < nnodes; i++)
 		dbuff[i] = (double)MeshElement->nodes[i]->getConnectedElementIDs().size();
+	}
 	//
-	gp = gp_r = gp_s = gp_t = 0;
 	eleV_DM = ele_value_dm[MeshElement->GetIndex()];
 	if(eleV_DM->pStrain)                  //08.02.2008 WW
 		idx_pls =  pcs->GetNodeValueIndex("STRAIN_PLS");
 	//
+	MshElemType::type ElementType = MeshElement->GetElementType();
 	for(gp = 0; gp < nGaussPoints; gp++)
 	{
+		int gp_r, gp_s, gp_t;
+		gp_r = gp_s = gp_t = 0;
+		SetGaussPoint(gp, gp_r, gp_s, gp_t);
+		int i = gp;
 		if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
 		{
-			SetGaussPoint(gp, gp_r, gp_s, gp_t);
 			i = GetLocalIndex(gp_r, gp_s, gp_t);
 			if(i == -1)
 				continue;
 		}
-		else
-			i = gp;
 
 		Sxx[i] = (*eleV_DM->Stress)(0,gp);
 		Syy[i] = (*eleV_DM->Stress)(1,gp);
@@ -2840,12 +2852,43 @@ void CFiniteElementVec::ExtropolateGuassStress()
 				Syz[i] = (*eleV_DM->Stress)(5, gp);
 			}
 		}
-		//
-		if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
-			Xi_p = CalcXi_p();
+	}
+	//
+	if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
+		Xi_p = CalcXi_p();
+
+	//
+	int i_s, i_e, ish;
+	i_s = 0;
+	i_e = nnodes;
+	ish = 0;
+	if(ElementType == MshElemType::TETRAHEDRON) // tet
+	{
+		i_s = 1;
+		i_e = nnodes + 1;
+		ish = 1;
+	}
+	//---------------------------------------------------------
+	// Mapping Gauss point strains to nodes and update nodes
+	// strains:
+	//---------------------------------------------------------
+	double ESxx, ESyy, ESzz, ESxy, ESxz, ESyz, Pls;
+	double avgESxx, avgESyy, avgESzz, avgESxy, avgESxz, avgESyz, avgPls;
+	avgESxx = avgESyy = avgESzz = avgESxy = avgESxz = avgESyz = avgPls = 0.0;
+	if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_AVERAGE)
+	{
+		// average
+		avgESxx = CalcAverageGaussPointValues(Sxx);
+		avgESyy = CalcAverageGaussPointValues(Syy);
+		avgESzz = CalcAverageGaussPointValues(Szz);
+		avgESxy = CalcAverageGaussPointValues(Sxy);
+		avgESxz = CalcAverageGaussPointValues(Sxz);
+		avgESyz = CalcAverageGaussPointValues(Syz);
+		avgPls = CalcAverageGaussPointValues(pstr);
+	}
 
 	ConfigShapefunction(ElementType);
-	for(i = 0; i < nnodes; i++)
+	for(int i = 0; i < nnodes; i++)
 	{
 		ESxx = ESyy = ESzz = ESxy = ESxz = ESyz = Pls = 0.0;
 
@@ -2856,9 +2899,9 @@ void CFiniteElementVec::ExtropolateGuassStress()
 			//
 			ComputeShapefct(1, dbuff0); // Linear interpolation function
 			//
-			for(j = i_s; j < i_e; j++)
+			for(int j = i_s; j < i_e; j++)
 			{
-				k = j - ish;
+				int k = j - ish;
 				ESxx += Sxx[j] * dbuff0[k];
 				ESyy += Syy[j] * dbuff0[k];
 				ESxy += Sxy[j] * dbuff0[k];
@@ -2885,32 +2928,32 @@ void CFiniteElementVec::ExtropolateGuassStress()
 				}
 			}
 
-			// Average value of the contribution of ell neighbor elements
-			ESxx /= dbuff[i];
-			ESyy /= dbuff[i];
-			ESxy /= dbuff[i];
-			ESzz /= dbuff[i];
-			Pls /= dbuff[i];
-			//
-			node_i = nodes[i];
-			ESxx += pcs->GetNodeValue(node_i, Idx_Stress[0]);
-			ESyy += pcs->GetNodeValue(node_i, Idx_Stress[1]);
-			ESzz += pcs->GetNodeValue(node_i, Idx_Stress[2]);
-			ESxy += pcs->GetNodeValue(node_i, Idx_Stress[3]);
-			if (eleV_DM->pStrain) // 08.02.2008 WW
-				Pls += pcs->GetNodeValue(node_i, idx_pls);
+		// Average value of the contribution of ell neighbor elements
+		ESxx /= dbuff[i];
+		ESyy /= dbuff[i];
+		ESxy /= dbuff[i];
+		ESzz /= dbuff[i];
+		Pls /= dbuff[i];
+		//
+		long node_i = nodes[i];
+		ESxx += pcs->GetNodeValue(node_i,Idx_Stress[0]);
+		ESyy += pcs->GetNodeValue(node_i,Idx_Stress[1]);
+		ESzz += pcs->GetNodeValue(node_i,Idx_Stress[2]);
+		ESxy += pcs->GetNodeValue(node_i,Idx_Stress[3]);
+		if(eleV_DM->pStrain)      //08.02.2008 WW
+			Pls  += pcs->GetNodeValue(node_i,idx_pls);
 
-			pcs->SetNodeValue(node_i, Idx_Stress[0], ESxx);
-			pcs->SetNodeValue(node_i, Idx_Stress[1], ESyy);
-			pcs->SetNodeValue(node_i, Idx_Stress[2], ESzz);
-			pcs->SetNodeValue(node_i, Idx_Stress[3], ESxy);
-			if (eleV_DM->pStrain) // 08.02.2008 WW
-				pcs->SetNodeValue(node_i, idx_pls, fabs(Pls));
+		pcs->SetNodeValue (node_i, Idx_Stress[0], ESxx);
+		pcs->SetNodeValue (node_i, Idx_Stress[1], ESyy);
+		pcs->SetNodeValue (node_i, Idx_Stress[2], ESzz);
+		pcs->SetNodeValue (node_i, Idx_Stress[3], ESxy);
+		if(eleV_DM->pStrain)      //08.02.2008 WW
+			pcs->SetNodeValue (node_i, idx_pls, fabs(Pls));
 
-			if (ele_dim == 3)
-			{
-				ESxz /= dbuff[i];
-				ESyz /= dbuff[i];
+		if(ele_dim == 3)
+		{
+			ESxz /= dbuff[i];
+			ESyz /= dbuff[i];
 
 				ESxz += pcs->GetNodeValue(node_i, Idx_Stress[4]);
 				ESyz += pcs->GetNodeValue(node_i, Idx_Stress[5]);
