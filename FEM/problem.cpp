@@ -3781,6 +3781,11 @@ inline void Problem::LOPExecuteRegionalRichardsFlow(CRFProcess* m_pcs_global, in
 		//....................................................................
 		m_pcs_local->m_msh = m_msh_local;
 		m_pcs_local->Create();
+
+		m_pcs_local->fem->setShapeFunctionPool(m_pcs_global->fem->getShapeFunctionPool(0),
+			                                   m_pcs_global->fem->getShapeFunctionPool(1));
+
+		m_pcs_local->SetBoundaryConditionAndSourceTerm();
 		//....................................................................
 		// BC
 		//....................................................................

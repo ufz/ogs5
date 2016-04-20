@@ -99,6 +99,11 @@ public:
 		_shape_function_pool_ptr[1] = quad_shape_fct_pool;
 	};
 
+	ShapeFunctionPool* getShapeFunctionPool(int order_id) const
+	{
+		return _shape_function_pool_ptr[order_id];
+	}
+
 	// Get Gauss integration information
 	double GetGaussData(int gp, int& gp_r, int& gp_s, int& gp_t);
 
