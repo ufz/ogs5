@@ -3795,8 +3795,9 @@ void COutput::CalculateTotalFlux(CFEMesh* msh, vector<long>& nodes_on_geo, vecto
 				fac = 0.5; // Not a surface face
 			face->SetFace(elem, j);
 			face->SetOrder(msh->getOrder());
+			face->FillTransformMatrix();
 			face->ComputeVolume();
-			face->SetNormalVector();
+			face->SetNormalVector();  // to get it directly from TransformMatrix
 			face->DirectNormalVector();
 			fem_assembler->setOrder(msh->getOrder() + 1);
 			fem_assembler->ConfigElement(face, true); // 2D fem
