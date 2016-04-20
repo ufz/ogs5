@@ -36,7 +36,7 @@ namespace FiniteElement
    Last modified:
 **************************************************************************/
 CElement::CElement(int CoordFlag, const int order)
-	: MeshElement(NULL), Order(order), ele_dim(1), nGaussPoints(1), nGauss(3),
+	: MeshElement(NULL), Order(order), ele_dim(1), nGaussPoints(1), nGauss(2),
 	  ShapeFunction(NULL), ShapeFunctionHQ(NULL),
 	  GradShapeFunction(NULL), GradShapeFunctionHQ(NULL), _is_mixed_order(false),
 	  T_Flag(false), C_Flag(false), F_Flag(false), D_Flag(0), RD_Flag(false),
@@ -262,7 +262,6 @@ void CElement::ConfigElement(CElem* MElement, const bool FaceIntegration)
 			Z[i] = coords[2];
 		}
 	}
-
 #if defined(USE_PETSC) // || defined(other parallel libs)//03~04.3012. WW
 	if(!FaceIntegration)
 	{

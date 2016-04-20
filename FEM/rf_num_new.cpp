@@ -116,7 +116,7 @@ CNumerics::CNumerics(string name)
 		cpl_error_tolerance[i] = -1.0; // JT2012: should not default this. Should always be entered by user!
 	//
 	// ELE
-	ele_gauss_points = 3;
+	ele_gauss_points = 2;
 	ele_mass_lumping = 0;
 	ele_upwind_method = 0; // CB
 	ele_upwinding = 0;
