@@ -915,8 +915,6 @@ void CRFProcess::Create()
 	if (PCSSetIC_USER)
 		PCSSetIC_USER(pcs_type_number);
 
-	if (compute_domain_face_normal) // WW
-		m_msh->FaceNormal();
 	/// Variable index for equation. 20.08.2010. WW
 	if (p_var_index)
 		for (int i = 0; i < pcs_number_of_primary_nvals; i++)
@@ -5699,11 +5697,11 @@ else
 //
 //
 
-//		  MXDumpGLS("rf_pcs1.txt",1,eqs->b,eqs->x); //abort();
-#if defined(USE_PETSC) // || defined(other parallel libs)//03~04.3012.
-	MPI_Barrier(MPI_COMM_WORLD);
-//	eqs_new->AssembleRHS_PETSc();
-// eqs_new->AssembleMatrixPETSc(MAT_FINAL_ASSEMBLY );
+		//				MXDumpGLS("rf_pcs1.txt",1,eqs->b,eqs->x); //abort();
+#if defined(USE_PETSC)  // || defined(other parallel libs)//03~04.3012.
+		MPI_Barrier (MPI_COMM_WORLD);
+		  //	eqs_new->AssembleRHS_PETSc();
+		//eqs_new->AssembleMatrixPETSc(MAT_FINAL_ASSEMBLY );
 #endif
 }
 

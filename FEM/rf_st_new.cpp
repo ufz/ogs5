@@ -3162,26 +3162,28 @@ void CSourceTermGroup::SetPNT(CRFProcess* pcs, CSourceTerm* st, const int ShiftI
 		std::cout << "      - Green-Ampt" << std::endl;
 	}
 
-	if (st->getProcessDistributionType() == FiniteElement::SYSTEM_DEPENDENT)
-	{
-		nod_val->setProcessDistributionType(st->getProcessDistributionType());
-		pcs->compute_domain_face_normal = true; // WW
-		CElem* elem = NULL;
-		CNode* cnode = NULL; // WW
-		for (size_t i = 0; i < m_msh->ele_vector.size(); i++)
-		{
-			elem = m_msh->ele_vector[i];
-			if (!elem->GetMark())
-				continue;
-			int nn = elem->GetNodesNumber(m_msh->getOrder());
-			for (long j = 0; j < nn; j++)
-			{
-				cnode = elem->GetNode(j); // WW
-				if (cnode->GetIndex() == (size_t)st->geo_node_number)
-					st->element_st_vector.push_back(i);
-			}
-		}
-	}
+   if (st->getProcessDistributionType() == FiniteElement::SYSTEM_DEPENDENT)
+   {
+      nod_val->setProcessDistributionType (st->getProcessDistributionType());
+      pcs->compute_domain_face_normal = true;     //WW
+      m_msh->FaceNormal();
+
+      CElem* elem = NULL;
+      CNode* cnode = NULL;                        //WW
+      for (size_t i = 0; i < m_msh->ele_vector.size(); i++)
+      {
+         elem = m_msh->ele_vector[i];
+         if (!elem->GetMark())
+            continue;
+         int nn = elem->GetNodesNumber(m_msh->getOrder());
+         for (long j = 0; j < nn; j++)
+         {
+            cnode = elem->GetNode(j);             //WW
+            if (cnode->GetIndex() == (size_t)st->geo_node_number)
+               st->element_st_vector.push_back(i);
+         }
+      }
+   }
 
 	if (st->getProcessDistributionType() == FiniteElement::TRANSFER_SURROUNDING)
 	{ // TN - Belegung mit Fl�chenelementen
@@ -3750,6 +3752,8 @@ void CSourceTermGroup::SetPolylineNodeValueVector(CSourceTerm* st,
 		}
 	} else if (distype == FiniteElement::SYSTEM_DEPENDENT) { //System Dependented YD
 		m_pcs->compute_domain_face_normal = true; //WW
+		m_msh->FaceNormal();
+
 		long no_face = (long) m_msh->face_vector.size();
 		for (long i = 0; i < no_face; i++) {
 			int node_on_line = 0;

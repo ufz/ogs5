@@ -4302,6 +4302,10 @@ void Problem::createShapeFunctionPool()
 	for (std::size_t i = 0; i < pcs_vector.size(); i++)
 	{
 		CRFProcess* pcs = pcs_vector[i];
+		if (   pcs->getProcessType() == FiniteElement::FLUID_MOMENTUM
+			|| pcs->getProcessType() == FiniteElement::RANDOM_WALK)
+			 continue;
+
 		if (   pcs->getProcessType() == FiniteElement::DEFORMATION
 			|| pcs->getProcessType() == FiniteElement::DEFORMATION_DYNAMIC
 			|| pcs->getProcessType() == FiniteElement::DEFORMATION_FLOW
@@ -4414,6 +4418,10 @@ void Problem::createShapeFunctionPool()
 	for (std::size_t i = 0; i < pcs_vector.size(); i++)
 	{
 		CRFProcess* pcs = pcs_vector[i];
+		if (   pcs->getProcessType() == FiniteElement::FLUID_MOMENTUM
+			|| pcs->getProcessType() == FiniteElement::RANDOM_WALK)
+			 continue;
+
 		if ( pcs->getProcessType() == FiniteElement::DEFORMATION )
 		{
 			CRFProcessDeformation* dm_pcs = dynamic_cast<CRFProcessDeformation*>(pcs);
