@@ -229,8 +229,9 @@ protected:
 	// Order of shape functions
 	// Displacement, 2. Others, 1. Default, 1
 	int Order;
-	size_t ele_dim;                          // Dimension of element
-	size_t dim;                              // Dimension of real dimension
+	size_t ele_dim;                       // Dimension of element
+	size_t dim;                           // Dimension of real dimension
+	size_t dim_grad;                      // Gradient dimension
 	int nGaussPoints;                     // Number of Gauss points
 	int nGauss;                           // Number of sample points for Gauss integration
 	int gp;                               // Gauss point index.
