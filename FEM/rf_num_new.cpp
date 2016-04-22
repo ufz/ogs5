@@ -203,8 +203,18 @@ bool NUMRead(string file_base_name)
 	{
 		num_file.getline(line, MAX_ZEILE);
 		line_string = line;
-		if (line_string.find("#STOP") != string::npos)
+		if(line_string.find("#STOP") != string::npos)
+		{
+			// Unify the number of integration points.
+			if (max_num_integration_pnts > 3)
+				max_num_integration_pnts = 3;
+			for (std::size_t i=0; i<num_vector.size(); i++)
+			{
+				num_vector[i]->ele_gauss_points = max_num_integration_pnts;
+			}
+
 			return true;
+		}
 		//
 		if (line_string.find("$OVERALL_COUPLING") != string::npos)
 		{
@@ -225,12 +235,6 @@ bool NUMRead(string file_base_name)
 			m_num->NumConfigure(overall_coupling_exists);					  // JT2012
 		}                         // keyword found
 	}                                     // eof
-
-	// Unify the number of integration points.
-	for (std::size_t i=0; i<num_vector.size(); i++)
-	{
-		num_vector[i]->ele_gauss_points = max_num_integration_pnts;
-	}
 
 	return true;
 }
