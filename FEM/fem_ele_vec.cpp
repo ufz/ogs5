@@ -2680,6 +2680,11 @@ void CFiniteElementVec::ExtropolateGuassStrain()
 					dbuff[i] = 1;
 			}
 		}
+	}
+
+	// l1=l2=l3=l4=0;
+	MshElemType::type ElementType = MeshElement->GetElementType();
+	CalcXi_p();
 
 	//
 	int i_s, i_e, ish;
@@ -2805,6 +2810,7 @@ void CFiniteElementVec::ExtropolateGuassStress()
 		idx_pls =  pcs->GetNodeValueIndex("STRAIN_PLS");
 	//
 	MshElemType::type ElementType = MeshElement->GetElementType();
+	SetIntegrationPointNumber(ElementType);
 	for(gp = 0; gp < nGaussPoints; gp++)
 	{
 		int gp_r, gp_s, gp_t;
@@ -2854,8 +2860,7 @@ void CFiniteElementVec::ExtropolateGuassStress()
 		}
 	}
 	//
-	if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
-		Xi_p = CalcXi_p();
+	CalcXi_p();
 
 	//
 	int i_s, i_e, ish;

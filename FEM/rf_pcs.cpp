@@ -5697,7 +5697,7 @@ else
 //
 //
 
-		//				MXDumpGLS("rf_pcs1.txt",1,eqs->b,eqs->x); //abort();
+		//	MXDumpGLS("rf_pcs1.txt",1,eqs->b,eqs->x); //abort();
 #if defined(USE_PETSC)  // || defined(other parallel libs)//03~04.3012.
 		MPI_Barrier (MPI_COMM_WORLD);
 		  //	eqs_new->AssembleRHS_PETSc();
@@ -8013,25 +8013,12 @@ void CRFProcess::IncorporateSourceTerms(const int rank)
 						if (elem->GetMark())
 						{
 							fem->ConfigElement(elem);
-							if(getProcessType() == FiniteElement::MULTI_COMPONENTIAL_FLOW)	fem->Cal_VelocityMCF();
+							fem->Config();
+
+							if(getProcessType() == FiniteElement::MULTI_COMPONENTIAL_FLOW)
+								fem->Cal_VelocityMCF();
 							else
-							fem->Cal_Velocity();
-					}
-					gp_ele = ele_gp_value[ele_index];
-					gp_ele->GetEleVelocity(vel);
-					EleType = elem->GetElementType();
-					if (EleType == MshElemType::LINE) // Line
-						cnodev->node_value += vel[0];
-					// Traingle & Qua
-					if (EleType == MshElemType::TRIANGLE || EleType == MshElemType::QUAD)
-					{
-						for (size_t i_face = 0; i_face < m_msh->face_vector.size(); i_face++)
-						{
-							face = m_msh->face_vector[i_face];
-							if ((size_t)m_st->element_st_vector[i_st] == face->GetOwner()->GetIndex())
-								//
-								q_face = PointProduction(vel, m_msh->face_normal[i_face]) * face->GetVolume();
-							// for(i_node)
+								fem->Cal_Velocity();
 						}
 						cnodev->node_value = +q_face / 2;
 					}

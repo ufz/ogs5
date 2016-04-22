@@ -6209,11 +6209,6 @@ void CFiniteElementStd::CalcSolidDensityRate()
 	// Find out material group - TN
 	// const long group = MeshElement->GetPatchIndex();
 
-	// Get room in the memory for local matrices
-	SetMemory();
-	// Set material
-	SetMaterial();
-
 	ElementValue* gp_ele = ele_gp_value[Index];
 
 	// loop over all Gauss points
@@ -6338,11 +6333,6 @@ void CFiniteElementStd::Cal_Velocity()
 		dof_n = 3;
 	//
 	gp_t = 0;
-
-	// Get room in the memory for local matrices
-	SetMemory();
-	// Set material
-	SetMaterial();
 
 	ElementValue* gp_ele = ele_gp_value[Index];
 
@@ -6619,8 +6609,6 @@ void CFiniteElementStd::Cal_VelocityMCF()
 	double arg_PV[6], gravity_vector[3], rho;
 	int gp_r = 0, gp_s = 0, gp_t;
 	gp_t = 0;
-	SetMemory();
-	SetMaterial();
 	ElementValue* gp_ele = ele_gp_value[Index];
 	for (size_t k = 0; k < dim; k++)
 		gravity_vector[k] = 0.0;
@@ -6922,11 +6910,6 @@ void CFiniteElementStd::Cal_Velocity_2()
 	if (PcsType == EPT_MULTIPHASE_FLOW)
 		dof_n = 2;
 	//
-
-	// Get room in the memory for local matrices
-	SetMemory();
-	// Set material
-	SetMaterial();
 
 	ElementValue* gp_ele = ele_gp_value[Index];
 
@@ -9422,7 +9405,8 @@ void CFiniteElementStd::ExtropolateGauss(MeshLib::CElem& elem, CRFProcess* m_pcs
 	double EV, EV1 = 0.0, varx = 0.0;
 	gp_r = gp_s = gp_t = gp = 0;
 	//
-	for (gp = 0; gp < nGaussPoints; gp++)
+	SetIntegrationPointNumber(ElementType);
+	for(gp = 0; gp < nGaussPoints; gp++)
 	{
 		int i = gp;
 		SetGaussPoint(gp, gp_r, gp_s, gp_t);
@@ -9441,8 +9425,7 @@ void CFiniteElementStd::ExtropolateGauss(MeshLib::CElem& elem, CRFProcess* m_pcs
 			NodalVal2[i] = gp_ele->Velocity_g(idof, gp) * time_unit_factor;
 	}
 
-	if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
-		Xi_p = CalcXi_p();
+	CalcXi_p();
 
 	//
 	i_s = 0;
@@ -9547,7 +9530,8 @@ void CFiniteElementStd::ExtrapolateGauss_ReactRate_TNEQ_TES
 	ElementValue* gp_ele = ele_gp_value[MeshElement->GetIndex()];
 
 	// loop over all gauss points
-	for (gp = 0; gp < nGaussPoints; gp++)
+	SetIntegrationPointNumber(ElementType);
+	for(gp=0; gp<nGaussPoints; gp++)
 	{
 		SetGaussPoint(gp, gp_r, gp_s, gp_t);
 		if(ElementType==MshElemType::QUAD||ElementType==MshElemType::HEXAHEDRON)
@@ -9564,8 +9548,7 @@ void CFiniteElementStd::ExtrapolateGauss_ReactRate_TNEQ_TES
 		NodalVal5[i] = gp_ele->rho_s_curr[gp] * time_unit_factor;
 	}
 
-	if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
-		Xi_p = CalcXi_p();
+	CalcXi_p();
 
 	i_s = 0;
 	i_e = nnodes;
@@ -9675,6 +9658,7 @@ void CFiniteElementStd::CalcSatuation(MeshLib::CElem& elem)
 	// for PG = interpolate(NodalVal0);
 	const MshElemType::type ElementType = MeshElement->GetElementType();
 	getShapeFunctionPtr(ElementType);
+	SetIntegrationPointNumber(ElementType);
 	for(gp = 0; gp < nGaussPoints; gp++)
 	{
 		SetGaussPoint(gp, gp_r, gp_s, gp_t);
@@ -9697,8 +9681,7 @@ void CFiniteElementStd::CalcSatuation(MeshLib::CElem& elem)
 		NodalVal_Sat[i] = MediaProp->SaturationCapillaryPressureFunction(PG);
 	}
 
-	if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
-		Xi_p = CalcXi_p();
+	CalcXi_p();
 
 	//
 	int i_s, i_e, ish;
@@ -9735,6 +9718,7 @@ void CFiniteElementStd::CalcSatuation(MeshLib::CElem& elem)
 		}
 		else if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_AVERAGE)
 			eS = avgSat;
+
 		// Average value of the contribution of ell neighbor elements
 		eS /= dbuff[i];
 		eS += pcs->GetNodeValue(nodes[i], idx_S);
@@ -9818,6 +9802,7 @@ void CFiniteElementStd::CalcNodeMatParatemer(MeshLib::CElem& elem)
 	gp_r = gp_s = gp_t = gp = 0;
 	// for PG = interpolate(NodalVal0);
 	getShapeFunctionPtr(MeshElement->GetElementType());
+	SetIntegrationPointNumber(ElementType);
 	for(gp = 0; gp < nGaussPoints; gp++)
 	{
 		SetGaussPoint(gp, gp_r, gp_s, gp_t);
@@ -9861,8 +9846,7 @@ void CFiniteElementStd::CalcNodeMatParatemer(MeshLib::CElem& elem)
 			NodalVal0[i] = MediaProp->Porosity(MeshElement->index, 1.0);
 	}
 	//
-	if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
-		Xi_p = CalcXi_p();
+	Xi_p = CalcXi_p();
 	//
 	i_s = 0;
 	i_e = nnodes;
