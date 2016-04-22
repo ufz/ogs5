@@ -1334,12 +1334,14 @@ void CElement::SetExtropoGaussPoints(const int i)
 			}
 			break;
 		case MshElemType::LINE:
+			unit[0] = -Xi_p;
+			unit[1] = Xi_p;
 			break;
 		case MshElemType::PYRAMID: // WW. 09.2012. WW
 			SamplePointPyramid5(i, unit);
 			break;
 		default:
-			unit[0] = unit[1] = unit[2] = 0.; // 07.01.2011. WW
+			unit[0] = unit[1] = unit[2] = 0.; //07.01.2011. WW
 			break;
 	}
 }
@@ -1351,9 +1353,10 @@ void CElement::SetExtropoGaussPoints(const int i)
  **************************************************************************/
 double CElement::CalcXi_p()
 {
-	double Xi_p = 0.0;
 	MshElemType::type ElementType = MeshElement->GetElementType();
-	if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
+	if (  ElementType == MshElemType::LINE
+		|| ElementType == MshElemType::QUAD
+		|| ElementType == MshElemType::HEXAHEDRON)
 	{
 		double r = .0;
 		for (gp = 0; gp < nGauss; gp++)
@@ -1364,9 +1367,10 @@ double CElement::CalcXi_p()
 		}
 		r = 1.0 / Xi_p;
 		Xi_p = r;
+		return Xi_p;
 	}
-
-	return Xi_p;
+	else
+		return 0.;
 }
 
 /***************************************************************************
