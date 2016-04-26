@@ -711,14 +711,23 @@ void CFiniteElementVec::ComputeStrain(const int ip)
 					dstrain[2] += Disp[j] * dshapefctHQ[j];
 					dstrain[3] += Disp[i] * dshapefctHQ[j] + Disp[j] * dshapefctHQ[i];
 				}
+
+				calculateRadius(ip);
 				dstrain[1] /= Radius;
 			}
-
-			calculateRadius(ip);
-			dstrain[1] /= Radius;
-		}
-		else
-			for(i = 0; i < nnodesHQ; i++)
+			else
+				for (i = 0; i < nnodesHQ; i++)
+				{
+					j = i + nnodesHQ;
+					dstrain[0] += Disp[i] * dshapefctHQ[i];
+					dstrain[1] += Disp[j] * dshapefctHQ[j];
+					dstrain[3] += Disp[i] * dshapefctHQ[j] + Disp[j] * dshapefctHQ[i];
+				}
+			break;
+		case 3:
+			for (i = 0; i < ns; i++)
+				dstrain[i] = 0.0;
+			for (i = 0; i < nnodesHQ; i++)
 			{
 				j = i + nnodesHQ;
 				k = i + 2 * nnodesHQ;
@@ -769,11 +778,11 @@ double CFiniteElementVec::CalDensity()
 		if (smat->Density() > 0.0)
 		{
 			Sw = 1.0; // JT, should be 1.0, unless multiphase (calculate below) (if unsaturated, fluid density would be
-			// negligible... so still works)
+			          // negligible... so still works)
 			if (Flow_Type > 0 && Flow_Type != 10)
 			{
-				Sw = 0.; //WW
-				for(i = 0; i < nnodes; i++)
+				Sw = 0.; // WW
+				for (i = 0; i < nnodes; i++)
 					Sw += shapefct[i] * AuxNodal_S[i];
 			}
 			rho = (1. - porosity) * fabs(smat->Density()) + porosity * Sw * density_fluid;
@@ -935,11 +944,11 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 							dN_dx += shapefctHQ[ka] / Radius;
 
 						f_buff = fac * dN_dx * shapefct[l];
-						(*PressureC)(nnodesHQ * j + ka, l) += f_buff;
+						(*PressureC)(nnodesHQ* j + ka, l) += f_buff;
 						if (PressureC_S)
-							(*PressureC_S)(nnodesHQ * j + ka, l) += f_buff * fac1;
+							(*PressureC_S)(nnodesHQ* j + ka, l) += f_buff * fac1;
 						if (PressureC_S_dp)
-							(*PressureC_S_dp)(nnodesHQ * j + ka, l) += f_buff * fac2;
+							(*PressureC_S_dp)(nnodesHQ* j + ka, l) += f_buff * fac2;
 					}
 			}
 		}
@@ -956,11 +965,11 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 					for (j = 0; j < ele_dim; j++)
 					{
 						f_buff = fac * dshapefctHQ[nnodesHQ * j + ka] * shapefct[l];
-						(*PressureC)(nnodesHQ * j + ka, l) += f_buff;
+						(*PressureC)(nnodesHQ* j + ka, l) += f_buff;
 						if (PressureC_S)
-							(*PressureC_S)(nnodesHQ * j + ka, l) += f_buff * fac1;
+							(*PressureC_S)(nnodesHQ* j + ka, l) += f_buff * fac1;
 						if (PressureC_S_dp)
-							(*PressureC_S_dp)(nnodesHQ * j + ka, l) += f_buff * fac2;
+							(*PressureC_S_dp)(nnodesHQ* j + ka, l) += f_buff * fac2;
 					}
 			}
 		}
@@ -1072,13 +1081,13 @@ void CFiniteElementVec::LocalAssembly(const int update)
 			for (j = 0; j < nnodesHQ; j++)
 			{
 				// Increment of acceleration, da
-				(*dAcceleration)(i * nnodesHQ + j) = pcs->GetNodeValue(nodes[j], Idx_dm0[i]);
+				(*dAcceleration)(i* nnodesHQ + j) = pcs->GetNodeValue(nodes[j], Idx_dm0[i]);
 				// Increment of displacement
 				// du = v_n*dt+0.5*a_n*dt*dt+0.5*beta2*da*dt*dt
 				// a_n = a_{n+1}-da
 				Disp[j + i * nnodesHQ]
 				    = pcs->GetNodeValue(nodes[j], Idx_Vel[i]) * dt
-				      + 0.5 * dt * dt * (a_n[nodes[j] + NodeShift[i]] + beta2 * (*dAcceleration)(i * nnodesHQ + j));
+				      + 0.5 * dt * dt * (a_n[nodes[j] + NodeShift[i]] + beta2 * (*dAcceleration)(i* nnodesHQ + j));
 			}
 	}
 	else
@@ -1087,8 +1096,8 @@ void CFiniteElementVec::LocalAssembly(const int update)
 				// WX:03.2013 use total disp. if damage or E=f(t) is on, dstress in LocalAssembly_continumm() is also
 				// changed
 				if (smat->Time_Dependent_E_nv_mode > MKleinsteZahl && pcs->ExcavMaterialGroup < 0)
-					Disp[j + i * nnodesHQ]
-					    = pcs->GetNodeValue(nodes[j], Idx_dm0[i]) + pcs->GetNodeValue(nodes[j], Idx_dm0[i] + 1);
+					Disp[j + i * nnodesHQ] = pcs->GetNodeValue(nodes[j], Idx_dm0[i])
+					                         + pcs->GetNodeValue(nodes[j], Idx_dm0[i] + 1);
 				else
 					Disp[j + i * nnodesHQ] = pcs->GetNodeValue(nodes[j], Idx_dm0[i]);
 
@@ -1575,10 +1584,10 @@ void CFiniteElementVec::GlobalAssembly_PressureCoupling(Matrix* pCMatrix, double
 			{
 #ifdef NEW_EQS
 				(*A)(NodeShift[k] + eqs_number[i], NodeShift[dim_shift] + eqs_number[j])
-				    += fct * (*pCMatrix)(nnodesHQ * k + i, j);
+				    += fct * (*pCMatrix)(nnodesHQ* k + i, j);
 #else
 				MXInc(NodeShift[k] + eqs_number[i], NodeShift[dim_shift] + eqs_number[j],
-				      fct * (*pCMatrix)(nnodesHQ * k + i, j));
+				      fct * (*pCMatrix)(nnodesHQ* k + i, j));
 #endif
 			}
 		}
@@ -1612,8 +1621,8 @@ void CFiniteElementVec::ComputeMass()
 		//  Compute Jacobian matrix and its determinate
 		//---------------------------------------------------------
 		fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
-		getShapefunctValues(gp, 1); //need for density calculation
-		getShapefunctValues(gp, 2);       // Quadratic interpolation function
+		getShapefunctValues(gp, 1); // need for density calculation
+		getShapefunctValues(gp, 2); // Quadratic interpolation function
 		fkt *= CalDensity();
 
 		for (i = 0; i < nnodesHQ; i++)
@@ -1985,7 +1994,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				for (j = 0; j < nnodesHQ; j++)
 					for (k = 0; k < nnodesHQ; k++)
 						(*RHS)[i * nnodesHQ + j]
-						    += (*Mass)(j, k) * ((*dAcceleration)(i * nnodesHQ + k) + a_n[nodes[k] + NodeShift[i]]);
+						    += (*Mass)(j, k) * ((*dAcceleration)(i* nnodesHQ + k) + a_n[nodes[k] + NodeShift[i]]);
 
 // RHS->Write();
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//06.2013. WW
@@ -2148,106 +2157,21 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			else
 				*De = *(smat->getD_tran()); // UJG/WW
 		}
-		else
-			*De = *(smat->getD_tran());  // UJG/WW
-	}
-	//WX: 06.2012 E depends on stress, strain ...
-	if(smat->E_Function_Model>0)
-	{
-		double tmp_value=1;
-		tmp_value=smat->E_Function(ele_dim, eleV_DM, nGaussPoints);
-		*De *= tmp_value;
-	}
-
-	if(PModel == 5)
-		smat->CalculateCoefficent_HOEKBROWN();  //WX:02.2011
-	/*
-	   string fname=FileName+"_D.txt";
-	   ofstream out_f(fname.c_str());
-	   De->Write(out_f);
-	 */
-
-	/*
-	   //TEST
-	   fstream oss;
-	   if(update)
-	   {
-	   char tf_name[10];
-	   #ifdef USE_MPI
-	   sprintf(tf_name,"%d",myrank);
-	    string fname = FileName+tf_name+".stress";
-	   #else
-	    string fname = FileName+".stress";
-	   #endif
-	   oss.open(fname.c_str(), ios::app|ios::out);
-	   //    oss.open(fname.c_str(), ios::trunc|ios::out);
-	   oss<<"\nElement  "<<Index<<"\n";
-	   oss<<"\n";
-
-	   oss<<"Diaplacement "<<"\n";
-	   for(i=0;i<nnodesHQ;i++)
-	   {
-	   oss<<nodes[i]<<"  ";
-	   for(int ii=0; ii<dim; ii++)
-	   oss<<Disp[ii*nnodesHQ+i]<<"  ";
-	   oss<<"\n";
-	   }
-	   oss<<"Temperature "<<"\n";
-	   for(i=0; i<nnodes;i++)
-	   oss<<Temp[i]<<"  ";
-	   oss<<"\n";
-	   oss.close();
-	   }
-	 */
-	//
-	if(PoroModel == 4 || T_Flag || smat->Creep_mode > 0)
-		Strain_TCS = true;
-	//
-	if(smat->CreepModel() == 1000)        //HL_ODS
-		smat->CleanTrBuffer_HL_ODS();
-	// Loop over Gauss points
-	for (gp = 0; gp < nGaussPoints; gp++)
-	{
-		//---------------------------------------------------------
-		//  Get local coordinates and weights
-		//  Compute Jacobian matrix and its determinate
-		//---------------------------------------------------------
-		fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
-
-		//---------------------------------------------------------
-		// Compute geometry
-		//---------------------------------------------------------
-		getGradShapefunctValues(gp, 2);
-		getShapefunctValues(gp, 2);
-		if(smat->Youngs_mode == 2) //WW/UJG. 22.01.2009
+		// WX: 06.2012 E depends on stress, strain ...
+		if (smat->E_Function_Model > 0)
 		{
 			double tmp_value = 1;
 			tmp_value = smat->E_Function(ele_dim, eleV_DM, nGaussPoints);
 			*De *= tmp_value;
 		}
 
-		ComputeStrain(gp);
-		if(update)
-			RecordGuassStrain(gp, gp_r, gp_s, gp_t);
-		if( F_Flag || T_Flag)
-			getShapefunctValues(gp, 1);  // Linear order interpolation function
-		//---------------------------------------------------------
-		// Material properties (Integration of the stress)
-		//---------------------------------------------------------
-		// Initial the stress vector
-		if(PModel != 3)
-		{
-			for (i = 0; i < ns; i++)
-				dstress[i] = 0.0;
-			if(!excavation)//WX:07.2011 nonlinear excavation
-			{
-				//De->Write();
-			De->multi(dstrain, dstress);
-				if(smat->Time_Dependent_E_nv_mode > MKleinsteZahl && pcs->ExcavMaterialGroup < 0)
-					for(i=0; i<ns; i++)
-						dstress[i] -= (*eleV_DM->Stress)(i, gp)-(*eleV_DM->Stress0)(i, gp);
-		}
-		}
+		if (PModel == 5)
+			smat->CalculateCoefficent_HOEKBROWN(); // WX:02.2011
+		/*
+		   string fname=FileName+"_D.txt";
+		   ofstream out_f(fname.c_str());
+		   De->Write(out_f);
+		 */
 
 		/*
 		   //TEST
@@ -2299,19 +2223,19 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			//---------------------------------------------------------
 			// Compute geometry
 			//---------------------------------------------------------
-			ComputeGradShapefct(2);
-			ComputeShapefct(2);
+			getGradShapefunctValues(gp, 2);
+			getShapefunctValues(gp, 2);
 			if (smat->Youngs_mode == 2) // WW/UJG. 22.01.2009
 			{
 				smat->CalcYoungs_SVV(CalcStrain_v());
 				smat->ElasticConsitutive(ele_dim, De);
 			}
 
-			ComputeStrain();
+			ComputeStrain(gp);
 			if (update)
 				RecordGuassStrain(gp, gp_r, gp_s, gp_t);
 			if (F_Flag || T_Flag)
-				ComputeShapefct(1); // Linear order interpolation function
+				getShapefunctValues(gp, 1); // Linear order interpolation function
 			//---------------------------------------------------------
 			// Material properties (Integration of the stress)
 			//---------------------------------------------------------
@@ -2659,15 +2583,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	   06/2004   WW
 	   02/2007   Make it work for all 2nd variables
 	 **************************************************************************/
-void CFiniteElementVec::ExtropolateGuassStrain()
-{
-	//WX:03.2012. if excavation dbuff changed
-	if(pcs->ExcavMaterialGroup>-1)
+	void CFiniteElementVec::ExtropolateGuassStrain()
 	{
-		int tmp_excavstate=-1;
-		for(int i=0;i<nnodes;i++)
+		// WX:03.2012. if excavation dbuff changed
+		if (pcs->ExcavMaterialGroup > -1)
 		{
-			for(size_t jj=0;jj<MeshElement->nodes[i]->getConnectedElementIDs().size();jj++)
+			int tmp_excavstate = -1;
+			for (int i = 0; i < nnodes; i++)
 			{
 				for (size_t jj = 0; jj < MeshElement->nodes[i]->getConnectedElementIDs().size(); jj++)
 				{
@@ -2680,62 +2602,63 @@ void CFiniteElementVec::ExtropolateGuassStrain()
 					dbuff[i] = 1;
 			}
 		}
-	}
 
-	// l1=l2=l3=l4=0;
-	MshElemType::type ElementType = MeshElement->GetElementType();
-	CalcXi_p();
+		// l1=l2=l3=l4=0;
+		MshElemType::type ElementType = MeshElement->GetElementType();
+		CalcXi_p();
 
-	//
-	int i_s, i_e, ish;
-	i_s = 0;
-	i_e = nnodes;
-	ish = 0;
-	if (ElementType == MshElemType::TETRAHEDRON) // tet
-	{
-		i_s = 1;
-		i_e = nnodes + 1;
-		ish = 1;
-	}
-	//---------------------------------------------------------
-	// Mapping Gauss point strains to nodes and update nodes
-	// strains:
-	//---------------------------------------------------------
-	double ESxx, ESyy, ESzz, ESxy, ESxz, ESyz;
-	double avgESxx, avgESyy, avgESzz, avgESxy, avgESxz, avgESyz;
-	avgESxx = avgESyy = avgESzz = avgESxy = avgESxz = avgESyz = 0.0;
-	if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_AVERAGE)
-	{
-		// average
-		avgESxx = CalcAverageGaussPointValues(Sxx);
-		avgESyy = CalcAverageGaussPointValues(Syy);
-		avgESzz = CalcAverageGaussPointValues(Szz);
-		avgESxy = CalcAverageGaussPointValues(Sxy);
-		avgESxz = CalcAverageGaussPointValues(Sxz);
-		avgESyz = CalcAverageGaussPointValues(Syz);
-	}
-
-	ConfigShapefunction(ElementType);
-	for(int i = 0; i < nnodes; i++)
-	{
-		ESxx = ESyy = ESzz = ESxy = ESxz = ESyz = 0.0;
-
-		for (i = 0; i < nnodes; i++)
+		//
+		int i_s, i_e, ish;
+		i_s = 0;
+		i_e = nnodes;
+		ish = 0;
+		if (ElementType == MshElemType::TETRAHEDRON) // tet
 		{
-			SetExtropoGaussPoints(i);
-			ComputeShapefct(1, dbuff0); // Linear interpolation function
-			//
-			for(int j = i_s; j < i_e; j++)
+			i_s = 1;
+			i_e = nnodes + 1;
+			ish = 1;
+		}
+		//---------------------------------------------------------
+		// Mapping Gauss point strains to nodes and update nodes
+		// strains:
+		//---------------------------------------------------------
+		double ESxx, ESyy, ESzz, ESxy, ESxz, ESyz;
+		double avgESxx, avgESyy, avgESzz, avgESxy, avgESxz, avgESyz;
+		avgESxx = avgESyy = avgESzz = avgESxy = avgESxz = avgESyz = 0.0;
+		if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_AVERAGE)
+		{
+			// average
+			avgESxx = CalcAverageGaussPointValues(Sxx);
+			avgESyy = CalcAverageGaussPointValues(Syy);
+			avgESzz = CalcAverageGaussPointValues(Szz);
+			avgESxy = CalcAverageGaussPointValues(Sxy);
+			avgESxz = CalcAverageGaussPointValues(Sxz);
+			avgESyz = CalcAverageGaussPointValues(Syz);
+		}
+
+		ConfigShapefunction(ElementType);
+		for (int i = 0; i < nnodes; i++)
+		{
+			ESxx = ESyy = ESzz = ESxy = ESxz = ESyz = 0.0;
+
+			// Calculate values at nodes
+			if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_LINEAR)
 			{
-				const int k = j - ish;
-				ESxx += Sxx[j] * dbuff0[k];
-				ESyy += Syy[j] * dbuff0[k];
-				ESxy += Sxy[j] * dbuff0[k];
-				ESzz += Szz[j] * dbuff0[k];
-				if(ele_dim == 3)
+				SetExtropoGaussPoints(i);
+				ComputeShapefct(1, dbuff0); // Linear interpolation function
+				//
+				for (int j = i_s; j < i_e; j++)
 				{
-					ESxz += Sxz[j] * dbuff0[k];
-					ESyz += Syz[j] * dbuff0[k];
+					const int k = j - ish;
+					ESxx += Sxx[j] * dbuff0[k];
+					ESyy += Syy[j] * dbuff0[k];
+					ESxy += Sxy[j] * dbuff0[k];
+					ESzz += Szz[j] * dbuff0[k];
+					if (ele_dim == 3)
+					{
+						ESxz += Sxz[j] * dbuff0[k];
+						ESyz += Syz[j] * dbuff0[k];
+					}
 				}
 			}
 			else if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_AVERAGE)
@@ -2781,68 +2704,48 @@ void CFiniteElementVec::ExtropolateGuassStrain()
 		}
 	}
 
-/***************************************************************************
-   GeoSys - Funktion:
-           CFiniteElementVec::ExtropolateGuassStress()
-   Aufgabe:
-           Extropolate the Gauss point strains to nodes
-   Formalparameter:
-           E:
+	/***************************************************************************
+	   GeoSys - Funktion:
+	           CFiniteElementVec::ExtropolateGuassStress()
+	   Aufgabe:
+	           Extropolate the Gauss point strains to nodes
+	   Formalparameter:
+	           E:
 
-   Programming:
-   06/2004   WW
-   03/2007   WW  Generize for all 2nd variables
- **************************************************************************/
-void CFiniteElementVec::ExtropolateGuassStress()
-{
-	// For strain and stress extropolation all element types
-	// Number of elements associated to nodes
-	nnodes = MeshElement->nnodes;
-	// Node indices
-	for(int i = 0; i < nnodes; i++)
+	   Programming:
+	   06/2004   WW
+	   03/2007   WW  Generize for all 2nd variables
+	 **************************************************************************/
+	void CFiniteElementVec::ExtropolateGuassStress()
 	{
-		nodes[i] = MeshElement->nodes[i]->GetIndex();
-		dbuff[i] = (double)MeshElement->nodes[i]->getConnectedElementIDs().size();
-	}
-	//
-	eleV_DM = ele_value_dm[MeshElement->GetIndex()];
-	if(eleV_DM->pStrain)                  //08.02.2008 WW
-		idx_pls =  pcs->GetNodeValueIndex("STRAIN_PLS");
-	//
-	MshElemType::type ElementType = MeshElement->GetElementType();
-	SetIntegrationPointNumber(ElementType);
-	for(gp = 0; gp < nGaussPoints; gp++)
-	{
-		int gp_r, gp_s, gp_t;
-		gp_r = gp_s = gp_t = 0;
-		SetGaussPoint(gp, gp_r, gp_s, gp_t);
-		int i = gp;
-		if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
+		// For strain and stress extropolation all element types
+		// Number of elements associated to nodes
+		nnodes = MeshElement->nnodes;
+		// Node indices
+		for (int i = 0; i < nnodes; i++)
 		{
-			i = GetLocalIndex(gp_r, gp_s, gp_t);
-			if(i == -1)
-				continue;
+			nodes[i] = MeshElement->nodes[i]->GetIndex();
+			dbuff[i] = (double)MeshElement->nodes[i]->getConnectedElementIDs().size();
 		}
-
-		Sxx[i] = (*eleV_DM->Stress)(0,gp);
-		Syy[i] = (*eleV_DM->Stress)(1,gp);
-		Szz[i] = (*eleV_DM->Stress)(2,gp);
-		Sxy[i] = (*eleV_DM->Stress)(3,gp);
-		if(eleV_DM->pStrain)
-			pstr[i] = (*eleV_DM->pStrain)(gp);
-		else
-			pstr[i] = 0.0;  //08.02.2008 WW
-		if(ele_dim == 3)
+		//
+		eleV_DM = ele_value_dm[MeshElement->GetIndex()];
+		if (eleV_DM->pStrain) // 08.02.2008 WW
+			idx_pls = pcs->GetNodeValueIndex("STRAIN_PLS");
+		//
+		MshElemType::type ElementType = MeshElement->GetElementType();
+		SetIntegrationPointNumber(ElementType);
+		for (gp = 0; gp < nGaussPoints; gp++)
 		{
+			int gp_r, gp_s, gp_t;
+			gp_r = gp_s = gp_t = 0;
+			SetGaussPoint(gp, gp_r, gp_s, gp_t);
+			int i = gp;
 			if (ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
 			{
-				SetGaussPoint(gp, gp_r, gp_s, gp_t);
 				i = GetLocalIndex(gp_r, gp_s, gp_t);
 				if (i == -1)
 					continue;
 			}
-			else
-				i = gp;
 
 			Sxx[i] = (*eleV_DM->Stress)(0, gp);
 			Syy[i] = (*eleV_DM->Stress)(1, gp);
@@ -2858,64 +2761,65 @@ void CFiniteElementVec::ExtropolateGuassStress()
 				Syz[i] = (*eleV_DM->Stress)(5, gp);
 			}
 		}
-	}
-	//
-	CalcXi_p();
+		//
+		CalcXi_p();
 
-	//
-	int i_s, i_e, ish;
-	i_s = 0;
-	i_e = nnodes;
-	ish = 0;
-	if(ElementType == MshElemType::TETRAHEDRON) // tet
-	{
-		i_s = 1;
-		i_e = nnodes + 1;
-		ish = 1;
-	}
-	//---------------------------------------------------------
-	// Mapping Gauss point strains to nodes and update nodes
-	// strains:
-	//---------------------------------------------------------
-	double ESxx, ESyy, ESzz, ESxy, ESxz, ESyz, Pls;
-	double avgESxx, avgESyy, avgESzz, avgESxy, avgESxz, avgESyz, avgPls;
-	avgESxx = avgESyy = avgESzz = avgESxy = avgESxz = avgESyz = avgPls = 0.0;
-	if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_AVERAGE)
-	{
-		// average
-		avgESxx = CalcAverageGaussPointValues(Sxx);
-		avgESyy = CalcAverageGaussPointValues(Syy);
-		avgESzz = CalcAverageGaussPointValues(Szz);
-		avgESxy = CalcAverageGaussPointValues(Sxy);
-		avgESxz = CalcAverageGaussPointValues(Sxz);
-		avgESyz = CalcAverageGaussPointValues(Syz);
-		avgPls = CalcAverageGaussPointValues(pstr);
-	}
-
-	ConfigShapefunction(ElementType);
-	for(int i = 0; i < nnodes; i++)
-	{
-		ESxx = ESyy = ESzz = ESxy = ESxz = ESyz = Pls = 0.0;
-
-		for (i = 0; i < nnodes; i++)
+		//
+		int i_s, i_e, ish;
+		i_s = 0;
+		i_e = nnodes;
+		ish = 0;
+		if (ElementType == MshElemType::TETRAHEDRON) // tet
 		{
-			//
-			SetExtropoGaussPoints(i);
-			//
-			ComputeShapefct(1, dbuff0); // Linear interpolation function
-			//
-			for(int j = i_s; j < i_e; j++)
+			i_s = 1;
+			i_e = nnodes + 1;
+			ish = 1;
+		}
+		//---------------------------------------------------------
+		// Mapping Gauss point strains to nodes and update nodes
+		// strains:
+		//---------------------------------------------------------
+		double ESxx, ESyy, ESzz, ESxy, ESxz, ESyz, Pls;
+		double avgESxx, avgESyy, avgESzz, avgESxy, avgESxz, avgESyz, avgPls;
+		avgESxx = avgESyy = avgESzz = avgESxy = avgESxz = avgESyz = avgPls = 0.0;
+		if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_AVERAGE)
+		{
+			// average
+			avgESxx = CalcAverageGaussPointValues(Sxx);
+			avgESyy = CalcAverageGaussPointValues(Syy);
+			avgESzz = CalcAverageGaussPointValues(Szz);
+			avgESxy = CalcAverageGaussPointValues(Sxy);
+			avgESxz = CalcAverageGaussPointValues(Sxz);
+			avgESyz = CalcAverageGaussPointValues(Syz);
+			avgPls = CalcAverageGaussPointValues(pstr);
+		}
+
+		ConfigShapefunction(ElementType);
+		for (int i = 0; i < nnodes; i++)
+		{
+			ESxx = ESyy = ESzz = ESxy = ESxz = ESyz = Pls = 0.0;
+
+			// Calculate values at nodes
+			if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_LINEAR)
 			{
-				int k = j - ish;
-				ESxx += Sxx[j] * dbuff0[k];
-				ESyy += Syy[j] * dbuff0[k];
-				ESxy += Sxy[j] * dbuff0[k];
-				ESzz += Szz[j] * dbuff0[k];
-				Pls += pstr[j] * dbuff0[k];
-				if(ele_dim == 3)
+				//
+				SetExtropoGaussPoints(i);
+				//
+				ComputeShapefct(1, dbuff0); // Linear interpolation function
+				//
+				for (int j = i_s; j < i_e; j++)
 				{
-					ESxz += Sxz[j] * dbuff0[k];
-					ESyz += Syz[j] * dbuff0[k];
+					int k = j - ish;
+					ESxx += Sxx[j] * dbuff0[k];
+					ESyy += Syy[j] * dbuff0[k];
+					ESxy += Sxy[j] * dbuff0[k];
+					ESzz += Szz[j] * dbuff0[k];
+					Pls += pstr[j] * dbuff0[k];
+					if (ele_dim == 3)
+					{
+						ESxz += Sxz[j] * dbuff0[k];
+						ESyz += Syz[j] * dbuff0[k];
+					}
 				}
 			}
 			else if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_AVERAGE)
@@ -2933,32 +2837,32 @@ void CFiniteElementVec::ExtropolateGuassStress()
 				}
 			}
 
-		// Average value of the contribution of ell neighbor elements
-		ESxx /= dbuff[i];
-		ESyy /= dbuff[i];
-		ESxy /= dbuff[i];
-		ESzz /= dbuff[i];
-		Pls /= dbuff[i];
-		//
-		long node_i = nodes[i];
-		ESxx += pcs->GetNodeValue(node_i,Idx_Stress[0]);
-		ESyy += pcs->GetNodeValue(node_i,Idx_Stress[1]);
-		ESzz += pcs->GetNodeValue(node_i,Idx_Stress[2]);
-		ESxy += pcs->GetNodeValue(node_i,Idx_Stress[3]);
-		if(eleV_DM->pStrain)      //08.02.2008 WW
-			Pls  += pcs->GetNodeValue(node_i,idx_pls);
+			// Average value of the contribution of ell neighbor elements
+			ESxx /= dbuff[i];
+			ESyy /= dbuff[i];
+			ESxy /= dbuff[i];
+			ESzz /= dbuff[i];
+			Pls /= dbuff[i];
+			//
+			long node_i = nodes[i];
+			ESxx += pcs->GetNodeValue(node_i, Idx_Stress[0]);
+			ESyy += pcs->GetNodeValue(node_i, Idx_Stress[1]);
+			ESzz += pcs->GetNodeValue(node_i, Idx_Stress[2]);
+			ESxy += pcs->GetNodeValue(node_i, Idx_Stress[3]);
+			if (eleV_DM->pStrain) // 08.02.2008 WW
+				Pls += pcs->GetNodeValue(node_i, idx_pls);
 
-		pcs->SetNodeValue (node_i, Idx_Stress[0], ESxx);
-		pcs->SetNodeValue (node_i, Idx_Stress[1], ESyy);
-		pcs->SetNodeValue (node_i, Idx_Stress[2], ESzz);
-		pcs->SetNodeValue (node_i, Idx_Stress[3], ESxy);
-		if(eleV_DM->pStrain)      //08.02.2008 WW
-			pcs->SetNodeValue (node_i, idx_pls, fabs(Pls));
+			pcs->SetNodeValue(node_i, Idx_Stress[0], ESxx);
+			pcs->SetNodeValue(node_i, Idx_Stress[1], ESyy);
+			pcs->SetNodeValue(node_i, Idx_Stress[2], ESzz);
+			pcs->SetNodeValue(node_i, Idx_Stress[3], ESxy);
+			if (eleV_DM->pStrain) // 08.02.2008 WW
+				pcs->SetNodeValue(node_i, idx_pls, fabs(Pls));
 
-		if(ele_dim == 3)
-		{
-			ESxz /= dbuff[i];
-			ESyz /= dbuff[i];
+			if (ele_dim == 3)
+			{
+				ESxz /= dbuff[i];
+				ESyz /= dbuff[i];
 
 				ESxz += pcs->GetNodeValue(node_i, Idx_Stress[4]);
 				ESyz += pcs->GetNodeValue(node_i, Idx_Stress[5]);
@@ -3516,67 +3420,32 @@ void CFiniteElementVec::ExtropolateGuassStress()
 			for (int i = 0; i < ns; i++)
 				dstress[i] /= (double)nGaussPoints;
 
-		for(size_t i = 0; i < ele_dim; i++)
-		{
-			tt0[i] = 0.0;
-			for(int j = 0; j < ns; j++)
-				tt0[i] += (*Pe)(i,j) * dstress[j];
-		}
-		eleV_DM->tract_j = loc_dilatancy * tt0[0] + fabs(tt0[1]);
-		/*
-		   //
-		   for(gp=0; gp<nGaussPoints; gp++)
-		   {
-		    //--------------------------------------------------------------
-		    //-----------  Integrate of traction on the jump plane ---------
-		    //--------------------------------------------------------------
-		    for(int i=0; i<ns; i++) dstress[i] = (*eleV_DM->Stress)(i,gp);
-		    fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
-		    for(size_t i=0; i<ele_dim; i++)
-		    {
-		   tt0[i] = 0.0;
-		   for(int j=0; j<ns; j++)
-		   tt0[i] += (*Pe)(i,j)*dstress[j];
-		   }
-		   eleV_DM->tract_j = fkt*(loc_dilatancy*tt0[0]+fabs(tt0[1]));
-		   }
-		   eleV_DM->tract_j /= area;
-		 */
-	}
-	//
-	sj0 = eleV_DM->tract_j;
-	//
-	CheckNodesInJumpedDomain();
-	// On discontinuity by enhanced strain
-	// AuxMatrix temporarily used to store PDG
-	(*AuxMatrix) = 0.0;
-	// Integration of P^t*Stress^{elastic try}
-	for(size_t i = 0; i < ele_dim; i++)
-		tt0[i] = 0.0;
-	//TEST
-	for(int i = 0; i < ns; i++)
-		dstress[i] = 0.0;         //Test average appoach
-	for(gp = 0; gp < nGaussPoints; gp++)
-	{
-		//--------------------------------------------------------------
-		//-----------  Integrate of traction on the jump plane ---------
-		//--------------------------------------------------------------
-		fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
-		//---------------------------------------------------------
-		// Compute geometry
-		//---------------------------------------------------------
-		getGradShapefunctValues(gp, 2);
-		ComputeStrain(gp);
-		// Compute Ge, regular part of enhanced strain-jump matrix
-		ComputeRESM();
-		if(T_Flag)                // Contribution by thermal expansion
-		{
-			getShapefunctValues(gp, 1); // Linear interpolation function
-			Tem = 0.0;
-			for(int i = 0; i < nnodes; i++)
-				Tem += shapefct[i] * Temp[i];
-			for (size_t i = 0; i < 3; i++)
-				dstrain[i] -= ThermalExpansion * Tem;
+			for (size_t i = 0; i < ele_dim; i++)
+			{
+				tt0[i] = 0.0;
+				for (int j = 0; j < ns; j++)
+					tt0[i] += (*Pe)(i, j) * dstress[j];
+			}
+			eleV_DM->tract_j = loc_dilatancy * tt0[0] + fabs(tt0[1]);
+			/*
+			   //
+			   for(gp=0; gp<nGaussPoints; gp++)
+			   {
+			    //--------------------------------------------------------------
+			    //-----------  Integrate of traction on the jump plane ---------
+			    //--------------------------------------------------------------
+			    for(int i=0; i<ns; i++) dstress[i] = (*eleV_DM->Stress)(i,gp);
+			    fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
+			    for(size_t i=0; i<ele_dim; i++)
+			    {
+			   tt0[i] = 0.0;
+			   for(int j=0; j<ns; j++)
+			   tt0[i] += (*Pe)(i,j)*dstress[j];
+			   }
+			   eleV_DM->tract_j = fkt*(loc_dilatancy*tt0[0]+fabs(tt0[1]));
+			   }
+			   eleV_DM->tract_j /= area;
+			 */
 		}
 		//
 		sj0 = eleV_DM->tract_j;
@@ -3600,13 +3469,13 @@ void CFiniteElementVec::ExtropolateGuassStress()
 			//---------------------------------------------------------
 			// Compute geometry
 			//---------------------------------------------------------
-			ComputeGradShapefct(2);
-			ComputeStrain();
+			getGradShapefunctValues(gp, 2);
+			ComputeStrain(gp);
 			// Compute Ge, regular part of enhanced strain-jump matrix
 			ComputeRESM();
 			if (T_Flag) // Contribution by thermal expansion
 			{
-				ComputeShapefct(1); // Linear interpolation function
+				getShapefunctValues(gp, 1); // Linear interpolation function
 				Tem = 0.0;
 				for (int i = 0; i < nnodes; i++)
 					Tem += shapefct[i] * Temp[i];
@@ -3677,37 +3546,37 @@ void CFiniteElementVec::ExtropolateGuassStress()
 			if (fabs(f_j) < f_tol)
 				break;
 
-	// Compute local RHS
-	(*BDG) = 0.0;
-	(*PDB) = 0.0;
-	for(gp = 0; gp < nGaussPoints; gp++)
-	{
-		//--------------------------------------------------------------
-		//-----------  Integrate of traction on the jump plane ---------
-		//--------------------------------------------------------------
-		for(int i = 0; i < ns; i++)
-			dstress[i] = (*eleV_DM->Stress)(i,gp);
-		fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
-		//---------------------------------------------------------
-		// Compute geometry
-		//---------------------------------------------------------
-		getGradShapefunctValues(gp, 2);
-		ComputeStrain(gp);
-		// Compute Ge
-		ComputeRESM();
+			zeta_t1 += f_j / Jac_e;
+		} // Loop of the local Newton for enhanced parameter
 
 		// Compute local RHS
 		(*BDG) = 0.0;
 		(*PDB) = 0.0;
 		for (gp = 0; gp < nGaussPoints; gp++)
 		{
-			getShapefunctValues(gp, 1); // Linear interpolation function
-			Tem = 0.0;
-			for(int i = 0; i < nnodes; i++)
-				Tem += shapefct[i] * Temp[i];
-			for (size_t i = 0; i < 3; i++)
-				dstrain[i] -= ThermalExpansion * Tem;
-		}
+			//--------------------------------------------------------------
+			//-----------  Integrate of traction on the jump plane ---------
+			//--------------------------------------------------------------
+			for (int i = 0; i < ns; i++)
+				dstress[i] = (*eleV_DM->Stress)(i, gp);
+			fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
+			//---------------------------------------------------------
+			// Compute geometry
+			//---------------------------------------------------------
+			getGradShapefunctValues(gp, 2);
+			ComputeStrain(gp);
+			// Compute Ge
+			ComputeRESM();
+
+			if (T_Flag) // Contribution by thermal expansion
+			{
+				getShapefunctValues(gp, 1); // Linear interpolation function
+				Tem = 0.0;
+				for (int i = 0; i < nnodes; i++)
+					Tem += shapefct[i] * Temp[i];
+				for (size_t i = 0; i < 3; i++)
+					dstrain[i] -= ThermalExpansion * Tem;
+			}
 
 			// Ehhanced strain:
 			Ge->multi(zeta, dstrain, -1.0);
@@ -3743,7 +3612,7 @@ void CFiniteElementVec::ExtropolateGuassStress()
 
 					for (size_t k = 0; k < ele_dim; k++)
 						for (size_t l = 0; l < ele_dim; l++)
-							(*BDG)(k, ele_dim * i + l) += fkt * (*AuxMatrix)(k, l);
+							(*BDG)(k, ele_dim* i + l) += fkt * (*AuxMatrix)(k, l);
 					//
 					// P*D*B
 					setB_Matrix(i);
@@ -3751,7 +3620,7 @@ void CFiniteElementVec::ExtropolateGuassStress()
 					PeDe->multi(*B_matrix, *AuxMatrix);
 					for (size_t k = 0; k < ele_dim; k++)
 						for (size_t l = 0; l < ele_dim; l++)
-							(*PDB)(ele_dim * i + k, l) += fkt * (*AuxMatrix)(k, l) / area;
+							(*PDB)(ele_dim* i + k, l) += fkt * (*AuxMatrix)(k, l) / area;
 				}
 			}
 		} // End of RHS assembly
@@ -3773,7 +3642,7 @@ void CFiniteElementVec::ExtropolateGuassStress()
 						f_j = 0.0;
 						for (size_t ii = 0; ii < ele_dim; ii++)
 							for (size_t jj = 0; jj < ele_dim; jj++)
-								f_j += (*BDG)(k, ele_dim * i + ii) * (*DtD)(ii, jj) * (*PDB)(ele_dim * j + jj, l);
+								f_j += (*BDG)(k, ele_dim* i + ii) * (*DtD)(ii, jj) * (*PDB)(ele_dim* j + jj, l);
 						(*Stiffness)(i + k * nnodesHQ, l * nnodesHQ + j) -= f_j / Jac_e;
 					}
 			}

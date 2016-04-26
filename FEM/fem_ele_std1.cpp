@@ -82,8 +82,8 @@ void CFiniteElementStd::ComputeAdditionalJacobi_H2()
 		//  Compute Jacobian matrix and its determinate
 		//---------------------------------------------------------
 		fkt = relax * GetGaussData(gp, gp_r, gp_s, gp_t);
-		getShapefunctValues(gp, 1);       // Linear interpolation function
-		getGradShapefunctValues(gp, 1);   // Linear interpolation function
+		getShapefunctValues(gp, 1); // Linear interpolation function
+		getGradShapefunctValues(gp, 1); // Linear interpolation function
 
 		// poro = MediaProp->Porosity(Index,pcs->m_num->ls_theta);
 		tensor = MediaProp->PermeabilityTensor(Index);
@@ -120,12 +120,10 @@ void CFiniteElementStd::ComputeAdditionalJacobi_H2()
 			gradPg[dim - 1] += g_constant * rho_ga;
 		}
 
-		dkdp1 = dSdp
-		        * (MediaProp->PermeabilitySaturationFunction(S1, 0) - MediaProp->PermeabilitySaturationFunction(Sw, 0))
-		        / perturb;
-		dkdp2 = dSdp
-		        * (MediaProp->PermeabilitySaturationFunction(S1, 1) - MediaProp->PermeabilitySaturationFunction(Sw, 1))
-		        / perturb;
+		dkdp1 = dSdp * (MediaProp->PermeabilitySaturationFunction(S1, 0)
+		                - MediaProp->PermeabilitySaturationFunction(Sw, 0)) / perturb;
+		dkdp2 = dSdp * (MediaProp->PermeabilitySaturationFunction(S1, 1)
+		                - MediaProp->PermeabilitySaturationFunction(Sw, 1)) / perturb;
 
 		for (size_t i = 0; i < dim && i < 3; i++)
 		{
@@ -268,8 +266,8 @@ void CFiniteElementStd::ComputeAdditionalJacobi_Richards()
 		//  Compute Jacobian matrix and its determinate
 		//---------------------------------------------------------
 		fkt = relax * GetGaussData(gp, gp_r, gp_s, gp_t);
-		getShapefunctValues(gp, 1);       // Linear interpolation function
-		getGradShapefunctValues(gp, 1);   // Linear interpolation function
+		getShapefunctValues(gp, 1); // Linear interpolation function
+		getGradShapefunctValues(gp, 1); // Linear interpolation function
 
 		tensor = MediaProp->PermeabilityTensor(Index);
 		PG = -interpolate(NodalVal1);
@@ -292,9 +290,8 @@ void CFiniteElementStd::ComputeAdditionalJacobi_Richards()
 		if ((coordinate_system) % 10 == 2)
 			gradPw[dim - 1] += g_constant * rhow;
 
-		dkdp1 = dSdp
-		        * (MediaProp->PermeabilitySaturationFunction(S1, 0) - MediaProp->PermeabilitySaturationFunction(Sw, 0))
-		        / perturb;
+		dkdp1 = dSdp * (MediaProp->PermeabilitySaturationFunction(S1, 0)
+		                - MediaProp->PermeabilitySaturationFunction(Sw, 0)) / perturb;
 
 		for (size_t i = 0; i < dim && i < 3; i++)
 		{

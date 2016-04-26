@@ -123,27 +123,26 @@ double CFluidMomentum::Execute(int loop_process_number)
 	     << "\n";
 	cpl_max_relative_error = pcs_error;
 
-    bool isFlow = false;
-    CRFProcess *a_pcs = NULL;
-    // CRFProcess *f_pcs = NULL;
-    for(int k=0; k<no_processes; k++ )
-    {
-	   a_pcs = pcs_vector[k];
-       if(!a_pcs)
-         continue;
-       if(   a_pcs->getProcessType () == FiniteElement::RICHARDS_FLOW
-	        || a_pcs->getProcessType () == FiniteElement::LIQUID_FLOW
-	        || a_pcs->getProcessType () == FiniteElement::GROUNDWATER_FLOW
-	        || a_pcs->getProcessType () == FiniteElement::TWO_PHASE_FLOW
-	        || a_pcs->getProcessType () == FiniteElement::MULTI_PHASE_FLOW
-	     )
-       {
-         isFlow = true;
-         break;
-       }
-    }
+	bool isFlow = false;
+	CRFProcess* a_pcs = NULL;
+	// CRFProcess *f_pcs = NULL;
+	for (int k = 0; k < no_processes; k++)
+	{
+		a_pcs = pcs_vector[k];
+		if (!a_pcs)
+			continue;
+		if (a_pcs->getProcessType() == FiniteElement::RICHARDS_FLOW
+		    || a_pcs->getProcessType() == FiniteElement::LIQUID_FLOW
+		    || a_pcs->getProcessType() == FiniteElement::GROUNDWATER_FLOW
+		    || a_pcs->getProcessType() == FiniteElement::TWO_PHASE_FLOW
+		    || a_pcs->getProcessType() == FiniteElement::MULTI_PHASE_FLOW)
+		{
+			isFlow = true;
+			break;
+		}
+	}
 
-	for(int i = 0; i < no_processes; ++i)
+	for (int i = 0; i < no_processes; ++i)
 	{
 		m_pcs = pcs_vector[i];
 
@@ -158,11 +157,10 @@ double CFluidMomentum::Execute(int loop_process_number)
 		else if (m_pcs->getProcessType() == FiniteElement::GROUNDWATER_FLOW)
 			m_msh = FEMGet("GROUNDWATER_FLOW");
 
-
 		//		if(m_pcs->pcs_type_name.find("FLUID_MOMENTUM")!=string::npos) TF
-		if(m_pcs->getProcessType () == FiniteElement::FLUID_MOMENTUM)
+		if (m_pcs->getProcessType() == FiniteElement::FLUID_MOMENTUM)
 		{
-			if( isFlow )
+			if (isFlow)
 			{
 				fem = new CFiniteElementStd(m_pcs, m_msh->GetCoordinateFlag());
 				CFiniteElementStd* pcs_fem = a_pcs->getLinearFEMAssembler();
@@ -177,20 +175,20 @@ double CFluidMomentum::Execute(int loop_process_number)
 			else
 			{
 				m_msh = FEMGet("FLUID_MOMENTUM");
-				string vel_file = FileName+".vel";
+				string vel_file = FileName + ".vel";
 				ifstream ins(vel_file.c_str());
 				double vx, vy, vz;
 
-				int  nidx = m_pcs->GetNodeValueIndex("VELOCITY1_X")+1;
-				int  nidy = m_pcs->GetNodeValueIndex("VELOCITY1_Y")+1;
-				int  nidz = m_pcs->GetNodeValueIndex("VELOCITY1_Z")+1;
+				int nidx = m_pcs->GetNodeValueIndex("VELOCITY1_X") + 1;
+				int nidy = m_pcs->GetNodeValueIndex("VELOCITY1_Y") + 1;
+				int nidz = m_pcs->GetNodeValueIndex("VELOCITY1_Z") + 1;
 
 				for (size_t i = 0; i < m_pcs->m_msh->nod_vector.size(); i++)
 				{
-					ins>>vx>>vy>>vz>>ws;
-					m_pcs->SetNodeValue(i,nidx,vx);
-					m_pcs->SetNodeValue(i,nidy,vy);
-					m_pcs->SetNodeValue(i,nidz,vz);
+					ins >> vx >> vy >> vz >> ws;
+					m_pcs->SetNodeValue(i, nidx, vx);
+					m_pcs->SetNodeValue(i, nidy, vy);
+					m_pcs->SetNodeValue(i, nidz, vz);
 				}
 			}
 		}

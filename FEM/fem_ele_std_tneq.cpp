@@ -782,8 +782,8 @@ double CFiniteElementStd::CalCoef_RHS_TNEQ(const int dof_index)
 					grad_pg[i] = 0.0; // clear to zero;
 					for (int j = 0; j < nnodes; j++) // loop over all connecting nodes
 					{
-						double pg_tmp
-						    = (1.0 - theta) * NodalVal0[j] + theta * NodalVal1[j]; // tmp value of gas pressure;
+						double pg_tmp = (1.0 - theta) * NodalVal0[j]
+						                + theta * NodalVal1[j]; // tmp value of gas pressure;
 						int index_tmp = i * nnodes + j;
 						grad_pg[i] += dshapefct[index_tmp] * pg_tmp;
 					}

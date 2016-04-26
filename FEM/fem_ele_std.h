@@ -135,8 +135,8 @@ public:
 	void CalcStorage();
 	// 9. Content matrix
 	void CalcContent();
-	void CalcContentTNEQ(); //NW
-	void CalcContentTES(); //NW
+	void CalcContentTNEQ(); // NW
+	void CalcContentTES(); // NW
 #ifdef E_NORM
 	// 25.08.2008. WW
 	void CalcEnergyNorm(double& err_norm0, double& err_normn);
@@ -211,14 +211,14 @@ public:
 	// Gauss value
 	void ExtropolateGauss(MeshLib::CElem& elem, CRFProcess* m_pcs, const int idof);
 	// Extrapolate reaction rates on TNEQ flow
-	void ExtrapolateGauss_ReactRate_TNEQ_TES(MeshLib::CElem& elem, CRFProcess *m_pcs);
+	void ExtrapolateGauss_ReactRate_TNEQ_TES(MeshLib::CElem& elem, CRFProcess* m_pcs);
 	// Calulate satutation at intehration points
 	// and extrapolate them to nodes.
-	void CalcSatuation(MeshLib::CElem& elem);                  //WW
+	void CalcSatuation(MeshLib::CElem& elem); // WW
 	// Extrapolate material parameters
-	void CalcNodeMatParatemer(MeshLib::CElem& elem);          //WW
+	void CalcNodeMatParatemer(MeshLib::CElem& elem); // WW
 
-	void UpdateSolidDensity(size_t elem_idx);       // HS
+	void UpdateSolidDensity(size_t elem_idx); // HS
 	// CB _ctx_ CB_merge_0513
 	// void Set_ctx_(long ele_index, double val, int gaussp, int i_dim);
 	// double Get_ctx_(long ele_index, int gaussp, int i_dim);
@@ -235,7 +235,7 @@ private:
 	int comp; // Component
 	int LocalShift; // For RHS
 	// Danymic
-	int *idx_vel_disp, idx_pres;
+	int* idx_vel_disp, idx_pres;
 	// Velocity
 	int* idx_vel; // WW
 	// Material properties
@@ -471,7 +471,7 @@ public:
 
 	// HS Thermal Storage parameters---------------
 	// Array of parameters on each Gauss point
-	double *rho_s_prev, *rho_s_curr;
+	double* rho_s_prev, *rho_s_curr;
 	double* q_R;
 // End of Thermal Storage parameters---------------
 #ifdef USE_TRANSPORT_FLUX

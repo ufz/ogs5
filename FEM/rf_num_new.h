@@ -68,7 +68,7 @@ public:
 	std::string cpl_variable; // MB
 	std::string cpl_process; // JT
 	std::string cpl_variable_JOD; // JT->JOD. This one defaults to FLUX. I'm not sure what you want to do with it, but
-	// cpl_variable must default to "NONE".
+	                              // cpl_variable must default to "NONE".
 	int cpl_max_iterations;
 	int cpl_min_iterations; // JT2012
 	double cpl_error_tolerance[DOF_NUMBER_MAX]; // JT2012: array function of dof

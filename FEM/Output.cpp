@@ -3818,8 +3818,10 @@ void COutput::CalculateTotalFlux(CFEMesh* msh, vector<long>& nodes_on_geo, vecto
 					                   * mfp_vector[0]->SpecificHeatCapacity() * mfp_vector[0]->Density();
 			}
 			///
-			fem_assembler->FaceNormalFluxIntegration(elements_at_geo[i], nodesFVal, nodesFVal_adv, nodesFace, face, m_pcs, face->normal_vector);
-			for (k = 0; k < nfn; k++) {
+			fem_assembler->FaceNormalFluxIntegration(elements_at_geo[i], nodesFVal, nodesFVal_adv, nodesFace, face,
+			                                         m_pcs, face->normal_vector);
+			for (k = 0; k < nfn; k++)
+			{
 				e_node = elem->GetNode(nodesFace[k]);
 				// -->PETSC
 				NVal_diff[G2L[e_node->GetIndex()]] += fac * nodesFVal[k];

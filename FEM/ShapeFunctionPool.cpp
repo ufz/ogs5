@@ -4,7 +4,7 @@
 
      \author Wenqing Wang
      \date Feb. 2015
- 
+
      \copyright
       Copyright (c) 2015, OpenGeoSys Community (http://www.opengeosys.org)
              Distributed under a Modified BSD License.
@@ -14,14 +14,13 @@
 
 #include "ShapeFunctionPool.h"
 
-#include <cassert>     /* assert */
+#include <cassert> /* assert */
 #include "fem_ele.h"
 
 namespace FiniteElement
 {
-ShapeFunctionPool::ShapeFunctionPool(
-			const std::vector<MshElemType::type>& elem_types,
-			CElement& quadrature, const int num_sample_gs_pnts)
+ShapeFunctionPool::ShapeFunctionPool(const std::vector<MshElemType::type>& elem_types, CElement& quadrature,
+                                     const int num_sample_gs_pnts)
 {
 	const std::size_t n_ele_types = elem_types.size();
 	_shape_function.reserve(n_ele_types);
@@ -30,7 +29,7 @@ ShapeFunctionPool::ShapeFunctionPool(
 	_grad_shape_function.reserve(n_ele_types);
 	_grad_shape_function_center.reserve(n_ele_types);
 
-	for (std::size_t i=0; i<n_ele_types; i++)
+	for (std::size_t i = 0; i < n_ele_types; i++)
 	{
 		_shape_function.push_back(NULL);
 		_shape_function_size.push_back(0);
@@ -82,8 +81,8 @@ ShapeFunctionPool::ShapeFunctionPool(
 	num_elem_nodes[1][id] = 13;
 	dim_elem[id] = 3;
 
-	//std::vector<int> elem_type_ids
-	for (std::size_t i=0; i<elem_types.size(); i++)
+	// std::vector<int> elem_type_ids
+	for (std::size_t i = 0; i < elem_types.size(); i++)
 	{
 		const MshElemType::type e_type = elem_types[i];
 		if (e_type == MshElemType::INVALID)
@@ -108,43 +107,41 @@ ShapeFunctionPool::ShapeFunctionPool(
 
 ShapeFunctionPool::~ShapeFunctionPool()
 {
-	for (std::size_t i=0; i<_shape_function.size(); i++)
+	for (std::size_t i = 0; i < _shape_function.size(); i++)
 	{
 		if (_shape_function[i])
-			delete [] _shape_function[i];
+			delete[] _shape_function[i];
 		_shape_function[i] = NULL;
 	}
 
-	for (std::size_t i=0; i<_shape_function_center.size(); i++)
+	for (std::size_t i = 0; i < _shape_function_center.size(); i++)
 	{
 		if (_shape_function_center[i])
-			delete [] _shape_function_center[i];
+			delete[] _shape_function_center[i];
 		_shape_function_center[i] = NULL;
 	}
 
-	for (std::size_t i=0; i<_shape_function.size(); i++)
+	for (std::size_t i = 0; i < _shape_function.size(); i++)
 	{
 		if (_grad_shape_function[i])
-			delete [] _grad_shape_function[i];
+			delete[] _grad_shape_function[i];
 		_grad_shape_function[i] = NULL;
 	}
 
-	for (std::size_t i=0; i<_grad_shape_function_center.size(); i++)
+	for (std::size_t i = 0; i < _grad_shape_function_center.size(); i++)
 	{
 		if (_grad_shape_function_center[i])
-			delete [] _grad_shape_function_center[i];
+			delete[] _grad_shape_function_center[i];
 		_grad_shape_function_center[i] = NULL;
 	}
 }
 
-void ShapeFunctionPool::
-	computeQuadratures(const std::vector<MshElemType::type>& elem_types,
-	                   const int num_elem_nodes[2][MshElemType::LAST],
-					   const int dim_elem[],
-		               CElement& quadrature, const int num_sample_gs_pnts)
+void ShapeFunctionPool::computeQuadratures(const std::vector<MshElemType::type>& elem_types,
+                                           const int num_elem_nodes[2][MshElemType::LAST], const int dim_elem[],
+                                           CElement& quadrature, const int num_sample_gs_pnts)
 {
 	const int order = quadrature.getOrder();
-	for (std::size_t i=0; i<elem_types.size(); i++)
+	for (std::size_t i = 0; i < elem_types.size(); i++)
 	{
 		const MshElemType::type e_type = elem_types[i];
 		if (e_type == MshElemType::INVALID)
@@ -153,7 +150,7 @@ void ShapeFunctionPool::
 		const int type_id = static_cast<int>(e_type) - 1;
 		quadrature.ConfigShapefunction(e_type);
 
-		const int nnodes = num_elem_nodes[order-1][type_id];
+		const int nnodes = num_elem_nodes[order - 1][type_id];
 		const int elem_dim = dim_elem[type_id];
 
 		double* shape_function_center_values = _shape_function_center[type_id];
@@ -169,54 +166,45 @@ void ShapeFunctionPool::
 		quadrature.SetIntegrationPointNumber(e_type);
 
 		for (int gp = 0; gp < quadrature.GetNumGaussPoints(); gp++)
-	    {
+		{
 			int gp_r, gp_s, gp_t;
 			quadrature.SetGaussPoint(e_type, gp, gp_r, gp_s, gp_t);
-			double* shape_function_values_gs
-				    = &shape_function_values[gp * nnodes];
+			double* shape_function_values_gs = &shape_function_values[gp * nnodes];
 			quadrature.ComputeShapefct(order, shape_function_values_gs);
 
-			double* dshape_function_values_gs
-				    = &dshape_function_values[gp * nnodes * elem_dim];
+			double* dshape_function_values_gs = &dshape_function_values[gp * nnodes * elem_dim];
 			quadrature.computeGradShapefctLocal(order, dshape_function_values_gs);
 		}
 	}
 }
 
-double* ShapeFunctionPool::
-getShapeFunctionValues(const MshElemType::type elem_type) const
+double* ShapeFunctionPool::getShapeFunctionValues(const MshElemType::type elem_type) const
 {
-	assert(_shape_function[static_cast<int>(elem_type)-1]);
-	return _shape_function[static_cast<int>(elem_type)-1];
+	assert(_shape_function[static_cast<int>(elem_type) - 1]);
+	return _shape_function[static_cast<int>(elem_type) - 1];
 }
 
-unsigned ShapeFunctionPool::
-getShapeFunctionArraySize(const MshElemType::type elem_type) const
+unsigned ShapeFunctionPool::getShapeFunctionArraySize(const MshElemType::type elem_type) const
 {
-	return _shape_function_size[static_cast<int>(elem_type)-1];
+	return _shape_function_size[static_cast<int>(elem_type) - 1];
 }
 
-double* ShapeFunctionPool::
-getShapeFunctionCenterValues(const MshElemType::type elem_type) const
+double* ShapeFunctionPool::getShapeFunctionCenterValues(const MshElemType::type elem_type) const
 {
-	assert(_shape_function_center[static_cast<int>(elem_type)-1]);
-	return _shape_function_center[static_cast<int>(elem_type)-1];
+	assert(_shape_function_center[static_cast<int>(elem_type) - 1]);
+	return _shape_function_center[static_cast<int>(elem_type) - 1];
 }
 
-double* ShapeFunctionPool::
-getGradShapeFunctionValues(const MshElemType::type elem_type) const
+double* ShapeFunctionPool::getGradShapeFunctionValues(const MshElemType::type elem_type) const
 {
-	assert(_grad_shape_function[static_cast<int>(elem_type)-1]);
-	return _grad_shape_function[static_cast<int>(elem_type)-1];
+	assert(_grad_shape_function[static_cast<int>(elem_type) - 1]);
+	return _grad_shape_function[static_cast<int>(elem_type) - 1];
 }
 
-double* ShapeFunctionPool::
-getGradShapeFunctionCenterValues(const MshElemType::type elem_type) const
+double* ShapeFunctionPool::getGradShapeFunctionCenterValues(const MshElemType::type elem_type) const
 {
-	assert(_grad_shape_function_center[static_cast<int>(elem_type)-1]);
-	return _grad_shape_function_center[static_cast<int>(elem_type)-1];
+	assert(_grad_shape_function_center[static_cast<int>(elem_type) - 1]);
+	return _grad_shape_function_center[static_cast<int>(elem_type) - 1];
 }
 
 } // end namespace
-
-

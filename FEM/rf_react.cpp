@@ -836,9 +836,7 @@ int REACT::WriteInputPQCString(long index, /*ifstream *pqc_iinfile,*/ stringstre
 			for (i = ii; i < ii + rcml_number_of_gas_species; i++)
 			{
 				speciesname = this->pqc_names[i];
-				//			cout << "Testing index vectors: " << speciesname << ",   With vectors: " << pqc_names[i] <<
-				//",
-				//"
+				//			cout << "Testing index vectors: " << speciesname << ",   With vectors: " << pqc_names[i] << ", "
 				//<< pcs_vector[pqc_process[i]]->pcs_number << ", " << pqc_index[i];
 				dval = pcs_vector[pqc_process[i]]->GetNodeValue(index, pqc_index[i]);
 				//			cout << dval << "\n";
@@ -1722,9 +1720,9 @@ void CRFProcess::InterpolateTempGP(CRFProcess* m_pcs, std::string name)
 	long group;
 	double T_ele;
 	double GP[3];
-	//WW static double Node_T[8];
+	// WW static double Node_T[8];
 	static double dbuff0[20];
-	int index1;                           //idxp,idxcp,idxS;
+	int index1; // idxp,idxcp,idxS;
 	CMediumProperties* m_mmp = NULL;
 	MeshLib::CElem* elem = NULL;
 	index1 = m_pcs->GetElementValueIndex(name) + 1; //->fem->interpolate(
@@ -1754,31 +1752,31 @@ void CRFProcess::InterpolateTempGP(CRFProcess* m_pcs, std::string name)
 		m_pcs->fem->ComputeShapefct(1, dbuff0); // Linear interpolation function
 
 		T_ele = 0.;
-		for(j = 0; j < elem->GetVertexNumber(); j++)
+		for (j = 0; j < elem->GetVertexNumber(); j++)
 		{
 			enode = elem->GetNodeIndex(j);
-			//m_pcs_mmp
-			T_ele +=  dbuff0[j] * m_pcs->GetNodeValue(enode,m_pcs->GetNodeValueIndex(name) + 1);
+			// m_pcs_mmp
+			T_ele += dbuff0[j] * m_pcs->GetNodeValue(enode, m_pcs->GetNodeValueIndex(name) + 1);
 		}
 
-		m_pcs->SetElementValue(i,index1,T_ele);
-		m_pcs->SetElementValue(i,index1 - 1,T_ele);
+		m_pcs->SetElementValue(i, index1, T_ele);
+		m_pcs->SetElementValue(i, index1 - 1, T_ele);
 	}
 }
 
 // MX
 void CRFProcess::ExtropolateTempGP(CRFProcess* m_pcs, std::string name)
 {
-//	MshElemType::type EleType;
+	//	MshElemType::type EleType;
 	int j;
 	size_t i;
 	long enode, nn;
-//	long group;
-//	double GP[3];
+	//	long group;
+	//	double GP[3];
 	static double Node_T[8];
 	double T_sum = 0.0;
-	int index1, index_nod;                //idxp,idxcp,idxS;
-	//WW CMediumProperties* m_mmp = NULL;
+	int index1, index_nod; // idxp,idxcp,idxS;
+	// WW CMediumProperties* m_mmp = NULL;
 	MeshLib::CElem* elem = NULL;
 
 	index1 = m_pcs->GetElementValueIndex(name) + 1; //->fem->interpolate(
@@ -1796,23 +1794,23 @@ void CRFProcess::ExtropolateTempGP(CRFProcess* m_pcs, std::string name)
 		/*
 		group = elem->GetPatchIndex();
 		m_mmp = mmp_vector[group];
-		m_mmp->m_pcs = m_pcs; // m_pcs_mmp
+		m_mmp->m_pcs = m_pcs;     //m_pcs_mmp
 		EleType = elem->GetElementType();
-		if (EleType == MshElemType::TRIANGLE) // Traingle
+		if(EleType == MshElemType::TRIANGLE) // Traingle
 		{
-			GP[0] = GP[1] = 0.1 / 0.3;
-			GP[2] = 0.0;
+		    GP[0] = GP[1] = 0.1 / 0.3;
+		    GP[2] = 0.0;
 		}
-		else if (EleType == MshElemType::TETRAHEDRON)
-			GP[0] = GP[1] = GP[2] = 0.25;
+		else if(EleType == MshElemType::TETRAHEDRON)
+		    GP[0] = GP[1] = GP[2] = 0.25;
 		else
-			GP[0] = GP[1] = GP[2] = 0.0;
+		    GP[0] = GP[1] = GP[2] = 0.0;
 
 		m_pcs->fem->ConfigElement(elem);
 		m_pcs->fem->setUnitCoordinates(GP);
 		m_pcs->fem->ComputeShapefct(1); // Linear
 		*/
-		for(j = 0; j < elem->GetVertexNumber(); j++)
+		for (j = 0; j < elem->GetVertexNumber(); j++)
 		{
 			enode = elem->GetNodeIndex(j);
 			Node_T[j] = m_pcs->GetElementValue(i, index1);
@@ -3354,9 +3352,7 @@ int REACT::WriteInputPhreeqc(long index, /*ifstream *pqc_iinfile,*/ ofstream* ou
 			for (i = ii; i < ii + rcml_number_of_gas_species; i++)
 			{
 				speciesname = this->pqc_names[i];
-				//			cout << "Testing index vectors: " << speciesname << ",   With vectors: " << pqc_names[i] <<
-				//",
-				//"
+				//			cout << "Testing index vectors: " << speciesname << ",   With vectors: " << pqc_names[i] << ", "
 				//<< pcs_vector[pqc_process[i]]->pcs_number << ", " << pqc_index[i];
 				dval = pcs_vector[pqc_process[i]]->GetNodeValue(index, pqc_index[i]);
 				//			cout << dval << "\n";
@@ -5301,8 +5297,7 @@ void REACT::ExecuteReactionsPHREEQCNewLib(void)
 	cout << "MDL_DEBUG: final input is " << nline << " lines, nodes " << ii << "/" << this->nodenumber << "\n";
 	cout << "\n"
 	     << "MDL_DEBUG: ****** Current input:"
-	     << "\n"
-	     << out_buff.str() << "\n"
+	     << "\n" << out_buff.str() << "\n"
 	     << "MDL_DEBUG: ****** end of input"
 	     << "\n";
 #endif

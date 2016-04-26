@@ -20,7 +20,6 @@ class CRFProcess;
 // GEOLIB
 #include "GEOObjects.h"
 
-
 namespace FiniteElement
 {
 class ShapeFunctionPool;
@@ -61,10 +60,11 @@ public:
 			return buffer_array;
 	}
 	int GetCPLMaxIterations() { return cpl_overall_max_iterations; }
+
 	/**
-	   * get the geometric objects stored in GEOLIB::GEOObjects
-	   * @return a pointer to an instance of class GEOLIB::GEOObjects
-	   */
+	 * get the geometric objects stored in GEOLIB::GEOObjects
+	 * @return a pointer to an instance of class GEOLIB::GEOObjects
+	 */
 	const GEOLIB::GEOObjects* getGeoObj() const;
 	/**
 	 * Get the name of the project. The name is used by GEOLIB::GEOObjects

@@ -476,8 +476,8 @@ bool CVTK::WriteMeshNodes(std::fstream& fin, bool output_data, CFEMesh* msh, lon
 	return true;
 }
 
-bool CVTK::WriteMeshElementConnectivity(std::fstream& fin, bool output_data, CFEMesh* msh, long& offset,
-                                        long& sum_ele_components)
+bool CVTK::WriteMeshElementConnectivity(
+    std::fstream& fin, bool output_data, CFEMesh* msh, long& offset, long& sum_ele_components)
 {
 	if (output_data)
 	{
@@ -1385,7 +1385,7 @@ bool CVTK::WriteElementValue(std::fstream& fin, bool output_data, COutput* out, 
 				if (!this->useBinary)
 				{
 					fin << "          ";
-					for(long i_e = 0; i_e < (long)msh->ele_vector.size(); i_e++)
+					for (long i_e = 0; i_e < (long)msh->ele_vector.size(); i_e++)
 					{
 						ele = msh->ele_vector[i_e];
 						ele->SetOrder(false);

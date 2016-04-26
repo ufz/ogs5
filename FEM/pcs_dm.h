@@ -79,6 +79,7 @@ public:
 
 	// Aux. Memory
 	double* GetAuxArray() const { return ARRAY; }
+
 	void ScalingNodeForce(const double SFactor);
 	void InitGauss();
 
@@ -120,9 +121,9 @@ public:
 	void ReadElementStress();
 
 	// Access members
-	CFiniteElementVec* GetFEMAssembler() {return fem_dm; }
+	CFiniteElementVec* GetFEMAssembler() { return fem_dm; }
 
-	//WX:07.2011
+	// WX:07.2011
 	void PostExcavation();
 	// WX:10.2011
 	void UpdateIniStateValue();

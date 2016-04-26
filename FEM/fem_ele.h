@@ -79,30 +79,22 @@ public:
 	//
 	void ConfigElement(CElem* MElement, const bool FaceIntegration = false);
 
-	void setElement(CElem* MElement)
-	{MeshElement = MElement;}
+	void setElement(CElem* MElement) { MeshElement = MElement; }
 
 	void setOrder(const int order);
-	int getOrder() const {return Order;}
+	int getOrder() const { return Order; }
 	// Set Gauss point
-	void SetGaussPoint(const MshElemType::type elem_type, const int gp,
-		               int& gp_r, int& gp_s, int& gp_t);
+	void SetGaussPoint(const MshElemType::type elem_type, const int gp, int& gp_r, int& gp_s, int& gp_t);
 	// Set Gauss point
 	void SetGaussPoint(const int gp, int& gp_r, int& gp_s, int& gp_t);
 
-	void setShapeFunctionPool(ShapeFunctionPool* const
-						      lin_shape_fct_pool, 
-							  ShapeFunctionPool* const
-						      quad_shape_fct_pool)
+	void setShapeFunctionPool(ShapeFunctionPool* const lin_shape_fct_pool, ShapeFunctionPool* const quad_shape_fct_pool)
 	{
 		_shape_function_pool_ptr[0] = lin_shape_fct_pool;
 		_shape_function_pool_ptr[1] = quad_shape_fct_pool;
 	};
 
-	ShapeFunctionPool* getShapeFunctionPool(int order_id) const
-	{
-		return _shape_function_pool_ptr[order_id];
-	}
+	ShapeFunctionPool* getShapeFunctionPool(int order_id) const { return _shape_function_pool_ptr[order_id]; }
 
 	// Get Gauss integration information
 	double GetGaussData(int gp, int& gp_r, int& gp_s, int& gp_t);
@@ -119,8 +111,7 @@ public:
 	// Compute values of shape function at integral point unit
 	void ComputeShapefct(const int order, double shape_function[]);
 	// Compute the Jacobian matrix. Return its determinate
-	void computeJacobian(const int gp, const int order,
-		                 const bool inverse = true);
+	void computeJacobian(const int gp, const int order, const bool inverse = true);
 
 	// Get the pointer to the gradient of shape function array
 	// in the shape function pool for element centroid
@@ -130,15 +121,11 @@ public:
 	// Compute values of the derivatives of shape function at integral point
 	void ComputeGradShapefctInElement(const bool is_face_integration);
 	// Compute values of the derivatives of shape function at integral point
-	void ComputeGradShapefct(const int gp, const int order,
-		                     const bool is_face_integration = false);
+	void ComputeGradShapefct(const int gp, const int order, const bool is_face_integration = false);
 	// Compute values of the derivatives of shape function at integral point
 	void computeGradShapefctLocal(const int order, double grad_shape_fucntion[]);
-	
-	void setMixedOrderFlag(const bool is_mixed_order)
-	{
-		_is_mixed_order = is_mixed_order;
-	}
+
+	void setMixedOrderFlag(const bool is_mixed_order) { _is_mixed_order = is_mixed_order; }
 
 	// Compute the real coordinates from known unit coordinates
 	void RealCoordinates(double* realXYZ);
@@ -157,19 +144,16 @@ public:
 	// Compute the local finite element matrices
 	void LocalAssembly(const long, const int) {}
 	// Set the number of Gauss points
-	//26.03.2007 WW
-	void SetGaussPointNumber(const int nGuassP)
-	{
-		nGauss = nGuassP;
-	}
+	// 26.03.2007 WW
+	void SetGaussPointNumber(const int nGuassP) { nGauss = nGuassP; }
 
 	void SetIntegrationPointNumber(const MshElemType::type elem_type);
 
 	// Get values;
-	int GetNumGaussPoints() const {return nGaussPoints; }
-	int GetNumGaussSamples() const {return nGauss; }
-	int Dim() const {return ele_dim; }
-	double Getdshapefct(int in) {return dshapefct[in];}
+	int GetNumGaussPoints() const { return nGaussPoints; }
+	int GetNumGaussSamples() const { return nGauss; }
+	int Dim() const { return ele_dim; }
+	double Getdshapefct(int in) { return dshapefct[in]; }
 
 	// Integrate Neumman type BC
 	void FaceIntegration(double* NodeVal);
@@ -184,6 +168,7 @@ public:
 	bool isFluidPressureCoupling() const { return F_Flag; }
 	int isDeformationCoupling() const { return D_Flag; }
 	int isConcentrationCoupling() const { return C_Flag; }
+
 	// Interpolate Gauss values
 	double interpolate(double const* const nodalVal, const int order = 1) const;
 	double interpolate(const int idx, CRFProcess* m_pcs, const int order = 1);
@@ -191,9 +176,9 @@ public:
 	double elemnt_average(const int idx, CRFProcess* m_pcs, const int order = 1);
 
 	void SetCenterGP(const MshElemType::type elem_type = MshElemType::INVALID);
-	int GetGPindex() const {return gp; }
-	int GetElementIndex() const {return Index; }
-	CElem* GetMeshElement() const         //OK
+	int GetGPindex() const { return gp; }
+	int GetElementIndex() const { return Index; }
+	CElem* GetMeshElement() const // OK
 	{
 		return MeshElement;
 	}
@@ -202,6 +187,7 @@ public:
 
 	// DDC 05/2006
 	void SetElementNodesDomain(long* ele_nodes) { element_nodes_dom = ele_nodes; }
+
 	void SetRWPT(const int idx) // PCH
 	{
 		PT_Flag = idx;
@@ -229,15 +215,15 @@ protected:
 	// Order of shape functions
 	// Displacement, 2. Others, 1. Default, 1
 	int Order;
-	size_t ele_dim;                       // Dimension of element
-	size_t dim;                           // Dimension of real dimension
-	size_t dim_grad;                      // Gradient dimension
-	int nGaussPoints;                     // Number of Gauss points
-	int nGauss;                           // Number of sample points for Gauss integration
-	int gp;                               // Gauss point index.
-	mutable double unit[4];               // Local coordintes
+	size_t ele_dim; // Dimension of element
+	size_t dim; // Dimension of real dimension
+	size_t dim_grad; // Gradient dimension
+	int nGaussPoints; // Number of Gauss points
+	int nGauss; // Number of sample points for Gauss integration
+	int gp; // Gauss point index.
+	mutable double unit[4]; // Local coordintes
 
-	double* Jacobian;                     // Jacobian matrix
+	double* Jacobian; // Jacobian matrix
 	/// Pointer to _inv_jacobian_all for a integation point
 	double* invJacobian;
 	/// Pointer to _shape_function_pool_ptr for a integation point
@@ -250,9 +236,9 @@ protected:
 	mutable double* dshapefctHQ;
 
 	/// The values of the determinants of the inversed Jacobians
-	/// of all integation points. 
+	/// of all integation points.
 	double* _determinants_all;
-	/// The values of the inversed Jacobians of all integation points. 
+	/// The values of the inversed Jacobians of all integation points.
 	double* _inv_jacobian_all;
 	/// The values of derivatives of linear shape functions all integation points.
 	double* _dshapefct_all;
@@ -325,19 +311,19 @@ protected:
 	double Z[20];
 	double node_val[20];
 	double dbuff[20];
-	double dbuff0[27];                 // Auxullary
+	double dbuff0[27]; // Auxullary
 
 #if defined(USE_PETSC) // || defined(other parallel libs)//03~04.3012. WW
 	int act_nodes; //> activated nodes
 	int act_nodes_h; //> activated nodes for high order elements
-	int *idxm;  //> global indices of local matrix rows
-	int *idxn;  //> global indices of local matrix columns
-	int *local_idx; //> local index for local assemble
-	//double *local_matrix; //>  local matrix
-	//double *local_vec; //>  local vector
+	int* idxm; //> global indices of local matrix rows
+	int* idxn; //> global indices of local matrix columns
+	int* local_idx; //> local index for local assemble
+// double *local_matrix; //>  local matrix
+// double *local_vec; //>  local vector
 #endif
 	ExtrapolationMethod::type extrapo_method;
-	ExtrapolationMethod::type GetExtrapoMethod() {return extrapo_method; }
+	ExtrapolationMethod::type GetExtrapoMethod() { return extrapo_method; }
 };
 
 /*------------------------------------------------------------------
@@ -388,6 +374,7 @@ public:
 	Matrix* GetCouplingMatrixA() { return CouplingA; }
 	Matrix* GetCouplingMatrixB() { return CouplingB; }
 	Vec* GetRHS() { return RHS; }
+
 private:
 	// TODO in more gernal way for the case of sym and unsym. WW      SymMatrix *Mass;
 	//      SymMatrix *Laplace;

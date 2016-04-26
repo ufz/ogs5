@@ -57,7 +57,7 @@ void CFiniteElementStd::CalcMassTES()
 		// Compute Jacobian matrix and its determinate
 		double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
 		// Compute geometry
-		getShapefunctValues(gp, 1);       // Linear interpolation function
+		getShapefunctValues(gp, 1); // Linear interpolation function
 
 		for (int in = 0; in < pcs->dof; in++)
 		{
@@ -122,9 +122,9 @@ void CFiniteElementStd::CalcLumpedMassTES()
 	// Initialize
 	(*Mass2) = 0.0;
 	// Center of the reference element
-	getShapeFunctionCentroid();               // Linear interpolation function
+	getShapeFunctionCentroid(); // Linear interpolation function
 
-	for(int in = 0; in < nDF; in++)
+	for (int in = 0; in < nDF; in++)
 	{
 		const int ish = in * nnodes;
 		for (int jn = 0; jn < nDF; jn++)

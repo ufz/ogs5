@@ -910,7 +910,7 @@ void LegacyVtkInterface::WriteVTKDataArrays(fstream& vtk_file) const
 			{
 				const long node_id = _mesh->nod_vector[j]->GetIndex();
 				double vector6[6];
-				for (size_t component = 0; component < tensor_com; ++component)
+				for (size_t component = 0; component < static_cast<size_t>(tensor_com); ++component)
 					vector6[component] = pcs->GetNodeValue(node_id, tensor_val_idx[component]);
 
 				vtk_file << vector6[0] << " " << vector6[1] << " " << vector6[4] << "\n";

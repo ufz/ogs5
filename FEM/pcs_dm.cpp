@@ -1873,7 +1873,7 @@ double CRFProcessDeformation::CaclMaxiumLoadRatio(void)
 	double PRatio = 0.0;
 	const double MaxR = 20.0;
 
-	//gp_t = 0;
+	// gp_t = 0;
 
 	for (std::size_t i = 0; i < m_msh->ele_vector.size(); i++)
 	{
@@ -1923,9 +1923,7 @@ double CRFProcessDeformation::CaclMaxiumLoadRatio(void)
 				if (!(    elem->GetElementType() == MshElemType::TRIANGLE
 				       || elem->GetElementType() == MshElemType::QUAD) )
 				{
-					std::cerr <<
-					"CRFProcessDeformation::CaclMaxiumLoadRatio MshElemType not handled"
-					          << std::endl;
+					std::cerr << "CRFProcessDeformation::CaclMaxiumLoadRatio MshElemType not handled" << std::endl;
 				}
 				fem_dm->getGradShapefunctValues(gp, 2);
 				fem_dm->ComputeStrain(gp);
@@ -1947,8 +1945,8 @@ double CRFProcessDeformation::CaclMaxiumLoadRatio(void)
 				}
 
 				// Stress of the previous time step
-				for(int j = 0; j < fem_dm->ns; j++)
-					fem_dm->dstress[j] = (*eleV_DM->Stress)(j,gp);
+				for (int j = 0; j < fem_dm->ns; j++)
+					fem_dm->dstress[j] = (*eleV_DM->Stress)(j, gp);
 
 				// Compute try stress, stress incremental:
 				fem_dm->De->multi(dstrain, fem_dm->dstress);
@@ -1975,8 +1973,8 @@ double CRFProcessDeformation::CaclMaxiumLoadRatio(void)
 						p0 *= 3.0;
 						EffS
 						    = sqrt(II * pow(1.0 + (*Mat)(5) * III / pow(II, 1.5), (*Mat)(6)) + 0.5 * (*Mat)(0) * p0 * p0
-						           + (*Mat)(2) * (*Mat)(2) * p0 * p0 * p0 * p0)
-						      + (*Mat)(1) * p0 + (*Mat)(3) * p0 * p0;
+						           + (*Mat)(2) * (*Mat)(2) * p0 * p0 * p0 * p0) + (*Mat)(1) * p0
+						      + (*Mat)(3) * p0* p0;
 
 						if (EffS > (*Mat)(4))
 						{
@@ -2282,7 +2280,7 @@ void CRFProcessDeformation::Trace_Discontinuity()
 			}
 
 			fem_dm->ConfigElement(elem);
-			//2D
+			// 2D
 			elem->GetElementFaceNodes(bFaces, FNodes0);
 			if (elem->GetElementType() == MshElemType::QUAD || elem->GetElementType() == MshElemType::TRIANGLE)
 				nPathNodes = 2;
@@ -3584,6 +3582,8 @@ bool CRFProcessDeformation::CalcBC_or_SecondaryVariable_Dynamics(bool BC)
 }
 
 bool CRFProcessDeformation::isDynamic() const
-{return fem_dm->dynamic;}
+{
+	return fem_dm->dynamic;
+}
 
-}                                                 // end namespace
+} // end namespace

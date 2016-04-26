@@ -904,9 +904,8 @@ void CRFProcess::Create()
 		{
 			int Axisymm = 1; // ani-axisymmetry
 			if (m_msh->isAxisymmetry())
-				Axisymm = -1;  // Axisymmetry is true
-			fem = new CFiniteElementStd(this, Axisymm
-			                            * m_msh->GetCoordinateFlag());
+				Axisymm = -1; // Axisymmetry is true
+			fem = new CFiniteElementStd(this, Axisymm * m_msh->GetCoordinateFlag());
 			fem->SetGaussPointNumber(m_num->ele_gauss_points);
 		}
 	}
@@ -999,11 +998,9 @@ void initializeConstrainedProcesses(std::vector<CRFProcess*>& pcs_vector)
 
 void CRFProcess::SetBoundaryConditionAndSourceTerm()
 {
-	std::string pcs_type_name(
-	        convertProcessTypeToString(this->getProcessType()));
+	std::string pcs_type_name(convertProcessTypeToString(this->getProcessType()));
 
-	if (pcs_type_name_vector.size() && pcs_type_name_vector[0].find("DYNAMIC")
-	    != string::npos)                  //WW
+	if (pcs_type_name_vector.size() && pcs_type_name_vector[0].find("DYNAMIC") != string::npos) // WW
 	{
 		setBC_danymic_problems();
 		setST_danymic_problems();
@@ -1015,33 +1012,31 @@ void CRFProcess::SetBoundaryConditionAndSourceTerm()
 		ScreenMessage("-> Create BC\n");
 		CBoundaryConditionsGroup* m_bc_group = NULL;
 
-		//25.08.2011. WW
-		if(WriteProcessed_BC == 2)
+		// 25.08.2011. WW
+		if (WriteProcessed_BC == 2)
 			Read_Processed_BC();
 		else
 		{
 			for (int i = 0; i < DOF; i++)
 			{
-				//OKm_bc_group = BCGetGroup(_pcs_type_name,pcs_primary_function_name[i]);
-				//OKif(!m_bc_group){
+				// OKm_bc_group = BCGetGroup(_pcs_type_name,pcs_primary_function_name[i]);
+				// OKif(!m_bc_group){
 				BCGroupDelete(pcs_type_name, pcs_primary_function_name[i]);
 				m_bc_group = new CBoundaryConditionsGroup();
-				//OK
+				// OK
 				m_bc_group->setProcessTypeName(pcs_type_name);
-				m_bc_group->setProcessPrimaryVariableName(
-				        pcs_primary_function_name[i]); //OK
+				m_bc_group->setProcessPrimaryVariableName(pcs_primary_function_name[i]); // OK
 				m_bc_group->Set(this, Shift[i]);
 
-				bc_group_list.push_back(m_bc_group); //Useless, to be removed. WW
+				bc_group_list.push_back(m_bc_group); // Useless, to be removed. WW
 				m_bc_group = NULL;
-				//OK}
+				// OK}
 			}
 #ifndef USE_PETSC
-			if (bc_node_value.size() < 1) //WW
-				cout << "Warning: no boundary conditions specified for "
-				     << pcs_type_name << endl;
+			if (bc_node_value.size() < 1) // WW
+				cout << "Warning: no boundary conditions specified for " << pcs_type_name << endl;
 #endif
-			if(WriteProcessed_BC == 1)
+			if (WriteProcessed_BC == 1)
 				Write_Processed_BC();
 		}
 		// ST - create ST groups for each process
@@ -1050,23 +1045,22 @@ void CRFProcess::SetBoundaryConditionAndSourceTerm()
 
 		if (WriteSourceNBC_RHS == 2) // Read from file
 			ReadRHS_of_ST_NeumannBC();
-		else                      // WW // Calculate directly
+		else // WW // Calculate directly
 		{
 			for (int i = 0; i < DOF; i++)
 			{
-				//OK m_st_group = m_st_group->Get(pcs_primary_function_name[i]);
-				m_st_group = STGetGroup(pcs_type_name,
-				                        pcs_primary_function_name[i]);
+				// OK m_st_group = m_st_group->Get(pcs_primary_function_name[i]);
+				m_st_group = STGetGroup(pcs_type_name, pcs_primary_function_name[i]);
 
 				if (!m_st_group)
 				{
 					m_st_group = new CSourceTermGroup();
-					//OK
+					// OK
 					m_st_group->pcs_type_name = pcs_type_name;
-					//OK
+					// OK
 					m_st_group->pcs_pv_name = pcs_primary_function_name[i];
 					m_st_group->Set(this, Shift[i]);
-					//Useless, to be removed. WW
+					// Useless, to be removed. WW
 					st_group_list.push_back(m_st_group);
 				}
 			}
@@ -1249,8 +1243,8 @@ void CRFProcess::WriteSolution()
 	                          + number2str(rank) + ".asc";
 
 #else
-	std::string m_file_name
-	    = FileName + "_" + pcs_type_name + "_" + pcs_primary_function_name[0] + "_primary_value.asc";
+	std::string m_file_name = FileName + "_" + pcs_type_name + "_" + pcs_primary_function_name[0]
+	                          + "_primary_value.asc";
 #endif
 	std::ofstream os(m_file_name.c_str(), ios::trunc | ios::out);
 	if (!os.good())
@@ -1297,8 +1291,8 @@ void CRFProcess::ReadSolution()
 	                          + number2str(rank) + ".asc";
 
 #else
-	std::string m_file_name
-	    = FileName + "_" + pcs_type_name + "_" + pcs_primary_function_name[0] + "_primary_value.asc";
+	std::string m_file_name = FileName + "_" + pcs_type_name + "_" + pcs_primary_function_name[0]
+	                          + "_primary_value.asc";
 #endif
 	std::ifstream is(m_file_name.c_str(), ios::in);
 	if (!is.good())
@@ -5582,7 +5576,7 @@ void CRFProcess::GlobalAssembly()
 				// WW
 				fem->SetElementNodesDomain(m_dom->element_nodes_dom[i]);
 				fem->ConfigElement(elem, Check2D3D);
-				fem->m_dom = m_dom; //OK
+				fem->m_dom = m_dom; // OK
 				fem->Assembly();
 			}
 		}
@@ -5624,22 +5618,16 @@ else
 			// Marked for use //WX: modified for coupled excavation
 			if (elem->GetMark() && elem->GetExcavState() == -1)
 			{
+				elem->SetOrder(false);
+				fem->ConfigElement(elem, Check2D3D);
+				fem->Assembly();
+				// NEUMANN CONTROL---------
+				if (Tim->time_control_type == TimeControlType::NEUMANN)
 				{
-					elem->SetOrder(false);
-					fem->ConfigElement(elem, Check2D3D);
-					fem->Assembly();
-					// NEUMANN CONTROL---------
-					if (Tim->time_control_type == TimeControlType::NEUMANN)
-					{
-						Tim->time_step_length_neumann = MMin(
-						        Tim->time_step_length_neumann, timebuffer);
-						Tim->time_step_length_neumann *= 0.5
-						                                 * elem->GetVolume()
-						                                 * elem->GetVolume();
-						if (Tim->time_step_length_neumann < MKleinsteZahl)
-							Tim->time_step_length_neumann = 1.0e-5;
-					}
-					//------------------------------
+					Tim->time_step_length_neumann = MMin(Tim->time_step_length_neumann, timebuffer);
+					Tim->time_step_length_neumann *= 0.5 * elem->GetVolume() * elem->GetVolume();
+					if (Tim->time_step_length_neumann < MKleinsteZahl)
+						Tim->time_step_length_neumann = 1.0e-5;
 				}
 				//------------------------------
 			}
@@ -5697,11 +5685,11 @@ else
 //
 //
 
-		//	MXDumpGLS("rf_pcs1.txt",1,eqs->b,eqs->x); //abort();
-#if defined(USE_PETSC)  // || defined(other parallel libs)//03~04.3012.
-		MPI_Barrier (MPI_COMM_WORLD);
-		  //	eqs_new->AssembleRHS_PETSc();
-		//eqs_new->AssembleMatrixPETSc(MAT_FINAL_ASSEMBLY );
+//	MXDumpGLS("rf_pcs1.txt",1,eqs->b,eqs->x); //abort();
+#if defined(USE_PETSC) // || defined(other parallel libs)//03~04.3012.
+	MPI_Barrier(MPI_COMM_WORLD);
+//	eqs_new->AssembleRHS_PETSc();
+// eqs_new->AssembleMatrixPETSc(MAT_FINAL_ASSEMBLY );
 #endif
 }
 
@@ -5734,7 +5722,7 @@ void CRFProcess::GlobalAssembly_std(const bool is_mixed_order, bool Check2D3D)
 
 		elem->SetOrder(m_msh->getOrder());
 		fem->setMixedOrderFlag(is_mixed_order);
-		fem->ConfigElement(elem,Check2D3D);
+		fem->ConfigElement(elem, Check2D3D);
 		fem->Assembly();
 	}
 }
@@ -5842,63 +5830,51 @@ void CRFProcess::CalIntegrationPointValue()
 		const size_t mesh_ele_vector_size(m_msh->ele_vector.size());
 		for (size_t i = 0; i < mesh_ele_vector_size; i++)
 		{
-			if ((getProcessType() == FiniteElement::HEAT_TRANSPORT || getProcessType() == FiniteElement::MASS_TRANSPORT) && !elem->selected)
-				continue;   // not selected for TOTAL_FLUX calculation JOD 2014-11-10
-			fem->ConfigElement(elem);
-			fem->Config(); //OK4709
-			// fem->m_dom = NULL; // To be used for parallization
-			if(getProcessType() == FiniteElement::MULTI_COMPONENTIAL_FLOW)
-				fem->Cal_VelocityMCF();
-			else
-				fem->Cal_Velocity();
-
-			//moved here from additional lower loop
-			if (getProcessType() == FiniteElement::TNEQ || getProcessType() == FiniteElement::TES)
+			elem = m_msh->ele_vector[i];
+			if (elem->GetMark()) // Marked for use
 			{
-				fem->CalcSolidDensityRate(); // HS, thermal storage reactions
+				if ((getProcessType() == FiniteElement::HEAT_TRANSPORT
+				     || getProcessType() == FiniteElement::MASS_TRANSPORT) && !elem->selected)
+					continue; // not selected for TOTAL_FLUX calculation JOD 2014-11-10
+				fem->ConfigElement(elem);
+				fem->Config(); // OK4709
+				// fem->m_dom = NULL; // To be used for parallization
+				if (getProcessType() == FiniteElement::MULTI_COMPONENTIAL_FLOW)
+					fem->Cal_VelocityMCF();
+				else
+					fem->Cal_Velocity();
+
+				// moved here from additional lower loop
+				if (getProcessType() == FiniteElement::TNEQ || getProcessType() == FiniteElement::TES)
+				{
+					fem->CalcSolidDensityRate(); // HS, thermal storage reactions
+				}
 			}
 		}
 	}
-   } else { //NW
-       const size_t mesh_ele_vector_size(m_msh->ele_vector.size());
-       const size_t v_itr_max(this->m_num->local_picard1_max_iterations);
-       double pre_v[3] = {};
-       double new_v[3] = {};
-       //std::cout << "  Start local Picard iteration: tolerance = " << this->m_num->local_picard1_tolerance << std::endl;
-       size_t i_itr = 0;
-       double vel_error = .0;
-       for (i_itr=0; i_itr<v_itr_max; ++i_itr)
-       {
-           //std::cout << "  non-linear iteration: " << i_itr << "/" << v_itr_max << std::endl;
-           vel_error = .0;
-           for (size_t i = 0; i < mesh_ele_vector_size; i++)
-           {
-               elem = m_msh->ele_vector[i];
-               if (elem->GetMark())                        // Marked for use
-               {
-                   ElementValue* gp_ele = ele_gp_value[i];
-                   gp_ele->GetEleVelocity(pre_v);
+	else
+	{ // NW
+		const size_t mesh_ele_vector_size(m_msh->ele_vector.size());
+		const size_t v_itr_max(this->m_num->local_picard1_max_iterations);
+		double pre_v[3] = {};
+		double new_v[3] = {};
+		// std::cout << "  Start local Picard iteration: tolerance = " << this->m_num->local_picard1_tolerance <<
+		// std::endl;
+		size_t i_itr = 0;
+		double vel_error = .0;
+		for (i_itr = 0; i_itr < v_itr_max; ++i_itr)
+		{
+			// std::cout << "  non-linear iteration: " << i_itr << "/" << v_itr_max << std::endl;
+			vel_error = .0;
+			for (size_t i = 0; i < mesh_ele_vector_size; i++)
+			{
+				elem = m_msh->ele_vector[i];
+				if (elem->GetMark()) // Marked for use
+				{
+					ElementValue* gp_ele = ele_gp_value[i];
+					gp_ele->GetEleVelocity(pre_v);
 
-                   fem->ConfigElement(elem);
-                   fem->Config();                           //OK4709
-                   // fem->m_dom = NULL; // To be used for parallization
-
-                   fem->Cal_Velocity();
-
-                   gp_ele->GetEleVelocity(new_v);
-                   vel_error = max(vel_error, fabs(new_v[0]-pre_v[0]));
-                   vel_error = max(vel_error, fabs(new_v[1]-pre_v[1]));
-                   vel_error = max(vel_error, fabs(new_v[2]-pre_v[2]));
-               }
-           }
-           //std::cout << "  error (max. norm): " << vel_error << std::endl;
-           bool isConverged = (vel_error < this->m_num->local_picard1_tolerance);
-           if (isConverged) break;
-       }
-       std::cout << "  Local Picard iteration: itr. count = " << i_itr << "/" << v_itr_max << ", error(max. norm)=" << vel_error << std::endl;
-   }
-
-					fem->ConfigElement(elem, m_num->ele_gauss_points);
+					fem->ConfigElement(elem);
 					fem->Config(); // OK4709
 					// fem->m_dom = NULL; // To be used for parallization
 
@@ -6681,8 +6657,7 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
 				for (ii = 0; ii < dof; ii++) // 28.2.2007 WW
 
 					if (convertPrimaryVariableToString(m_bc->getProcessPrimaryVariable())
-					        .find(pcs_primary_function_name[ii])
-					    != string::npos)
+					        .find(pcs_primary_function_name[ii]) != string::npos)
 					{
 						idx_1 = GetNodeValueIndex(pcs_primary_function_name[ii]) + 1;
 						break;
@@ -7411,7 +7386,7 @@ bool CRFProcess::checkConstrainedBC(CBoundaryCondition const& bc, CBoundaryCondi
 					    = m_msh->nod_vector[bc_node.geo_node_number]->getConnectedNodes()[j];
 					if (connected_node_id == static_cast<std::size_t>(bc_node.geo_node_number))
 					{
-						std::valarray<double>temp_vel(this->getNodeVelocityVector(connected_node_id));
+						std::valarray<double> temp_vel(this->getNodeVelocityVector(connected_node_id));
 						temp_vel *= static_cast<double>(no_connected_nodes - 1);
 						vel += temp_vel;
 					}
@@ -7442,15 +7417,15 @@ bool CRFProcess::checkConstrainedBC(CBoundaryCondition const& bc, CBoundaryCondi
 			// select case to handle BC
 			if (scalar_prod < 0.05 && scalar_prod >= -1.01 // small tolerance of ~5°
 			    && local_constrained.constrainedDirection == ConstrainedType::NEGATIVE) // velocity vector and bc
-			// surface normal point in
-			// opposite directions
+			                                                                            // surface normal point in
+			                                                                            // opposite directions
 			{
 				return true; // do not apply BC (maybe later implementation: change BC to ST at this node)
 			}
 			else if (scalar_prod <= 1.01 && scalar_prod >= -0.05 // small tolerance of ~5°
 			         && local_constrained.constrainedDirection == ConstrainedType::POSITIVE) // velocity vector points
-			// in same direction as bc
-			// surface normal
+			                                                                                 // in same direction as bc
+			                                                                                 // surface normal
 			{
 				return true; // do not apply BC (maybe later implementation: change BC to ST at this node)
 			}
@@ -8008,17 +7983,29 @@ void CRFProcess::IncorporateSourceTerms(const int rank)
 					elem = m_msh->ele_vector[ele_index];
 					if (elem->GetMark())
 					{
-						long ele_index = m_st->element_st_vector[i_st];
-						elem = m_msh->ele_vector[ele_index];
-						if (elem->GetMark())
-						{
-							fem->ConfigElement(elem);
-							fem->Config();
+						fem->ConfigElement(elem);
+						fem->Config();
 
-							if(getProcessType() == FiniteElement::MULTI_COMPONENTIAL_FLOW)
-								fem->Cal_VelocityMCF();
-							else
-								fem->Cal_Velocity();
+						if (getProcessType() == FiniteElement::MULTI_COMPONENTIAL_FLOW)
+							fem->Cal_VelocityMCF();
+						else
+							fem->Cal_Velocity();
+					}
+					gp_ele = ele_gp_value[ele_index];
+					gp_ele->GetEleVelocity(vel);
+					EleType = elem->GetElementType();
+					if (EleType == MshElemType::LINE) // Line
+						cnodev->node_value += vel[0];
+					// Traingle & Qua
+					if (EleType == MshElemType::TRIANGLE || EleType == MshElemType::QUAD)
+					{
+						for (size_t i_face = 0; i_face < m_msh->face_vector.size(); i_face++)
+						{
+							face = m_msh->face_vector[i_face];
+							if ((size_t)m_st->element_st_vector[i_st] == face->GetOwner()->GetIndex())
+								//
+								q_face = PointProduction(vel, m_msh->face_normal[i_face]) * face->GetVolume();
+							// for(i_node)
 						}
 						cnodev->node_value = +q_face / 2;
 					}
@@ -8127,7 +8114,7 @@ void CRFProcess::IncorporateSourceTerms(const int rank)
 		for (i = begin; i < end; i++)
 		{
 			if (rank > -1) // parallel version: stgem_node_value_in_dom and stgem_local_index_in_dom contain only values
-			// for the corresponding domain  == rank
+			               // for the corresponding domain  == rank
 			{
 				//				cout << "rank " << rank ;
 				gindex = stgem_node_value_in_dom[i]; // contains indexes to water-st_vec
@@ -8544,7 +8531,7 @@ std::string PCSProblemType()
 	//	for (i = 0; i < no_processes; i++) {
 	//		m_pcs = pcs_vector[i];
 	//		switch (m_pcs->pcs_type_name[7]) { // _pcs_type_name[7] should be 'W' because 'R' is reserved for Richard
-	// Flow.
+	//Flow.
 	//		case 'W':
 	//			if (pcs_problem_type.empty())
 	//				pcs_problem_type = "RANDOM_WALK";
@@ -10130,12 +10117,8 @@ void CRFProcess::Extropolation_GaussValue()
 		elem = m_msh->ele_vector[i];
 		if (elem->GetMark()) // Marked for use
 		{
-			elem = m_msh->ele_vector[i];
-			if (elem->GetMark()) // Marked for use
-			{
-				for(k = 0; k < NS; k++)
-					fem->ExtropolateGauss(*elem, this, k);
-			}
+			for (k = 0; k < NS; k++)
+				fem->ExtropolateGauss(*elem, this, k);
 		}
 	}
 }
@@ -10188,11 +10171,7 @@ void CRFProcess::Extropolation_MatValue()
 		elem = m_msh->ele_vector[i];
 		if (elem->GetMark()) // Marked for use
 		{
-			elem = m_msh->ele_vector[i];
-			if (elem->GetMark()) // Marked for use
-			{
-				fem->CalcNodeMatParatemer(*elem);
-			}
+			fem->CalcNodeMatParatemer(*elem);
 		}
 	}
 }
@@ -10701,12 +10680,8 @@ void CRFProcess::CalcSecondaryVariablesUnsaturatedFlow(bool initial)
 			elem = m_msh->ele_vector[i];
 			if (elem->GetMark()) // Marked for use
 			{
-				elem = m_msh->ele_vector[i];
-				if (elem->GetMark()) // Marked for use
-				{
-					elem->SetOrder(false);
-					fem->CalcSatuation(*elem);
-				}
+				elem->SetOrder(false);
+				fem->CalcSatuation(*elem);
 			}
 		}
 	}
@@ -10756,8 +10731,8 @@ void CRFProcess::CalcSecondaryVariablesTNEQ()
 		elem = m_msh->ele_vector[i];
 		if (elem->GetMark()) // Marked for use
 		{
-			fem->UpdateSolidDensity(elem->GetIndex());          // HS, thermal storage reactions
-			fem->ExtrapolateGauss_ReactRate_TNEQ_TES( *elem, this ); // HS added 19.02.2013
+			fem->UpdateSolidDensity(elem->GetIndex()); // HS, thermal storage reactions
+			fem->ExtrapolateGauss_ReactRate_TNEQ_TES(*elem, this); // HS added 19.02.2013
 		}
 	}
 }
@@ -10793,8 +10768,8 @@ void CRFProcess::CalcSecondaryVariablesTES()
 		CElem* const elem = m_msh->ele_vector[i];
 		if (elem->GetMark()) // Marked for use
 		{
-			fem->UpdateSolidDensity(elem->GetIndex());          // HS, thermal storage reactions
-			fem->ExtrapolateGauss_ReactRate_TNEQ_TES( *elem, this ); // HS added 19.02.2013
+			fem->UpdateSolidDensity(elem->GetIndex()); // HS, thermal storage reactions
+			fem->ExtrapolateGauss_ReactRate_TNEQ_TES(*elem, this); // HS added 19.02.2013
 		}
 	}
 }
@@ -11719,31 +11694,14 @@ void CRFProcess::CalcELEFluxes(const GEOLIB::Polyline* const ply, double* result
 	else
 		m_pcs_flow = PCSGet(FiniteElement::GROUNDWATER_FLOW);
 
-			// Configure Element for interpolation of node velocities to GP velocities
-			fem->ConfigElement(m_ele);
-			// velocity vector
-			for (size_t j = 0; j < 3; j++) {
-				//v[j] = m_pcs_flow->GetElementValue(m_ele->GetIndex(), v_eidx[j]);
-				// Calculate Element velocity
-				v[j] = fem->Get_Element_Velocity(m_ele->GetIndex(), m_pcs_flow, 0, j);
-			}
-			//Test mit Knotengeschwindigkeiten
-			//double temp_v[3];
-			//temp_v[0] = temp_v[1] = temp_v[2] = 0.0;
-			//int variable_index[3];
-			//variable_index[0] = m_pcs_flow->GetNodeValueIndex("VELOCITY_X1");
-			//variable_index[1] = m_pcs_flow->GetNodeValueIndex("VELOCITY_Y1");
-			//variable_index[2] = m_pcs_flow->GetNodeValueIndex("VELOCITY_Z1");
-			//
-			//for (size_t j = 0; j < 3; j++)
-			//{
-			//	for (size_t k = 0; k < m_ele->GetNodesNumber(false); k++)
-			//	{
-			//		temp_v[j] += m_pcs_flow->GetNodeValue(element_nodes[k], variable_index[j]);
-			//	}
-			//	temp_v[j] /=  m_ele->GetNodesNumber(false);
-			//	v[j] = temp_v[j];
-			//}
+	// calculates element velocity based on 1 GP
+	// CalcELEVelocities();
+
+	int v_eidx[3];
+	int v_eidx_2[3];
+	v_eidx[0] = m_pcs_flow->GetElementValueIndex("VELOCITY1_X");
+	v_eidx[1] = m_pcs_flow->GetElementValueIndex("VELOCITY1_Y");
+	v_eidx[2] = m_pcs_flow->GetElementValueIndex("VELOCITY1_Z");
 
 	if (pcs_type == FiniteElement::MULTI_PHASE_FLOW)
 	{
@@ -11815,7 +11773,7 @@ void CRFProcess::CalcELEFluxes(const GEOLIB::Polyline* const ply, double* result
 		Use_Element = true;
 
 		// Configure Element for interpolation of node velocities to GP velocities
-		fem->ConfigElement(m_ele, m_num->ele_gauss_points);
+		fem->ConfigElement(m_ele);
 		// velocity vector
 		for (size_t j = 0; j < 3; j++)
 		{
@@ -12238,9 +12196,9 @@ void CRFProcess::CalcELEMassFluxes(const GEOLIB::Polyline* const ply, std::strin
 					if (norm_v != 0)
 					{
 						Disp_xx = alpha_l * pow(v[0], 2) / norm_v + alpha_t * pow(v[1], 2) / norm_v; // ToDo:
-						// z-Dimension
+						                                                                             // z-Dimension
 						Disp_yy = alpha_l * pow(v[1], 2) / norm_v + alpha_t * pow(v[0], 2) / norm_v; // ToDo:
-						// z-Dimension
+						                                                                             // z-Dimension
 						Disp_xy = (alpha_l - alpha_t) * v[0] * v[1] / norm_v; // ToDo: z-Dimension
 						// calculate dispersive mass flux
 						j_disp[0] = porosity * (Disp_xx * ConcentrationGradient[0]
@@ -12681,8 +12639,8 @@ void CRFProcess::AssembleParabolicEquationRHSVector(CNode* m_nod)
 				if (m_ele->GetMark())
 				{
 					cout << m_ele->GetIndex() << "\n";
-					//WW ldummy = m_nod->GetIndex();
-					//WW ddummy = eqs->b[m_nod->GetIndex()];
+					// WW ldummy = m_nod->GetIndex();
+					// WW ddummy = eqs->b[m_nod->GetIndex()];
 					fem->ConfigElement(m_ele, false);
 					fem->AssembleParabolicEquationRHSVector();
 					// WW ddummy = eqs->b[m_nod->GetIndex()];
@@ -12701,7 +12659,7 @@ void CRFProcess::AssembleParabolicEquationRHSVector(CNode* m_nod)
 				if (check_sign < 0.0)
 					continue;
 				{
-					//cout << m_ele->GetIndex() << "\n";
+					// cout << m_ele->GetIndex() << "\n";
 					fem->ConfigElement(m_ele, false);
 					fem->AssembleParabolicEquationRHSVector();
 				}
@@ -13356,25 +13314,17 @@ bool CRFProcess::ELERelations()
 			succeed = false;
 	}
 
-		// FEM
-		if (type == 4 || type == 41)
-		{
-			// Set initialization function
-			CRFProcessDeformation* dm_pcs = (CRFProcessDeformation*) this;
-			dm_pcs->Initialization();
-			if (!dm_pcs->GetFEMAssembler())
-				succeed = false;
-		}
-		else                      // Initialize FEM calculator
-		{
-			int Axisymm = 1; // ani-axisymmetry
-			if (m_msh->isAxisymmetry())
-				Axisymm = -1;  // Axisymmetry is true
-			//OK4801 needs NUM
-			fem = new CFiniteElementStd(this, Axisymm * m_msh->GetCoordinateFlag());
-			if (!fem)
-				succeed = false;
-		}
+	// Element matrix output. WW
+	if (Write_Matrix)
+	{
+		cout << "->Write Matrix" << '\n';
+		string m_file_name = FileName + "_" + convertProcessTypeToString(this->getProcessType())
+		                     + "_element_matrix.txt";
+		matrix_file = new fstream(m_file_name.c_str(), ios::trunc | ios::out);
+		if (!matrix_file->good())
+			cout << "Warning in GlobalAssembly: Matrix files are not found"
+			     << "\n";
+	}
 
 	// FEM
 	if (type == 4 || type == 41)
@@ -13382,7 +13332,7 @@ bool CRFProcess::ELERelations()
 		// Set initialization function
 		CRFProcessDeformation* dm_pcs = (CRFProcessDeformation*)this;
 		dm_pcs->Initialization();
-		if (!dm_pcs->GetFEM_Assembler())
+		if (!dm_pcs->GetFEMAssembler())
 			succeed = false;
 	}
 	else // Initialize FEM calculator
@@ -13928,8 +13878,8 @@ void CRFProcess::WriteBC()
 		return;
 
 #ifdef USE_PETSC
-	std::string m_file_name
-	    = FileName + "_" + convertProcessTypeToString(this->getProcessType()) + "_BC_ST_" + number2str(myrank) + ".asc";
+	std::string m_file_name = FileName + "_" + convertProcessTypeToString(this->getProcessType()) + "_BC_ST_"
+	                          + number2str(myrank) + ".asc";
 #else
 	std::string m_file_name = FileName + "_" + convertProcessTypeToString(this->getProcessType()) + "_BC_ST.asc";
 #endif
@@ -14668,8 +14618,8 @@ void CRFProcess::UpdateTransientBC()
 				}
 		}
 		std::vector<double> interpol_res;
-		MathLib::PiecewiseLinearInterpolation(interpolation_points, interpolation_values, nodes_as_interpol_points,
-		                                      interpol_res);
+		MathLib::PiecewiseLinearInterpolation(
+		    interpolation_points, interpolation_values, nodes_as_interpol_points, interpol_res);
 
 		for (long k = start_i; k < end_i; k++)
 			bc_node_value[k]->node_value = interpol_res[k - start_i];
@@ -14876,8 +14826,8 @@ void CRFProcess::CalGPVelocitiesfromECLIPSE(string path, int timestep, int phase
 // Programming: 11/2010 DL, BG
 // Modification:
 //-------------------------------------------------------------------------
-void CRFProcess::CO2_H2O_NaCl_VLE_isobaric(double T, double P, Phase_Properties& vapor, Phase_Properties& liquid,
-                                           Phase_Properties& solid, int f)
+void CRFProcess::CO2_H2O_NaCl_VLE_isobaric(
+    double T, double P, Phase_Properties& vapor, Phase_Properties& liquid, Phase_Properties& solid, int f)
 {
 	// f ---  1 V-L-S, 2 V-L, 3 CO2-L-S, 4 CO2-L
 
@@ -15269,18 +15219,16 @@ void CRFProcess::CalculateFluidDensitiesAndViscositiesAtNodes(CRFProcess* m_pcs)
 		// Read CO2 concentration in water and calculate moles of CO2 in liquid phase
 		indexProcess = MassTransportID[1];
 		// +1: new timelevel
-		variable_index
-		    = pcs_vector[indexProcess]->GetNodeValueIndex(pcs_vector[indexProcess]->pcs_primary_function_name[0])
-		      + TimeStepVariableIndex;
+		variable_index = pcs_vector[indexProcess]->GetNodeValueIndex(
+		                     pcs_vector[indexProcess]->pcs_primary_function_name[0]) + TimeStepVariableIndex;
 		//[mol/m³]
 		c_CO2inLiquid = pcs_vector[indexProcess]->GetNodeValue(i, variable_index);
 
 		// Read NaCl concentration in water and calculate moles of NaCl in liquid phase
 		indexProcess = MassTransportID[2];
 		// +1: new timelevel
-		variable_index
-		    = pcs_vector[indexProcess]->GetNodeValueIndex(pcs_vector[indexProcess]->pcs_primary_function_name[0])
-		      + TimeStepVariableIndex;
+		variable_index = pcs_vector[indexProcess]->GetNodeValueIndex(
+		                     pcs_vector[indexProcess]->pcs_primary_function_name[0]) + TimeStepVariableIndex;
 		//[mol/m³]
 		c_NaClinLiquid = pcs_vector[indexProcess]->GetNodeValue(i, variable_index);
 
@@ -15357,9 +15305,8 @@ void CRFProcess::CalculateFluidDensitiesAndViscositiesAtNodes(CRFProcess* m_pcs)
 			// Read H2O concentration in gas and calculate moles of H2O in gas phase
 			indexProcess = MassTransportID[4];
 			// +1: new timelevel
-			variable_index
-			    = pcs_vector[indexProcess]->GetNodeValueIndex(pcs_vector[indexProcess]->pcs_primary_function_name[0])
-			      + TimeStepVariableIndex;
+			variable_index = pcs_vector[indexProcess]->GetNodeValueIndex(
+			                     pcs_vector[indexProcess]->pcs_primary_function_name[0]) + TimeStepVariableIndex;
 			//[mol/m³]
 			c_H2OinGas = pcs_vector[indexProcess]->GetNodeValue(i, variable_index);
 
@@ -15533,10 +15480,10 @@ void CRFProcess::Phase_Transition_CO2(CRFProcess* m_pcs, int Step)
 		saturation_liquid = m_pcs->GetNodeValue(i, variable_index);
 		saturation_gas = 1 - saturation_liquid;
 		// calculate new effective saturation that sum up to 1
-		saturation_liquid_effective
-		    = (saturation_liquid - saturation_liquid_min) / (1 - saturation_liquid_min - saturation_gas_min);
-		saturation_gas_effective
-		    = (saturation_gas - saturation_gas_min) / (1 - saturation_liquid_min - saturation_gas_min);
+		saturation_liquid_effective = (saturation_liquid - saturation_liquid_min)
+		                              / (1 - saturation_liquid_min - saturation_gas_min);
+		saturation_gas_effective = (saturation_gas - saturation_gas_min)
+		                           / (1 - saturation_liquid_min - saturation_gas_min);
 		if (saturation_liquid_effective < 1e-10)
 		{
 			saturation_liquid_effective = 0;
@@ -15583,9 +15530,8 @@ void CRFProcess::Phase_Transition_CO2(CRFProcess* m_pcs, int Step)
 		indexProcess = MassTransportID[1];
 		solid.CO2 = 0;
 		// +1: new timelevel
-		variable_index
-		    = pcs_vector[indexProcess]->GetNodeValueIndex(pcs_vector[indexProcess]->pcs_primary_function_name[0])
-		      + TimeStepVariableIndex;
+		variable_index = pcs_vector[indexProcess]->GetNodeValueIndex(
+		                     pcs_vector[indexProcess]->pcs_primary_function_name[0]) + TimeStepVariableIndex;
 		//[mol/m³]
 		c_CO2inLiquid = pcs_vector[indexProcess]->GetNodeValue(i, variable_index);
 		liquid.CO2 = c_CO2inLiquid * liquid.volume; //[mol] = mol/m³ * m³
@@ -15595,9 +15541,8 @@ void CRFProcess::Phase_Transition_CO2(CRFProcess* m_pcs, int Step)
 		gas.NaCl = 0;
 		solid.NaCl = 0;
 		// +1: new timelevel
-		variable_index
-		    = pcs_vector[indexProcess]->GetNodeValueIndex(pcs_vector[indexProcess]->pcs_primary_function_name[0])
-		      + TimeStepVariableIndex;
+		variable_index = pcs_vector[indexProcess]->GetNodeValueIndex(
+		                     pcs_vector[indexProcess]->pcs_primary_function_name[0]) + TimeStepVariableIndex;
 		//[mol/m³]
 		c_NaClinLiquid = pcs_vector[indexProcess]->GetNodeValue(i, variable_index);
 		//[mol] = mol/m³ * m³
@@ -15639,9 +15584,8 @@ void CRFProcess::Phase_Transition_CO2(CRFProcess* m_pcs, int Step)
 			// phase transition after reactions -> use old liquid.H2O because no phase movement
 			indexProcess = MassTransportID[0];
 			// +1: new timelevel
-			variable_index
-			    = pcs_vector[indexProcess]->GetNodeValueIndex(pcs_vector[indexProcess]->pcs_primary_function_name[0])
-			      + 1;
+			variable_index = pcs_vector[indexProcess]->GetNodeValueIndex(
+			                     pcs_vector[indexProcess]->pcs_primary_function_name[0]) + 1;
 			//[mol/m³]
 			c_H2OinLiquid = pcs_vector[indexProcess]->GetNodeValue(i, variable_index);
 			//[mol] = mol/m³ * m³
@@ -15652,8 +15596,7 @@ void CRFProcess::Phase_Transition_CO2(CRFProcess* m_pcs, int Step)
 			// this new pressure, new phase saturations
 			//[mol]
 			liquid.H2O = (Density_liquid * liquid.volume - liquid.CO2 * Molweight_CO2 * 1e-3
-			              - liquid.NaCl * Molweight_NaCl * 1e-3)
-			             / (Molweight_H2O * 1e-3);
+			              - liquid.NaCl * Molweight_NaCl * 1e-3) / (Molweight_H2O * 1e-3);
 
 		// if (m_pcs->Tim->step_current == 1)
 		// liquid.H2O = (Density_liquid * liquid.volume - liquid.CO2 * Molweight_CO2 * 1e-3 - liquid.NaCl *
@@ -15671,9 +15614,8 @@ void CRFProcess::Phase_Transition_CO2(CRFProcess* m_pcs, int Step)
 		// Read H2O concentration in gas and calculate moles of H2O in gas phase
 		indexProcess = MassTransportID[4];
 		// +1: new timelevel
-		variable_index
-		    = pcs_vector[indexProcess]->GetNodeValueIndex(pcs_vector[indexProcess]->pcs_primary_function_name[0])
-		      + TimeStepVariableIndex;
+		variable_index = pcs_vector[indexProcess]->GetNodeValueIndex(
+		                     pcs_vector[indexProcess]->pcs_primary_function_name[0]) + TimeStepVariableIndex;
 		//[mol/m³]
 		c_H2OinGas = pcs_vector[indexProcess]->GetNodeValue(i, variable_index);
 		gas.H2O = c_H2OinGas * gas.volume; //[mol] = mol/m³ * m³
@@ -15691,9 +15633,8 @@ void CRFProcess::Phase_Transition_CO2(CRFProcess* m_pcs, int Step)
 			// phase transition after reactions -> use old liquid.H2O because no phase movement
 			indexProcess = MassTransportID[3];
 			// +1: new timelevel
-			variable_index
-			    = pcs_vector[indexProcess]->GetNodeValueIndex(pcs_vector[indexProcess]->pcs_primary_function_name[0])
-			      + 1;
+			variable_index = pcs_vector[indexProcess]->GetNodeValueIndex(
+			                     pcs_vector[indexProcess]->pcs_primary_function_name[0]) + 1;
 			//[mol/m³]
 			c_CO2inGas = pcs_vector[indexProcess]->GetNodeValue(i, variable_index);
 			gas.CO2 = c_CO2inGas * gas.volume; //[mol] = mol/m³ * m³

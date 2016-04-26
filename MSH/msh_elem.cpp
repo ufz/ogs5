@@ -103,33 +103,34 @@ CElem::CElem(size_t Index, CElem* onwer, int Face) : CCore(Index), normal_vector
 	//
 	switch (owner->geo_type)
 	{
-	//case MshElemType::LINE:  // 1-D bar element //KR need not be processed
-	case MshElemType::QUAD:                   // 2-D quadrilateral element
-		this->setElementProperties(MshElemType::LINE);
-		break;
-	case MshElemType::HEXAHEDRON:             // 3-D hexahedral element
-		this->setElementProperties(MshElemType::QUAD);
-		break;
-	case MshElemType::TRIANGLE:               // 2-D triagular element
-		this->setElementProperties(MshElemType::LINE);
-		break;
-	case MshElemType::TETRAHEDRON:            // 3-D tetrahedral element
-		this->setElementProperties(MshElemType::TRIANGLE);
-		break;
-	case MshElemType::PRISM:                  // 3-D prismatic element
-		if (Face < 2)                     // top or bottom face of the prism
-			this->setElementProperties(MshElemType::TRIANGLE);
-		else                              // side of the prism
+		// case MshElemType::LINE:  // 1-D bar element //KR need not be processed
+		case MshElemType::QUAD: // 2-D quadrilateral element
+			this->setElementProperties(MshElemType::LINE);
+			break;
+		case MshElemType::HEXAHEDRON: // 3-D hexahedral element
 			this->setElementProperties(MshElemType::QUAD);
-		break;
-	case MshElemType::PYRAMID:                // 3-D pyramid element
-		if (Face < 1)                     // bottom face
-			this->setElementProperties(MshElemType::QUAD);
-		else                              // side faces
+			break;
+		case MshElemType::TRIANGLE: // 2-D triagular element
+			this->setElementProperties(MshElemType::LINE);
+			break;
+		case MshElemType::TETRAHEDRON: // 3-D tetrahedral element
 			this->setElementProperties(MshElemType::TRIANGLE);
-		break;
-	default:
-		std::cerr << "CElem::CElem MshElemType not handled" << "\n";
+			break;
+		case MshElemType::PRISM: // 3-D prismatic element
+			if (Face < 2) // top or bottom face of the prism
+				this->setElementProperties(MshElemType::TRIANGLE);
+			else // side of the prism
+				this->setElementProperties(MshElemType::QUAD);
+			break;
+		case MshElemType::PYRAMID: // 3-D pyramid element
+			if (Face < 1) // bottom face
+				this->setElementProperties(MshElemType::QUAD);
+			else // side faces
+				this->setElementProperties(MshElemType::TRIANGLE);
+			break;
+		default:
+			std::cerr << "CElem::CElem MshElemType not handled"
+			          << "\n";
 	}
 
 	patch_index = owner->patch_index;
@@ -385,9 +386,7 @@ void CElem::FillTransformMatrix()
 		CrossProduction(zz, xx, yy);
 		NormalizeVector(yy, 3);
 	}
-	else if (  geo_type == MshElemType::QUAD
-			|| geo_type == MshElemType::QUAD8
-			|| geo_type == MshElemType::TRIANGLE)
+	else if (geo_type == MshElemType::QUAD || geo_type == MshElemType::QUAD8 || geo_type == MshElemType::TRIANGLE)
 	{
 		// x"_vec
 		//			xx[0] = nodes[1]->X() - nodes[0]->X();
@@ -463,39 +462,40 @@ void CElem::SetFace(CElem* onwer, const int Face)
 	quadratic = owner->quadratic;
 	face_index = Face;
 	patch_index = owner->patch_index;
-	switch(owner->geo_type)
+	switch (owner->geo_type)
 	{
-	//case MshElemType::LINE:  // 1-D bar element
-	case MshElemType::QUAD: // 2-D quadrilateral element
-		this->setElementProperties(MshElemType::LINE); // JOD 2014-11-10
-		break;
-	case MshElemType::HEXAHEDRON:             // 3-D hexahedral element
-		this->setElementProperties(MshElemType::QUAD8);
-		break;
-	//case MshElemType::TRIANGLE:  // 2-D triagular element
-	case MshElemType::TETRAHEDRON:            // 3-D tetrahedral element
-		this->setElementProperties(MshElemType::TRIANGLE);
-		break;
-	case MshElemType::PRISM:
-		if(Face < 2)
-			this->setElementProperties(MshElemType::TRIANGLE);
-		else
+		// case MshElemType::LINE:  // 1-D bar element
+		case MshElemType::QUAD: // 2-D quadrilateral element
+			this->setElementProperties(MshElemType::LINE); // JOD 2014-11-10
+			break;
+		case MshElemType::HEXAHEDRON: // 3-D hexahedral element
 			this->setElementProperties(MshElemType::QUAD8);
-		break;                            // 3-D prismatic element
-	case MshElemType::PYRAMID:
-		if(Face < 1)
-			this->setElementProperties(MshElemType::QUAD8);
-		else
+			break;
+		// case MshElemType::TRIANGLE:  // 2-D triagular element
+		case MshElemType::TETRAHEDRON: // 3-D tetrahedral element
 			this->setElementProperties(MshElemType::TRIANGLE);
-		break;                           // 3-D pyramid element
-	default:
-		std::cerr << "CElem::SetFace MshElemType not handled" << "\n";
-		break;
+			break;
+		case MshElemType::PRISM:
+			if (Face < 2)
+				this->setElementProperties(MshElemType::TRIANGLE);
+			else
+				this->setElementProperties(MshElemType::QUAD8);
+			break; // 3-D prismatic element
+		case MshElemType::PYRAMID:
+			if (Face < 1)
+				this->setElementProperties(MshElemType::QUAD8);
+			else
+				this->setElementProperties(MshElemType::TRIANGLE);
+			break; // 3-D pyramid element
+		default:
+			std::cerr << "CElem::SetFace MshElemType not handled"
+			          << "\n";
+			break;
 	}
 
-	if (nodes.Size()<n)
+	if (nodes.Size() < n)
 		nodes.resize(n);
-	for(size_t i = 0; i < n; i++)
+	for (size_t i = 0; i < n; i++)
 	{
 		nodes[i] = owner->nodes[nodeIndex_loc[i]];
 		nodes_index[i] = nodes[i]->GetIndex();
@@ -636,6 +636,7 @@ void CElem::Read(std::istream& is, int fileType)
 					break;
 				default:
 					geo_type = MshElemType::INVALID;
+					break;
 			}
 			index--;
 			break;
@@ -1607,72 +1608,73 @@ void CElem::setElementProperties(MshElemType::type t)
 {
 	switch (t)
 	{
-	case MshElemType::LINE:
-		nnodes = 2;
-		nnodesHQ = 3;
-		ele_dim = 1;
-		geo_type = MshElemType::LINE;
-		nfaces = 2;
-		nedges = 1;
-		break;
-	case MshElemType::QUAD8:
-		nnodes = 4;
-		nnodesHQ = 8;
-		ele_dim = 2;
-		geo_type = MshElemType::QUAD8;
-		nfaces = 4;
-		nedges = 4;
-		break;
-	case MshElemType::QUAD:
-		nnodes = 4;
-		nnodesHQ = 9;
-		ele_dim = 2;
-		geo_type = MshElemType::QUAD;
-		nfaces = 4;
-		nedges = 4;
-		break;
-	case MshElemType::HEXAHEDRON:
-		nnodes = 8;
-		nnodesHQ = 20;
-		ele_dim = 3;
-		nfaces = 6;
-		nedges = 12;
-		geo_type = MshElemType::HEXAHEDRON;
-		break;
-	case MshElemType::TRIANGLE:
-		nnodes = 3;
-		nnodesHQ = 6;
-		ele_dim = 2;
-		geo_type = MshElemType::TRIANGLE;
-		nfaces = 3;
-		nedges = 3;
-		break;
-	case MshElemType::TETRAHEDRON:
-		nnodes = 4;
-		nnodesHQ = 10;
-		ele_dim = 3;
-		geo_type = MshElemType::TETRAHEDRON;
-		nfaces = 4;
-		nedges = 6;
-		break;
-	case MshElemType::PRISM:
-		nnodes = 6;
-		nnodesHQ = 15;
-		ele_dim = 3;
-		geo_type = MshElemType::PRISM;
-		nfaces = 5;
-		nedges = 9;
-		break;
-	case MshElemType::PYRAMID:
-		nnodes = 5;
-		nnodesHQ = 13;
-		ele_dim = 3;
-		geo_type = MshElemType::PYRAMID;
-		nfaces = 5;
-		nedges = 8;
-		break;
-	default:
-		std::cerr << "CElem::setElementProperties MshElemType not handled" << "\n";
+		case MshElemType::LINE:
+			nnodes = 2;
+			nnodesHQ = 3;
+			ele_dim = 1;
+			geo_type = MshElemType::LINE;
+			nfaces = 2;
+			nedges = 1;
+			break;
+		case MshElemType::QUAD8:
+			nnodes = 4;
+			nnodesHQ = 8;
+			ele_dim = 2;
+			geo_type = MshElemType::QUAD8;
+			nfaces = 4;
+			nedges = 4;
+			break;
+		case MshElemType::QUAD:
+			nnodes = 4;
+			nnodesHQ = 9;
+			ele_dim = 2;
+			geo_type = MshElemType::QUAD;
+			nfaces = 4;
+			nedges = 4;
+			break;
+		case MshElemType::HEXAHEDRON:
+			nnodes = 8;
+			nnodesHQ = 20;
+			ele_dim = 3;
+			nfaces = 6;
+			nedges = 12;
+			geo_type = MshElemType::HEXAHEDRON;
+			break;
+		case MshElemType::TRIANGLE:
+			nnodes = 3;
+			nnodesHQ = 6;
+			ele_dim = 2;
+			geo_type = MshElemType::TRIANGLE;
+			nfaces = 3;
+			nedges = 3;
+			break;
+		case MshElemType::TETRAHEDRON:
+			nnodes = 4;
+			nnodesHQ = 10;
+			ele_dim = 3;
+			geo_type = MshElemType::TETRAHEDRON;
+			nfaces = 4;
+			nedges = 6;
+			break;
+		case MshElemType::PRISM:
+			nnodes = 6;
+			nnodesHQ = 15;
+			ele_dim = 3;
+			geo_type = MshElemType::PRISM;
+			nfaces = 5;
+			nedges = 9;
+			break;
+		case MshElemType::PYRAMID:
+			nnodes = 5;
+			nnodesHQ = 13;
+			ele_dim = 3;
+			geo_type = MshElemType::PYRAMID;
+			nfaces = 5;
+			nedges = 8;
+			break;
+		default:
+			std::cerr << "CElem::setElementProperties MshElemType not handled"
+			          << "\n";
 	}
 	this->nodes_index.resize(quadratic ? nnodesHQ : nnodes);
 }
