@@ -25,8 +25,8 @@ Benchmark(AUTHOR UJG
 	CONFIG FEM
 	RUNTIME 2
 	OUTPUT_FILES
-		HM/hm_cc_tri_s_domain_DEFORMATION_FLOW_tri.tec
-		HM/hm_cc_tri_s_time_POINT2_DEFORMATION_FLOW.tec
+		hm_cc_tri_s_domain_DEFORMATION_FLOW_tri.tec
+		hm_cc_tri_s_time_POINT2_DEFORMATION_FLOW.tec
 )
 
 Benchmark(AUTHOR UJG
@@ -156,8 +156,8 @@ Benchmark(AUTHOR UJG
 	CONFIG FEM
 	RUNTIME 3
 	OUTPUT_FILES
-		creep/m_crp_tri_domain_tri.tec
-		creep/m_crp_tri_time_POINT2.tec
+		m_crp_tri_domain_tri.tec
+		m_crp_tri_time_POINT2.tec
 )
 
 Benchmark(AUTHOR UJG
@@ -178,7 +178,7 @@ Benchmark(AUTHOR UJG
 	PATH HM/hm_foot_tet
 	CONFIG FEM
 	RUNTIME 63
-	OUTPUT_FILES 32
+	OUTPUT_FILES
 		hm_foot_tet_domain_DEFORMATION_FLOW_tet.tec
 		hm_foot_tet_ply_OUT_AXIS_t1_DEFORMATION_FLOW.tec
 )

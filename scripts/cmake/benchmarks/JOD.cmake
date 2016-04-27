@@ -5,9 +5,9 @@ Benchmark(AUTHOR JOD
 	CONFIG FEM
 	RUNTIME 1
 	OUTPUT_FILES
-		OVERLAND_FLOW/gian_quad_domain_OVERLAND_FLOW_quad.tec
-		OVERLAND_FLOW/gian_quad_time_POINT4_OVERLAND_FLOW.tec
-		OVERLAND_FLOW/gian_quad_time_POINT5_OVERLAND_FLOW.tec
+		gian_quad_domain_OVERLAND_FLOW_quad.tec
+		gian_quad_time_POINT4_OVERLAND_FLOW.tec
+		gian_quad_time_POINT5_OVERLAND_FLOW.tec
 )
 
 Benchmark(AUTHOR JOD
