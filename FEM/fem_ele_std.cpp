@@ -4121,11 +4121,17 @@ void CFiniteElementStd::UpwindAlphaMass(double* alpha)
 void CFiniteElementStd::UpwindSummandMass(const int gp, int& gp_r, int& gp_s, int& gp_t, double* alpha, double* summand)
 
 {
-	int i;
 	//
-	GetGaussData(gp, gp_r, gp_s, gp_t); // this sets unit[] to standard values
-	GradShapeFunction(dshapefct, unit);
-	for (i = 0; i < nnodes; i++)
+	// GetGaussData(gp, gp_r, gp_s, gp_t); // this sets unit[] to standard values
+	// Already computed. WW //GradShapeFunction(dshapefct, unit);
+
+	// Avoid warnings for unused variables.
+	(void)gp;
+	(void)gp_r;
+	(void)gp_s;
+	(void)gp_t;
+
+	for (int i = 0; i < nnodes; i++)
 	{
 		summand[i] = 0.0;
 		for (size_t k = 0; k < dim; k++)

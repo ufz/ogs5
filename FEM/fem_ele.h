@@ -88,13 +88,13 @@ public:
 	// Set Gauss point
 	void SetGaussPoint(const int gp, int& gp_r, int& gp_s, int& gp_t);
 
-	void setShapeFunctionPool(ShapeFunctionPool* const lin_shape_fct_pool, ShapeFunctionPool* const quad_shape_fct_pool)
+	void setShapeFunctionPool(const ShapeFunctionPool* const lin_shape_fct_pool, const ShapeFunctionPool* const quad_shape_fct_pool)
 	{
 		_shape_function_pool_ptr[0] = lin_shape_fct_pool;
 		_shape_function_pool_ptr[1] = quad_shape_fct_pool;
 	};
 
-	ShapeFunctionPool* getShapeFunctionPool(int order_id) const { return _shape_function_pool_ptr[order_id]; }
+	const ShapeFunctionPool* getShapeFunctionPool(int order_id) const { return _shape_function_pool_ptr[order_id]; }
 
 	// Get Gauss integration information
 	double GetGaussData(int gp, int& gp_r, int& gp_s, int& gp_t);
@@ -227,13 +227,13 @@ protected:
 	/// Pointer to _inv_jacobian_all for a integation point
 	double* invJacobian;
 	/// Pointer to _shape_function_pool_ptr for a integation point
-	mutable double* shapefct;
+	mutable const double* shapefct;
 	/// Pointer to _shape_function_pool_ptr for a integation point
-	mutable double* shapefctHQ;
+	mutable const double* shapefctHQ;
 	/// Pointer to _dshapefct_all for a integation point
-	mutable double* dshapefct;
+	mutable const double* dshapefct;
 	/// Pointer to _dshapefctHQ_all for a integation point
-	mutable double* dshapefctHQ;
+	mutable const double* dshapefctHQ;
 
 	/// The values of the determinants of the inversed Jacobians
 	/// of all integation points.
@@ -258,14 +258,14 @@ protected:
 
 	/// Pointers to ShapeFunctionPool for two orders.
 	/// [0]: Linear, [1] Quadratic
-	ShapeFunctionPool* _shape_function_pool_ptr[2];
+	mutable const ShapeFunctionPool* _shape_function_pool_ptr[2];
 	/// Pointers to the start element of the shape function result array
 	//  for the present element for two orders.
 	/// [0]: Linear, [1] Quadratic
-	double* _shape_function_result_ptr[2];
+	mutable const double* _shape_function_result_ptr[2];
 	/// Pointers to the start element of the gradient (local) shape function
 	//  result array for the present element for two orders.
-	double* _grad_shape_function_result_ptr[2];
+	mutable const double* _grad_shape_function_result_ptr[2];
 
 	void getGradShapeFunctionPtr(const MshElemType::type elem_type);
 

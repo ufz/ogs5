@@ -504,14 +504,10 @@ double CElement::interpolate(double const* const nodalVal, const int order) cons
 double CElement::interpolate(const int idx, CRFProcess* m_pcs, const int order)
 {
 	int i;
-	int nn = nnodes;
-	double* inTerpo = shapefct;
+	const int nn = (order == 2) ? nnodesHQ : nnodes;
+	const double* inTerpo = (order == 2) ? shapefctHQ : shapefct;
 	double val = 0.0;
-	if (order == 2)
-	{
-		nn = nnodes;
-		inTerpo = shapefctHQ;
-	}
+
 	//
 	for (i = 0; i < nn; i++)
 		node_val[i] = m_pcs->GetNodeValue(nodes[i], idx);
@@ -557,23 +553,14 @@ double CElement::elemnt_average(const int idx, CRFProcess* m_pcs, const int orde
 **************************************************************************/
 void CElement::computeJacobian(const int gp, const int order, const bool inverse)
 {
-	int nodes_number = nnodes;
-	double DetJac = 0.0;
 
-	double* dN = NULL;
-	if (order == 2)
-	{
-		nodes_number = nnodesHQ;
-		dN = dshapefctHQ;
-	}
-	else
-	{
-		dN = dshapefct;
-	}
+	const int nodes_number = (order == 2) ? nnodesHQ : nnodes;
+	const double* dN = (order == 2) ? dshapefctHQ : dshapefct;
 
 	for (size_t i = 0; i < ele_dim * ele_dim; i++)
 		Jacobian[i] = 0.0;
 	//--------------------------------------------------------------------
+	double DetJac = 0.0;
 	switch (ele_dim)
 	{
 		//................................................................
@@ -710,11 +697,8 @@ void CElement::computeJacobian(const int gp, const int order, const bool inverse
 void CElement::RealCoordinates(double* realXYZ)
 {
 	int i;
-	double* df = shapefct;
-	if (Order == 2)
-	{
-		df = shapefctHQ;
-	}
+	const double* df = (Order == 2) ? shapefctHQ : shapefct;
+
 	for (i = 0; i < 3; i++)
 		realXYZ[i] = 0.0;
 
@@ -915,7 +899,7 @@ void CElement::FaceIntegration(double* NodeVal)
 		double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
 
 		getShapefunctValues(gp, Order);
-		double* sf = (Order == 1) ? shapefct : shapefctHQ;
+		const double* sf = (Order == 1) ? shapefct : shapefctHQ;
 
 		if (this->axisymmetry)
 		{
@@ -958,7 +942,7 @@ void CElement::DomainIntegration(double* NodeVal)
 			calculateRadius(gp);
 			fkt *= Radius; // 2.0*pai*radius;
 		}
-		double* sf = (Order == 1) ? shapefct : shapefctHQ;
+		const double* sf = (Order == 1) ? shapefct : shapefctHQ;
 
 		double val = 0.0;
 		// Interpolation of value at Gauss point
@@ -1071,16 +1055,15 @@ void CElement::ComputeGradShapefct(const int gp, const int order, const bool is_
 {
 	setOrder(order);
 
-	double* dshp_fct_local = NULL;
 	double* dshp_fct = NULL;
+	const double* dshp_fct_local = (order == 1) ? dshapefct : dshapefctHQ;
+
 	if (order == 1)
 	{
-		dshp_fct_local = dshapefct;
 		dshp_fct = &_dshapefct_all[nNodes * dim_grad * gp];
 	}
 	else
 	{
-		dshp_fct_local = dshapefctHQ;
 		dshp_fct = &_dshapefctHQ_all[nNodes * dim_grad * gp];
 	}
 

@@ -3442,7 +3442,7 @@ int MMultVecMat(double* vec, long gv, double* mat, long m, long n, double* veco,
 **************************************************************************/
 
 int MMultMatVec(/* Matrix */
-                double* mat, long m, long n,
+                const double* mat, long m, long n,
                 /* Veltor fuer das Produkt */
                 double* vec, long g,
                 /* Vektor fuer das Ergebnis */

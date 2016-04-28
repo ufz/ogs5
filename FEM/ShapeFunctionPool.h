@@ -32,37 +32,35 @@ public:
 	*/
 	ShapeFunctionPool(const std::vector<MshElemType::type>& elem_types, CElement& quadrature,
 	                  const int num_sample_gs_pnts);
-	~ShapeFunctionPool();
+	~ShapeFunctionPool() {}
 
 	/// Get shape function values of an element type
-	double* getShapeFunctionValues(const MshElemType::type elem_type) const;
+	const double* getShapeFunctionValues(const MshElemType::type elem_type) const;
 	/// Get the size of shape function array of an element type.
 	unsigned getShapeFunctionArraySize(const MshElemType::type elem_type) const;
 
 	/// Get shape function values at the element centroid of an element type
-	double* getShapeFunctionCenterValues(const MshElemType::type elem_type) const;
+	const double* getShapeFunctionCenterValues(const MshElemType::type elem_type) const;
 
 	/// Get the values of the gradient of shape function of an element type
-	double* getGradShapeFunctionValues(const MshElemType::type elem_type) const;
+	const double* getGradShapeFunctionValues(const MshElemType::type elem_type) const;
 
 	/// Get the gradient of shape function values at the element centroid of an element type
-	double* getGradShapeFunctionCenterValues(const MshElemType::type elem_type) const;
+	const double* getGradShapeFunctionCenterValues(const MshElemType::type elem_type) const;
 
 private:
 	/// Results of shape functions of all integration points.
-	std::vector<double*> _shape_function;
-	/// Sizes of the arrays of shape function results.
-	std::vector<unsigned> _shape_function_size;
+	std::vector< std::vector<double> > _shape_function;
 
 	/// Results of shape functions of all integration points at element centroid.
-	std::vector<double*> _shape_function_center;
+	std::vector< std::vector<double> > _shape_function_center;
 
 	/// Results of the gradient of shape functions with respect to
 	/// local coordinates of all integration points.
-	std::vector<double*> _grad_shape_function;
+	std::vector< std::vector<double> > _grad_shape_function;
 
 	/// Results of the gradient of shape functions of all integration points at element centroid.
-	std::vector<double*> _grad_shape_function_center;
+	std::vector< std::vector<double> > _grad_shape_function_center;
 
 	void computeQuadratures(const std::vector<MshElemType::type>& elem_types,
 	                        const int num_elem_nodes[2][MshElemType::NUM_ELEM_TYPES],
