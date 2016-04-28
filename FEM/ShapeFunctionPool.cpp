@@ -38,8 +38,8 @@ ShapeFunctionPool::ShapeFunctionPool(const std::vector<MshElemType::type>& elem_
 		_grad_shape_function_center.push_back(NULL);
 	}
 
-	int num_elem_nodes[2][MshElemType::LAST];
-	int dim_elem[MshElemType::LAST];
+	int num_elem_nodes[2][MshElemType::NUM_ELEM_TYPES];
+	int dim_elem[MshElemType::NUM_ELEM_TYPES];
 
 	int id = static_cast<int>(MshElemType::LINE) - 1;
 	num_elem_nodes[0][id] = 2;
@@ -137,7 +137,8 @@ ShapeFunctionPool::~ShapeFunctionPool()
 }
 
 void ShapeFunctionPool::computeQuadratures(const std::vector<MshElemType::type>& elem_types,
-                                           const int num_elem_nodes[2][MshElemType::LAST], const int dim_elem[],
+                                           const int num_elem_nodes[2][MshElemType::NUM_ELEM_TYPES],
+                                           const int dim_elem[],
                                            CElement& quadrature, const int num_sample_gs_pnts)
 {
 	const int order = quadrature.getOrder();

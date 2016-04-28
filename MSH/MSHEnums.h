@@ -32,7 +32,7 @@ struct MshElemType
 		PYRAMID = 7,
 		QUAD8 = 8,
 		INVALID = -1,
-		LAST = QUAD8
+		NUM_ELEM_TYPES = 8 /// Number of element types
 	};
 };
 

@@ -4339,9 +4339,9 @@ void Problem::createShapeFunctionPool()
 
 	// Check element types of meshes
 	std::vector<MshElemType::type> elem_types;
-	elem_types.reserve(MshElemType::LAST);
+	elem_types.reserve(MshElemType::NUM_ELEM_TYPES);
 
-	for (std::size_t i = 0; i < static_cast<std::size_t>(MshElemType::LAST); i++)
+	for (std::size_t i = 0; i < static_cast<std::size_t>(MshElemType::NUM_ELEM_TYPES); i++)
 	{
 		elem_types.push_back(MshElemType::INVALID);
 	}

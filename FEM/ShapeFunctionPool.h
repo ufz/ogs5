@@ -65,7 +65,7 @@ private:
 	std::vector<double*> _grad_shape_function_center;
 
 	void computeQuadratures(const std::vector<MshElemType::type>& elem_types,
-	                        const int num_elem_nodes[2][MshElemType::LAST],
+	                        const int num_elem_nodes[2][MshElemType::NUM_ELEM_TYPES],
 	                        const int dim_elem[],
 	                        CElement& quadrature,
 	                        const int num_sample_gs_pnts);
