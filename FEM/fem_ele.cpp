@@ -36,9 +36,12 @@ namespace FiniteElement
    Last modified:
 **************************************************************************/
 CElement::CElement(int CoordFlag, const int order)
-    : MeshElement(NULL), Order(order), ele_dim(1), dim_grad(1), nGaussPoints(1), nGauss(2), ShapeFunction(NULL),
-      ShapeFunctionHQ(NULL), GradShapeFunction(NULL), GradShapeFunctionHQ(NULL), _is_mixed_order(false), T_Flag(false),
-      C_Flag(false), F_Flag(false), D_Flag(0), RD_Flag(false), extrapo_method(ExtrapolationMethod::EXTRAPO_LINEAR)
+    : MeshElement(NULL), Order(order), ele_dim(1), _ele_global_dim(1),
+      nGaussPoints(1), nGauss(2), ShapeFunction(NULL),
+      ShapeFunctionHQ(NULL), GradShapeFunction(NULL), GradShapeFunctionHQ(NULL),
+      _is_mixed_order(false), T_Flag(false),
+      C_Flag(false), F_Flag(false), D_Flag(0), RD_Flag(false),
+      extrapo_method(ExtrapolationMethod::EXTRAPO_LINEAR)
 {
 	for (int i = 0; i < 2; i++)
 	{
@@ -160,7 +163,7 @@ void CElement::ConfigElement(CElem* MElement, const bool FaceIntegration)
 	nnodes = MeshElement->nnodes;
 	nnodesHQ = MeshElement->nnodesHQ;
 	ele_dim = MeshElement->GetDimension();
-	dim_grad = ele_dim;
+	_ele_global_dim = ele_dim;
 	bool done = false;
 	if (MeshElement->quadratic)
 		nNodes = nnodesHQ;
@@ -174,7 +177,7 @@ void CElement::ConfigElement(CElem* MElement, const bool FaceIntegration)
 	{
 		if (dim != ele_dim)
 		{
-			dim_grad = dim;
+			_ele_global_dim = dim;
 			//            a_node0 = MeshElement->nodes[0];      //07.04.2007. WW
 			double const* const coords_node_0(MeshElement->nodes[0]->getData());
 			for (int i = 0; i < nNodes; i++)
@@ -1025,11 +1028,11 @@ void CElement::getGradShapefunctValues(const int gp, const int order) const
 {
 	if (order == 1)
 	{
-		dshapefct = &_dshapefct_all[nnodes * dim_grad * gp];
+		dshapefct = &_dshapefct_all[nnodes * _ele_global_dim * gp];
 	}
 	else
 	{
-		dshapefctHQ = &_dshapefctHQ_all[nnodesHQ * dim_grad * gp];
+		dshapefctHQ = &_dshapefctHQ_all[nnodesHQ * _ele_global_dim * gp];
 	}
 }
 
@@ -1059,11 +1062,11 @@ void CElement::ComputeGradShapefct(const int gp, const int order, const bool is_
 
 	if (order == 1)
 	{
-		dshp_fct = &_dshapefct_all[nNodes * dim_grad * gp];
+		dshp_fct = &_dshapefct_all[nNodes * _ele_global_dim * gp];
 	}
 	else
 	{
-		dshp_fct = &_dshapefctHQ_all[nNodes * dim_grad * gp];
+		dshp_fct = &_dshapefctHQ_all[nNodes * _ele_global_dim * gp];
 	}
 
 	int j_times_ele_dim_plus_k, j_times_nNodes_plus_i;
