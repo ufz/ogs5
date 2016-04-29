@@ -111,7 +111,7 @@ public:
 	// Compute values of shape function at integral point unit
 	void ComputeShapefct(const int order, double shape_function[]);
 	// Compute the Jacobian matrix. Return its determinate
-	void computeJacobian(const int gp, const int order, const bool inverse = true);
+	void computeJacobian(const int gp, const int order, const bool need_inverse = true);
 
 	// Get the pointer to the gradient of shape function array
 	// in the shape function pool for element centroid
@@ -223,7 +223,7 @@ protected:
 	int gp; // Gauss point index.
 	mutable double unit[4]; // Local coordintes
 
-	double* Jacobian; // Jacobian matrix
+	double* _Jacobian; // Jacobian matrix
 	/// Pointer to _inv_jacobian_all for a integation point
 	double* invJacobian;
 	/// Pointer to _shape_function_pool_ptr for a integation point

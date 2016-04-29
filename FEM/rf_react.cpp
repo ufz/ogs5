@@ -1767,7 +1767,6 @@ void CRFProcess::InterpolateTempGP(CRFProcess* m_pcs, std::string name)
 // MX
 void CRFProcess::ExtropolateTempGP(CRFProcess* m_pcs, std::string name)
 {
-	//	MshElemType::type EleType;
 	int j;
 	size_t i;
 	long enode, nn;

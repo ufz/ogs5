@@ -88,7 +88,7 @@ CElement::CElement(int CoordFlag, const int order)
 			break;
 	}
 
-	Jacobian = new double[dim_jacobian];
+	_Jacobian = new double[dim_jacobian];
 	_determinants_all = new double[max_intgration_points];
 	_inv_jacobian_all = new double[max_intgration_points * dim_jacobian];
 	_dshapefct_all = new double[size_dshapefct];
@@ -124,8 +124,7 @@ CElement::CElement(int CoordFlag, const int order)
 //  Destructor of class Element
 CElement::~CElement()
 {
-	if (Jacobian)
-		delete[] Jacobian;
+	delete[] _Jacobian;
 	delete[] _determinants_all;
 	delete[] _inv_jacobian_all;
 	delete[] _dshapefct_all;
@@ -551,14 +550,14 @@ double CElement::elemnt_average(const int idx, CRFProcess* m_pcs, const int orde
    01/2006 WW Axisymmtry
    09/2006 WW 1D element in 3D
 **************************************************************************/
-void CElement::computeJacobian(const int gp, const int order, const bool inverse)
+void CElement::computeJacobian(const int gp, const int order, const bool need_inverse)
 {
 
 	const int nodes_number = (order == 2) ? nnodesHQ : nnodes;
 	const double* dN = (order == 2) ? dshapefctHQ : dshapefct;
 
 	for (size_t i = 0; i < ele_dim * ele_dim; i++)
-		Jacobian[i] = 0.0;
+		_Jacobian[i] = 0.0;
 	//--------------------------------------------------------------------
 	double DetJac = 0.0;
 	switch (ele_dim)
@@ -569,14 +568,14 @@ void CElement::computeJacobian(const int gp, const int order, const bool inverse
 			// If Line in X or Z direction, coordinate is saved in local X
 			// If Line in 3D space, a transform is applied and cast coordinate in local X
 			const double dx = X[1] - X[0]; //+Y[1]-Y[0];
-			Jacobian[0] = 0.5 * dx;
+			_Jacobian[0] = 0.5 * dx;
 
-			if (!inverse)
+			if (!need_inverse)
 				return;
 
 			invJacobian = &_inv_jacobian_all[gp * 1];
 			invJacobian[0] = 2.0 / dx;
-			DetJac = Jacobian[0];
+			DetJac = _Jacobian[0];
 			// WW
 			// if(MeshElement->area>0)
 			// DetJac *= MeshElement->area;// Moved to CFiniteElementStd::setMaterial()
@@ -592,26 +591,26 @@ void CElement::computeJacobian(const int gp, const int order, const bool inverse
 		case 2:
 			for (int i = 0, j = nodes_number; i < nodes_number; i++, j++)
 			{
-				Jacobian[0] += X[i] * dN[i];
-				Jacobian[1] += Y[i] * dN[i];
-				Jacobian[2] += X[i] * dN[j];
-				Jacobian[3] += Y[i] * dN[j];
+				_Jacobian[0] += X[i] * dN[i];
+				_Jacobian[1] += Y[i] * dN[i];
+				_Jacobian[2] += X[i] * dN[j];
+				_Jacobian[3] += Y[i] * dN[j];
 			}
 
-			if (!inverse)
+			if (!need_inverse)
 				return;
 
 			invJacobian = &_inv_jacobian_all[gp * 4];
-			DetJac = Jacobian[0] * Jacobian[3] - Jacobian[1] * Jacobian[2];
+			DetJac = _Jacobian[0] * _Jacobian[3] - _Jacobian[1] * _Jacobian[2];
 			if (fabs(DetJac) < MKleinsteZahl)
 			{
 				std::cout << "\n*** Jacobian: Det == 0 " << DetJac << "\n";
 				abort();
 			}
-			invJacobian[0] = Jacobian[3];
-			invJacobian[1] = -Jacobian[1];
-			invJacobian[2] = -Jacobian[2];
-			invJacobian[3] = Jacobian[0];
+			invJacobian[0] = _Jacobian[3];
+			invJacobian[1] = -_Jacobian[1];
+			invJacobian[2] = -_Jacobian[2];
+			invJacobian[3] = _Jacobian[0];
 			for (size_t i = 0; i < ele_dim * ele_dim; i++)
 				invJacobian[i] /= DetJac;
 			//
@@ -633,43 +632,43 @@ void CElement::computeJacobian(const int gp, const int order, const bool inverse
 				const int j = i + nodes_number;
 				const int k = i + 2 * nodes_number;
 
-				Jacobian[0] += X[i] * dN[i];
-				Jacobian[1] += Y[i] * dN[i];
-				Jacobian[2] += Z[i] * dN[i];
+				_Jacobian[0] += X[i] * dN[i];
+				_Jacobian[1] += Y[i] * dN[i];
+				_Jacobian[2] += Z[i] * dN[i];
 
-				Jacobian[3] += X[i] * dN[j];
-				Jacobian[4] += Y[i] * dN[j];
-				Jacobian[5] += Z[i] * dN[j];
+				_Jacobian[3] += X[i] * dN[j];
+				_Jacobian[4] += Y[i] * dN[j];
+				_Jacobian[5] += Z[i] * dN[j];
 
-				Jacobian[6] += X[i] * dN[k];
-				Jacobian[7] += Y[i] * dN[k];
-				Jacobian[8] += Z[i] * dN[k];
+				_Jacobian[6] += X[i] * dN[k];
+				_Jacobian[7] += Y[i] * dN[k];
+				_Jacobian[8] += Z[i] * dN[k];
 			}
 
-			if (!inverse)
+			if (!need_inverse)
 				return;
 
 			invJacobian = &_inv_jacobian_all[gp * 9];
-			DetJac = Jacobian[0] * (Jacobian[4] * Jacobian[8] - Jacobian[7] * Jacobian[5])
-			         + Jacobian[6] * (Jacobian[1] * Jacobian[5] - Jacobian[4] * Jacobian[2])
-			         + Jacobian[3] * (Jacobian[2] * Jacobian[7] - Jacobian[8] * Jacobian[1]);
+			DetJac = _Jacobian[0] * (_Jacobian[4] * _Jacobian[8] - _Jacobian[7] * _Jacobian[5])
+			         + _Jacobian[6] * (_Jacobian[1] * _Jacobian[5] - _Jacobian[4] * _Jacobian[2])
+			         + _Jacobian[3] * (_Jacobian[2] * _Jacobian[7] - _Jacobian[8] * _Jacobian[1]);
 
 			if (fabs(DetJac) < MKleinsteZahl)
 			{
 				std::cout << "\n*** Jacobian: DetJac == 0 " << DetJac << "\n";
 				abort();
 			}
-			invJacobian[0] = Jacobian[4] * Jacobian[8] - Jacobian[7] * Jacobian[5];
-			invJacobian[1] = Jacobian[2] * Jacobian[7] - Jacobian[1] * Jacobian[8];
-			invJacobian[2] = Jacobian[1] * Jacobian[5] - Jacobian[2] * Jacobian[4];
+			invJacobian[0] = _Jacobian[4] * _Jacobian[8] - _Jacobian[7] * _Jacobian[5];
+			invJacobian[1] = _Jacobian[2] * _Jacobian[7] - _Jacobian[1] * _Jacobian[8];
+			invJacobian[2] = _Jacobian[1] * _Jacobian[5] - _Jacobian[2] * _Jacobian[4];
 			//
-			invJacobian[3] = Jacobian[5] * Jacobian[6] - Jacobian[8] * Jacobian[3];
-			invJacobian[4] = Jacobian[0] * Jacobian[8] - Jacobian[6] * Jacobian[2];
-			invJacobian[5] = Jacobian[2] * Jacobian[3] - Jacobian[5] * Jacobian[0];
+			invJacobian[3] = _Jacobian[5] * _Jacobian[6] - _Jacobian[8] * _Jacobian[3];
+			invJacobian[4] = _Jacobian[0] * _Jacobian[8] - _Jacobian[6] * _Jacobian[2];
+			invJacobian[5] = _Jacobian[2] * _Jacobian[3] - _Jacobian[5] * _Jacobian[0];
 			//
-			invJacobian[6] = Jacobian[3] * Jacobian[7] - Jacobian[6] * Jacobian[4];
-			invJacobian[7] = Jacobian[1] * Jacobian[6] - Jacobian[7] * Jacobian[0];
-			invJacobian[8] = Jacobian[0] * Jacobian[4] - Jacobian[3] * Jacobian[1];
+			invJacobian[6] = _Jacobian[3] * _Jacobian[7] - _Jacobian[6] * _Jacobian[4];
+			invJacobian[7] = _Jacobian[1] * _Jacobian[6] - _Jacobian[7] * _Jacobian[0];
+			invJacobian[8] = _Jacobian[0] * _Jacobian[4] - _Jacobian[3] * _Jacobian[1];
 			for (size_t i = 0; i < ele_dim * ele_dim; i++)
 				invJacobian[i] /= DetJac;
 			break;

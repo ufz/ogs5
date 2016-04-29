@@ -117,7 +117,7 @@ private:
 
 	/// Caches for shape functions and their derivatives with respect to
 	/// the local coordinates.
-	FiniteElement::ShapeFunctionPool* _line_shapefunction_pool;
+	FiniteElement::ShapeFunctionPool* _linear_shapefunction_pool;
 	FiniteElement::ShapeFunctionPool* _quadr_shapefunction_pool;
 
 	// Processes

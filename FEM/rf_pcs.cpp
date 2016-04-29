@@ -1000,7 +1000,7 @@ void CRFProcess::SetBoundaryConditionAndSourceTerm()
 {
 	std::string pcs_type_name(convertProcessTypeToString(this->getProcessType()));
 
-	if (pcs_type_name_vector.size() && pcs_type_name_vector[0].find("DYNAMIC") != string::npos) // WW
+	if (!pcs_type_name_vector.empty() && pcs_type_name_vector[0].find("DYNAMIC") != string::npos) // WW
 	{
 		setBC_danymic_problems();
 		setST_danymic_problems();
@@ -10681,7 +10681,7 @@ void CRFProcess::CalcSecondaryVariablesUnsaturatedFlow(bool initial)
 			if (elem->GetMark()) // Marked for use
 			{
 				elem->SetOrder(false);
-				fem->CalcSatuation(*elem);
+				fem->CalcSaturation(*elem);
 			}
 		}
 	}

@@ -214,7 +214,7 @@ public:
 	void ExtrapolateGauss_ReactRate_TNEQ_TES(MeshLib::CElem& elem, CRFProcess* m_pcs);
 	// Calulate satutation at intehration points
 	// and extrapolate them to nodes.
-	void CalcSatuation(MeshLib::CElem& elem); // WW
+	void CalcSaturation(MeshLib::CElem& elem); // WW
 	// Extrapolate material parameters
 	void CalcNodeMatParatemer(MeshLib::CElem& elem); // WW
 
@@ -235,7 +235,8 @@ private:
 	int comp; // Component
 	int LocalShift; // For RHS
 	// Danymic
-	int* idx_vel_disp, idx_pres;
+	int* idx_vel_disp;
+	int idx_pres;
 	// Velocity
 	int* idx_vel; // WW
 	// Material properties
@@ -471,7 +472,8 @@ public:
 
 	// HS Thermal Storage parameters---------------
 	// Array of parameters on each Gauss point
-	double* rho_s_prev, *rho_s_curr;
+	double* rho_s_prev;
+	double* rho_s_curr;
 	double* q_R;
 // End of Thermal Storage parameters---------------
 #ifdef USE_TRANSPORT_FLUX

@@ -3196,7 +3196,7 @@ void CFiniteElementStd::UpwindUnitCoord(int p, int point, int ind)
 	{
 		v_rst[i] = 0.0;
 		for (size_t j = 0; j < ele_dim; j++)
-			v_rst[i] += Jacobian[i * dim + j] * v[j];
+			v_rst[i] += _Jacobian[i * dim + j] * v[j];
 	}
 	//
 
@@ -3992,7 +3992,7 @@ void CFiniteElementStd::UpwindAlphaMass(double* alpha)
 	{
 		v_rst[i] = 0.0;
 		for (size_t j = 0; j < ele_dim; j++)
-			v_rst[i] += Jacobian[i * dim + j] * v_tot[j];
+			v_rst[i] += _Jacobian[i * dim + j] * v_tot[j];
 	}
 
 	// Upwind-Factors
@@ -9526,7 +9526,7 @@ void CFiniteElementStd::ExtrapolateGauss_ReactRate_TNEQ_TES(MeshLib::CElem& elem
 /***********************************************************************
    27.03.2007 WW
 ***********************************************************************/
-void CFiniteElementStd::CalcSatuation(MeshLib::CElem& elem)
+void CFiniteElementStd::CalcSaturation(MeshLib::CElem& elem)
 {
 	MeshElement = &elem;
 	Index = MeshElement->GetIndex();
