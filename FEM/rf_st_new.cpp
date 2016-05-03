@@ -1836,7 +1836,7 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& node
 	}
 
 	CElement* fem_assembler_quad = NULL;
-	CElement* fem_assembler_line = dynamic_cast<CElement*>(pcs->getLinearFEMAssembler());
+	CElement* fem_assembler_linear = dynamic_cast<CElement*>(pcs->getLinearFEMAssembler());
 	if (pcs->getProcessType() == FiniteElement::DEFORMATION
 	    || pcs->getProcessType() == FiniteElement::DEFORMATION_DYNAMIC
 	    || pcs->getProcessType() == FiniteElement::DEFORMATION_FLOW
@@ -1846,7 +1846,7 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& node
 		fem_assembler_quad = dynamic_cast<CElement*>(dm_pcs->GetFEMAssembler());
 	}
 
-	CElement* fem_assembler = (msh->getOrder() == 1) ? fem_assembler_quad : fem_assembler_line;
+	CElement* fem_assembler = (msh->getOrder() == 1) ? fem_assembler_quad : fem_assembler_linear;
 	assert(fem_assembler);
 
 	fem_assembler->setOrder(msh->getOrder() + 1);

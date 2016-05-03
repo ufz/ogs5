@@ -167,6 +167,7 @@ double CFluidMomentum::Execute(int loop_process_number)
 
 				fem->setShapeFunctionPool(pcs_fem->getShapeFunctionPool(0),
 										  pcs_fem->getShapeFunctionPool(1));
+				fem->SetGaussPointNumber(pcs_fem->GetNumGaussSamples());
 
 				SolveDarcyVelocityOnNode();
 				delete fem;
