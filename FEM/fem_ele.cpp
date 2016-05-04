@@ -1396,17 +1396,19 @@ void CElement::SetExtropoGaussPoints(const int i)
 double CElement::CalcXi_p()
 {
 	MshElemType::type ElementType = MeshElement->GetElementType();
-	if (ElementType == MshElemType::LINE || ElementType == MshElemType::QUAD || ElementType == MshElemType::HEXAHEDRON)
+	Xi_p = 0.0;
+	if (   ElementType == MshElemType::LINE
+		|| ElementType == MshElemType::QUAD
+		|| ElementType == MshElemType::QUAD8
+		|| ElementType == MshElemType::HEXAHEDRON)
 	{
-		double r = .0;
 		for (gp = 0; gp < nGauss; gp++)
 		{
-			r = MXPGaussPkt(nGauss, gp);
-			if (fabs(r) > Xi_p)
-				Xi_p = fabs(r);
+			const double r = fabs(MXPGaussPkt(nGauss, gp));
+			if (r > Xi_p)
+				Xi_p = r;
 		}
-		r = 1.0 / Xi_p;
-		Xi_p = r;
+		Xi_p = 1.0 / Xi_p;
 		return Xi_p;
 	}
 	else
