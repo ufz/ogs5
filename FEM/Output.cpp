@@ -18,6 +18,7 @@
 #include <string>
 
 #include <cfloat> // DBL_EPSILON
+#include <algorithm> // remove-if
 
 #include "BuildInfo.h"
 #include "FEMIO/GeoIO.h"
@@ -477,6 +478,7 @@ ios::pos_type COutput::Read(std::ifstream& in_str, const GEOLIB::GEOObjects& geo
 				}
 				if (Keyword(line_string))
 					return position;
+				std::remove_if(line_string.begin(), line_string.end(), ::isspace);
 				mfp_value_vector.push_back(line_string);
 			}
 
