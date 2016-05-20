@@ -111,3 +111,5 @@ def checkout(url, branch, directory) {
 		userRemoteConfigs:
 			[[credentialsId: '6c1dad0d-9b3c-44c2-a6bb-669562045187', url: "${url}"]]])
 }
+
+properties ([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '25']]])
