@@ -1250,8 +1250,8 @@ double CSolidProperties::Heat_Capacity(double refence)
 			//linear density average (compare model 5)
 			val = lower_solid_density_limit*(*data_Capacity)(0);
 			val += (upper_solid_density_limit*(*data_Capacity)(1)-lower_solid_density_limit*(*data_Capacity)(0))/
-				(upper_solid_density_limit  - lower_solid_density_limit)*(reference - lower_solid_density_limit);
-			val /= reference;
+				(upper_solid_density_limit  - lower_solid_density_limit)*(refence - lower_solid_density_limit);
+			val /= refence;
 		break;
 		default:
 			val = (*data_Capacity)(0);

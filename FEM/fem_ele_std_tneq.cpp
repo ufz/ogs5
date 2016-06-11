@@ -739,7 +739,7 @@ double CFiniteElementStd::CalCoef_RHS_TNEQ(const int dof_index)
 		{
 			pg = ipol(p0, p1, theta, this);
 			Tg = ipol(T0, T1, theta, this);
-			Ts = ipol(T0s, T1s, theta, this);
+			const double Ts = ipol(T0s, T1s, theta, this);
 			Xw = ipol(X0, X1, theta, this);
 			// end of adding eos_arg-----------------
 			double H_vap = - SolidProp->reaction_enthalpy; //sign convention: defined negative for exothermic composition reaction but equ. written as: AB + \Delta H <--> A + B

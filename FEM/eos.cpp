@@ -595,6 +595,7 @@ double polynomial_heat_capacity(double T, int c)
 
     return res;
 }
+/**********************************************************************
    Function for calculating isochoric heat capacity depending on density and
    Temperature.
 
