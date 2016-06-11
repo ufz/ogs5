@@ -22,17 +22,23 @@ conversion_rate::conversion_rate(double T_solid,
                                  double phi_S,
                                  double delta_t,
                                  FiniteElement::SolidReactiveSystem system)
-    : R(PhysicalConstant::IdealGasConstant), rho_s_0(rho_s_initial), p_eq(1.0), tol_l(1.0e-4), tol_u(1.0 - tol_l),
-      tol_rho(0.1), x(Eigen::VectorXd(1))
+    : R(PhysicalConstant::IdealGasConstant),
+      rho_s_0(rho_s_initial),
+      p_eq(1.0),
+      tol_l (1.0e-4),
+      tol_u (1.0 - tol_l),
+      tol_rho (0.1),
+      x(Eigen::VectorXd(1))
 {
 	update_param(T_solid, T_gas, p_gas, x_reactive, rho_s_initial, phi_S, delta_t, system);
 
 	if (system == FiniteElement::CaOH2)
 	{ // Definition auch in void CSolidProperties::SetSolidReactiveSystemProperties()
-		rho_low = 1656.0;
+        rho_low = 1665.1;
 		rho_up = 2200.0;
-		reaction_enthalpy = -1.12e+05; // in J/mol; negative for exothermic composition reaction
-		reaction_entropy = -143.5; // in J/mol K
+        //only for equilibrium calculation. Do not touch. Reaction heat value set in rf_msp
+        reaction_enthalpy = -1.12e+05; //in J/mol; negative for exothermic composition reaction
+		reaction_entropy = -143.5; //in J/mol K
 		M_carrier = PhysicalConstant::MolarMass::N2;
 		M_react = PhysicalConstant::MolarMass::Water;
 	}
@@ -40,10 +46,10 @@ conversion_rate::conversion_rate(double T_solid,
 	{ // Definition auch in void CSolidProperties::SetSolidReactiveSystemProperties()
 		rho_low = 4500.0;
 		rho_up = 4860.0;
-		reaction_enthalpy = -1.376e+05; // in J/mol; negative for exothermic composition reaction
-		reaction_entropy = -114.1; // in J/mol K
+		reaction_enthalpy = -1.376e+05; //in J/mol; negative for exothermic composition reaction
+		reaction_entropy = -114.1; //in J/mol K
 		M_carrier = PhysicalConstant::MolarMass::N2;
-		M_react = PhysicalConstant::MolarMass::O2;
+		M_react   = PhysicalConstant::MolarMass::O2;
 	}
 	else if (system == FiniteElement::Z13XBF)
 	{ // Definition auch in void CSolidProperties::SetSolidReactiveSystemProperties()
@@ -93,9 +99,13 @@ void conversion_rate::set_chemical_equilibrium()
 
 	// calculate equilibrium
 	// using the p_eq to calculate the T_eq - Clausius-Clapeyron
-	T_eq = (reaction_enthalpy / R) / ((reaction_entropy / R) + log(p_r_g)); // unit of p in bar
-	// Alternative: Use T_s as T_eq and calculate p_eq - for Schaube kinetics
-	p_eq = exp((reaction_enthalpy / R) / T_s - (reaction_entropy / R));
+    //T_eq = (reaction_enthalpy/R) / ((reaction_entropy/R) + log(p_r_g)); // unit of p in bar
+	//Alternative: Use T_s as T_eq and calculate p_eq - for Schaube kinetics
+    //p_eq = exp((reaction_enthalpy/R)/T_s - (reaction_entropy/R));
+    //Schaube / Ostermeier
+    const double A(-12845.), B(16.508);
+    T_eq = A/(log(p_r_g) - B);
+    p_eq = exp(A/T_s + B);
 }
 
 // determine equilibrium loading according to Dubinin
