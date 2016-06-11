@@ -1248,7 +1248,7 @@ double CFluidProperties::Density(double* variables)
 					density *= 1. + drho_dC * (max(primary_variable[2], 0.0) - C_0);
 				break;
 			default:
-				std::cout << "Error in CFluidProperties::Density: no valid model"
+				std::cout << "Error in CFluidProperties::Density : no valid model (variables definded?)"
 				          << "\n";
 				break;
 		}
