@@ -1224,32 +1224,47 @@ double CFluidProperties::Density(double* variables)
 				pressure = primary_variable[0] / 1e5;
 
 				density = 9.99792877961606e+02 + 5.07605113140940e-04 * max(pressure, 0.0)
-				          - 5.28425478164183e-10 * pow(max(pressure, 0.0), 2.)
-				          + (5.13864847162196e-02 - 3.61991396354483e-06 * max(pressure, 0.0)
-				             + 7.97204102509724e-12 * pow(max(pressure, 0.0), 2.))
-				                * max(primary_variable[1], 0.0)
-				          + (-7.53557031774437e-03 + 6.32712093275576e-08 * max(pressure, 0.0)
-				             - 1.66203631393248e-13 * pow(max(pressure, 0.0), 2.))
-				                * pow(max(primary_variable[1], 0.0), 2.)
-				          + (4.60380647957350e-05 - 5.61299059722121e-10 * max(pressure, 0.0)
-				             + 1.80924436489400e-15 * pow(max(pressure, 0.0), 2.))
-				                * pow(max(primary_variable[1], 0.0), 3.)
-				          + (-2.26651454175013e-07 + 3.36874416675978e-12 * max(pressure, 0.0)
-				             - 1.30352149261326e-17 * pow(max(pressure, 0.0), 2.))
-				                * pow(max(primary_variable[1], 0.0), 4.)
-				          + (6.14889851856743e-10 - 1.06165223196756e-14 * max(pressure, 0.0)
-				             + 4.75014903737416e-20 * pow(max(pressure, 0.0), 2.))
-				                * pow(max(primary_variable[1], 0.0), 5.)
-				          + (-7.39221950969522e-13 + 1.42790422913922e-17 * max(pressure, 0.0)
-				             - 7.13130230531541e-23 * pow(max(pressure, 0.0), 2.))
-				                * pow(max(primary_variable[1], 0.0), 6.);
+					- 5.28425478164183e-10 * pow(max(pressure, 0.0), 2.)
+					+ (5.13864847162196e-02 - 3.61991396354483e-06 * max(pressure, 0.0)
+							+ 7.97204102509724e-12 * pow(max(pressure, 0.0), 2.))
+					* max(primary_variable[1], 0.0)
+					+ (-7.53557031774437e-03 + 6.32712093275576e-08 * max(pressure, 0.0)
+							- 1.66203631393248e-13 * pow(max(pressure, 0.0), 2.))
+					* pow(max(primary_variable[1], 0.0), 2.)
+					+ (4.60380647957350e-05 - 5.61299059722121e-10 * max(pressure, 0.0)
+							+ 1.80924436489400e-15 * pow(max(pressure, 0.0), 2.))
+					* pow(max(primary_variable[1], 0.0), 3.)
+					+ (-2.26651454175013e-07 + 3.36874416675978e-12 * max(pressure, 0.0)
+							- 1.30352149261326e-17 * pow(max(pressure, 0.0), 2.))
+					* pow(max(primary_variable[1], 0.0), 4.)
+					+ (6.14889851856743e-10 - 1.06165223196756e-14 * max(pressure, 0.0)
+							+ 4.75014903737416e-20 * pow(max(pressure, 0.0), 2.))
+					* pow(max(primary_variable[1], 0.0), 5.)
+					+ (-7.39221950969522e-13 + 1.42790422913922e-17 * max(pressure, 0.0)
+							- 7.13130230531541e-23 * pow(max(pressure, 0.0), 2.))
+					* pow(max(primary_variable[1], 0.0), 6.);
 
 				if (fabs(drho_dC) > 1.e-20)
 					density *= 1. + drho_dC * (max(primary_variable[2], 0.0) - C_0);
 				break;
+			case 26: // Dalton's law + ideal gas for use with TNEQ/TES
+			{
+				const double M0 = cp_vec[0]->molar_mass; // molar mass of component 0
+				const double M1 = cp_vec[1]->molar_mass;
+				const double p = primary_variable[0];
+				const double T = primary_variable[1];
+				const double x = primary_variable[2]; // gas mass fraction of component 1
+				// assert(0.0 <= x && x <= 1.0);
+
+				// gas molar fraction of component 1
+				const double xn = M0 * x / (M0 * x + M1 * (1.0 - x));
+
+				density = p / (PhysicalConstant::IdealGasConstant * T) * (M1 * xn + M0 * (1.0 - xn)); // R_uni in mNs
+				break;
+			}
 			default:
 				std::cout << "Error in CFluidProperties::Density : no valid model (variables definded?)"
-				          << "\n";
+					<< "\n";
 				break;
 		}
 	}
