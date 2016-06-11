@@ -1980,9 +1980,9 @@ double CFluidProperties::SpecificHeatCapacity(double* variables)
 				// reactive component
 				const double M1 = cp_vec[0]->molar_mass;
 				const double M2 = cp_vec[1]->molar_mass;
-				const double p = variables[0];
-				const double T = variables[1];
-				const double X = variables[2];
+				const double p = primary_variable[0];
+				const double T = primary_variable[1];
+				const double X = primary_variable[2];
 
 				x[0] = M1 * X / (M1 * X + M2 * (1.0 - X)); // mass in mole fraction
 				therm_prop("W");
@@ -2000,7 +2000,7 @@ double CFluidProperties::SpecificHeatCapacity(double* variables)
 			}
 		case 12: // mass fraction weighted average of isobaric specific heat capacities using a linearised model
 			// reactive component
-			x[0] = variables[2]; // mass fraction
+			x[0] = primary_variable[2]; // mass fraction
 			Cp_c[0] = linear_heat_capacity(variables[1], cp_vec[1]->fluid_id);
 			// inert component
 			x[1] = 1.0 - x[0];
@@ -2009,7 +2009,7 @@ double CFluidProperties::SpecificHeatCapacity(double* variables)
 			break;
 		case 13: //mass fraction weighted average of isobaric specific heat capacities using a polynomial model
 			//reactive component
-			x[0] = variables[2]; //mass fraction
+			x[0] = primary_variable[2]; //mass fraction
 			Cp_c[0] = polynomial_heat_capacity(variables[1],cp_vec[1]->fluid_id);
 			//inert component
 			x[1] = 1.0 - x[0];
@@ -2286,9 +2286,9 @@ double CFluidProperties::HeatConductivity(double* variables)
 				double x[2], k[2];
 				const double M0 = cp_vec[0]->molar_mass;
 				const double M1 = cp_vec[1]->molar_mass;
-				const double p = variables[0];
-				const double T = variables[1];
-				const double X = variables[2];
+				const double p = primary_variable[0];
+				const double T = primary_variable[1];
+				const double X = primary_variable[2];
 
 				// TODO [CL] max() is redundant if the fraction is guaranteed to be between 0 and 1.
 				// reactive component
