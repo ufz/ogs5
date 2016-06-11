@@ -678,22 +678,30 @@ double CFiniteElementStd::CalCoef_RHS_TES(const int dof_index)
 
 			val = FluidProp->Density(eos_arg) * poro * FluidProp->specific_heat_source;
 
-			double H_vap;
+			double H_vap(0.);
 			if (SolidProp->getSolidReactiveSystem() == FiniteElement::Z13XBF)
 			{
 				const double mole_frac = pcs->m_conversion_rate->get_mole_fraction(Xw);
 				H_vap = pcs->m_conversion_rate->get_enthalpy(Tg, pg * mole_frac);
-			}
-			else
-			{
+			} else if (SolidProp->getSolidReactiveSystem() != FiniteElement::INERT){
 				// sign convention:
 				// defined negative for exothermic composition reaction but equ. written as:
 				// AB + \Delta H <--> A + B
-				H_vap = -SolidProp->reaction_enthalpy;
-			}
+				H_vap = - SolidProp->reaction_enthalpy;
+				//enthalpy correction
+				const double rhoSR = gp_ele->rho_s_curr[gp];
+				const double dcp_drhoSR((((*SolidProp->data_Capacity)(1)*SolidProp->upper_solid_density_limit -
+								(*SolidProp->data_Capacity)(0)*SolidProp->lower_solid_density_limit)/
+							(SolidProp->upper_solid_density_limit-SolidProp->lower_solid_density_limit) -
+							(*SolidProp->data_Capacity)(0)) * SolidProp->lower_solid_density_limit/(rhoSR*rhoSR));
 
-			val += (1.0 - poro) * q_r * H_vap;
-			val += gp_ele->rho_s_curr[gp] * (1.0 - poro) * SolidProp->specific_heat_source;
+				const double cpS = SolidProp->Heat_Capacity(rhoSR);
+				const double cpG = FluidProp->SpecificHeatCapacity(eos_arg);
+				H_vap -= (cpS - cpG + rhoSR * dcp_drhoSR)*(Tg - 573.15);//TODO: Move IC to input file
+
+			}
+			val += (1.0-poro) * q_r * H_vap;
+			val += gp_ele->rho_s_curr[gp] * (1.0-poro) * SolidProp->specific_heat_source;
 		}
 		break;
 
