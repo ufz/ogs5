@@ -570,8 +570,9 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 					in >> cp[0] >> cp[1] >> cp[2] >> cp[3];
 			}
 
-			if ((heat_capacity_model == 11
-			     || heat_capacity_model == 12)) // && pcs_vector[0]->getProcessType() != FiniteElement::TNEQ)
+			if (heat_capacity_model == 11
+			    || heat_capacity_model == 12
+			    || heat_capacity_model == 13) // && pcs_vector[0]->getProcessType() != FiniteElement::TNEQ)
 			{
 				std::cout << "Warning: This heat capacity model requires two components and their molar masses defined "
 				             "in the mcp file!\n";
@@ -1990,6 +1991,15 @@ double CFluidProperties::SpecificHeatCapacity(double* variables)
 			x[1] = 1.0 - x[0];
 			Cp_c[1] = linear_heat_capacity(variables[1], cp_vec[0]->fluid_id);
 			specific_heat_capacity = Cp_c[0] * x[0] + Cp_c[1] * x[1]; // mixture isobaric specific heat capacities
+			break;
+		case 13: //mass fraction weighted average of isobaric specific heat capacities using a polynomial model
+			//reactive component
+			x[0] = variables[2]; //mass fraction
+			Cp_c[0] = polynomial_heat_capacity(variables[1],cp_vec[1]->fluid_id);
+			//inert component
+			x[1] = 1.0 - x[0];
+			Cp_c[1] = polynomial_heat_capacity(variables[1],cp_vec[0]->fluid_id);
+			specific_heat_capacity = Cp_c[0]*x[0] + Cp_c[1]*x[1]; //mixture isobaric specific heat capacities
 			break;
 		case 15: // mixture cp= sum_i y_i*cp:: P, T, x dependent
 			for (int CIndex = 2; CIndex < cmpN + 2; CIndex++)

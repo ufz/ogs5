@@ -4118,6 +4118,11 @@ void CRFProcess::ConfigTNEQ()
 	pcs_secondary_function_unit[pcs_number_of_secondary_nvals] = "kg/m3";
 	pcs_secondary_function_timelevel[pcs_number_of_secondary_nvals] = 1;
 	pcs_number_of_secondary_nvals++;
+	// Solid heat capacity output
+	pcs_secondary_function_name[pcs_number_of_secondary_nvals] = "SOLID_HEAT_CAP_N"; //TN TEST
+	pcs_secondary_function_unit[pcs_number_of_secondary_nvals] = "J/kgK";
+	pcs_secondary_function_timelevel[pcs_number_of_secondary_nvals] = 1;
+	pcs_number_of_secondary_nvals++;
 
 	pcs_number_of_evals = 0;
 	pcs_eval_name[pcs_number_of_evals] = "VELOCITY1_X";
@@ -4141,9 +4146,12 @@ void CRFProcess::ConfigTNEQ()
 	pcs_eval_name[pcs_number_of_evals] = "REACT_RATE";
 	pcs_eval_unit[pcs_number_of_evals] = "kg/m3s";
 	pcs_number_of_evals++;
-	// pcs_eval_name[pcs_number_of_evals] = "T_EQUIL"; //TN
-	// pcs_eval_unit[pcs_number_of_evals] = "K";
+	// pcs_eval_name[pcs_number_of_evals] = "SOLID_HEAT_CAP";
+	// pcs_eval_unit[pcs_number_of_evals] = "J/kgK";
 	// pcs_number_of_evals++;
+	//pcs_eval_name[pcs_number_of_evals] = "T_EQUIL"; //TN
+	//pcs_eval_unit[pcs_number_of_evals] = "K";
+	//pcs_number_of_evals++;
 
 	for (size_t i = 0; i < GetPrimaryVNumber(); i++)
 		Shift[i] = i * m_msh->GetNodesNumber(false);
@@ -4204,6 +4212,11 @@ void CRFProcess::ConfigTES()
 	pcs_secondary_function_unit[pcs_number_of_secondary_nvals] = "kg/m3";
 	pcs_secondary_function_timelevel[pcs_number_of_secondary_nvals] = 1;
 	pcs_number_of_secondary_nvals++;
+	// Solid heat capacity output
+	pcs_secondary_function_name[pcs_number_of_secondary_nvals] = "SOLID_HEAT_CAP_N"; //TN TEST
+	pcs_secondary_function_unit[pcs_number_of_secondary_nvals] = "J/kgK";
+	pcs_secondary_function_timelevel[pcs_number_of_secondary_nvals] = 1;
+	pcs_number_of_secondary_nvals++;
 
 	pcs_number_of_evals = 0;
 	pcs_eval_name[pcs_number_of_evals] = "VELOCITY1_X";
@@ -4227,6 +4240,9 @@ void CRFProcess::ConfigTES()
 	pcs_eval_name[pcs_number_of_evals] = "REACT_RATE";
 	pcs_eval_unit[pcs_number_of_evals] = "kg/m3s";
 	pcs_number_of_evals++;
+	// pcs_eval_name[pcs_number_of_evals] = "SOLID_HEAT_CAP";
+	// pcs_eval_unit[pcs_number_of_evals] = "J/kgK";
+	// pcs_number_of_evals++;
 	// pcs_eval_name[pcs_number_of_evals] = "T_EQUIL"; //TN
 	// pcs_eval_unit[pcs_number_of_evals] = "K";
 	// pcs_number_of_evals++;
@@ -10693,11 +10709,14 @@ void CRFProcess::CalcSecondaryVariablesTNEQ()
 	const size_t node_vector_size(m_msh->nod_vector.size());
 	const int idx_nodal_react_rate = this->GetNodeValueIndex("REACT_RATE_N");
 	const int idx_nodal_solid_density = this->GetNodeValueIndex("SOLID_DENSITY_N");
+	
+	const int idx_nodal_solid_cP = this->GetNodeValueIndex("SOLID_HEAT_CAP_N");
 
 	for (size_t idx_node = 0; idx_node < node_vector_size; idx_node++)
 	{
 		this->SetNodeValue(idx_node, idx_nodal_react_rate, 0.0);
 		this->SetNodeValue(idx_node, idx_nodal_solid_density, 0.0);
+		this->SetNodeValue( idx_node, idx_nodal_solid_cP, 0.0);
 	}
 
 	// loop over all the elements and update the rho_s values.
@@ -10729,11 +10748,13 @@ void CRFProcess::CalcSecondaryVariablesTES()
 	const size_t node_vector_size = m_msh->nod_vector.size();
 	const int idx_nodal_react_rate = GetNodeValueIndex("REACT_RATE_N");
 	const int idx_nodal_solid_density = GetNodeValueIndex("SOLID_DENSITY_N");
+	const int idx_nodal_solid_cP = this->GetNodeValueIndex("SOLID_HEAT_CAP_N");
 
 	for (size_t idx_node = 0; idx_node < node_vector_size; idx_node++)
 	{
 		SetNodeValue(idx_node, idx_nodal_react_rate, 0.0);
 		SetNodeValue(idx_node, idx_nodal_solid_density, 0.0);
+		this->SetNodeValue( idx_node, idx_nodal_solid_cP, 0.0);
 	}
 
 	// loop over all the elements and update the rho_s values.
