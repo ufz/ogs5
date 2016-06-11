@@ -195,6 +195,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs, con
 			Szz = new double[9];
 			Sxy = new double[9];
 			pstr = new double[9];
+			dilat = new double[9];
 
 			Sxz = NULL;
 			Syz = NULL;
@@ -232,6 +233,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs, con
 			Sxz = new double[20];
 			Syz = new double[20];
 			pstr = new double[20];
+			dilat = new double[20];
 
 			// Indecex in nodal value table
 			Idx_Strain[4] = pcs->GetNodeValueIndex("STRAIN_XZ");
@@ -387,17 +389,18 @@ CFiniteElementVec::~CFiniteElementVec()
 	delete[] Szz;
 	delete[] Sxy;
 	delete[] pstr;
-	delete[] Idx_Strain;
-	delete[] Idx_Stress;
-	delete[] strain_ne;
-	delete[] stress_ne;
-	delete[] stress0;
-	if (Sxz)
-		delete[] Sxz;
-	if (Syz)
-		delete[] Syz;
-	if (AuxNodal2)
-		delete[] AuxNodal2;
+	delete [] dilat;
+	delete [] Idx_Strain;
+	delete [] Idx_Stress;
+	delete [] strain_ne;
+	delete [] stress_ne;
+	delete [] stress0;
+	if(Sxz)
+		delete [] Sxz;
+	if(Syz)
+		delete [] Syz;
+	if(AuxNodal2)
+		delete [] AuxNodal2;
 
 	if (dynamic)
 	{
@@ -460,6 +463,7 @@ CFiniteElementVec::~CFiniteElementVec()
 	Sxz = NULL;
 	Syz = NULL;
 	pstr = NULL;
+	dilat = NULL;
 	//  10.11.2010. WW
 	if (X0)
 		delete[] X0;
@@ -982,7 +986,21 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 		// 2D, in y-direction
 		// 3D, in z-direction
 		i = (ele_dim - 1) * nnodesHQ;
-		const double coeff = LoadFactor * rho * smat->grav_const * fkt;
+
+		double timeFactor = 1.0;
+
+		if (smat->gravity_ramp)
+		{
+		const int curveIndex = smat->grav_curve_id;
+		const int curveMethod = 0;
+
+		int valid;
+		timeFactor = GetCurveValue(curveIndex, curveMethod, aktuelle_zeit, &valid);
+		}
+
+
+		const double coeff = LoadFactor * rho * smat->grav_const * fkt * timeFactor;
+
 		for (k = 0; k < act_r; k++)
 		{
 #if defined(USE_PETSC) // || defined(other parallel libs)//05.3013. WW
@@ -2435,7 +2453,148 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				De->multi(strain_ne, dstress);
 				for (i = 0; i < ns; i++) // JT: This was commented. It shouldn't be.
 					dstrain[i] += strain_ne[i];
+		}
+			if (smat->Creep_mode == 1001) //BURGERS.
+			{
+				//get total strains at time t and current iteration i
+				double *strain_t, *strain_curr;
+				strain_t = new double[6]; strain_curr = new double[6];
+
+				//get stresses as well as internal variables at time t and current iteration i (equal before local Newton)
+                double *stress_curr, *eps_K_curr, *eps_M_curr;
+                stress_curr = new double[6]; eps_K_curr = new double[6]; eps_M_curr = new double[6];
+				for (int compnt (0); compnt<ns; compnt++){
+                    strain_t[compnt] = (*eleV_DM->Strain_t_ip)(compnt,gp);
+                    strain_curr[compnt] = strain_t[compnt] + dstrain[compnt];
+                    stress_curr[compnt] = (*eleV_DM->Stress)(compnt, gp);
+                    eps_K_curr[compnt] = (*eleV_DM->Strain_Kel)(compnt,gp);
+                    eps_M_curr[compnt] = (*eleV_DM->Strain_Max)(compnt,gp);
+				}
+				//Fill remaining 3D components with 0 if only 2D
+				if (ns == 4)
+					for (int compnt (4); compnt<6; compnt++){
+						strain_t[compnt] = 0.0;
+						strain_curr[compnt] = 0.0;
+						stress_curr[compnt] = 0.0;
+						eps_K_curr[compnt] = 0.0;
+                        eps_M_curr[compnt] = 0.0;
+					}
+
+				//6x6 tangent
+				Matrix* ConsD;
+				ConsD = new Matrix(6,6);
+                bool output=false;
+//                if (MeshElement->GetIndex() == 1031 && gp==0 && update < 1)
+//                    output = true;
+				//Pass as 6D vectors, i.e. set stress and strain [4] and [5] to zero for 2D and AXI as well as strain[3] to zero for 2D (plane strain)
+                smat->LocalNewtonBurgers(dt, strain_curr, strain_t, stress_curr, eps_K_curr, eps_M_curr, ConsD,output, t1);
+				
+				//Then update (and reduce for 2D) stress increment vector and reduce (for 2D) ConsistDep, update internal variables
+				for (int compnt(0); compnt<ns; compnt++){
+					dstress[compnt] = stress_curr[compnt];
+                    if (update > 0){
+						(*eleV_DM->Strain_Kel)(compnt,gp) = eps_K_curr[compnt];
+                        (*eleV_DM->Strain_Max)(compnt,gp) = eps_M_curr[compnt];
+                        (*eleV_DM->Strain_t_ip)(compnt,gp) = strain_curr[compnt];
+                    }
+					for (int compnt2(0); compnt2<ns; compnt2++)
+						(*De)(compnt,compnt2) = (*ConsD)(compnt,compnt2);
+                    (*eleV_DM->Strain)(compnt,gp) = strain_curr[compnt];
+				}
+
+				delete [] strain_t; delete [] strain_curr;
+                delete [] stress_curr; delete [] eps_K_curr;
+                delete [] eps_M_curr;
+				delete ConsD;
+				ConsD = NULL;
 			}
+
+            if (smat->Creep_mode == 1002) //MINKLEY
+            {
+                //get total strains at time t and current iteration i
+                double *strain_t, *strain_curr;
+                strain_t = new double[6]; strain_curr = new double[6];
+//                for (int compnt (0); compnt<ns; compnt++) {
+//                    strain_t[compnt] = 0.0;
+//                    for(int node_nr = 0; node_nr < nnodesHQ; node_nr++){
+//                        strain_t[compnt] += pcs->GetNodeValue(nodes[node_nr],Idx_Strain[compnt]) * shapefctHQ[node_nr];
+//                        if (compnt == 3)
+//                            std::cout << node_nr << "th Node value " << pcs->GetNodeValue(nodes[node_nr],Idx_Strain[compnt]) << std::endl;
+//                    }
+
+//                    strain_curr[compnt] = strain_t[compnt] + dstrain[compnt];
+//                }
+
+
+                //get stresses as well as internal variables at time t and current iteration i (equal before local Newton)
+                double *stress_curr, *eps_K_curr, *eps_pl_curr, *eps_M_curr;
+                stress_curr = new double[6]; eps_K_curr = new double[6]; eps_pl_curr = new double[6]; eps_M_curr = new double[6];
+                for (int compnt (0); compnt<ns; compnt++){
+                    stress_curr[compnt] = (*eleV_DM->Stress)(compnt, gp);
+                    eps_K_curr[compnt] = (*eleV_DM->Strain_Kel)(compnt,gp);
+                    eps_M_curr[compnt] = (*eleV_DM->Strain_Max)(compnt,gp);
+                    eps_pl_curr[compnt] = (*eleV_DM->Strain_pl)(compnt,gp);
+                    strain_t[compnt] = (*eleV_DM->Strain_t_ip)(compnt,gp);
+                    strain_curr[compnt] = strain_t[compnt] + dstrain[compnt];
+                }
+                //Fill remaining 3D components with 0 if only 2D
+                if (ns == 4)
+                    for (int compnt (4); compnt<6; compnt++){
+                        strain_t[compnt] = 0.0;
+                        strain_curr[compnt] = 0.0;
+                        stress_curr[compnt] = 0.0;
+                        eps_K_curr[compnt] = 0.0;
+                        eps_M_curr[compnt] = 0.0;
+                        eps_pl_curr[compnt] = 0.0;
+                    }
+
+                //std::cout << "Strain coming in\n";
+                //std::cout << "strain_t: " << strain_t[3] << std::endl;
+                //std::cout << "dstrain: " << dstrain[3] << std::endl;
+
+                double e_pl_v = (*eleV_DM->e_pl)(gp);
+                double e_pl_eff = (*eleV_DM->pStrain)(gp);
+                double lam = 0.;//(*eleV_DM->lambda_pl)(gp);
+
+                //6x6 tangent
+                Matrix* ConsD;
+                ConsD = new Matrix(6,6);
+
+                bool output=false;
+//                if (MeshElement->GetIndex() == 1031 && gp==0 && update < 1)
+//                    output = true;
+                //Pass as 6D vectors, i.e. set stress and strain [4] and [5] to zero for 2D and AXI as well as strain[3] to zero for 2D (plane strain)
+                smat->LocalNewtonMinkley(dt, strain_curr, strain_t, stress_curr, eps_K_curr, eps_M_curr, eps_pl_curr, e_pl_v, e_pl_eff, lam, ConsD,output, t1);
+
+                //Then update (and reduce for 2D) stress increment vector and reduce (for 2D) ConsistDep, update internal variables
+                for (int compnt(0); compnt<ns; compnt++){
+                    dstress[compnt] = stress_curr[compnt];
+                    if (update > 0)
+                    {
+                        (*eleV_DM->Strain_Kel)(compnt,gp) = eps_K_curr[compnt];
+                        (*eleV_DM->Strain_Max)(compnt,gp) = eps_M_curr[compnt];
+                        (*eleV_DM->Strain_pl)(compnt,gp) = eps_pl_curr[compnt];
+                        (*eleV_DM->Strain_t_ip)(compnt,gp) = strain_curr[compnt];
+                    }
+                    for (int compnt2(0); compnt2<ns; compnt2++)
+                        (*De)(compnt,compnt2) = (*ConsD)(compnt,compnt2);
+                    (*eleV_DM->Strain)(compnt,gp) = strain_curr[compnt];
+                }
+
+                if (update > 0)
+                {
+                    (*eleV_DM->e_pl)(gp) = e_pl_v;
+                    (*eleV_DM->lambda_pl)(gp) = lam;
+					(*eleV_DM->pStrain)(gp) = e_pl_eff;
+                }
+
+                delete [] strain_t; delete [] strain_curr;
+                delete [] stress_curr; delete [] eps_K_curr;
+                delete [] eps_M_curr; delete [] eps_pl_curr;
+                delete ConsD;
+                ConsD = NULL;
+            }
+
 			// Fluid coupling;
 			S_Water = 1.0;
 			if (Flow_Type > 0 && Flow_Type != 10)
@@ -2731,6 +2890,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		eleV_DM = ele_value_dm[MeshElement->GetIndex()];
 		if (eleV_DM->pStrain) // 08.02.2008 WW
 			idx_pls = pcs->GetNodeValueIndex("STRAIN_PLS");
+		if(eleV_DM->e_pl)
+			idx_dilat = pcs->GetNodeValueIndex("DILATANCY");
 		//
 		MshElemType::type ElementType = MeshElement->GetElementType();
 		SetIntegrationPointNumber(ElementType);
@@ -2755,6 +2916,10 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				pstr[i] = (*eleV_DM->pStrain)(gp);
 			else
 				pstr[i] = 0.0; // 08.02.2008 WW
+			if(eleV_DM->e_pl)
+				dilat[i] = (*eleV_DM->e_pl)(gp);
+			else
+				dilat[i] = 0.0;
 			if (ele_dim == 3)
 			{
 				Sxz[i] = (*eleV_DM->Stress)(4, gp);
@@ -2779,9 +2944,9 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		// Mapping Gauss point strains to nodes and update nodes
 		// strains:
 		//---------------------------------------------------------
-		double ESxx, ESyy, ESzz, ESxy, ESxz, ESyz, Pls;
-		double avgESxx, avgESyy, avgESzz, avgESxy, avgESxz, avgESyz, avgPls;
-		avgESxx = avgESyy = avgESzz = avgESxy = avgESxz = avgESyz = avgPls = 0.0;
+		double ESxx, ESyy, ESzz, ESxy, ESxz, ESyz, Pls, Dil;
+		double avgESxx, avgESyy, avgESzz, avgESxy, avgESxz, avgESyz, avgPls, avgDilat;
+		avgESxx = avgESyy = avgESzz = avgESxy = avgESxz = avgESyz = avgPls = avgDilat = 0.0;
 		if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_AVERAGE)
 		{
 			// average
@@ -2792,12 +2957,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			avgESxz = CalcAverageGaussPointValues(Sxz);
 			avgESyz = CalcAverageGaussPointValues(Syz);
 			avgPls = CalcAverageGaussPointValues(pstr);
+			avgDilat = CalcAverageGaussPointValues(dilat);
 		}
 
 		ConfigShapefunction(ElementType);
 		for (int i = 0; i < nnodes; i++)
 		{
-			ESxx = ESyy = ESzz = ESxy = ESxz = ESyz = Pls = 0.0;
+			ESxx = ESyy = ESzz = ESxy = ESxz = ESyz = Pls = Dil = 0.0;
 
 			// Calculate values at nodes
 			if (this->GetExtrapoMethod() == ExtrapolationMethod::EXTRAPO_LINEAR)
@@ -2815,6 +2981,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					ESxy += Sxy[j] * dbuff0[k];
 					ESzz += Szz[j] * dbuff0[k];
 					Pls += pstr[j] * dbuff0[k];
+					Dil += dilat[j] * dbuff0[k];
 					if (ele_dim == 3)
 					{
 						ESxz += Sxz[j] * dbuff0[k];
@@ -2830,6 +2997,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				ESxy = avgESxy;
 				ESzz = avgESzz;
 				Pls = avgPls;
+				Dil = avgDilat;
 				if (ele_dim == 3)
 				{
 					ESxz = avgESxz;
@@ -2843,6 +3011,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			ESxy /= dbuff[i];
 			ESzz /= dbuff[i];
 			Pls /= dbuff[i];
+			Dil /= dbuff[i];
 			//
 			long node_i = nodes[i];
 			ESxx += pcs->GetNodeValue(node_i, Idx_Stress[0]);
@@ -2851,6 +3020,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			ESxy += pcs->GetNodeValue(node_i, Idx_Stress[3]);
 			if (eleV_DM->pStrain) // 08.02.2008 WW
 				Pls += pcs->GetNodeValue(node_i, idx_pls);
+			if(eleV_DM->e_pl)
+				Dil += pcs->GetNodeValue(node_i,idx_dilat);
 
 			pcs->SetNodeValue(node_i, Idx_Stress[0], ESxx);
 			pcs->SetNodeValue(node_i, Idx_Stress[1], ESyy);
@@ -2858,6 +3029,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			pcs->SetNodeValue(node_i, Idx_Stress[3], ESxy);
 			if (eleV_DM->pStrain) // 08.02.2008 WW
 				pcs->SetNodeValue(node_i, idx_pls, fabs(Pls));
+			if(eleV_DM->e_pl)
+				pcs->SetNodeValue(node_i,idx_dilat, Dil);
 
 			if (ele_dim == 3)
 			{
@@ -3696,6 +3869,11 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		ele_dim = ele->GetDimension();
 		sdp = msp_vector[ele->GetPatchIndex()];
 		Plastic = sdp->Plastictity();
+		Strain_Kel = NULL;
+		Strain_Max = NULL;
+		Strain_pl = NULL;
+		e_pl = NULL;
+		lambda_pl = NULL;
 
 		if (ele_dim == 2)
 			LengthBS = 4;
@@ -3749,6 +3927,32 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			xi = new Matrix(LengthBS);
 			*xi = 0.0;
 		}
+		if(sdp->CreepModel() == 1001)  //Burgers
+		{
+			Strain_Kel = new Matrix(6, NGPoints); //Only 3D size for now. Will work with all. Separation into special cases (LengthBS) may follow later
+			*Strain_Kel = 0.0;
+			Strain_Max = new Matrix(6, NGPoints); //Only 3D size for now. Will work with all. Separation into special cases (LengthBS) may follow later
+			*Strain_Max = 0.0;
+			Strain_t_ip = new Matrix(6, NGPoints);
+			*Strain_t_ip = 0.0;
+		}
+
+		if(sdp->CreepModel() == 1002) //Minkley
+		{
+			Strain_Kel = new Matrix(6, NGPoints); //Only 3D size for now. Will work with all. Separation into special cases (LengthBS) may follow later
+			*Strain_Kel = 0.0;
+			Strain_Max = new Matrix(6, NGPoints); //Only 3D size for now. Will work with all. Separation into special cases (LengthBS) may follow later
+			*Strain_Max = 0.0;
+			Strain_pl = new Matrix(6, NGPoints); //Only 3D size for now. Will work with all. Separation into special cases (LengthBS) may follow later
+			*Strain_pl = 0.0;
+			Strain_t_ip = new Matrix(6, NGPoints);
+			*Strain_t_ip = 0.0;
+			e_pl = new Matrix(NGPoints); *e_pl = 0.;
+			pStrain = new Matrix(NGPoints); *pStrain = 0.;
+			lambda_pl = new Matrix(NGPoints); *lambda_pl = 0.;
+		}
+		Strain = new Matrix(6, NGPoints);
+		*Strain = 0.0;
 		disp_j = 0.0;
 		tract_j = 0.0;
 		Localized = false;
@@ -3776,6 +3980,20 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			y_surface->Write_BIN(os);
 		if (xi)
 			xi->Write_BIN(os);
+		if(Strain) //NB
+			Strain->Write_BIN(os);
+		if(Strain_Kel) //TN Burgers
+			Strain_Kel->Write_BIN(os);
+		if(Strain_Max) //TN Burgers
+			Strain_Max->Write_BIN(os);
+		if(Strain_pl) //TN
+			Strain_pl->Write_BIN(os);
+		if(Strain_t_ip)
+			Strain_t_ip->Write_BIN(os);
+		if(e_pl)
+			e_pl->Write_BIN(os);
+		if(lambda_pl)
+			lambda_pl->Write_BIN(os);
 		if (MatP)
 			MatP->Write_BIN(os);
 		if (prep0)
@@ -3801,6 +4019,20 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			y_surface->Read_BIN(is);
 		if (xi)
 			xi->Read_BIN(is);
+		if(Strain) //NB
+			Strain->Read_BIN(is);
+		if(Strain_Kel) //TN Burgers
+			Strain_Kel->Read_BIN(is);
+		if(Strain_Max) //TN Burgers
+			Strain_Max->Read_BIN(is);
+		if(Strain_pl) //TN
+			Strain_pl->Read_BIN(is);
+		if(Strain_t_ip)
+			Strain_t_ip->Read_BIN(is);
+		if(e_pl)
+			e_pl->Read_BIN(is);
+		if(lambda_pl)
+			lambda_pl->Read_BIN(is);
 		if (MatP)
 			MatP->Read_BIN(is);
 		if (prep0)
@@ -3880,6 +4112,19 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		if (scalar_aniso_tens)
 			delete scalar_aniso_tens;
 
+		if (Strain_Kel)		//TN Strain in Kelvin element
+			delete Strain_Kel;
+		if (Strain_Max)		//TN Strain in Maxwell element
+			delete Strain_Max;
+		if (Strain_pl) //TN - Minkley plastic deviatoric strain
+			delete Strain_pl;
+		if (Strain_t_ip)
+			delete Strain_t_ip;
+		if (e_pl)
+			delete e_pl;
+		if (lambda_pl)
+			delete lambda_pl;
+
 		NodesOnPath = NULL;
 		orientation = NULL;
 		y_surface = NULL;
@@ -3894,6 +4139,12 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		MatP = NULL;
 		scalar_aniso_comp = NULL;
 		scalar_aniso_tens = NULL;
+		Strain_Kel = NULL;
+		Strain_Max = NULL;
+		Strain_pl = NULL;
+		Strain_t_ip = NULL;
+		e_pl = NULL;
+		lambda_pl = NULL;
 	}
 
 	/***************************************************************************

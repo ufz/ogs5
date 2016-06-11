@@ -133,6 +133,7 @@ enum PrimaryVariable
 	STRAIN_YZ, // Output
 	STRAIN_ZZ, // Output
 	STRAIN_PLS, // Output
+	DILATANCY,
 	STRESS_XX, // IC
 	STRESS_XY, // IC
 	STRESS_XZ, // IC

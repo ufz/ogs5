@@ -761,30 +761,41 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 				NormU = NormOfUnkonwn_orRHS();
 #endif
 
-				// JT//if(ite_steps == 1 && CouplingIterations == 0)
-				if (ite_steps == 1 && this->first_coupling_iteration)
+				//JT//if(ite_steps == 1 && CouplingIterations == 0)
+				if(ite_steps == 1 && this->first_coupling_iteration)
 				{
 					InitialNorm = Norm;
 					InitialNormU0 = NormU;
-					if (counter == 1)
-						InitialNormU = NormU;
+                    //if(counter == 1)
+                    //	InitialNormU = NormU;
 				}
 
-				Error = Norm / InitialNorm;
-				ErrorU = NormU / InitialNormU0;
-				if (Norm < Tolerance_global_Newton && Error > Norm)
-					Error = Norm;
+                //TN relative errors except when solution is stagnant
+                if (InitialNorm > DBL_EPSILON)
+                    Error = Norm/InitialNorm;
+                else
+                    Error = Norm;
+
+                if (InitialNormU0 > DBL_EPSILON)
+                    ErrorU = NormU/InitialNormU0;
+                else
+                    ErrorU = NormU;
+
+                //Error = Norm / InitialNorm;
+                //ErrorU = NormU / InitialNormU0;
+                //if(Norm < Tolerance_global_Newton && Error > Norm)
+                //	Error = Norm;
 				//           if(Norm<TolNorm)  Error = 0.01*Tolerance_global_Newton;
-				if ((NormU / InitialNormU) <= Tolerance_global_Newton)
-					Error = NormU / InitialNormU;
+                //if((NormU / InitialNormU) <= Tolerance_global_Newton)
+                //	Error = NormU / InitialNormU;
 
 				// Compute damping for Newton-Raphson step
 				damping = 1.0;
 				//           if(Error/Error1>1.0e-1) damping=0.5;
-				if (Error / Error1 > 1.0e-1 || ErrorU / ErrorU1 > 1.0e-1)
-					damping = 0.5;
-				if (ErrorU < Error)
-					Error = ErrorU;
+				//if(Error / Error1 > 1.0e-1 || ErrorU / ErrorU1 > 1.0e-1)
+					//damping = 0.5;
+                //if(ErrorU < Error)
+                //	Error = ErrorU;
 #if defined(NEW_EQS) && defined(JFNK_H2M)
 				/// If JFNK, get w from the buffer
 				if (m_num->nls_method == 2)
@@ -811,27 +822,43 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 				if (myrank == 0)
 				{
 #endif
-				//Screan printing:
-				std::cout<<"      -->End of Newton-Raphson iteration: "<<ite_steps<<"/"<< MaxIteration <<"\n";
-				cout.width(8);
- 				cout.precision(2);
-				cout.setf(ios::scientific);
-				cout<<"         NR-Error"<<"  "<<"RHS Norm 0"<<"  "<<"RHS Norm  "<<"  "<<"Unknowns Norm"<<"  "<<"Damping"<<"\n";
-				cout<<"         "<<Error<<"  "<<InitialNorm<<"  "<<Norm<<"   "<<NormU<<"   "<<"   "<<damping<<"\n";
-				std::cout <<"      ------------------------------------------------"<<"\n";
+					// Screan printing:
+					std::cout << "      -->End of Newton-Raphson iteration: " << ite_steps << "/" << MaxIteration
+					          << "\n";
+					cout.width(8);
+					cout.precision(2);
+					cout.setf(ios::scientific);
+                std::cout<<"         DeltaU/DeltaU0"<<"  "<<"DeltaU"<<"  "<<"DeltaF/DeltaF0  "<<"  "<<"DeltaF"<<"  "<<"Damping"<<"\n";
+                std::cout<<"         "<<ErrorU<<"  "<<NormU<<"  "<<Error<<"   "<<Norm<<"   "<<"   "<<damping<<"\n";
+                std::cout <<"      ------------------------------------------------"<<"\n";
 #if defined(USE_MPI) || defined(USE_PETSC)
 				}
 #endif
-				if (Error > 100.0 && ite_steps > 1)
-				{
-					printf("\n  Attention: Newton-Raphson step is diverged. Programme halt!\n");
-					exit(1);
-				}
-				if (InitialNorm < 10 * Tolerance_global_Newton)
-					break;
-				if (Norm < 0.001 * InitialNorm)
-					break;
-				if (Error <= Tolerance_global_Newton)
+                //ofstream Dum("global.txt", ios::app);
+                //Dum << aktueller_zeitschritt << " " << ite_steps << " " << Error << " " << ErrorU << std::endl;
+                //Dum.close();
+
+                //if(Error > 100.0 && ite_steps > 1)
+                //{
+                //	printf (
+                //	        "\n  Attention: Newton-Raphson step is diverged. Programme halt!\n");
+                //	exit(1);
+                //}
+                //if(InitialNorm < 10 * Tolerance_global_Newton)
+                //	break;
+                //if(Norm < 0.001 * InitialNorm)
+                //	break;
+                //TN: Convergence test based on relative force and displacement residual
+                //TN: The additional condition on the absolute tolerance should eventually be input file controlled
+
+                bool absolute(false);
+                if (NormU <= Tolerance_global_Newton/100.) {
+                    absolute = true;
+                    std::cout << "Nonlinear iteration will be accepted because absolute norm of displacements "
+                              << "is below 0.01 of relative tolerance (set to " << Tolerance_global_Newton << ")\n.";
+                }
+
+                if((Error <= Tolerance_global_Newton && ErrorU <= Tolerance_global_Newton) || absolute)
 				{
 					if (ite_steps == 1) // WX:05.2012
 					{
@@ -1050,6 +1077,7 @@ void CRFProcessDeformation::InitGauss(void)
 		Idx_Strain[5] = GetNodeValueIndex("STRAIN_YZ");
 	}
 	Idx_Strain[NS] = GetNodeValueIndex("STRAIN_PLS");
+	Idx_Strain[NS+1] = GetNodeValueIndex("DILATANCY");
 
 	for (j = 0; j < NS; j++)
 		stress_ic[j] = NULL;
@@ -1081,7 +1109,7 @@ void CRFProcessDeformation::InitGauss(void)
 	}
 
 	for (i = 0; i < m_msh->GetNodesNumber(false); i++)
-		for (j = 0; j < NS + 1; j++)
+		for (j = 0; j < NS + 2; j++)
 			SetNodeValue(i, Idx_Strain[j], 0.0);
 	MeshLib::CElem* elem = NULL;
 	for (i = 0; i < m_msh->ele_vector.size(); i++)
@@ -1262,6 +1290,7 @@ void CRFProcessDeformation::CreateInitialState4Excavation()
 		Idx_Strain[5] = GetNodeValueIndex("STRAIN_YZ");
 	}
 	Idx_Strain[NS] = GetNodeValueIndex("STRAIN_PLS");
+	Idx_Strain[NS+1] = GetNodeValueIndex("DILATANCY");
 	// For excavation simulation. Moved here on 05.09.2007 WW
 	if (!_has_initial_stress_data)
 	{
@@ -1287,7 +1316,7 @@ void CRFProcessDeformation::CreateInitialState4Excavation()
 	UpdateInitialStress(false); // s-->s0
 	m_msh->ConnectedElements2Node();
 	for (i = 0; i < m_msh->GetNodesNumber(false); i++)
-		for (j = 0; j < NS + 1; j++)
+		for (j = 0; j < NS + 2; j++)
 			SetNodeValue(i, Idx_Strain[j], 0.0);
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012. WW
 	if (dom_vector.size() > 0)
@@ -2034,7 +2063,7 @@ void CRFProcessDeformation::Extropolation_GaussValue()
 {
 	int k, NS;
 	long i = 0;
-	int Idx_Stress[7];
+	int Idx_Stress[8];
 	const long LowOrderNodes = m_msh->GetNodesNumber(false);
 	MeshLib::CElem* elem = NULL;
 
@@ -2059,6 +2088,8 @@ void CRFProcessDeformation::Extropolation_GaussValue()
 		Idx_Stress[5] = GetNodeValueIndex("STRESS_YZ");
 	}
 	Idx_Stress[NS] = GetNodeValueIndex("STRAIN_PLS");
+	NS++;
+	Idx_Stress[NS] = GetNodeValueIndex("DILATANCY");
 	NS++;
 
 	// NB, TN
