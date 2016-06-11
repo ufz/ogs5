@@ -1647,9 +1647,9 @@ double CFluidProperties::Viscosity(double* variables)
 				const double M1 = cp_vec[0]->molar_mass;
 				const double M2 = cp_vec[1]->molar_mass;
 
-				const double p = variables[0];
-				const double T = variables[1];
-				const double X = variables[2];
+				const double p = primary_variable[0];
+				const double T = primary_variable[1];
+				const double X = primary_variable[2];
 
 				// reactive component
 				x[0] = M1 * X / (M1 * X + M2 * (1.0 - X)); // mass in mole fraction
