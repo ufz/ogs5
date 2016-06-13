@@ -3,6 +3,11 @@
 # Specify minimum CMake version
 cmake_minimum_required(VERSION 2.8.3)
 
+if(CMAKE_VERSION VERSION_GREATER 3.1)
+	cmake_policy(SET CMP0054 NEW)
+endif()
+cmake_policy(SET CMP0011 OLD)
+
 # Project name
 project(OGS)
 
@@ -27,7 +32,7 @@ set(OGS_LSOLVER "DEFAULT" CACHE STRING "OpenGeoSys linear solver type")
 set_property(CACHE OGS_LSOLVER PROPERTY STRINGS
 	DEFAULT # Default
 	RF      # RF
-	SP      # New sparse solver 
+	SP      # New sparse solver
 	PETSC   # PETSc
 )
 
@@ -58,7 +63,7 @@ set_property(CACHE OGS_CONFIG PROPERTY STRINGS
 	SP   # SP
 	JFNK # SP + JFNK
 	GEMS # SP + GEMS
-	IPQC # RF + IPQC 
+	IPQC # RF + IPQC
 	PQC  # SP + PQC
 	BRNS # SP + BRNS
 	CAP  # RF + CAP
