@@ -35,7 +35,8 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/GEO
 	${CMAKE_SOURCE_DIR}/MathLib
 	${CMAKE_SOURCE_DIR}/MSH
-	${CMAKE_SOURCE_DIR}/tests/gtest
+	${CMAKE_SOURCE_DIR}/tests/gtest/include
+	${CMAKE_SOURCE_DIR}/tests/gtest/include/gtest
 )
 
 add_executable (testrunner ${SOURCES})

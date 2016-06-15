@@ -17,6 +17,7 @@ using namespace std;
 //#define NINFO
 #define NWARNING
 #define NERROR
+#include "BuildInfo.h"
 #include "logging.h"
 
 #include "gtest.h"
@@ -35,8 +36,7 @@ using namespace std;
 
 namespace {
 
-char tmpChar[] = BuildInfo::OGS_EXECUTABLE;
-std::string tmpStr = tmpChar; // path passed by CMakeLists.txt
+std::string tmpStr = ( BuildInfo::OGS_EXECUTABLE );
 
 class MinBMTest : public ::testing::Test {
   /**
@@ -258,7 +258,7 @@ protected:
   {
     // setup the model for running
 	char result[256];
-	strcpy(result,BuildInfo::SOURCEPATH);
+	strcpy(result,(BuildInfo::SOURCEPATH).c_str());
 	strcat(result,"/tests/data/bmskel");
     copyModelToTmpDir( result );
 

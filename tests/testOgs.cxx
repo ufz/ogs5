@@ -10,6 +10,8 @@
 #ifndef OGS_CL_TESTS_H
 #define OGS_CL_TESTS_H
 
+#include "BuildInfo.h"
+
 #include "gtest.h"
 
 #include <cstdlib>
