@@ -18,6 +18,7 @@ last modified
 #include "makros.h"
 // C++ STL
 //#include <fstream>
+#include <iterator>
 #include <cfloat>
 #include <iostream>
 #include <set>
@@ -1659,7 +1660,6 @@ void CSourceTerm::EdgeIntegration(CFEMesh* msh, const std::vector<long>& nodes_o
  11/2005 WW/OK Layer optimization
  01/2010 NW improvement of efficiency to search faces
  **************************************************************************/
-
 void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& nodes_on_sfc,
                                   std::vector<double>& node_value_vector)
 {
@@ -1851,13 +1851,6 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& node
 
 	fem_assembler->setOrder(msh->getOrder() + 1);
 
-// search elements & face integration
-#if defined(USE_PETSC) // || defined (other parallel linear solver lib). //WW. 05.2013
-	const size_t id_act_l_max = static_cast<size_t>(msh->getNumNodesLocal());
-	const size_t id_max_l = msh->GetNodesNumber(false);
-	const size_t id_act_h_max = msh->getLargestActiveNodeID_Quadratic();
-#endif
-
 	int count;
 	double fac = 1.0;
 	CElem* face = new CElem(1);
@@ -1912,13 +1905,6 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& node
 			for (k = 0; k < nfn; k++)
 			{
 				e_node = elem->GetNode(nodesFace[k]);
-
-#if defined(USE_PETSC) // || defined (other parallel linear solver lib). //WW. 05.2013
-				if (!e_node->isNonGhost(id_act_l_max, id_max_l, id_act_h_max))
-				{
-					continue;
-				}
-#endif
 				NVal[G2L[e_node->GetIndex()]] += fac * nodesFVal[k];
 			}
 		}
@@ -1977,6 +1963,7 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& node
 
 	for (i = 0; i < this_number_of_nodes; i++)
 		node_value_vector[i] = NVal[i];
+
 	for (i = 0; i < nSize; i++)
 		msh->nod_vector[i]->SetMark(true);
 
@@ -3359,6 +3346,10 @@ void CSourceTermGroup::SetSFC(CSourceTerm* m_st, const int ShiftInNodeVector)
 		if (m_st->distribute_volume_flux) // 5.3.07 JOD
 			DistributeVolumeFlux(m_st, sfc_nod_vector, sfc_nod_val_vector);
 
+ #if defined(USE_PETSC) // || defined (other parallel linear solver lib). //WW. 06.2016
+		removeGhostElements(sfc_nod_vector, sfc_nod_val_vector);
+#endif
+
 		m_st->st_node_ids.clear();
 		m_st->st_node_ids.resize(sfc_nod_vector.size());
 		m_st->st_node_ids = sfc_nod_vector;
@@ -3892,12 +3883,39 @@ void CSourceTermGroup::SetSurfaceNodeValueVector(CSourceTerm* st, Surface* m_sfc
 	}
 }
 
+#if defined(USE_PETSC) // || defined (other parallel linear solver lib). //WW. 06.2016
+void CSourceTermGroup::removeGhostElements(std::vector<long>& node_ids,
+                                        std::vector<double>& node_valus)
+{	const std::size_t id_act_l_max = static_cast<std::size_t>(m_msh->getNumNodesLocal());
+	const std::size_t id_max_l = m_msh->GetNodesNumber(false);
+	const std::size_t id_act_h_max = m_msh->getLargestActiveNodeID_Quadratic();
+
+	std::vector<std::size_t> ghost_ids;
+	for (std::size_t i=0; i<node_ids.size(); i++)
+	{
+		const std::size_t id = static_cast<std::size_t>(node_ids[i]);
+		// non ghost element
+		if (   (id < id_act_l_max)
+			|| (id >= id_max_l && id < id_act_h_max) )
+			continue;
+		// ghost element, removed
+		ghost_ids.push_back(i);
+	}
+
+	for (int i=static_cast<int>(ghost_ids.size()) - 1; i>=0; i--)
+	{
+		node_ids.erase(node_ids.begin() + ghost_ids[i]);
+		node_valus.erase(node_valus.begin() + ghost_ids[i]);
+	}
+}
+#endif
+
 /**************************************************************************
  FEMLib-Method: Distributes source term [m^3/s] uniformly on SFC, PLY
   use GEO_TYPE CONSTANT_NEUMANN
  12/2012 5.3.07 JOD Implementation
  **************************************************************************/
-void CSourceTermGroup::DistributeVolumeFlux(CSourceTerm* st, std::vector<long> const& nod_vector,
+void CSourceTermGroup::DistributeVolumeFlux(CSourceTerm* st, std::vector<long>& nod_vector,
                                             std::vector<double>& nod_val_vector)
 {
 	double area;
