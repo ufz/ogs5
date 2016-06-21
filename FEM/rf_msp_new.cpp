@@ -1977,15 +1977,15 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
         while (res_loc_p.norm() > local_tolerance && counter < counter_max)
         {
             counter++;
-            std::cout << "iter " << counter << std::endl;
+            //std::cout << "iter " << counter << std::endl;
             //Get Jacobian
             material_minkley->CalViscoplasticJacobian(dt,sig_j,sig_eff,lam,K_loc_p);
-            material_minkley->NumericalJacobian(dt,epsd_i,e_i,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,eps_pl_t, \
+            //material_minkley->NumericalJacobian(dt,epsd_i,e_i,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,eps_pl_t, \
                                                       e_pl_v,e_pl_v_t,e_pl_eff,e_pl_eff_t,lam,K_num_p);
-            for (int kk(0.); kk<27; kk++)
-                for(int ll(0.); ll<27; ll++)
-                    if (std::abs(K_loc_p(kk,ll) - K_num_p(kk,ll)) > 1.e-10)
-                        std::cout << "Deviation at " << kk << " " << ll << " " << K_loc_p(kk,ll) << " " << K_num_p(kk,ll) << " " << K_loc_p(kk,ll) - K_num_p(kk,ll) << std::endl;
+//            for (int kk(0.); kk<27; kk++)
+//                for(int ll(0.); ll<27; ll++)
+//                    if (std::abs(K_loc_p(kk,ll) - K_num_p(kk,ll)) > 1.e-10)
+//                        std::cout << "Deviation at " << kk << " " << ll << " " << K_loc_p(kk,ll) << " " << K_num_p(kk,ll) << " " << K_loc_p(kk,ll) - K_num_p(kk,ll) << std::endl;
             //Solve linear system
             inc_loc_p = K_loc_p.householderQr().solve(-res_loc_p);
             //increment solution vectors

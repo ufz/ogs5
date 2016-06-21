@@ -296,10 +296,11 @@ void SolidMinkley::CalViscoplasticResidual(const double dt, const Eigen::Matrix<
     const double vol_flow(3. * DG_DI1(psi));
 
     Eigen::Matrix<double,6,1> dev_flow;
-    dev_flow.setZero(6);
-    if (std::abs(J_3) > DBL_EPSILON)
+    if (std::abs(J_3) > 0.)
         dev_flow = (DG_DJ2(theta,J_2,psi) + DG_Dtheta(theta,J_2,psi) * Dtheta_DJ2(theta,J_2))* sigd_curr +
                 (DG_Dtheta(theta,J_2,psi) * Dtheta_DJ3(theta,J_3) * J_3) * dev_sigd_curr_inv;
+    else
+        dev_flow.setZero(6);
 
     //calculate stress residual
     res.block<6,1>(0,0) = stress_curr - (2. * (dstrain_curr - dstrain_Kel_curr - dstrain_Max_curr - dstrain_pl_curr) +
@@ -479,7 +480,7 @@ void SolidMinkley::CalViscoplasticJacobian(const double dt, const Eigen::Matrix<
     }
     Jac.setZero(27,27);
 
-    if (std::abs(J_3) < DBL_EPSILON)
+    if (std::abs(J_3) < 0.)
     {
         dev_flow.Zero(6,1);
         Ddev_flowDsigma.Zero(6,6);

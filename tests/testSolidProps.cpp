@@ -664,17 +664,17 @@ TEST(SolidProps, MinkleyFullJacobian)
 
     //set Constants
     (*data)(0) = 63.e3; //Kelvin shear modulus
-    (*data)(1) = 14.e6; //Kelvin viscosity
+    (*data)(1) = 8.37e4; //Kelvin viscosity
     (*data)(2) = 12.e3; //Maxwell shear modulus
     (*data)(3) = 18.e3; //Maxwell bulk modulus
-    (*data)(4) = 10.e10; //Maxwell viscosity
+    (*data)(4) = 4.03e7; //Maxwell viscosity
     (*data)(5) = 4.9; //dependency parameter for " (m)
     (*data)(6) = 0.33; //dependency parameter for " (n)
     (*data)(7) = 2.; //cohesion
-    (*data)(8) = 10.; //hardening
-    (*data)(9) = 40.; //friction angle
+    (*data)(8) = 100.; //hardening
+    (*data)(9) = 30.; //friction angle
     (*data)(10) = 10.; //dilatancy angle
-    (*data)(11) = 28.; //transition angle
+    (*data)(11) = 29.; //transition angle
     (*data)(12) = 0.01; //regularisation
     (*data)(13) = 0.; // temperature parameter for Maxwell viscosity
     (*data)(14) = 0.; // reference temperature for Maxwell viscosity
@@ -824,7 +824,7 @@ TEST(SolidProps, MinkleyFullJacobian)
                 low = residual(i);
             }
             Jac_num(i,j) = (up-low)/(2.*pertub);
-            std::cout << i << " " << j << std::endl;
-            ASSERT_NEAR(Jacobian(i,j),Jac_num(i,j),1.e-8);
+            std::cout << i << " " << j << " " << Jacobian(i,j) << " " << Jac_num(i,j) << std::endl;
+            ASSERT_NEAR(Jacobian(i,j),Jac_num(i,j),1.e-6);
         }
 }
