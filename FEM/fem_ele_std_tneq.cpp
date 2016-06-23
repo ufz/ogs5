@@ -703,6 +703,8 @@ double CFiniteElementStd::CalCoef_RHS_TNEQ(const int dof_index)
 	double const* const T1 = NodalVal_t1;
 	double const* const X0 = NodalVal_X0;
 	double const* const X1 = NodalVal_X1;
+	double const* const T0s = NodalVal_t2_0;
+	double const* const T1s = NodalVal_t2_1;
 
 	double& pg = eos_arg[0];
 	double& Tg = eos_arg[1];
@@ -735,9 +737,22 @@ double CFiniteElementStd::CalCoef_RHS_TNEQ(const int dof_index)
 
 		case 2:
 		{
-			const double H_vap = -SolidProp->reaction_enthalpy; // sign convention: defined negative for exothermic
-			// composition reaction but equ. written as: AB + \Delta
-			// H <--> A + B
+			pg = ipol(p0, p1, theta, this);
+			Tg = ipol(T0, T1, theta, this);
+			const double Ts = ipol(T0s, T1s, theta, this);
+			Xw = ipol(X0, X1, theta, this);
+			// end of adding eos_arg-----------------
+			double H_vap = - SolidProp->reaction_enthalpy; //sign convention: defined negative for exothermic composition reaction but equ. written as: AB + \Delta H <--> A + B
+			//Correction for temperature-dependent enthalpy in case of variable cpS
+			const double rhoSR = gp_ele->rho_s_curr[gp];
+			const double dcp_drhoSR((((*SolidProp->data_Capacity)(1)*SolidProp->upper_solid_density_limit -
+							(*SolidProp->data_Capacity)(0)*SolidProp->lower_solid_density_limit)/
+						(SolidProp->upper_solid_density_limit-SolidProp->lower_solid_density_limit) -
+						(*SolidProp->data_Capacity)(0)) * SolidProp->lower_solid_density_limit/(rhoSR*rhoSR));
+
+			const double cpS = SolidProp->Heat_Capacity(rhoSR);
+			const double cpG = FluidProp->SpecificHeatCapacity(eos_arg);
+			H_vap -= (cpS - cpG + rhoSR * dcp_drhoSR)*(Ts - 573.15);//TODO: Move IC to input file
 
 			val = (1.0 - poro) * q_r * H_vap;
 			val += gp_ele->rho_s_curr[gp] * (1.0 - poro) * SolidProp->specific_heat_source;

@@ -38,6 +38,7 @@
 #include "StringTools.h"
 #include "files0.h" // GetLineFromFile1
 #include "tools.h" // GetLineFromFile
+#include "PhysicalConstant.h"
 
 std::vector<SolidProp::CSolidProperties*> msp_vector;
 std::vector<std::string> msp_key_word_vector; // OK
@@ -238,6 +239,14 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 					data_Capacity = new Matrix(3);
 					for (i = 0; i < 2; i++)
 						in_sd >> (*data_Capacity)(i);
+					in_sd.clear();
+					break;
+				case 7: //Capacity depending on solid conversion (density-based average)
+					//0. Capacity at lower_density_limit (reactive system property)
+					//1. Capacity at upper_density_limit (reactive system property)
+					data_Capacity = new Matrix(3);
+					for(i=0; i<2; i++)
+						in_sd>> (*data_Capacity)(i);
 					in_sd.clear();
 					break;
 			}
@@ -878,11 +887,11 @@ void CSolidProperties::SetSolidReactiveSystemProperties() // Definition auch in 
 {
 	if (reaction_system.compare("CaOH2") == 0)
 	{
-		lower_solid_density_limit = 1656.0; // density Calciumoxid
-		upper_solid_density_limit = 2200.0; // density Calciumhydroxid
-		reaction_enthalpy = -1.12e+05 / 0.018; // in J/kg (Molar heat of reaction divided by molar mass of water)
-		// negative for exothermic composition reaction
-		reaction_entropy = -143.5 / 0.018; // in J/kgK
+		lower_solid_density_limit = 1665.1; //density Calciumoxid
+		upper_solid_density_limit = 2200.0; //density Calciumhydroxid
+		reaction_enthalpy = -1.083e+05/PhysicalConstant::MolarMass::Water; //in J/kg (Molar heat of reaction divided by molar mass of water)
+		//negative for exothermic composition reaction
+		reaction_entropy = -143.5/PhysicalConstant::MolarMass::Water; //in J/kgK
 	}
 	else if (reaction_system.compare("Mn3O4") == 0)
 	{
@@ -1237,6 +1246,13 @@ double CSolidProperties::Heat_Capacity(double refence)
 			val = lower_solid_density_limit / refence * ((*data_Capacity)(0) + C * (*data_Capacity)(1));
 		}
 		break;
+		case 7:
+			//linear density average (compare model 5)
+			val = lower_solid_density_limit*(*data_Capacity)(0);
+			val += (upper_solid_density_limit*(*data_Capacity)(1)-lower_solid_density_limit*(*data_Capacity)(0))/
+				(upper_solid_density_limit  - lower_solid_density_limit)*(refence - lower_solid_density_limit);
+			val /= refence;
+		break;
 		default:
 			val = (*data_Capacity)(0);
 			break;
@@ -1363,19 +1379,19 @@ double CSolidProperties::Enthalpy(double temperature, const double latent_factor
 }
 
 /**************************************************************************
-   FEMLib-Method: CSolidProperties::Heat_Capacity(const double refence = 0.0) const
+   FEMLib-Method: CSolidProperties::Heat_Capacity(const double reference = 0.0) const
    Task: Get density
    Programing:
    08/2004 WW Implementation
 **************************************************************************/
-double CSolidProperties::Heat_Conductivity(double refence)
+double CSolidProperties::Heat_Conductivity(double reference)
 {
 	double val = 0.0;
 	int gueltig;
 	switch (Conductivity_mode)
 	{
 		case 0:
-			val = CalulateValue(data_Conductivity, refence);
+			val = CalulateValue(data_Conductivity, reference);
 			break;
 		case 1:
 			val = (*data_Conductivity)(0);
@@ -1388,28 +1404,28 @@ double CSolidProperties::Heat_Conductivity(double refence)
 			// 1. Dry conductivity
 			// 2. Boiling temperature
 			// 3. Boiling temperature range
-			if (refence < k_T[2]) // Wet
+			if (reference < k_T[2]) // Wet
 				val = k_T[0];
-			else if ((refence >= k_T[2]) && (refence < (k_T[2] + k_T[3])))
-				val = k_T[0] + (k_T[0] - k_T[1]) * (refence - k_T[2]) / k_T[3];
+			else if ((reference >= k_T[2]) && (reference < (k_T[2] + k_T[3])))
+				val = k_T[0] + (k_T[0] - k_T[1]) * (reference - k_T[2]) / k_T[3];
 			else
 				val = k_T[1];
 		}
 		break;
-		case 3: // refence: saturation
-			// val = 1.28-0.71/(1+10.0*exp(refence-0.65));  //MX
-			val = 1.28 - 0.71 / (1 + exp(10.0 * (refence - 0.65)));
+		case 3: // reference: saturation
+			// val = 1.28-0.71/(1+10.0*exp(reference-0.65));  //MX
+			val = 1.28 - 0.71 / (1 + exp(10.0 * (reference - 0.65)));
 			break;
 		case 30: // Another model for bentonite. 10.2013. WW
 		{
-			// val = k_max-k_min/(1+10.0*exp(refence-S0));
+			// val = k_max-k_min/(1+10.0*exp(reference-S0));
 			const double* k_T = data_Conductivity->getEntryArray();
-			//		val = k_T[0] - (k_T[0]-k_T[1]) / (1 + exp(10.0 * (refence - k_T[2])));
-			val = k_T[0] + k_T[1] * (refence - k_T[2]);
+			//		val = k_T[0] - (k_T[0]-k_T[1]) / (1 + exp(10.0 * (reference - k_T[2])));
+			val = k_T[0] + k_T[1] * (reference - k_T[2]);
 		}
 		break;
 		case 4: // 21.12.2009. WW
-			val = CalulateValue(data_Conductivity, refence);
+			val = CalulateValue(data_Conductivity, reference);
 			break;
 		case 5: // DECOVALEX2015, TaskB2 JM
 			CalPrimaryVariable(capacity_pcs_name_vector);
@@ -1523,18 +1539,18 @@ void CSolidProperties::HeatConductivityTensor(const int dim, double* tensor, int
 }
 
 /**************************************************************************
-   FEMLib-Method: CSolidProperties::Youngs_Modulus(const double refence = 0.0) const
+   FEMLib-Method: CSolidProperties::Youngs_Modulus(const double reference = 0.0) const
    Task: Get density
    Programing:
    08/2004 WW Implementation
 **************************************************************************/
-double CSolidProperties::Youngs_Modulus(double refence)
+double CSolidProperties::Youngs_Modulus(double reference)
 {
 	double val = 0.0;
 	switch (Youngs_mode)
 	{
 		case 0:
-			val = CalulateValue(data_Youngs, refence);
+			val = CalulateValue(data_Youngs, reference);
 			break;
 		case 1:
 			val = (*data_Youngs)(0);

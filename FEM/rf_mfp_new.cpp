@@ -570,8 +570,9 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 					in >> cp[0] >> cp[1] >> cp[2] >> cp[3];
 			}
 
-			if ((heat_capacity_model == 11
-			     || heat_capacity_model == 12)) // && pcs_vector[0]->getProcessType() != FiniteElement::TNEQ)
+			if (heat_capacity_model == 11
+			    || heat_capacity_model == 12
+			    || heat_capacity_model == 13) // && pcs_vector[0]->getProcessType() != FiniteElement::TNEQ)
 			{
 				std::cout << "Warning: This heat capacity model requires two components and their molar masses defined "
 				             "in the mcp file!\n";
@@ -1223,32 +1224,47 @@ double CFluidProperties::Density(double* variables)
 				pressure = primary_variable[0] / 1e5;
 
 				density = 9.99792877961606e+02 + 5.07605113140940e-04 * max(pressure, 0.0)
-				          - 5.28425478164183e-10 * pow(max(pressure, 0.0), 2.)
-				          + (5.13864847162196e-02 - 3.61991396354483e-06 * max(pressure, 0.0)
-				             + 7.97204102509724e-12 * pow(max(pressure, 0.0), 2.))
-				                * max(primary_variable[1], 0.0)
-				          + (-7.53557031774437e-03 + 6.32712093275576e-08 * max(pressure, 0.0)
-				             - 1.66203631393248e-13 * pow(max(pressure, 0.0), 2.))
-				                * pow(max(primary_variable[1], 0.0), 2.)
-				          + (4.60380647957350e-05 - 5.61299059722121e-10 * max(pressure, 0.0)
-				             + 1.80924436489400e-15 * pow(max(pressure, 0.0), 2.))
-				                * pow(max(primary_variable[1], 0.0), 3.)
-				          + (-2.26651454175013e-07 + 3.36874416675978e-12 * max(pressure, 0.0)
-				             - 1.30352149261326e-17 * pow(max(pressure, 0.0), 2.))
-				                * pow(max(primary_variable[1], 0.0), 4.)
-				          + (6.14889851856743e-10 - 1.06165223196756e-14 * max(pressure, 0.0)
-				             + 4.75014903737416e-20 * pow(max(pressure, 0.0), 2.))
-				                * pow(max(primary_variable[1], 0.0), 5.)
-				          + (-7.39221950969522e-13 + 1.42790422913922e-17 * max(pressure, 0.0)
-				             - 7.13130230531541e-23 * pow(max(pressure, 0.0), 2.))
-				                * pow(max(primary_variable[1], 0.0), 6.);
+					- 5.28425478164183e-10 * pow(max(pressure, 0.0), 2.)
+					+ (5.13864847162196e-02 - 3.61991396354483e-06 * max(pressure, 0.0)
+							+ 7.97204102509724e-12 * pow(max(pressure, 0.0), 2.))
+					* max(primary_variable[1], 0.0)
+					+ (-7.53557031774437e-03 + 6.32712093275576e-08 * max(pressure, 0.0)
+							- 1.66203631393248e-13 * pow(max(pressure, 0.0), 2.))
+					* pow(max(primary_variable[1], 0.0), 2.)
+					+ (4.60380647957350e-05 - 5.61299059722121e-10 * max(pressure, 0.0)
+							+ 1.80924436489400e-15 * pow(max(pressure, 0.0), 2.))
+					* pow(max(primary_variable[1], 0.0), 3.)
+					+ (-2.26651454175013e-07 + 3.36874416675978e-12 * max(pressure, 0.0)
+							- 1.30352149261326e-17 * pow(max(pressure, 0.0), 2.))
+					* pow(max(primary_variable[1], 0.0), 4.)
+					+ (6.14889851856743e-10 - 1.06165223196756e-14 * max(pressure, 0.0)
+							+ 4.75014903737416e-20 * pow(max(pressure, 0.0), 2.))
+					* pow(max(primary_variable[1], 0.0), 5.)
+					+ (-7.39221950969522e-13 + 1.42790422913922e-17 * max(pressure, 0.0)
+							- 7.13130230531541e-23 * pow(max(pressure, 0.0), 2.))
+					* pow(max(primary_variable[1], 0.0), 6.);
 
 				if (fabs(drho_dC) > 1.e-20)
 					density *= 1. + drho_dC * (max(primary_variable[2], 0.0) - C_0);
 				break;
+			case 26: // Dalton's law + ideal gas for use with TNEQ/TES
+			{
+				const double M0 = cp_vec[0]->molar_mass; // molar mass of component 0
+				const double M1 = cp_vec[1]->molar_mass;
+				const double p = primary_variable[0];
+				const double T = primary_variable[1];
+				const double x = primary_variable[2]; // gas mass fraction of component 1
+				// assert(0.0 <= x && x <= 1.0);
+
+				// gas molar fraction of component 1
+				const double xn = M0 * x / (M0 * x + M1 * (1.0 - x));
+
+				density = p / (PhysicalConstant::IdealGasConstant * T) * (M1 * xn + M0 * (1.0 - xn)); // R_uni in mNs
+				break;
+			}
 			default:
-				std::cout << "Error in CFluidProperties::Density: no valid model"
-				          << "\n";
+				std::cout << "Error in CFluidProperties::Density : no valid model (variables definded?)"
+					<< "\n";
 				break;
 		}
 	}
@@ -1646,9 +1662,9 @@ double CFluidProperties::Viscosity(double* variables)
 				const double M1 = cp_vec[0]->molar_mass;
 				const double M2 = cp_vec[1]->molar_mass;
 
-				const double p = variables[0];
-				const double T = variables[1];
-				const double X = variables[2];
+				const double p = primary_variable[0];
+				const double T = primary_variable[1];
+				const double X = primary_variable[2];
 
 				// reactive component
 				x[0] = M1 * X / (M1 * X + M2 * (1.0 - X)); // mass in mole fraction
@@ -1964,9 +1980,9 @@ double CFluidProperties::SpecificHeatCapacity(double* variables)
 				// reactive component
 				const double M1 = cp_vec[0]->molar_mass;
 				const double M2 = cp_vec[1]->molar_mass;
-				const double p = variables[0];
-				const double T = variables[1];
-				const double X = variables[2];
+				const double p = primary_variable[0];
+				const double T = primary_variable[1];
+				const double X = primary_variable[2];
 
 				x[0] = M1 * X / (M1 * X + M2 * (1.0 - X)); // mass in mole fraction
 				therm_prop("W");
@@ -1984,12 +2000,21 @@ double CFluidProperties::SpecificHeatCapacity(double* variables)
 			}
 		case 12: // mass fraction weighted average of isobaric specific heat capacities using a linearised model
 			// reactive component
-			x[0] = variables[2]; // mass fraction
+			x[0] = primary_variable[2]; // mass fraction
 			Cp_c[0] = linear_heat_capacity(variables[1], cp_vec[1]->fluid_id);
 			// inert component
 			x[1] = 1.0 - x[0];
 			Cp_c[1] = linear_heat_capacity(variables[1], cp_vec[0]->fluid_id);
 			specific_heat_capacity = Cp_c[0] * x[0] + Cp_c[1] * x[1]; // mixture isobaric specific heat capacities
+			break;
+		case 13: //mass fraction weighted average of isobaric specific heat capacities using a polynomial model
+			//reactive component
+			x[0] = primary_variable[2]; //mass fraction
+			Cp_c[0] = polynomial_heat_capacity(variables[1],cp_vec[1]->fluid_id);
+			//inert component
+			x[1] = 1.0 - x[0];
+			Cp_c[1] = polynomial_heat_capacity(variables[1],cp_vec[0]->fluid_id);
+			specific_heat_capacity = Cp_c[0]*x[0] + Cp_c[1]*x[1]; //mixture isobaric specific heat capacities
 			break;
 		case 15: // mixture cp= sum_i y_i*cp:: P, T, x dependent
 			for (int CIndex = 2; CIndex < cmpN + 2; CIndex++)
@@ -2261,9 +2286,9 @@ double CFluidProperties::HeatConductivity(double* variables)
 				double x[2], k[2];
 				const double M0 = cp_vec[0]->molar_mass;
 				const double M1 = cp_vec[1]->molar_mass;
-				const double p = variables[0];
-				const double T = variables[1];
-				const double X = variables[2];
+				const double p = primary_variable[0];
+				const double T = primary_variable[1];
+				const double X = primary_variable[2];
 
 				// TODO [CL] max() is redundant if the fraction is guaranteed to be between 0 and 1.
 				// reactive component
