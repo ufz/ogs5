@@ -575,18 +575,10 @@ double polynomial_heat_capacity(double T, int c)
     double res(0.);
     switch (c) {
         case 1: //H2O
-            res = 1.5630770E+03;
-            res += 1.6037550E+00*T;
-            res += -2.9327840E-03*T*T;
-            res += 3.2161010E-06*T*T*T;
-            res += -1.1568270E-09*T*T*T*T;
+            res = 1.5630770E+03 + T*(1.6037550E+00 + T *(-2.9327840E-03 + T * (3.2161010E-06 - 1.1568270E-09*T)));
             break;
         case 3: //N2
-            res = 9.7904300E+02;
-            res +=4.1796390E-01*T;
-            res += -1.1762790E-03*T*T;
-            res += 1.6743940E-06*T*T*T;
-            res += -7.2562970E-10*T*T*T*T;
+            res = 9.7904300E+02 + T*(4.1796390E-01 + T *(-1.1762790E-03 + T * (1.6743940E-06 -7.2562970E-10*T)));
             break;
         default:
             std::cout << "WARNING: Fluid not specified in polynomial_heat_capacity. Setting cp to 1000.\n";
