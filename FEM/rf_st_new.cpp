@@ -1130,13 +1130,13 @@ void CSourceTermGroup::Set(CRFProcess* m_pcs, const int ShiftInNodeVector, std::
 			    || source_term->getProcessDistributionType() == FiniteElement::CLIMATE)
 			{ // NB For climate ST, the source terms (recharge in this case) will also be assigned directly to surface
 				// nodes
-				source_term->DirectAssign(ShiftInNodeVector);
+				source_term->DirectAssign(m_pcs, ShiftInNodeVector);
 				continue;
 			}
 
 			if (source_term->getProcessDistributionType() == FiniteElement::RECHARGE_DIRECT)
 			{
-				source_term->DirectAssign(ShiftInNodeVector);
+				source_term->DirectAssign(m_pcs, ShiftInNodeVector);
 				set = true;
 			}
 
@@ -4116,10 +4116,8 @@ void CSourceTerm::SetNOD2MSHNOD(const std::vector<size_t>& nodes, std::vector<si
  GeoSys source term function:
  02/2009 WW Implementation
  **************************************************************************/
-void CSourceTerm::DirectAssign(long ShiftInNodeVector)
+void CSourceTerm::DirectAssign(CRFProcess* m_pcs, long ShiftInNodeVector)
 {
-	CRFProcess* m_pcs = PCSGet(convertProcessTypeToString(getProcessType()));
-
 	if (getProcessDistributionType() == FiniteElement::CLIMATE) // NB for this type of ST, we assign a ST to each node
 	// on the Mesh surface (land surface)
 	{
