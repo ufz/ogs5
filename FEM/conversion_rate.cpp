@@ -34,10 +34,10 @@ conversion_rate::conversion_rate(double T_solid,
 
 	if (system == FiniteElement::CaOH2)
 	{ // Definition auch in void CSolidProperties::SetSolidReactiveSystemProperties()
-        rho_low = 1665.1;
+		rho_low = 1665.1;
 		rho_up = 2200.0;
-        //only for equilibrium calculation. Do not touch. Reaction heat value set in rf_msp
-        reaction_enthalpy = -1.12e+05; //in J/mol; negative for exothermic composition reaction
+		//only for equilibrium calculation. Do not touch. Reaction heat value set in rf_msp
+		reaction_enthalpy = -1.12e+05; //in J/mol; negative for exothermic composition reaction
 		reaction_entropy = -143.5; //in J/mol K
 		M_carrier = PhysicalConstant::MolarMass::N2;
 		M_react = PhysicalConstant::MolarMass::Water;
