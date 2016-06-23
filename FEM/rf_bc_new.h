@@ -173,7 +173,7 @@ private:
 	void SurfaceInterpolation(CRFProcess* m_pcs,
 	                          std::vector<long>& nodes_on_sfc,
 	                          std::vector<double>& node_value_vector);
-	inline void DirectAssign(long ShiftInNodeVector);
+	inline void DirectAssign(CRFProcess* m_pcs, long ShiftInNodeVector);
 	// 19.03.2009. WW
 	inline void PatchAssign(long ShiftInNodeVector);
 

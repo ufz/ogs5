@@ -888,16 +888,13 @@ void BCWrite(std::string const& base_file_name)
    GeoSys source term function:
    02/2009 WW Implementation
 **************************************************************************/
-inline void CBoundaryCondition::DirectAssign(long ShiftInNodeVector)
+inline void CBoundaryCondition::DirectAssign(CRFProcess* m_pcs, long ShiftInNodeVector)
 {
 	std::string line_string;
 	std::stringstream in;
 	long n_index;
 	double n_val;
-	CRFProcess* m_pcs = NULL;
 	CBoundaryConditionNode* m_node_value = NULL;
-
-	m_pcs = PCSGet(convertProcessTypeToString(this->getProcessType()));
 
 	//========================================================================
 	// File handling
@@ -1142,7 +1139,7 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs, int ShiftInNodeVector, const
 			//-- 23.02.3009. WW
 			if (bc->getProcessDistributionType() == FiniteElement::DIRECT)
 			{
-				bc->DirectAssign(ShiftInNodeVector);
+				bc->DirectAssign(pcs, ShiftInNodeVector);
 				++p_bc;
 				continue;
 			}

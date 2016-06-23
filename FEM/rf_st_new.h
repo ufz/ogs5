@@ -111,7 +111,7 @@ public:
 	void SetNOD();
 
 	// 23.02.2009. WW
-	void DirectAssign(const long ShiftInNodeVector);
+	void DirectAssign(CRFProcess* m_pcs, const long ShiftInNodeVector);
 
 	// KR / NB
 
