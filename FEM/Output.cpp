@@ -1687,9 +1687,6 @@ double COutput::NODWritePLYDataTEC(int number)
 	if (is_TECPLOT || is_GNUPLOT)
 		tec_file << " ZONE T=\"TIME=" << _time << "\""
 		         << "\n";
-
-	tec_file << " ZONE T=\"TIME=" << _time << "\""
-	         << "\n";
 	//----------------------------------------------------------------------
 	// Write data
 	//======================================================================
