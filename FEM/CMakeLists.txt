@@ -49,6 +49,7 @@ set( HEADERS
 	tools.h
 	vtk.h
 	OutputTools.h
+	ShapeFunctionPool.h
 )
 
 set( SOURCES
@@ -102,6 +103,7 @@ set( SOURCES
 	Stiff_Bulirsch-Stoer.cpp
 	tools.cpp
 	vtk.cpp
+	ShapeFunctionPool.cpp
 )
 
 if(NOT OGS_LSOLVER STREQUAL PETSC)

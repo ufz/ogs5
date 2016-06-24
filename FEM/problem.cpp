@@ -69,6 +69,7 @@ extern int ReadData(char*, GEOLIB::GEOObjects& geo_obj, std::string& unique_name
 #include "Eclipse.h" //BG 09/2009
 #include "Output.h"
 #include "fem_ele_std.h"
+#include "fem_ele_vec.h"
 #include "files0.h" // GetLineFromFile1
 #include "rf_bc_new.h"
 #include "rf_node.h"
@@ -92,6 +93,8 @@ extern int ReadData(char*, GEOLIB::GEOObjects& geo_obj, std::string& unique_name
 #endif
 #include "rf_kinreact.h"
 
+#include "ShapeFunctionPool.h"
+
 #if defined(USE_PETSC) // || defined(other parallel libs)//03.3012. WW
 #include "PETSC/PETScLinearSolver.h"
 #endif
@@ -109,8 +112,11 @@ using process::CRFProcessDeformation;
             PreTimeloop
    Modification:
  ***************************************************************************/
-Problem::Problem(char* filename)
-    : dt0(0.), print_result(true), _geo_obj(new GEOLIB::GEOObjects), _geo_name(filename), mrank(0), msize(0)
+Problem::Problem (char* filename) :
+	dt0(0.), print_result(true),
+	_linear_shapefunction_pool(NULL), _quadr_shapefunction_pool(NULL),
+	_geo_obj (new GEOLIB::GEOObjects), _geo_name (filename),
+	mrank(0), msize(0)
 {
 	if (filename != NULL)
 	{
@@ -223,10 +229,8 @@ Problem::Problem(char* filename)
 		{
 			if (mmp_vector[i]->porosity_model == 13)
 			{
-				std::cout << " Error in Model setup: Porosity model 13 is used, "
-				          << "\n";
-				std::cout << " but no reaction interface is defined! Exiting now..."
-				          << "\n";
+				std::cout << " Error in Model setup: Porosity model 13 is used, " << "\n";
+				std::cout << " but no reaction interface is defined! Exiting now..." << "\n";
 				exit(0);
 			}
 		}
@@ -249,7 +253,7 @@ Problem::Problem(char* filename)
 				CRFProcess* flow_pcs = NULL;
 				flow_pcs = PCSGetFlow();
 				if (flow_pcs->type == 1212) // in case of mutlltiphase flow, sat water must be calculated here, required
-					// by pgc interface
+				                            // by pgc interface
 					flow_pcs->CalcSecondaryVariables(true);
 			}
 			REACTINT_vec[0]->InitREACTINT();
@@ -474,7 +478,7 @@ Problem::Problem(char* filename)
 	// For time stepping. WW
 	CTimeDiscretization* m_tim = NULL;
 	start_time = 1.0e+25; // 1.e+8;  kg44 I need a really big time, as I have starting times bigger than 3.e+13 (1
-	// Million years!!!)
+	                      // Million years!!!)
 	end_time = 0.;
 	max_time_steps = 0;
 	bool time_ctr = false;
@@ -614,9 +618,20 @@ Problem::~Problem()
 	delete m_vec_BRNS;
 #endif
 
-#if defined(USE_PETSC) || defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) \
-    || defined(USE_MPI_GEMS)
-	if (mrank == 0)
+	if (_linear_shapefunction_pool)
+	{
+		if (_linear_shapefunction_pool == _quadr_shapefunction_pool)
+		{
+			_quadr_shapefunction_pool = NULL;
+		}
+		delete _linear_shapefunction_pool;
+		_linear_shapefunction_pool = NULL;
+	}
+	if (_quadr_shapefunction_pool)
+		delete _quadr_shapefunction_pool;
+
+#if defined(USE_PETSC) ||defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS)
+	if(mrank == 0)
 #endif
 		std::cout << "\n^O^: Your simulation is terminated normally ^O^ "
 		          << "\n";
@@ -955,6 +970,23 @@ void Problem::PCSCreate()
 #endif
 
 		pcs_vector[i]->Create();
+	}
+
+	createShapeFunctionPool(); // WW
+
+	for (size_t i = 0; i < no_processes; i++)
+	{ // WW
+		CRFProcess* pcs = pcs_vector[i];
+		pcs->SetBoundaryConditionAndSourceTerm();
+
+		if (   pcs->getProcessType() == FiniteElement::DEFORMATION_DYNAMIC
+			|| pcs->getProcessType() == FiniteElement::DEFORMATION
+			|| pcs->getProcessType() == FiniteElement::DEFORMATION_FLOW
+			|| pcs->getProcessType() == FiniteElement::DEFORMATION_H2)
+		{
+			CRFProcessDeformation* dm_pcs = dynamic_cast<CRFProcessDeformation*>(pcs);
+			dm_pcs->InitGauss();
+		}
 	}
 
 #if defined(USE_PETSC) // || defined(other solver libs)//03.3012. WW
@@ -1433,7 +1465,7 @@ bool Problem::CouplingLoop()
 					loop_process_number = i;
 					if (a_pcs->first_coupling_iteration)
 						PreCouplingLoop(a_pcs);
-					//					 error = Call_Member_FN(this, active_processes[index])();
+					//					error = Call_Member_FN(this, active_processes[index])();
 					Call_Member_FN(this, active_processes[index])();
 					if (!a_pcs->TimeStepAccept())
 					{
@@ -1445,7 +1477,7 @@ bool Problem::CouplingLoop()
 					loop_process_number = i + 1;
 					if (b_pcs->first_coupling_iteration)
 						PreCouplingLoop(b_pcs);
-					//					 error = Call_Member_FN(this, active_processes[cpl_index])();
+					//					error = Call_Member_FN(this, active_processes[cpl_index])();
 					Call_Member_FN(this, active_processes[cpl_index])();
 					if (!b_pcs->TimeStepAccept())
 					{
@@ -1490,7 +1522,7 @@ bool Problem::CouplingLoop()
 				if (a_pcs->first_coupling_iteration)
 					PreCouplingLoop(a_pcs);
 				//				error = Call_Member_FN(this, active_processes[index])(); // TF: error set, but never
-				// used
+				//used
 				Call_Member_FN(this, active_processes[index])();
 				if (!a_pcs->TimeStepAccept())
 				{
@@ -1693,9 +1725,9 @@ void Problem::PostCouplingLoop()
 			m_pcs->WriteSolution(); // WW
 #ifdef GEM_REACT
 			if (i == 0) // for GEM_REACT we also need information on porosity (node porosity internally stored in Gems
-				// process)!....do it only once and it does not matter for which process ! ....we assume that
-				// the first pcs process is the flow process...if reload not defined for every process,
-				// restarting with gems will not work in any case
+			            // process)!....do it only once and it does not matter for which process ! ....we assume that
+			            // the first pcs process is the flow process...if reload not defined for every process,
+			            // restarting with gems will not work in any case
 
 				if ((m_pcs->reload == 1 || m_pcs->reload == 3)
 				    && !((aktueller_zeitschritt % m_pcs->nwrite_restart) > 0))
@@ -2115,9 +2147,9 @@ void Problem::TestOutputDuMux(CRFProcess* m_pcs)
 		    = pcs_vector[m_pcs->DuMuxData->ProcessIndex_CO2inLiquid]->GetNodeValue(i, indexConcentration_CO2);
 
 		mass_CO2_gas = mass_CO2_gas + node_volume * saturation_CO2 * density_CO2;
-		mass_CO2_water
-		    = mass_CO2_water
-		      + node_volume * saturation_water * concentration_CO2_water * m_pcs->DuMuxData->Molweight_CO2 * 0.001;
+		mass_CO2_water = mass_CO2_water
+		                 + node_volume * saturation_water * concentration_CO2_water * m_pcs->DuMuxData->Molweight_CO2
+		                       * 0.001;
 		// cout << " Node: " << i << " saturation: " << saturation_water << " Density_CO2: " << density_CO2 << "
 		// node_volume: " << node_volume << "\n";
 	}
@@ -2231,9 +2263,9 @@ void Problem::TestOutputDuMux(CRFProcess* m_pcs)
 		                          / (m_pcs->DuMuxData->Molweight_CO2 * 1e-3);
 
 		mass_CO2_gas = mass_CO2_gas + node_volume * saturation_CO2 * density_CO2;
-		mass_CO2_water
-		    = mass_CO2_water
-		      + node_volume * saturation_water * concentration_CO2_water * m_pcs->DuMuxData->Molweight_CO2 * 0.001;
+		mass_CO2_water = mass_CO2_water
+		                 + node_volume * saturation_water * concentration_CO2_water * m_pcs->DuMuxData->Molweight_CO2
+		                       * 0.001;
 	}
 	mass_CO2 = mass_CO2_gas + mass_CO2_water;
 	// calculating time
@@ -2375,9 +2407,9 @@ void Problem::TestOutputEclipse(CRFProcess* m_pcs)
 		    = pcs_vector[m_pcs->EclipseData->ProcessIndex_CO2inLiquid]->GetNodeValue(i, indexConcentration_CO2);
 
 		mass_CO2_gas = mass_CO2_gas + node_volume * saturation_CO2 * density_CO2;
-		mass_CO2_water
-		    = mass_CO2_water
-		      + node_volume * saturation_water * concentration_CO2_water * m_pcs->EclipseData->Molweight_CO2 * 0.001;
+		mass_CO2_water = mass_CO2_water
+		                 + node_volume * saturation_water * concentration_CO2_water * m_pcs->EclipseData->Molweight_CO2
+		                       * 0.001;
 		// cout << " Node: " << i << " saturation: " << saturation_water << " Density_CO2: " << density_CO2 << "
 		// node_volume: " << node_volume << "\n";
 	}
@@ -2483,13 +2515,12 @@ void Problem::TestOutputEclipse(CRFProcess* m_pcs)
 		for (int j = 0; j < int(ele_nodes.Size()); j++)
 			concentration_CO2_water = concentration_CO2_water
 			                          + pcs_vector[m_pcs->EclipseData->ProcessIndex_CO2inLiquid]->GetNodeValue(
-			                                ele_nodes[j]->GetIndex(), indexConcentration_CO2)
-			                                / ele_nodes.Size();
+			                                ele_nodes[j]->GetIndex(), indexConcentration_CO2) / ele_nodes.Size();
 
 		mass_CO2_gas = mass_CO2_gas + element_volume * saturation_CO2 * density_CO2;
-		mass_CO2_water
-		    = mass_CO2_water
-		      + element_volume * saturation_water * concentration_CO2_water * m_pcs->EclipseData->Molweight_CO2 * 0.001;
+		mass_CO2_water = mass_CO2_water
+		                 + element_volume * saturation_water * concentration_CO2_water
+		                       * m_pcs->EclipseData->Molweight_CO2 * 0.001;
 	}
 	mass_CO2 = mass_CO2_gas + mass_CO2_water;
 	// calculating time
@@ -2631,8 +2662,7 @@ void Problem::OutputMassOfGasInModel(CRFProcess* m_pcs)
 	// +1: new timelevel
 	if (ProcessIndex_GasInLiquid > -1)
 		indexConcentration_Gas = pcs_vector[ProcessIndex_GasInLiquid]->GetNodeValueIndex(
-		                             pcs_vector[ProcessIndex_GasInLiquid]->pcs_primary_function_name[0])
-		                         + 1;
+		                             pcs_vector[ProcessIndex_GasInLiquid]->pcs_primary_function_name[0]) + 1;
 
 	for (long i = 0; i < (long)m_msh->nod_vector.size(); i++)
 	{
@@ -2683,8 +2713,8 @@ void Problem::OutputMassOfGasInModel(CRFProcess* m_pcs)
 		if (ProcessIndex_GasInLiquid > -1)
 		{
 			concentration_Gas_water = pcs_vector[ProcessIndex_GasInLiquid]->GetNodeValue(i, indexConcentration_Gas);
-			mass_Gas_water
-			    = mass_Gas_water + node_volume * saturation_water * concentration_Gas_water * Molweight_Gas * 0.001;
+			mass_Gas_water = mass_Gas_water
+			                 + node_volume * saturation_water * concentration_Gas_water * Molweight_Gas * 0.001;
 		}
 		else
 			mass_Gas_water = 0;
@@ -2852,9 +2882,8 @@ void Problem::OutputMassOfComponentInModel(std::vector<CRFProcess*> flow_pcs, CR
 		node_volume = 0;
 		if (mfp_vector[0]->density_model == 18)
 		{
-			//			variable_index = flow_pcs[0]->GetNodeValueIndex("DENSITY1"); // // 2012-08 TF, variable set but
-			// not
-			// used
+			//			variable_index = flow_pcs[0]->GetNodeValueIndex("DENSITY1"); // // 2012-08 TF, variable set but not
+			//used
 			//			density_water = flow_pcs[0]->GetNodeValue(i, variable_index); // 2012-08 TF, variable
 			//‘density_water’ set but not used [-Wunused-but-set-variable]
 		}
@@ -2871,8 +2900,8 @@ void Problem::OutputMassOfComponentInModel(std::vector<CRFProcess*> flow_pcs, CR
 			m_mat_mp = mmp_vector[group];
 			porosity
 			    = m_mat_mp->Porosity(m_ele->GetIndex(), 1); // CB Now provides also heterogeneous porosity, model 11
-			node_volume
-			    = node_volume + porosity * m_ele->GetVolume() * m_ele->GetFluxArea() / m_ele->GetNodesNumber(false);
+			node_volume = node_volume
+			              + porosity * m_ele->GetVolume() * m_ele->GetFluxArea() / m_ele->GetNodesNumber(false);
 			// cout << m_ele->GetNodesNumber(false) << " " << "\n";
 		}
 
@@ -2884,8 +2913,8 @@ void Problem::OutputMassOfComponentInModel(std::vector<CRFProcess*> flow_pcs, CR
 			int index = flow_pcs[0]->GetNodeValueIndex("SATURATION1") + 1; //+1... new time level
 			saturation_water = flow_pcs[0]->GetNodeValue(i, index);
 		}
-		indexComponentConcentration
-		    = transport_pcs->GetNodeValueIndex(transport_pcs->pcs_primary_function_name[0]) + 1; // +1: new timelevel
+		indexComponentConcentration = transport_pcs->GetNodeValueIndex(transport_pcs->pcs_primary_function_name[0])
+		                              + 1; // +1: new timelevel
 		ComponentConcentration = transport_pcs->GetNodeValue(i, indexComponentConcentration);
 
 		ComponentMass = ComponentMass + node_volume * saturation_water * ComponentConcentration;
@@ -3082,8 +3111,8 @@ inline double Problem::GroundWaterFlow()
 		idx_flux = neighb_pcs->GetNodeValueIndex("VELOCITY_Z1");
 
 		for (i = 0; i < neighb_grid->getBorderNodeNumber(); i++)
-			border_flux[local_indxs_this[i]]
-			    = neighb_pcs->GetNodeValue(local_indxs[i], idx_flux) / neighb_pcs->time_unit_factor;
+			border_flux[local_indxs_this[i]] = neighb_pcs->GetNodeValue(local_indxs[i], idx_flux)
+			                                   / neighb_pcs->time_unit_factor;
 
 		m_pcs->Integration(border_flux);
 
@@ -3640,9 +3669,11 @@ inline double Problem::Deformation()
 	// Error
 	if (dm_pcs->type / 10 == 4)
 	{
-		m_pcs->cal_integration_point_value = true;
-		dm_pcs->CalIntegrationPointValue();
-
+		if (!dm_pcs->isDynamic())
+		{
+			m_pcs->cal_integration_point_value = true;
+			dm_pcs->CalIntegrationPointValue();
+		}
 		if (dm_pcs->type == 42) // H2M. 07.2011. WW
 			dm_pcs->CalcSecondaryVariablesUnsaturatedFlow();
 	}
@@ -3742,6 +3773,11 @@ inline void Problem::LOPExecuteRegionalRichardsFlow(CRFProcess* m_pcs_global, in
 		//....................................................................
 		m_pcs_local->m_msh = m_msh_local;
 		m_pcs_local->Create();
+
+		m_pcs_local->fem->setShapeFunctionPool(m_pcs_global->fem->getShapeFunctionPool(0),
+		                                       m_pcs_global->fem->getShapeFunctionPool(1));
+
+		m_pcs_local->SetBoundaryConditionAndSourceTerm();
 		//....................................................................
 		// BC
 		//....................................................................
@@ -4249,6 +4285,154 @@ bool Problem::Check()
 			return false;
 	}
 	return true;
+}
+
+void Problem::createShapeFunctionPool()
+{
+	CRFProcess* pcs_0c_fem = NULL;
+	CRFProcess* pcs_1c_fem = NULL;
+	for (std::size_t i = 0; i < pcs_vector.size(); i++)
+	{
+		CRFProcess* pcs = pcs_vector[i];
+		if (pcs->getProcessType() == FiniteElement::FLUID_MOMENTUM
+		    || pcs->getProcessType() == FiniteElement::RANDOM_WALK)
+			continue;
+
+		if (pcs->getProcessType() == FiniteElement::DEFORMATION
+		    || pcs->getProcessType() == FiniteElement::DEFORMATION_DYNAMIC
+		    || pcs->getProcessType() == FiniteElement::DEFORMATION_FLOW
+		    || pcs->getProcessType() == FiniteElement::DEFORMATION_H2)
+		{
+			pcs_1c_fem = pcs;
+		}
+		else
+		{
+			pcs_0c_fem = pcs;
+		}
+	}
+
+	CFiniteElementStd* lin_fem_assembler = NULL;
+	CFiniteElementVec* fem_assembler = NULL;
+	if (pcs_0c_fem)
+	{
+		lin_fem_assembler = pcs_0c_fem->getLinearFEMAssembler();
+		lin_fem_assembler->setOrder(1);
+	}
+	if (pcs_1c_fem)
+	{
+		if (!lin_fem_assembler)
+		{
+			lin_fem_assembler = pcs_1c_fem->getLinearFEMAssembler();
+			if (lin_fem_assembler)
+				lin_fem_assembler->setOrder(1);
+		}
+
+		CRFProcessDeformation* dm_pcs = dynamic_cast<CRFProcessDeformation*>(pcs_1c_fem);
+		fem_assembler = dm_pcs->GetFEMAssembler();
+		fem_assembler->setOrder(2);
+	}
+
+	// Check element types of meshes
+	std::vector<MshElemType::type> elem_types;
+	elem_types.reserve(MshElemType::NUM_ELEM_TYPES);
+
+	for (std::size_t i = 0; i < static_cast<std::size_t>(MshElemType::NUM_ELEM_TYPES); i++)
+	{
+		elem_types.push_back(MshElemType::INVALID);
+	}
+
+	for (std::size_t i = 0; i < fem_msh_vector.size(); i++)
+	{
+		MeshLib::CFEMesh* mesh = fem_msh_vector[i];
+		if (mesh->getNumberOfLines() > 0)
+			elem_types[static_cast<int>(MshElemType::LINE) - 1] = MshElemType::LINE;
+		if (mesh->getNumberOfTris() > 0)
+		{
+			elem_types[static_cast<int>(MshElemType::TRIANGLE) - 1] = MshElemType::TRIANGLE;
+			elem_types[static_cast<int>(MshElemType::LINE) - 1] = MshElemType::LINE;
+		}
+		if (mesh->getNumberOfQuads() > 0)
+		{
+			elem_types[static_cast<int>(MshElemType::QUAD) - 1] = MshElemType::QUAD;
+			elem_types[static_cast<int>(MshElemType::LINE) - 1] = MshElemType::LINE;
+		}
+		if (mesh->getNumberOfHexs() > 0)
+		{
+			elem_types[static_cast<int>(MshElemType::HEXAHEDRON) - 1] = MshElemType::HEXAHEDRON;
+			elem_types[static_cast<int>(MshElemType::QUAD8) - 1] = MshElemType::QUAD8;
+			elem_types[static_cast<int>(MshElemType::LINE) - 1] = MshElemType::LINE;
+		}
+		if (mesh->getNumberOfTets() > 0)
+		{
+			elem_types[static_cast<int>(MshElemType::TETRAHEDRON) - 1] = MshElemType::TETRAHEDRON;
+			elem_types[static_cast<int>(MshElemType::TRIANGLE) - 1] = MshElemType::TRIANGLE;
+			elem_types[static_cast<int>(MshElemType::LINE) - 1] = MshElemType::LINE;
+		}
+		if (mesh->getNumberOfPrisms() > 0)
+		{
+			elem_types[static_cast<int>(MshElemType::PRISM) - 1] = MshElemType::PRISM;
+			elem_types[static_cast<int>(MshElemType::QUAD8) - 1] = MshElemType::QUAD8;
+			elem_types[static_cast<int>(MshElemType::TRIANGLE) - 1] = MshElemType::TRIANGLE;
+			elem_types[static_cast<int>(MshElemType::LINE) - 1] = MshElemType::LINE;
+		}
+		if (mesh->getNumberOfPyramids() > 0)
+		{
+			elem_types[static_cast<int>(MshElemType::PYRAMID) - 1] = MshElemType::PYRAMID;
+			elem_types[static_cast<int>(MshElemType::QUAD8) - 1] = MshElemType::QUAD8;
+			elem_types[static_cast<int>(MshElemType::TRIANGLE) - 1] = MshElemType::TRIANGLE;
+			elem_types[static_cast<int>(MshElemType::LINE) - 1] = MshElemType::LINE;
+		}
+	}
+
+	const int num_gauss_sample_pnts = num_vector[0]->getNumIntegrationSamplePoints();
+	if (lin_fem_assembler)
+		_linear_shapefunction_pool
+		    = new FiniteElement::ShapeFunctionPool(elem_types, *lin_fem_assembler, num_gauss_sample_pnts);
+	if (fem_assembler)
+	{
+		_quadr_shapefunction_pool
+		    = new FiniteElement::ShapeFunctionPool(elem_types, *fem_assembler, num_gauss_sample_pnts);
+		if (!_linear_shapefunction_pool)
+		{
+			fem_assembler->setOrder(1);
+			_linear_shapefunction_pool
+			    = new FiniteElement::ShapeFunctionPool(elem_types, *fem_assembler, num_gauss_sample_pnts);
+			fem_assembler->setOrder(2);
+		}
+	}
+
+	// Set ShapeFunctionPool
+	for (std::size_t i = 0; i < pcs_vector.size(); i++)
+	{
+		CRFProcess* pcs = pcs_vector[i];
+		if (pcs->getProcessType() == FiniteElement::FLUID_MOMENTUM
+		    || pcs->getProcessType() == FiniteElement::RANDOM_WALK)
+			continue;
+
+		if (pcs->getProcessType() == FiniteElement::DEFORMATION)
+		{
+			CRFProcessDeformation* dm_pcs = dynamic_cast<CRFProcessDeformation*>(pcs);
+			CFiniteElementVec* fem_assem_h = dm_pcs->GetFEMAssembler();
+			fem_assem_h->setShapeFunctionPool(_linear_shapefunction_pool, _quadr_shapefunction_pool);
+		}
+		else if (pcs->getProcessType() == FiniteElement::DEFORMATION_DYNAMIC
+		         || pcs->getProcessType() == FiniteElement::DEFORMATION_FLOW
+		         || pcs->getProcessType() == FiniteElement::DEFORMATION_H2)
+		{
+			CRFProcessDeformation* dm_pcs = dynamic_cast<CRFProcessDeformation*>(pcs);
+			CFiniteElementVec* fem_assem_h = dm_pcs->GetFEMAssembler();
+			fem_assem_h->setShapeFunctionPool(_linear_shapefunction_pool, _quadr_shapefunction_pool);
+			CFiniteElementStd* fem_assem = dm_pcs->getLinearFEMAssembler();
+			fem_assem->setShapeFunctionPool(_linear_shapefunction_pool, _quadr_shapefunction_pool);
+		}
+		else
+		{
+			CFiniteElementStd* fem_assem = pcs->getLinearFEMAssembler();
+			if (!_quadr_shapefunction_pool)
+				_quadr_shapefunction_pool = _linear_shapefunction_pool;
+			fem_assem->setShapeFunctionPool(_linear_shapefunction_pool, _quadr_shapefunction_pool);
+		}
+	}
 }
 
 /**************************************************************************

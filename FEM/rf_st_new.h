@@ -72,12 +72,12 @@ public:
 	                     const std::vector<long>& nodes_on_ply,
 	                     std::vector<double>& node_value_vector) const;
 
-	void FaceIntegration(MeshLib::CFEMesh* m_msh,
-	                     std::vector<long> const& nodes_on_sfc,
-	                     std::vector<double>& node_value_vector);
-	void DomainIntegration(MeshLib::CFEMesh* m_msh,
-	                       const std::vector<long>& nodes_in_dom,
-	                       std::vector<double>& node_value_vector) const;
+	void FaceIntegration(CRFProcess* pcs,
+	                     std::vector<long> const & nodes_on_sfc,
+	                     std::vector<double> & node_value_vector);
+	void DomainIntegration(CRFProcess* pcs,
+	                       const std::vector<long> & nodes_in_dom,
+	                       std::vector<double> & node_value_vector) const;
 
 	void SetNOD2MSHNOD(std::vector<long>& nodes, std::vector<long>& conditional_nodes);
 

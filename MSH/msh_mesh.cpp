@@ -50,6 +50,7 @@
 // FEM
 #include "fem_ele.h"
 #include "files0.h"
+#include "ShapeFunctionPool.h"
 
 using FiniteElement::CElement;
 
@@ -1418,8 +1419,7 @@ long CFEMesh::GetNODOnPNT(const GEOLIB::Point* const pnt) const
 	//		std::cout << "grid coords: " << coords[0] << " " << coords[1] << " " << coords[2] << "\n";
 	//		double llf[3], urb[3];
 	//		_mesh_grid->getGridCornerPoints(pnt->getData(), llf, urb);
-	//		std::cout << "local bbx: " << llf[0] << " " << llf[1] << " " << llf[2] << " x " << urb[0] << " " << urb[1]
-	//<<
+	//		std::cout << "local bbx: " << llf[0] << " " << llf[1] << " " << llf[2] << " x " << urb[0] << " " << urb[1] <<
 	//" " << urb[2] << "\n";
 	//	}
 	//
@@ -1600,8 +1600,8 @@ void CFEMesh::GetNODOnPLY(const GEOLIB::Polyline* const ply,
 	else
 	{
 		const size_t start_act_node_h = NodesNumber_Linear;
-		const size_t end_act_node_h
-		    = NodesNumber_Linear + static_cast<size_t>(loc_NodesNumber_Quadratic - loc_NodesNumber_Linear);
+		const size_t end_act_node_h = NodesNumber_Linear
+		                              + static_cast<size_t>(loc_NodesNumber_Quadratic - loc_NodesNumber_Linear);
 		for (size_t k(0); k < tmp_msh_node_vector.size(); k++)
 		{
 			const size_t n_id = nod_vector[tmp_msh_node_vector[k]]->GetIndex();
@@ -2925,9 +2925,8 @@ void CFEMesh::PrismRefine(int Layer, int subdivision)
 							//                           * NNodesPerRow]->Z();
 							// PlaceNode(kno,(element_nodes[i] + ((CountNLayers+2) - row) * NNodesPerRow));
 							// TF								m_nod->SetCoordinates(xyz);
-							m_nod->SetCoordinates(
-							    nod_vector[m_ele->nodes_index[i] + ((CountNLayers + 1) - row) * NNodesPerRow]
-							        ->getData());
+							m_nod->SetCoordinates(nod_vector[m_ele->nodes_index[i]
+							                                 + ((CountNLayers + 1) - row) * NNodesPerRow]->getData());
 							nod_vector[(m_ele->nodes_index[i] + ((CountNLayers + 2) - row) * NNodesPerRow)] = m_nod;
 						}
 					// neues Element ganz unten
@@ -3884,7 +3883,7 @@ void CFEMesh::Precipitation2NeumannBC(std::string const& fname, std::string cons
 
 		elem->ComputeVolume();
 		fem->setOrder(getOrder() + 1);
-		fem->ConfigElement(elem, 3);
+		fem->ConfigElement(elem);
 		fem->FaceIntegration(node_val);
 		for (k = 0; k < elem->nnodes; k++)
 		{
@@ -4143,6 +4142,20 @@ void CFEMesh::TopSurfaceIntegration()
 	ofile_asci.setf(std::ios::scientific, std::ios::floatfield);
 	ofile_asci.precision(14);
 
+	// Compute shape functions
+	// Check element types of meshes
+	std::vector<MshElemType::type> elem_types;
+	elem_types.reserve(MshElemType::NUM_ELEM_TYPES);
+	for (std::size_t i = 0; i < static_cast<std::size_t>(MshElemType::NUM_ELEM_TYPES); i++)
+	{
+		elem_types.push_back(MshElemType::INVALID);
+	}
+	elem_types[static_cast<int>(MshElemType::QUAD) - 1] = MshElemType::QUAD;
+	elem_types[static_cast<int>(MshElemType::TRIANGLE) - 1] = MshElemType::TRIANGLE;
+	FiniteElement::ShapeFunctionPool* line_shapefunction_pool
+	    = new FiniteElement::ShapeFunctionPool(elem_types, *fem, 3);
+	fem->setShapeFunctionPool(line_shapefunction_pool, line_shapefunction_pool);
+
 	for (i = 0; i < (long)face_vector.size(); i++)
 	{
 		elem = face_vector[i];
@@ -4154,7 +4167,7 @@ void CFEMesh::TopSurfaceIntegration()
 
 		elem->ComputeVolume();
 		fem->setOrder(getOrder() + 1);
-		fem->ConfigElement(elem, 3);
+		fem->ConfigElement(elem, true);
 		fem->FaceIntegration(node_val);
 		for (k = 0; k < elem->nnodes; k++)
 		{
@@ -4179,6 +4192,8 @@ void CFEMesh::TopSurfaceIntegration()
 	ofile_asci.close();
 	delete fem;
 	fem = NULL;
+	delete line_shapefunction_pool;
+	line_shapefunction_pool = NULL;
 	val.clear();
 }
 
@@ -4246,12 +4261,12 @@ void CFEMesh::HydroSysMeshGenerator(string fname, const int nlayers, const doubl
 		{
 			depth = seg * (double)k;
 			a_node = nod_vector[i];
-			gs_out << k + i * (nlayers + 1) << deli << a_node->X() << deli << a_node->Y() << deli << a_node->Z() - depth
+			gs_out << k + i*(nlayers + 1) << deli << a_node->X() << deli << a_node->Y() << deli << a_node->Z() - depth
 			       << deli << "\n";
 		}
 	gs_out << "$ELEMENTS"
 	       << "\n";
-	gs_out << size_nodes_msh_t * nlayers << "\n";
+	gs_out << size_nodes_msh_t* nlayers << "\n";
 	l = 0;
 	int mat_index;
 	for (i = 0; i < size_nodes_msh_t; i++)
@@ -4261,7 +4276,7 @@ void CFEMesh::HydroSysMeshGenerator(string fname, const int nlayers, const doubl
 		for (k = 0; k < nlayers; k++)
 		{
 			l = k + (nlayers + 1) * i;
-			gs_out << k + nlayers * i << deli << mat_index << deli << "line" << deli;
+			gs_out << k + nlayers* i << deli << mat_index << deli << "line" << deli;
 			gs_out << l << deli << l + 1 << "\n";
 			mat_index++;
 		}
@@ -4274,7 +4289,7 @@ void CFEMesh::HydroSysMeshGenerator(string fname, const int nlayers, const doubl
 	for (i = 0; i < size_nodes_msh_t; i++)
 	{
 		k = nlayers;
-		gs_out << k + i * (nlayers + 1) << deli << "\n";
+		gs_out << k + i*(nlayers + 1) << deli << "\n";
 	}
 
 	mat_num += nlayers;
@@ -4487,8 +4502,7 @@ size_t CFEMesh::FindElementByPoint(const double* xyz)
 				a_sub[7] = ComputeDetTex(x1, x6, x4, xyz);
 
 				if (fabs((a_sub[0] + a_sub[1] + a_sub[2] + a_sub[3] + a_sub[4] + a_sub[5] + a_sub[6] + a_sub[7] - a)
-				         / a)
-				    < tol)
+				         / a) < tol)
 				{
 					return i;
 				}
@@ -4509,13 +4523,7 @@ size_t CFEMesh::FindElementByPoint(const double* xyz)
 				a_sub[11] = ComputeDetTex(x6, x8, x7, xyz);
 
 				if (fabs((a_sub[0] + a_sub[1] + a_sub[2] + a_sub[3] + a_sub[4] + a_sub[5] + a_sub[6] + a_sub[7]
-				          + a_sub[8]
-				          + a_sub[9]
-				          + a_sub[10]
-				          + a_sub[11]
-				          - a)
-				         / a)
-				    < tol)
+				          + a_sub[8] + a_sub[9] + a_sub[10] + a_sub[11] - a) / a) < tol)
 				{
 					return i;
 				}

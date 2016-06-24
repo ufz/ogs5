@@ -409,6 +409,8 @@ public:
 		return orig_size;
 	}
 
+	FiniteElement::CFiniteElementStd* getLinearFEMAssembler() { return fem; }
+
 	//....................................................................
 	// 7-MFP
 	//....................................................................
@@ -461,6 +463,9 @@ public:
 	//....................................................................
 	// 6-ST
 	void CreateSTGroup();
+
+	void SetBoundaryConditionAndSourceTerm();
+
 	//....................................................................
 	// 7-MFP
 	//....................................................................
@@ -506,11 +511,11 @@ public:
 	std::string simulator_model_path; // path to exclipse input data file (*.data), with extension
 	bool PrecalculatedFiles; // defines if Eclipse or dumux is calculated or if precalculated files are used
 	bool SaveEclipseDataFiles; // WTP: save Eclipse data input files for benchmarking on systems with no Eclipse
-	// licenses; use in combination with Precalculated Files
+	                           // licenses; use in combination with Precalculated Files
 	std::string simulator_well_path; // path to well schedule ( *.well), with extension
 	// SB redo wtp
 	std::string dissolved_co2_pcs_name; // Keyword DISSOLVED_CO2_PCS_NAME; Name of MASS_TRANSPORT Process which is used
-	// to store total dissolved CO2 from ECLIPSE
+	                                    // to store total dissolved CO2 from ECLIPSE
 	std::string dissolved_co2_ingas_pcs_name;
 
 	//....................................................................
@@ -602,6 +607,7 @@ public:
 	//-----------------------------
 
 	std::vector<std::string> const& getElementValueNameVector() { return ele_val_name_vector; }
+
 private:
 	// PCH
 	std::vector<std::string> ele_val_name_vector;
@@ -691,7 +697,7 @@ public:
 	void AllocateLocalMatrixMemory();
 	virtual void GlobalAssembly(); // Make as a virtul function. //10.09.201l. WW
 	/// For all PDEs excluding that for deformation. 24.11.2010l. WW
-	void GlobalAssembly_std(bool is_quad, bool Check2D3D = false);
+	void GlobalAssembly_std(const bool is_mixed_order, bool Check2D3D = false);
 	/// Assemble EQS for deformation process.
 	virtual void GlobalAssembly_DM(){};
 #if defined(NEW_EQS) && defined(JFNK_H2M)
@@ -729,9 +735,11 @@ public:
 	bool hasConstrainedST() { return _hasConstrainedST; }
 	void hasConstrainedBC(const bool state) { _hasConstrainedBC = state; }
 	void hasConstrainedST(const bool state) { _hasConstrainedST = state; }
+
 	void setidxVx(int index) { _idxVx = index; }
 	void setidxVy(int index) { _idxVy = index; }
 	void setidxVz(int index) { _idxVz = index; }
+
 	// ST
 	void IncorporateSourceTerms(const int rank = -1);
 // WW void CheckSTGroup(); //OK

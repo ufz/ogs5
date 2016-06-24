@@ -106,13 +106,11 @@ inline double getElementMMP(int mmp_id, MeshLib::CElem* ele, CRFProcess* m_pcs)
 {
 	double gp[3] = {.0, .0, .0};
 	double theta = 1.0;
-	int gp_r, gp_s, gp_t;
 	ele->SetOrder(false);
 	CFiniteElementStd* fem = m_pcs->GetAssember();
-	fem->ConfigElement(ele, m_pcs->m_num->ele_gauss_points, false);
+	fem->ConfigElement(ele, false);
 	fem->Config();
-	fem->SetGaussPoint(0, gp_r, gp_s, gp_t);
-	fem->ComputeShapefct(1);
+	fem->getShapeFunctionCentroid();
 	CMediumProperties* mmp = mmp_vector[ele->GetPatchIndex()];
 	double val = ELEMENT_MMP_VALUES::getValue(mmp, mmp_id, ele->GetIndex(), gp, theta);
 	return val;

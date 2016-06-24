@@ -76,10 +76,8 @@ public:
 	/**
 	 * \brief Sets the default properties for the given element type.
 	 * \param t The element type of this element.
-	 * \param isFace Signals if the element is initialised as a face of an owner element, some properties of the element
-	 * might change in this case.
 	 */
-	void setElementProperties(MshElemType::type t, bool isFace = false);
+	void setElementProperties(MshElemType::type t);
 
 	/**
 	 * Method (re)sets the patch index. Patch index is used to assign a

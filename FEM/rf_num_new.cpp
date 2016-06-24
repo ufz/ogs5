@@ -197,14 +197,24 @@ bool NUMRead(string file_base_name)
 	num_file.seekg(0L, ios::beg);
 	//========================================================================
 	// Keyword loop
-	cout << "NUMRead"
-	     << "\n";
+	cout << "NUMRead" << "\n";
+	int max_num_integration_pnts = 0;
 	while (!num_file.eof())
 	{
 		num_file.getline(line, MAX_ZEILE);
 		line_string = line;
 		if (line_string.find("#STOP") != string::npos)
+		{
+			// Unify the number of integration points.
+			if (max_num_integration_pnts > 3)
+				max_num_integration_pnts = 3;
+			for (std::size_t i = 0; i < num_vector.size(); i++)
+			{
+				num_vector[i]->ele_gauss_points = max_num_integration_pnts;
+			}
+
 			return true;
+		}
 		//
 		if (line_string.find("$OVERALL_COUPLING") != string::npos)
 		{
@@ -216,11 +226,15 @@ bool NUMRead(string file_base_name)
 		{
 			m_num = new CNumerics("default");
 			position = m_num->Read(&num_file);
+
+			max_num_integration_pnts = std::max(max_num_integration_pnts, m_num->ele_gauss_points);
+
 			num_vector.push_back(m_num);
 			num_file.seekg(position, ios::beg);
 			m_num->NumConfigure(overall_coupling_exists); // JT2012
 		} // keyword found
 	} // eof
+
 	return true;
 }
 
@@ -399,13 +413,13 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 					break;
 				//
 				case FiniteElement::EVNORM: // 1 tolerance for each primary variable (for Deformation, only 1 tolerance
-					// required. Applies to x,y,z)
+				                            // required. Applies to x,y,z)
 					for (int i = 0; i < DOF_NUMBER_MAX; i++)
 						line >> nls_error_tolerance[i];
 					break;
 				//
 				case FiniteElement::LMAX: // 1 tolerance for each primary variable (for Deformation, only 1 tolerance
-					// required. Applies to x,y,z)
+				                          // required. Applies to x,y,z)
 					for (int i = 0; i < DOF_NUMBER_MAX; i++)
 						line >> nls_error_tolerance[i];
 					break;
@@ -530,13 +544,13 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 					break;
 				//
 				case FiniteElement::EVNORM: // 1 tolerance for each primary variable (for Deformation, only 1 tolerance
-					// required. Applies to x,y,z)
+				                            // required. Applies to x,y,z)
 					for (int i = 0; i < DOF_NUMBER_MAX; i++)
 						line >> cpl_error_tolerance[i];
 					break;
 				//
 				case FiniteElement::LMAX: // 1 tolerance for each primary variable (for Deformation, only 1 tolerance
-					// required. Applies to x,y,z)
+				                          // required. Applies to x,y,z)
 					for (int i = 0; i < DOF_NUMBER_MAX; i++)
 						line >> cpl_error_tolerance[i];
 					break;

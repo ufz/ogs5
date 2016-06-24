@@ -20,6 +20,16 @@ class CRFProcess;
 // GEOLIB
 #include "GEOObjects.h"
 
+namespace FiniteElement
+{
+class ShapeFunctionPool;
+}
+namespace FiniteElement
+{
+class CFiniteElementStd;
+class CFiniteElementVec;
+}
+
 //---------------------------------------------------------------------
 // Pointers to member functions
 class Problem;
@@ -50,10 +60,11 @@ public:
 			return buffer_array;
 	}
 	int GetCPLMaxIterations() { return cpl_overall_max_iterations; }
+
 	/**
-	   * get the geometric objects stored in GEOLIB::GEOObjects
-	   * @return a pointer to an instance of class GEOLIB::GEOObjects
-	   */
+	 * get the geometric objects stored in GEOLIB::GEOObjects
+	 * @return a pointer to an instance of class GEOLIB::GEOObjects
+	 */
 	const GEOLIB::GEOObjects* getGeoObj() const;
 	/**
 	 * Get the name of the project. The name is used by GEOLIB::GEOObjects
@@ -103,8 +114,13 @@ private:
 
 	// Print flag
 	bool print_result;
-	// Processes
 
+	/// Caches for shape functions and their derivatives with respect to
+	/// the local coordinates.
+	FiniteElement::ShapeFunctionPool* _linear_shapefunction_pool;
+	FiniteElement::ShapeFunctionPool* _quadr_shapefunction_pool;
+
+	// Processes
 	std::vector<CRFProcess*> total_processes;
 	std::vector<CRFProcess*> transport_processes;
 	std::vector<CRFProcess*> multiphase_processes;
@@ -146,6 +162,7 @@ private:
 	void OutputMassOfComponentInModel(std::vector<CRFProcess*> flow_pcs, CRFProcess* transport_pcs); // BG
 	void OutputMassOfGasInModel(CRFProcess* m_pcs); // BG
 
+	void createShapeFunctionPool();
 	/**
 	 * pointer to an instance of class GEOObjects,
 	 * that manages geometric entities

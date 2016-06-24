@@ -55,7 +55,9 @@ last modified
 // BaseLib
 #include "FileTools.h"
 
-//#include "pcs_dm.h"
+#include "fem_ele_std.h"
+#include "fem_ele_vec.h"
+#include "pcs_dm.h"
 
 // FEM
 //#include "problem.h"
@@ -1658,9 +1660,10 @@ void CSourceTerm::EdgeIntegration(CFEMesh* msh, const std::vector<long>& nodes_o
  01/2010 NW improvement of efficiency to search faces
  **************************************************************************/
 
-void CSourceTerm::FaceIntegration(CFEMesh* msh, std::vector<long> const& nodes_on_sfc,
+void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& nodes_on_sfc,
                                   std::vector<double>& node_value_vector)
 {
+	CFEMesh* msh = pcs->m_msh;
 	if (!msh)
 	{
 		std::cout << "Warning in CSourceTerm::FaceIntegration: no MSH data, function doesn't function";
@@ -1669,7 +1672,7 @@ void CSourceTerm::FaceIntegration(CFEMesh* msh, std::vector<long> const& nodes_o
 
 	long i, j, k, l;
 	long this_number_of_nodes;
-	int nfaces, nfn;
+	int nfaces; //, nfn;
 	int nodesFace[8];
 	double nodesFVal[8];
 
@@ -1775,19 +1778,12 @@ void CSourceTerm::FaceIntegration(CFEMesh* msh, std::vector<long> const& nodes_o
 		} // j
 	}
 
-	int Axisymm = 1; // ani-axisymmetry
-	// CFEMesh* msh = m_pcs->m_msh;
-	if (msh->isAxisymmetry())
-		Axisymm = -1; // Axisymmetry is true
 	CElem* elem = NULL;
-	CElem* face = new CElem(1);
-	CElement* fem = new CElement(Axisymm * msh->GetCoordinateFlag());
 	CNode* e_node = NULL;
 	CElem* e_nei = NULL;
 	// vec<CNode*> e_nodes(20);
 	// vec<CElem*> e_neis(6);
 
-	face->SetFace();
 	this_number_of_nodes = (long)nodes_on_sfc.size();
 	int nSize = (long)msh->nod_vector.size();
 	std::vector<long> G2L(nSize);
@@ -1839,6 +1835,22 @@ void CSourceTerm::FaceIntegration(CFEMesh* msh, std::vector<long> const& nodes_o
 		}
 	}
 
+	CElement* fem_assembler_quad = NULL;
+	CElement* fem_assembler_linear = dynamic_cast<CElement*>(pcs->getLinearFEMAssembler());
+	if (pcs->getProcessType() == FiniteElement::DEFORMATION
+	    || pcs->getProcessType() == FiniteElement::DEFORMATION_DYNAMIC
+	    || pcs->getProcessType() == FiniteElement::DEFORMATION_FLOW
+	    || pcs->getProcessType() == FiniteElement::DEFORMATION_H2)
+	{
+		process::CRFProcessDeformation* dm_pcs = dynamic_cast<process::CRFProcessDeformation*>(pcs);
+		fem_assembler_quad = dynamic_cast<CElement*>(dm_pcs->GetFEMAssembler());
+	}
+
+	CElement* fem_assembler = (msh->getOrder() == 1) ? fem_assembler_quad : fem_assembler_linear;
+	assert(fem_assembler);
+
+	fem_assembler->setOrder(msh->getOrder() + 1);
+
 // search elements & face integration
 #if defined(USE_PETSC) // || defined (other parallel linear solver lib). //WW. 05.2013
 	const size_t id_act_l_max = static_cast<size_t>(msh->getNumNodesLocal());
@@ -1848,6 +1860,8 @@ void CSourceTerm::FaceIntegration(CFEMesh* msh, std::vector<long> const& nodes_o
 
 	int count;
 	double fac = 1.0;
+	CElem* face = new CElem(1);
+	// face->SetFace();
 	for (i = 0; i < (long)vec_possible_elements.size(); i++)
 	{
 		elem = msh->ele_vector[vec_possible_elements[i]];
@@ -1858,7 +1872,7 @@ void CSourceTerm::FaceIntegration(CFEMesh* msh, std::vector<long> const& nodes_o
 		for (j = 0; j < nfaces; j++)
 		{
 			e_nei = elem->GetNeighbor(j);
-			nfn = elem->GetElementFaceNodes(j, nodesFace);
+			const int nfn = elem->GetElementFaceNodes(j, nodesFace);
 			// 1st check
 			if (elem->selected < nfn)
 				continue;
@@ -1890,10 +1904,10 @@ void CSourceTerm::FaceIntegration(CFEMesh* msh, std::vector<long> const& nodes_o
 				fac = 0.5;
 			face->SetFace(elem, j);
 			face->SetOrder(msh->getOrder());
-			face->ComputeVolume();
-			fem->setOrder(msh->getOrder() + 1);
-			fem->ConfigElement(face, this->_pcs->m_num->ele_gauss_points, true);
-			fem->FaceIntegration(nodesFVal);
+			face->FillTransformMatrix();
+			fem_assembler->setOrder(msh->getOrder() ? 2 : 1);
+			fem_assembler->ConfigElement(face);
+			fem_assembler->FaceIntegration(nodesFVal);
 
 			for (k = 0; k < nfn; k++)
 			{
@@ -1968,7 +1982,6 @@ void CSourceTerm::FaceIntegration(CFEMesh* msh, std::vector<long> const& nodes_o
 
 	NVal.clear();
 	G2L.clear();
-	delete fem;
 	delete face;
 }
 
@@ -1980,16 +1993,13 @@ void CSourceTerm::FaceIntegration(CFEMesh* msh, std::vector<long> const& nodes_o
  08/2005 WW Re-Implementation
  09/2010 TF re structured some things
  **************************************************************************/
-void CSourceTerm::DomainIntegration(CFEMesh* msh, const std::vector<long>& nodes_in_dom,
+void CSourceTerm::DomainIntegration(CRFProcess* pcs, const std::vector<long>& nodes_in_dom,
                                     std::vector<double>& node_value_vector) const
 {
 	double nodesFVal[8];
-
-	int Axisymm = 1; // ani-axisymmetry
-	if (msh->isAxisymmetry())
-		Axisymm = -1; // Axisymmetry is true
-	CElement* fem = new CElement(Axisymm * msh->GetCoordinateFlag());
 	vec<CNode*> e_nodes(20);
+
+	CFEMesh* msh = pcs->m_msh;
 
 	const size_t this_number_of_nodes(nodes_in_dom.size());
 	const size_t nSize(msh->nod_vector.size());
@@ -2007,6 +2017,20 @@ void CSourceTerm::DomainIntegration(CFEMesh* msh, const std::vector<long>& nodes
 		NVal[i] = 0.0;
 		G2L[nodes_in_dom[i]] = i;
 	}
+
+	CElement* fem_assembler = dynamic_cast<CElement*>(pcs->getLinearFEMAssembler());
+	if (!fem_assembler)
+	{
+		if (pcs->getProcessType() == FiniteElement::DEFORMATION
+		    || pcs->getProcessType() == FiniteElement::DEFORMATION_DYNAMIC
+		    || pcs->getProcessType() == FiniteElement::DEFORMATION_FLOW
+		    || pcs->getProcessType() == FiniteElement::DEFORMATION_H2)
+		{
+			process::CRFProcessDeformation* dm_pcs = dynamic_cast<process::CRFProcessDeformation*>(pcs);
+			fem_assembler = dynamic_cast<CElement*>(dm_pcs->GetFEMAssembler());
+		}
+	}
+	fem_assembler->setOrder(msh->getOrder() + 1);
 
 	size_t count = 0;
 	for (size_t i = 0; i < msh->ele_vector.size(); i++)
@@ -2032,9 +2056,8 @@ void CSourceTerm::DomainIntegration(CFEMesh* msh, const std::vector<long>& nodes
 			continue;
 		for (size_t j = 0; j < nn; j++)
 			nodesFVal[j] = node_value_vector[G2L[e_nodes[j]->GetIndex()]];
-		fem->ConfigElement(elem, this->_pcs->m_num->ele_gauss_points, true);
-		fem->setOrder(msh->getOrder() + 1);
-		fem->FaceIntegration(nodesFVal);
+		fem_assembler->ConfigElement(elem);
+		fem_assembler->DomainIntegration(nodesFVal);
 		for (size_t j = 0; j < nn; j++)
 			NVal[G2L[e_nodes[j]->GetIndex()]] += nodesFVal[j];
 	}
@@ -2047,7 +2070,6 @@ void CSourceTerm::DomainIntegration(CFEMesh* msh, const std::vector<long>& nodes
 	NVal.clear();
 	G2L.clear();
 	e_nodes.resize(0);
-	delete fem;
 }
 
 /**************************************************************************
@@ -2666,9 +2688,8 @@ void GetCouplingNODValueMixed(double& value, CSourceTerm* m_st, CNodeValue* cnod
 		double inf_cap, supplyRate; // WW, rainfall;
 		long bc_eqs_index = m_pcs_this->m_msh->nod_vector[cnodev->msh_node_number]->GetEquationIndex();
 		double z_cond = m_pcs_cond->m_msh->nod_vector[cnodev->msh_node_number_conditional]->getData()[2];
-		depth = std::max(
-		    0., m_pcs_cond->GetNodeValue(cnodev->msh_node_number_conditional, m_pcs_cond->GetNodeValueIndex("HEAD") + 1)
-		            - z_cond);
+		depth = std::max(0., m_pcs_cond->GetNodeValue(cnodev->msh_node_number_conditional,
+		                                              m_pcs_cond->GetNodeValueIndex("HEAD") + 1) - z_cond);
 
 		nidx = m_pcs_this->GetNodeValueIndex("PRESSURE1") + 1;
 		pressure0 = m_pcs_this->GetNodeValue(cnodev->msh_node_number, nidx);
@@ -2858,8 +2879,8 @@ void GetNormalDepthNODValue(double& value, CSourceTerm* st, long msh_node)
 	else
 		S_0 = st->getNormalDepthSlope();
 
-	double flowdepth
-	    = pcs_this->GetNodeValue(msh_node, 1) - mesh->nod_vector[msh_node]->getData()[2] - st->st_rill_height;
+	double flowdepth = pcs_this->GetNodeValue(msh_node, 1) - mesh->nod_vector[msh_node]->getData()[2]
+	                   - st->st_rill_height;
 	double flowdepth_epsilon = flowdepth + epsilon;
 	if (flowdepth < 0.0)
 	{
@@ -2871,9 +2892,9 @@ void GetNormalDepthNODValue(double& value, CSourceTerm* st, long msh_node)
 	if (mmp_vector[group]->channel == 1)
 	{
 		value = -pow(flowdepth * width / (2 * flowdepth + width), depth_exp) * flowdepth * temp;
-		value_for_jacobi
-		    = pow(flowdepth_epsilon * width / (2 * flowdepth_epsilon + width), depth_exp) * flowdepth_epsilon * temp
-		      + value;
+		value_for_jacobi = pow(flowdepth_epsilon * width / (2 * flowdepth_epsilon + width), depth_exp)
+		                       * flowdepth_epsilon * temp
+		                   + value;
 	}
 	else
 	{
@@ -3045,8 +3066,8 @@ void CSourceTermGroup::SetPNT(CRFProcess* pcs, CSourceTerm* st, const int ShiftI
 
 	// TF removed some checks - check validity of data while reading data
 
-	nod_val->msh_node_number
-	    = m_msh->GetNODOnPNT(static_cast<const GEOLIB::Point*>(st->getGeoObj())) + ShiftInNodeVector;
+	nod_val->msh_node_number = m_msh->GetNODOnPNT(static_cast<const GEOLIB::Point*>(st->getGeoObj()))
+	                           + ShiftInNodeVector;
 
 	nod_val->CurveIndex = st->CurveIndex;
 	// WW
@@ -3085,6 +3106,8 @@ void CSourceTermGroup::SetPNT(CRFProcess* pcs, CSourceTerm* st, const int ShiftI
 	{
 		nod_val->setProcessDistributionType(st->getProcessDistributionType());
 		pcs->compute_domain_face_normal = true; // WW
+		m_msh->FaceNormal();
+
 		CElem* elem = NULL;
 		CNode* cnode = NULL; // WW
 		for (size_t i = 0; i < m_msh->ele_vector.size(); i++)
@@ -3589,12 +3612,12 @@ void CSourceTerm::InterpolatePolylineNodeValueVector(std::vector<double> const& 
     long number_of_nodes = (long) ply_nod_vector.size();
     ply_nod_val_vector.resize(number_of_nodes);
 
+    CRFProcess* m_pcs = PCSGet(pcs_type_name);
+
     if (st->getProcessDistributionType() == FiniteElement::LINEAR
             || st->getProcessDistributionType() == FiniteElement::LINEAR_NEUMANN) {
         st->InterpolatePolylineNodeValueVector(old_ply, st->DistribedBC, ply_nod_val_vector);
     } else if (st->getProcessDistributionType() == FiniteElement::SYSTEM_DEPENDENT) {
-        CRFProcess* m_pcs = NULL;
-        m_pcs = PCSGet(pcs_type_name);
         m_pcs->compute_domain_face_normal = true; //WW
         long no_face = (long) m_msh->face_vector.size();
         for (long i = 0; i < no_face; i++) {
@@ -3626,7 +3649,7 @@ polyline. To do.. 4.10.06
                     == FiniteElement::LINEAR_NEUMANN
             || st->getProcessDistributionType() == FiniteElement::GREEN_AMPT) {
         if (m_msh->GetMaxElementDim() == 1) // 1D  //WW MB
-            st->DomainIntegration(m_msh, ply_nod_vector, ply_nod_val_vector);
+            st->DomainIntegration(m_pcs, ply_nod_vector, ply_nod_val_vector);
         else st->EdgeIntegration(m_msh, ply_nod_vector, ply_nod_val_vector);
     }
 
@@ -3655,6 +3678,8 @@ void CSourceTermGroup::SetPolylineNodeValueVector(CSourceTerm* st,
 
 	FiniteElement::DistributionType distype(st->getProcessDistributionType());
 
+	CRFProcess* m_pcs = PCSGet(pcs_type_name);
+
 	// linear
 	if (distype == FiniteElement::LINEAR || distype == FiniteElement::LINEAR_NEUMANN)
 	{
@@ -3669,8 +3694,9 @@ void CSourceTermGroup::SetPolylineNodeValueVector(CSourceTerm* st,
 	}
 	else if (distype == FiniteElement::SYSTEM_DEPENDENT)
 	{ // System Dependented YD
-		CRFProcess* m_pcs(PCSGet(pcs_type_name));
 		m_pcs->compute_domain_face_normal = true; // WW
+		m_msh->FaceNormal();
+
 		long no_face = (long)m_msh->face_vector.size();
 		for (long i = 0; i < no_face; i++)
 		{
@@ -3710,7 +3736,7 @@ void CSourceTermGroup::SetPolylineNodeValueVector(CSourceTerm* st,
 	    || distype == FiniteElement::RECHARGE) // MW
 	{
 		if (m_msh->GetMaxElementDim() == 1) // 1D  //WW MB
-			st->DomainIntegration(m_msh, ply_nod_vector, ply_nod_val_vector);
+			st->DomainIntegration(m_pcs, ply_nod_vector, ply_nod_val_vector);
 		else
 			st->EdgeIntegration(m_msh, ply_nod_vector, ply_nod_val_vector);
 	}
@@ -3734,7 +3760,7 @@ void CSourceTermGroup::SetPolylineNodeValueVector(CSourceTerm* st,
 		}
 
 		if (m_msh->GetMaxElementDim() == 1) // 1D  //WW MB
-			st->DomainIntegration(m_msh, ply_nod_vector, st->node_value_vectorArea);
+			st->DomainIntegration(m_pcs, ply_nod_vector, st->node_value_vectorArea);
 		else
 			st->EdgeIntegration(m_msh, ply_nod_vector, st->node_value_vectorArea);
 
@@ -3773,7 +3799,10 @@ void CSourceTermGroup::AreaAssembly(const CSourceTerm* const st,
 	if (pcs_type_name == "RICHARDS_FLOW" || pcs_type_name == "MULTI_PHASE_FLOW")
 	{
 		if (m_msh_cond->GetMaxElementDim() == 1) // 1D  //WW MB
-			st->DomainIntegration(m_msh_cond, ply_nod_vector_cond, ply_nod_val_vector);
+		{
+			CRFProcess* m_pcs = PCSGet(pcs_type_name);
+			st->DomainIntegration(m_pcs, ply_nod_vector_cond, ply_nod_val_vector);
+		}
 		else
 			st->EdgeIntegration(m_msh_cond, ply_nod_vector_cond, ply_nod_val_vector);
 		double sum_node_value = 0;
@@ -3795,8 +3824,7 @@ void CSourceTermGroup::SetSurfaceNodeValueVector(CSourceTerm* st, Surface* m_sfc
                                                  std::vector<long> const& sfc_nod_vector,
                                                  std::vector<double>& sfc_nod_val_vector)
 {
-	// CRFProcess* m_pcs = NULL;
-	// m_pcs = PCSGet(pcs_type_name);
+	CRFProcess* m_pcs = PCSGet(pcs_type_name);
 	long number_of_nodes = (long)sfc_nod_vector.size();
 	sfc_nod_val_vector.resize(number_of_nodes);
 
@@ -3850,9 +3878,9 @@ void CSourceTermGroup::SetSurfaceNodeValueVector(CSourceTerm* st, Surface* m_sfc
 	    || st->getProcessDistributionType() == FiniteElement::RECHARGE)
 	{
 		if (m_msh->GetMaxElementDim() == 2) // For all meshes with 1-D or 2-D elements
-			st->DomainIntegration(m_msh, sfc_nod_vector, sfc_nod_val_vector);
+			st->DomainIntegration(m_pcs, sfc_nod_vector, sfc_nod_val_vector);
 		else if (m_msh->GetMaxElementDim() == 3) // For all meshes with 3-D elements
-			st->FaceIntegration(m_msh, sfc_nod_vector, sfc_nod_val_vector);
+			st->FaceIntegration(m_pcs, sfc_nod_vector, sfc_nod_val_vector);
 	} // end neumann
 	else if (st->getProcessDistributionType() == FiniteElement::FUNCTION) // 25.08.2011. WW
 	{
@@ -3947,8 +3975,7 @@ void CSourceTerm::SetNodeValues(const std::vector<long>& nodes, const std::vecto
 			m_nod_val->msh_node_number_conditional = nodes_cond[i];
 			// JOD 4.10.01
 			if ((getProcessType() == FiniteElement::OVERLAND_FLOW
-			     || getProcessType() == FiniteElement::GROUNDWATER_FLOW)
-			    && node_averaging)
+			     || getProcessType() == FiniteElement::GROUNDWATER_FLOW) && node_averaging)
 			{
 				double weights = 0;
 				for (size_t j = 0; j < number_of_nodes; j++)
@@ -4119,7 +4146,7 @@ void CSourceTerm::SetNOD2MSHNOD(const std::vector<size_t>& nodes, std::vector<si
 void CSourceTerm::DirectAssign(CRFProcess* m_pcs, long ShiftInNodeVector)
 {
 	if (getProcessDistributionType() == FiniteElement::CLIMATE) // NB for this type of ST, we assign a ST to each node
-	// on the Mesh surface (land surface)
+	                                                            // on the Mesh surface (land surface)
 	{
 		std::vector<double> node_area_vec;
 		MshEditor::getNodeAreas(m_pcs->m_msh, node_area_vec);
@@ -4576,8 +4603,8 @@ void CSourceTerm::SetNodePastValue(long n, int idx, int pos, double value)
 		no_steps_past_cutof = aktueller_zeitschritt - _max_no_terms;
 		cutvalue = node_history_vector[n]->value_store[idx][steps - 1];
 		nextvalue = node_history_vector[n]->value_store[idx][steps - 2];
-		node_history_vector[n]->value_store[idx][steps - 1]
-		    = (cutvalue * (double)(no_steps_past_cutof) + nextvalue) / ((double)no_steps_past_cutof + 1);
+		node_history_vector[n]->value_store[idx][steps - 1] = (cutvalue * (double)(no_steps_past_cutof) + nextvalue)
+		                                                      / ((double)no_steps_past_cutof + 1);
 		for (size_t k = steps - 2; k > 0; k--)
 			node_history_vector[n]->value_store[idx][k] = node_history_vector[n]->value_store[idx][k - 1];
 		node_history_vector[n]->value_store[idx][0] = value;
@@ -4621,7 +4648,7 @@ void CSourceTerm::CreateHistoryNodeMemory(NODE_HISTORY* nh)
 	size_t s_col = _no_an_sol * 2;
 	size_t s_row = number_of_terms;
 
-	nh->value_store = new double*[s_col];
+	nh->value_store = new double* [s_col];
 	for (size_t i = 0; i < s_col; i++)
 		nh->value_store[i] = new double[s_row];
 
@@ -4701,8 +4728,8 @@ void GetCouplingFieldVariables(CRFProcess* m_pcs_this, CRFProcess* m_pcs_cond, d
 	}
 	else if (m_st->pcs_pv_name_cond == "GIVEN_PRESSURE")
 	{
-		*h_cond = *h_shifted
-		    = m_st->coup_given_value / gamma; // coupled to fixed pressure head / or atmospheric pressure
+		*h_cond = *h_shifted = m_st->coup_given_value
+		                       / gamma; // coupled to fixed pressure head / or atmospheric pressure
 		*z_this = *z_cond = 0;
 		return;
 	}

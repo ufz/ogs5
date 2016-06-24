@@ -141,6 +141,7 @@ double CFluidMomentum::Execute(int loop_process_number)
 			break;
 		}
 	}
+
 	for (int i = 0; i < no_processes; ++i)
 	{
 		m_pcs = pcs_vector[i];
@@ -160,7 +161,18 @@ double CFluidMomentum::Execute(int loop_process_number)
 		if (m_pcs->getProcessType() == FiniteElement::FLUID_MOMENTUM)
 		{
 			if (isFlow)
+			{
+				fem = new CFiniteElementStd(m_pcs, m_msh->GetCoordinateFlag());
+				CFiniteElementStd* pcs_fem = a_pcs->getLinearFEMAssembler();
+
+				fem->setShapeFunctionPool(pcs_fem->getShapeFunctionPool(0),
+										  pcs_fem->getShapeFunctionPool(1));
+				fem->SetGaussPointNumber(pcs_fem->GetNumGaussSamples());
+
 				SolveDarcyVelocityOnNode();
+				delete fem;
+				fem = NULL;
+			}
 			else
 			{
 				m_msh = FEMGet("FLUID_MOMENTUM");
@@ -210,7 +222,6 @@ void CFluidMomentum::SolveDarcyVelocityOnNode()
 	MeshLib::CElem* elem = NULL;
 
 	CheckMarkedElement();
-	fem = new CFiniteElementStd(m_pcs, m_msh->GetCoordinateFlag());
 
 	// Checking the coordinateflag for proper solution.
 	int coordinateflag = m_msh->GetCoordinateFlag();
@@ -266,7 +277,7 @@ void CFluidMomentum::SolveDarcyVelocityOnNode()
 				elem = m_msh->ele_vector[i];
 				if (elem->GetMark()) // Marked for use
 				{
-					fem->ConfigElement(elem, m_num->ele_gauss_points);
+					fem->ConfigElement(elem);
 					fem->Assembly(0, d);
 				}
 			}
@@ -404,8 +415,6 @@ void CFluidMomentum::SolveDarcyVelocityOnNode()
 		}
 	}
 
-	// Release memroy
-	delete fem;
 #endif
 }
 

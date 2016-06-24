@@ -229,7 +229,7 @@ extern int MMultVecVec(double* vec1, long gv1, double* vec2, long gv2, double* m
 /*   MMultVecMat           - Multiplikation Vektor mit Matrix */
 extern int MMultVecMat(double* vec, long gv, double* mat, long m, long n, double* veco, long go);
 /*   MMultMatVec           - Multiplikation Matrix mit Vektor */
-extern int MMultMatVec(double* mat, long m, long n, double* vec, long g, double* veco, long r);
+extern int MMultMatVec(const double* mat, long m, long n, double* vec, long g, double* veco, long r);
 /*   MMultMatMat           - Multiplikation Matrix mit Matrix */
 extern int MMultMatMat(double* mat1, long m1, long n1, double* mat2, long m2, long n2, double* mato, long mo, long no);
 /*##########################################################################

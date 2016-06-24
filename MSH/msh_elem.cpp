@@ -105,28 +105,28 @@ CElem::CElem(size_t Index, CElem* onwer, int Face) : CCore(Index), normal_vector
 	{
 		// case MshElemType::LINE:  // 1-D bar element //KR need not be processed
 		case MshElemType::QUAD: // 2-D quadrilateral element
-			this->setElementProperties(MshElemType::LINE, true);
+			this->setElementProperties(MshElemType::LINE);
 			break;
 		case MshElemType::HEXAHEDRON: // 3-D hexahedral element
-			this->setElementProperties(MshElemType::QUAD, true);
+			this->setElementProperties(MshElemType::QUAD);
 			break;
 		case MshElemType::TRIANGLE: // 2-D triagular element
-			this->setElementProperties(MshElemType::LINE, true);
+			this->setElementProperties(MshElemType::LINE);
 			break;
 		case MshElemType::TETRAHEDRON: // 3-D tetrahedral element
-			this->setElementProperties(MshElemType::TRIANGLE, true);
+			this->setElementProperties(MshElemType::TRIANGLE);
 			break;
 		case MshElemType::PRISM: // 3-D prismatic element
 			if (Face < 2) // top or bottom face of the prism
-				this->setElementProperties(MshElemType::TRIANGLE, true);
+				this->setElementProperties(MshElemType::TRIANGLE);
 			else // side of the prism
-				this->setElementProperties(MshElemType::QUAD, true);
+				this->setElementProperties(MshElemType::QUAD);
 			break;
 		case MshElemType::PYRAMID: // 3-D pyramid element
 			if (Face < 1) // bottom face
-				this->setElementProperties(MshElemType::QUAD, true);
+				this->setElementProperties(MshElemType::QUAD);
 			else // side faces
-				this->setElementProperties(MshElemType::TRIANGLE, true);
+				this->setElementProperties(MshElemType::TRIANGLE);
 			break;
 		default:
 			std::cerr << "CElem::CElem MshElemType not handled"
@@ -386,7 +386,7 @@ void CElem::FillTransformMatrix()
 		CrossProduction(zz, xx, yy);
 		NormalizeVector(yy, 3);
 	}
-	else if (geo_type == MshElemType::QUAD || geo_type == MshElemType::TRIANGLE)
+	else if (geo_type == MshElemType::QUAD || geo_type == MshElemType::QUAD8 || geo_type == MshElemType::TRIANGLE)
 	{
 		// x"_vec
 		//			xx[0] = nodes[1]->X() - nodes[0]->X();
@@ -459,39 +459,47 @@ void CElem::SetFace(CElem* onwer, const int Face)
 	no_faces_on_surface = 0;
 	owner = onwer;
 	size_t n = owner->GetElementFaceNodes(Face, nodeIndex_loc);
+	quadratic = owner->quadratic;
 	face_index = Face;
+	patch_index = owner->patch_index;
 	switch (owner->geo_type)
 	{
 		// case MshElemType::LINE:  // 1-D bar element
 		case MshElemType::QUAD: // 2-D quadrilateral element
-			this->setElementProperties(MshElemType::LINE, true); // JOD 2014-11-10
+			this->setElementProperties(MshElemType::LINE); // JOD 2014-11-10
 			break;
 		case MshElemType::HEXAHEDRON: // 3-D hexahedral element
-			this->setElementProperties(MshElemType::QUAD, true);
+			this->setElementProperties(MshElemType::QUAD8);
 			break;
 		// case MshElemType::TRIANGLE:  // 2-D triagular element
 		case MshElemType::TETRAHEDRON: // 3-D tetrahedral element
-			this->setElementProperties(MshElemType::TRIANGLE, true);
+			this->setElementProperties(MshElemType::TRIANGLE);
 			break;
 		case MshElemType::PRISM:
 			if (Face < 2)
-				this->setElementProperties(MshElemType::TRIANGLE, true);
+				this->setElementProperties(MshElemType::TRIANGLE);
 			else
-				this->setElementProperties(MshElemType::QUAD, true);
+				this->setElementProperties(MshElemType::QUAD8);
 			break; // 3-D prismatic element
 		case MshElemType::PYRAMID:
 			if (Face < 1)
-				this->setElementProperties(MshElemType::QUAD, true);
+				this->setElementProperties(MshElemType::QUAD8);
 			else
-				this->setElementProperties(MshElemType::TRIANGLE, true);
+				this->setElementProperties(MshElemType::TRIANGLE);
 			break; // 3-D pyramid element
 		default:
 			std::cerr << "CElem::SetFace MshElemType not handled"
 			          << "\n";
+			break;
 	}
 
+	if (nodes.Size() < n)
+		nodes.resize(n);
 	for (size_t i = 0; i < n; i++)
+	{
 		nodes[i] = owner->nodes[nodeIndex_loc[i]];
+		nodes_index[i] = nodes[i]->GetIndex();
+	}
 }
 /**************************************************************************
    MSHLib-Method:
@@ -628,6 +636,7 @@ void CElem::Read(std::istream& is, int fileType)
 					break;
 				default:
 					geo_type = MshElemType::INVALID;
+					break;
 			}
 			index--;
 			break;
@@ -1595,7 +1604,7 @@ void CElem::SetNormalVector()
 }
 
 // KR 2010/11/16
-void CElem::setElementProperties(MshElemType::type t, bool isFace)
+void CElem::setElementProperties(MshElemType::type t)
 {
 	switch (t)
 	{
@@ -1607,9 +1616,17 @@ void CElem::setElementProperties(MshElemType::type t, bool isFace)
 			nfaces = 2;
 			nedges = 1;
 			break;
+		case MshElemType::QUAD8:
+			nnodes = 4;
+			nnodesHQ = 8;
+			ele_dim = 2;
+			geo_type = MshElemType::QUAD8;
+			nfaces = 4;
+			nedges = 4;
+			break;
 		case MshElemType::QUAD:
 			nnodes = 4;
-			nnodesHQ = (isFace) ? 8 : 9; // if a QUAD is the face of a hex it has 8 nodes, otherwise it has 9
+			nnodesHQ = 9;
 			ele_dim = 2;
 			geo_type = MshElemType::QUAD;
 			nfaces = 4;
@@ -1659,7 +1676,7 @@ void CElem::setElementProperties(MshElemType::type t, bool isFace)
 			std::cerr << "CElem::setElementProperties MshElemType not handled"
 			          << "\n";
 	}
-	this->nodes_index.resize(nnodes);
+	this->nodes_index.resize(quadratic ? nnodesHQ : nnodes);
 }
 
 // NW

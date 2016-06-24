@@ -60,6 +60,7 @@ public:
 	void Read_BIN(std::fstream& is);
 	void ReadElementStressASCI(std::fstream& is);
 	double MeanStress(const int gp) { return (*Stress)(0, gp) + (*Stress)(1, gp) + (*Stress)(2, gp); }
+
 private:
 	// Friend class
 	friend class SolidProp::CSolidProperties;
@@ -106,13 +107,14 @@ public:
 	bool GlobalAssembly();
 
 	// Compute strains
-	void ComputeStrain();
+	void ComputeStrain(const int ip);
 
 	// Set material data
 	void SetMaterial();
 
 	// Get strain
 	double* GetStrain() const { return dstrain; }
+
 	//----------- Enhanced element -----------------------
 	// Geometry related
 	bool LocalAssembly_CheckLocalization(CElem* MElement);
@@ -185,7 +187,7 @@ private:
 	double* Disp;
 
 	// Temperatures of nodes
-	double *Temp, Tem;
+	double* Temp, Tem;
 	double* T1;
 	double S_Water;
 
@@ -219,9 +221,9 @@ private:
 	void ComputeMatrix_RHS(const double fkt, const Matrix* p_D);
 
 	// Temporarily used variables
-	double *Sxx, *Syy, *Szz, *Sxy, *Sxz, *Syz, *pstr;
+	double* Sxx, *Syy, *Szz, *Sxy, *Sxz, *Syz, *pstr;
 	// 2. For enhanced strain approach
-	Matrix *BDG, *PDB, *DtD, *PeDe; // For enhanced strain element
+	Matrix* BDG, *PDB, *DtD, *PeDe; // For enhanced strain element
 
 	/// Extropolation
 	bool RecordGuassStrain(const int gp, const int gp_r, const int gp_s, int gp_t);
