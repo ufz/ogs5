@@ -27,8 +27,10 @@ endif () # OGS_BUILD_INFO
 include_directories( ${PROJECT_BINARY_DIR}/Base )
 
 # Check for number of processors
-include(ProcessorCount)
-ProcessorCount(PROCESSOR_COUNT)
+if (NOT DEFINED PROCESSOR_COUNT)
+	include(ProcessorCount)
+	ProcessorCount(PROCESSOR_COUNT)
+endif()
 if(PROCESSOR_COUNT EQUAL 0)
 	message(WARNING "Processor count could not be detected. Setting to one processor.")
 	set(PROCESSOR_COUNT 1)
