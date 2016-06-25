@@ -2552,13 +2552,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
                 double e_pl_eff = (*eleV_DM->pStrain)(gp);
 				double lam = 0.;//(*eleV_DM->lambda_pl)(gp);
 
-				std::cout << "Strain coming in\n";
-				std::cout << "eps_pl_curr_zz: " << eps_pl_curr[2] << std::endl;
-				std::cout << "eps_M_curr_zz: " << eps_M_curr[2] << std::endl;
-				std::cout << "eps_K_curr_zz: " << eps_K_curr[2] << std::endl;
-				std::cout << "strain_curr_zz: " << strain_curr[2] << std::endl;
-				std::cout << "stress_curr_zz: " << stress_curr[2] << std::endl;
-				std::cout << "e_pl_v: " << e_pl_v << std::endl;
+//				std::cout << "Strain coming in\n";
+//				std::cout << "eps_pl_curr_zz: " << eps_pl_curr[2] << std::endl;
+//				std::cout << "eps_M_curr_zz: " << eps_M_curr[2] << std::endl;
+//				std::cout << "eps_K_curr_zz: " << eps_K_curr[2] << std::endl;
+//				std::cout << "strain_curr_zz: " << strain_curr[2] << std::endl;
+//				std::cout << "stress_curr_zz: " << stress_curr[2] << std::endl;
+//				std::cout << "e_pl_v: " << e_pl_v << std::endl;
 				//std::cout << "dstrain: " << dstrain[3] << std::endl;
 
 
@@ -2594,13 +2594,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					(*eleV_DM->pStrain)(gp) = e_pl_eff;
                 }
 
-				std::cout << "Strain going out\n";
-				std::cout << "eps_pl_curr_zz: " << eps_pl_curr[2] << std::endl;
-				std::cout << "eps_M_curr_zz: " << eps_M_curr[2] << std::endl;
-				std::cout << "eps_K_curr_zz: " << eps_K_curr[2] << std::endl;
-				std::cout << "strain_curr_zz: " << strain_curr[2] << std::endl;
-				std::cout << "stress_curr_zz: " << stress_curr[2] << std::endl;
-				std::cout << "e_pl_v: " << e_pl_v << std::endl;
+//				std::cout << "Strain going out\n";
+//				std::cout << "eps_pl_curr_zz: " << eps_pl_curr[2] << std::endl;
+//				std::cout << "eps_M_curr_zz: " << eps_M_curr[2] << std::endl;
+//				std::cout << "eps_K_curr_zz: " << eps_K_curr[2] << std::endl;
+//				std::cout << "strain_curr_zz: " << strain_curr[2] << std::endl;
+//				std::cout << "stress_curr_zz: " << stress_curr[2] << std::endl;
+//				std::cout << "e_pl_v: " << e_pl_v << std::endl;
 
                 delete [] strain_t; delete [] strain_curr;
                 delete [] stress_curr; delete [] eps_K_curr;

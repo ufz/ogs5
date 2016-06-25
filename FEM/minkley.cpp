@@ -59,6 +59,9 @@ void SolidMinkley::UpdateMinkleyProperties(double s_eff, const double eps_p_eff,
 		etaM = etaM0;
     etaM *= std::exp(l0*(Temperature-T0));
     coh = coh0 * (1. + eps_p_eff * hard);//linear isotropic hardening/softening
+	if (etaM/etaM0 < 1.e-2)
+		std::cout << "WARNING: Maxwell viscosity sank to 100th of original value." << std::endl;
+
 }
 
 /**************************************************************************
@@ -121,11 +124,14 @@ double SolidMinkley::YieldMohrCoulomb(const Eigen::Matrix<double,6,1> &sig)
 Eigen::Matrix<double,6,1> SolidMinkley::DetaM_Dsigma(double sig_eff, const Eigen::Matrix<double,6,1> &sigd_i)
 {
     Eigen::Matrix<double,6,1> res;
-    sig_eff = std::max(sig_eff,DBL_EPSILON); //TODO: clean up the epsilon mess
-    res = 3./2. * sigd_i * GM0; //sig_eff in denominator lumped into pow function (-2 instead of -1)
-    res *= - etaM0 * mvM * nvM * std::pow(sig_eff,nvM-2.) /
-        (std::tanh(mvM * std::pow(sig_eff,nvM)) * std::sinh(mvM * std::pow(sig_eff,nvM)));
-    return res;
+	if (sig_eff < DBL_EPSILON)
+		return sigd_i * 0.;
+	else{
+		res = 3./2. * sigd_i * GM0; //sig_eff in denominator lumped into pow function (-2 instead of -1)
+		res *= - etaM0 * mvM * nvM * std::pow(sig_eff,nvM-2.) /
+			(std::tanh(mvM * std::pow(sig_eff,nvM)) * std::sinh(mvM * std::pow(sig_eff,nvM)));
+		return res;
+	}
 }
 
 /**************************************************************************

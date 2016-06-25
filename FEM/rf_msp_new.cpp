@@ -1849,6 +1849,9 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
 			Dum.close();
 		};
 	}
+	if (counter == counter_max)
+		std::cout << "WARNING: Maximum iteration number needed in LocalNewtonBurgers. Convergence not guaranteed." << std::endl;
+
     //dGdE matrix and dsigdE matrix
     Eigen::Matrix<double,18,6> dGdE;
 	Eigen::Matrix<double,6,6> dsigdE;
@@ -1912,19 +1915,19 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
 	const double e_i = eps_i(0) + eps_i(1) + eps_i(2);
 	const Eigen::Matrix<double,6,1> epsd_i(smath->P_dev*eps_i);
 
-	std::cout << "Data recieved\n";
-	std::cout << "eps_pl_curr_zz: " << eps_pl_j(2) << std::endl;
-	std::cout << "eps_M_curr_zz: " << eps_M_j(2) << std::endl;
-	std::cout << "eps_K_curr_zz: " << eps_K_j(2) << std::endl;
-	std::cout << "strain_curr_zz: " << eps_i(2) << std::endl;
-	std::cout << "stress_curr_zz: " << stress_curr[2] << std::endl;
-	std::cout << "e_pl_v: " << e_pl_v << std::endl;
-	std::cout << "e_i: " << e_i << std::endl;
+//	std::cout << "Data recieved\n";
+//	std::cout << "eps_pl_curr_zz: " << eps_pl_j(2) << std::endl;
+//	std::cout << "eps_M_curr_zz: " << eps_M_j(2) << std::endl;
+//	std::cout << "eps_K_curr_zz: " << eps_K_j(2) << std::endl;
+//	std::cout << "strain_curr_zz: " << eps_i(2) << std::endl;
+//	std::cout << "stress_curr_zz: " << stress_curr[2] << std::endl;
+//	std::cout << "e_pl_v: " << e_pl_v << std::endl;
+//	std::cout << "e_i: " << e_i << std::endl;
 
     //dimensionless stresses
 	sigd_j = 2.0 * (epsd_i - eps_M_j - eps_K_j - eps_pl_j); //initial guess as elastic predictor
 	sig_j = sigd_j + material_minkley->KM0/material_minkley->GM0 * (e_i - e_pl_v) * smath->ivec;
-	std::cout << "Stress guesstimate_zz " << sig_j(2)*material_minkley->GM0 << std::endl;
+	//std::cout << "Stress guesstimate_zz " << sig_j(2)*material_minkley->GM0 << std::endl;
 
     //Calculate effective stress and update material properties
     sig_eff = smath->CalEffectiveStress(sigd_j);
@@ -1962,7 +1965,7 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
         eps_M_j += inc_loc.block<6,1>(12,0);
         //Calculate effective stress and update material properties
         sig_eff = smath->CalEffectiveStress(smath->P_dev*sig_j);
-        material_minkley->UpdateMinkleyProperties(sig_eff*material_minkley->GM0, e_pl_eff, Temperature);
+		material_minkley->UpdateMinkleyProperties(sig_eff*material_minkley->GM0, e_pl_eff, Temperature);
         //evaluation of new residual
         material_minkley->CalViscoelasticResidual(dt,epsd_i,e_i,e_pl_v,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,res_loc);
 		if (Output)
@@ -2028,8 +2031,9 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
         //get dsigdE matrix
         ExtractConsistentTangent(K_loc,dGdE,dsigdE);
     }
+	if (counter == counter_max)
+		std::cout << "WARNING: Maximum iteration number needed in LocalNewtonMinkley. Convergence not guaranteed." << std::endl;
 
-	std::cout << "Nr. of local iterations " << counter << std::endl;
     //add hydrostatic part to stress and tangent
     sig_j *= material_minkley->GM0;
     dsigdE *= material_minkley->GM0;
