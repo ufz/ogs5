@@ -53,8 +53,10 @@ SolidMinkley::~SolidMinkley()
 **************************************************************************/
 void SolidMinkley::UpdateMinkleyProperties(double s_eff, const double eps_p_eff, double Temperature)
 {
-    s_eff = std::max(s_eff,DBL_EPSILON);
-    etaM = etaM0 / std::sinh(mvM * std::pow(s_eff,nvM));//viscosity function update
+	if (s_eff > DBL_EPSILON)
+		etaM = etaM0 / std::sinh(mvM * std::pow(s_eff,nvM));//viscosity function update
+	else
+		etaM = etaM0;
     etaM *= std::exp(l0*(Temperature-T0));
     coh = coh0 * (1. + eps_p_eff * hard);//linear isotropic hardening/softening
 }
@@ -466,7 +468,7 @@ void SolidMinkley::CalViscoplasticJacobian(const double dt, const Eigen::Matrix<
 {
     //submatrices of the Jacobian
     const Eigen::Matrix<double,6,1> sigd_curr(GM0*smath->P_dev*stress_curr);
-    const double J_2(smath->CalJ2(sigd_curr)), J_3(smath->CalJ3(sigd_curr)), theta(smath->CalLodeAngle(sigd_curr));
+	const double J_2(smath->CalJ2(sigd_curr)), J_3(smath->CalJ3(sigd_curr)), theta(smath->CalLodeAngle(sigd_curr));
     const Eigen::Matrix<double,6,1> sigd_curr_inv(smath->InvertVector(sigd_curr));
     const Eigen::Matrix<double,6,1> dev_sigd_curr_inv (smath->P_dev * sigd_curr_inv);
     const double vol_flow(3. * DG_DI1(psi));
@@ -484,12 +486,12 @@ void SolidMinkley::CalViscoplasticJacobian(const double dt, const Eigen::Matrix<
     }
     Jac.setZero(27,27);
 
-    if (std::abs(J_3) < 0.)
-    {
-        dev_flow.Zero(6,1);
-        Ddev_flowDsigma.Zero(6,6);
-    }
-    else
+	if (std::abs(J_3) < 0.)
+	{
+		dev_flow.Zero(6,1);
+		Ddev_flowDsigma.Zero(6,6);
+	}
+	else
     {
         const double DGDtheta(DG_Dtheta(theta,J_2,psi));
         dev_flow = (DG_DJ2(theta,J_2,psi) + DGDtheta * DthetaDJ2)*sigd_curr +

@@ -667,7 +667,7 @@ TEST(SolidProps, MinkleyFullJacobian)
     (*data)(1) = 8.37e4; //Kelvin viscosity
     (*data)(2) = 12.e3; //Maxwell shear modulus
     (*data)(3) = 18.e3; //Maxwell bulk modulus
-    (*data)(4) = 4.03e7; //Maxwell viscosity
+	(*data)(4) = 4.03e7; //Maxwell viscosity
     (*data)(5) = 4.9; //dependency parameter for " (m)
     (*data)(6) = 0.33; //dependency parameter for " (n)
     (*data)(7) = 2.; //cohesion
@@ -708,8 +708,8 @@ TEST(SolidProps, MinkleyFullJacobian)
     const double e_i(smath.CalI1(eps_i));
 
     //guess stress increment (dimensionless)
-    sigd_j = 2.0 * epsd_i;
-    sig_j = sigd_j + material.KM0/material.GM0 * e_i * smath.ivec;
+	//sigd_j = 2.0 * epsd_i;
+	//sig_j = sigd_j + material.KM0/material.GM0 * e_i * smath.ivec;
 
     //Calculate residual for time step
     const double dt(10.);
@@ -824,6 +824,7 @@ TEST(SolidProps, MinkleyFullJacobian)
                 low = residual(i);
             }
             Jac_num(i,j) = (up-low)/(2.*pertub);
+			std::cout << i << " " << j << " "  << Jac_num(i,j) << " "  << Jacobian(i,j) << std::endl;
             ASSERT_NEAR(Jacobian(i,j),Jac_num(i,j),1.e-6);
         }
 }
