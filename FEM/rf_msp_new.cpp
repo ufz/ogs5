@@ -1765,11 +1765,9 @@ void CSolidProperties::ExtractConsistentTangent(const Eigen::MatrixXd &Jac, cons
    03/2015 NB Modified
 **************************************************************************/
 void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
-        double* strain_t, double* stress_curr, double* strain_K_curr, double* strain_M_curr,
+		double* stress_curr, double* strain_K_curr, double* strain_M_curr,
         Matrix* Consistent_Tangent, bool Output, double Temperature)
 {
-
-    //CRFProcess* m_pcs  = PCSGet("DEFORMATION");
 	//stress, strain, internal variable
     Eigen::Matrix<double,6,1> eps_i, sig_j, eps_K_j, eps_K_t, eps_M_j, eps_M_t;
 	//deviatoric stress, strain
@@ -1815,11 +1813,13 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
 	const int counter_max(20);
     const double local_tolerance(1.e-10);
 
-//    if (Output){
-//        ofstream Dum("local.txt", ios::app);
-//        Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc.norm() <<  " initial" << std::endl;
-//        Dum.close();
-//    };
+	if (Output) //Need not be performant;
+	{
+		CRFProcess* m_pcs  = PCSGet("DEFORMATION");
+		ofstream Dum("local.txt", ios::app);
+		Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc.norm() <<  " initial" << std::endl;
+		Dum.close();
+	};
 //    for (int counter(0); counter<counter_max && res_loc.norm() > local_tolerance; ++counter)
 	while (res_loc.norm() > local_tolerance && counter < counter_max)
 	{
@@ -1840,11 +1840,13 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
         material_burgers->UpdateBurgersProperties(sig_eff*material_burgers->GM, Temperature);
 		//evaluation of new residual
         material_burgers->CalResidualBurgers(dt,epsd_i,sigd_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,res_loc);
-//        if (Output){
-//        ofstream Dum("local.txt", ios::app);
-//        Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc.norm() <<  " visco" << std::endl;
-//        Dum.close();
-//        };
+		if (Output)
+		{
+			CRFProcess* m_pcs  = PCSGet("DEFORMATION");
+			ofstream Dum("local.txt", ios::app);
+			Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc.norm() <<  " visco" << std::endl;
+			Dum.close();
+		};
 	}
     //dGdE matrix and dsigdE matrix
     Eigen::Matrix<double,18,6> dGdE;
@@ -1880,16 +1882,15 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, const double* strain_t,
-                                          double* stress_curr, double* eps_K_curr, double* eps_M_curr, double* eps_pl_curr, double& e_pl_v,
-                                          double& e_pl_eff, double& lam, Matrix* Consistent_Tangent,bool Output, double Temperature)
+void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, double* stress_curr, double* eps_K_curr,
+										  double* eps_M_curr, double* eps_pl_curr, double& e_pl_v, double& e_pl_eff,
+										  double& lam, Matrix* Consistent_Tangent,bool Output, double Temperature)
 {
-    CRFProcess* m_pcs  = PCSGet("DEFORMATION");
     //stress, strain, internal variable
-    Eigen::Matrix<double,6,1> eps_i, eps_t, sig_j, sig_t, eps_K_j, eps_K_t, eps_M_j, eps_M_t, eps_pl_j, eps_pl_t;
+	Eigen::Matrix<double,6,1> eps_i, sig_j, eps_K_j, eps_K_t, eps_M_j, eps_M_t, eps_pl_j, eps_pl_t;
     //deviatoric stress, strain
-    Eigen::Matrix<double,6,1> epsd_i, epsd_t, sigd_j, sigd_t;
-    double e_t, e_i, p_t, p_j;
+	Eigen::Matrix<double,6,1> epsd_i, sigd_j;
+	double e_i;
     double e_pl_v_t = e_pl_v, e_pl_eff_t = e_pl_eff;
     //local residual vector and Jacobian
     Eigen::Matrix<double,18,1> res_loc, inc_loc;
@@ -1899,26 +1900,18 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
 
     //initialisation of Kelvin vectors
     //Note: Can be done in one loop instead of 5 if done right here.
-    eps_t = Voigt_to_Kelvin_Strain(strain_t);
     eps_i = Voigt_to_Kelvin_Strain(strain_curr);
     eps_K_t = eps_K_j = Voigt_to_Kelvin_Strain(eps_K_curr);
     eps_M_t = eps_M_j = Voigt_to_Kelvin_Strain(eps_M_curr);
     eps_pl_t = eps_pl_j = Voigt_to_Kelvin_Strain(eps_pl_curr);
-    sig_t = Voigt_to_Kelvin_Stress(stress_curr);
 
     //calculation of deviatoric and spherical parts
-    e_t = eps_t(0) + eps_t(1) + eps_t(2);
     e_i = eps_i(0) + eps_i(1) + eps_i(2);
-    epsd_t = smath->P_dev*eps_t;
     epsd_i = smath->P_dev*eps_i;
 
     //dimensionless stresses
-    sig_t /= material_minkley->GM0;
-    p_t = smath->CalI1(sig_t)/(-3.0);
-    sigd_t = smath->P_dev*sig_t;
-    sigd_j = sigd_t + 2.0 * (epsd_i - epsd_t); //initial guess as elastic predictor
-    p_j = p_t - material_minkley->KM0/material_minkley->GM0 * (e_i - e_t);
-    sig_j = sigd_j - p_j * smath->ivec;
+	sigd_j = 2.0 * (epsd_i - eps_M_j - eps_K_j - eps_pl_j); //initial guess as elastic predictor
+	sig_j = sigd_j + material_minkley->KM0/material_minkley->GM0 * (e_i - e_pl_v) * smath->ivec;
 
     //Calculate effective stress and update material properties
     sig_eff = smath->CalEffectiveStress(sigd_j);
@@ -1935,11 +1928,13 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
     const int counter_max(20);
     const double local_tolerance(1.e-10);
 
-//    if (Output){
-//    ofstream Dum("local.txt", ios::app);
-//    Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc.norm() << " initial" << std::endl;
-//    Dum.close();
-//    }
+	if (Output)
+	{
+		CRFProcess* m_pcs  = PCSGet("DEFORMATION");
+		ofstream Dum("local.txt", ios::app);
+		Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc.norm() << " initial" << std::endl;
+		Dum.close();
+	}
 
     while (res_loc.norm() > local_tolerance && counter < counter_max)
     {
@@ -1957,17 +1952,18 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
         material_minkley->UpdateMinkleyProperties(sig_eff*material_minkley->GM0, e_pl_eff, Temperature);
         //evaluation of new residual
         material_minkley->CalViscoelasticResidual(dt,epsd_i,e_i,e_pl_v,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,res_loc);
-//        if (Output){
-//        ofstream Dum("local.txt", ios::app);
-//        Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc.norm() <<  " visco" << std::endl;
-//        Dum.close();
-//        };
+		if (Output)
+		{
+			CRFProcess* m_pcs  = PCSGet("DEFORMATION");
+			ofstream Dum("local.txt", ios::app);
+			Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc.norm() <<  " visco" << std::endl;
+			Dum.close();
+		};
     }
     if (!(material_minkley->YieldMohrCoulomb(sig_j*material_minkley->GM0) < local_tolerance))
     {
         Eigen::Matrix<double,27,1> res_loc_p, inc_loc_p;
         Eigen::Matrix<double,27,27> K_loc_p;
-        Eigen::Matrix<double,27,27> K_num_p;
 
         material_minkley->CalViscoplasticResidual(dt,epsd_i,e_i,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,eps_pl_t, \
                                                   e_pl_v,e_pl_v_t,e_pl_eff,e_pl_eff_t,lam,res_loc_p);
@@ -1978,12 +1974,6 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
             //std::cout << "iter " << counter << std::endl;
             //Get Jacobian
             material_minkley->CalViscoplasticJacobian(dt,sig_j,sig_eff,lam,K_loc_p);
-            //material_minkley->NumericalJacobian(dt,epsd_i,e_i,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,eps_pl_t, \
-                                                      e_pl_v,e_pl_v_t,e_pl_eff,e_pl_eff_t,lam,K_num_p);
-//            for (int kk(0.); kk<27; kk++)
-//                for(int ll(0.); ll<27; ll++)
-//                    if (std::abs(K_loc_p(kk,ll) - K_num_p(kk,ll)) > 1.e-10)
-//                        std::cout << "Deviation at " << kk << " " << ll << " " << K_loc_p(kk,ll) << " " << K_num_p(kk,ll) << " " << K_loc_p(kk,ll) - K_num_p(kk,ll) << std::endl;
             //Solve linear system
             inc_loc_p = K_loc_p.householderQr().solve(-res_loc_p);
             //increment solution vectors
@@ -2000,11 +1990,13 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
             //evaluation of new residual
             material_minkley->CalViscoplasticResidual(dt,epsd_i,e_i,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,eps_pl_t, \
                                                       e_pl_v,e_pl_v_t,e_pl_eff,e_pl_eff_t,lam,res_loc_p);
-//            if (Output){
-//            ofstream Dum("local.txt", ios::app);
-//            Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc_p.norm() <<  " plastic" << std::endl;
-//            Dum.close();
-//            }
+			if (Output)
+			{
+				CRFProcess* m_pcs  = PCSGet("DEFORMATION");
+				ofstream Dum("local.txt", ios::app);
+				Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc_p.norm() <<  " plastic" << std::endl;
+				Dum.close();
+			}
         }
         //dGdE matrix and dsigdE matrix
         Eigen::Matrix<double,27,6> dGdE;
