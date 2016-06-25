@@ -1880,7 +1880,7 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, double* strain_t,
+void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, const double* strain_t,
                                           double* stress_curr, double* eps_K_curr, double* eps_M_curr, double* eps_pl_curr, double& e_pl_v,
                                           double& e_pl_eff, double& lam, Matrix* Consistent_Tangent,bool Output, double Temperature)
 {
@@ -1972,8 +1972,6 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
         material_minkley->CalViscoplasticResidual(dt,epsd_i,e_i,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,eps_pl_t, \
                                                   e_pl_v,e_pl_v_t,e_pl_eff,e_pl_eff_t,lam,res_loc_p);
         material_minkley->CalViscoplasticJacobian(dt,sig_j,sig_eff,lam,K_loc_p);
-        material_minkley->NumericalJacobian(dt,epsd_i,e_i,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,eps_pl_t, \
-                                                  e_pl_v,e_pl_v_t,e_pl_eff,e_pl_eff_t,lam,K_num_p);
         while (res_loc_p.norm() > local_tolerance && counter < counter_max)
         {
             counter++;

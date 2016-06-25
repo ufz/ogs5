@@ -159,7 +159,7 @@ public:
     //general local Newton routines to integrate inelastic material models
     void LocalNewtonBurgers(const double dt, double* strain_curr, double* strain_t, double* stress_curr, double* eps_K_curr, double* eps_M_curr,
                             Math_Group::Matrix* Consistent_Tangent, bool Output, double Temperature);
-    void LocalNewtonMinkley(const double dt, double* strain_curr, double* strain_t, double* stress_curr, double* eps_K_curr, double* eps_M_curr,
+	void LocalNewtonMinkley(const double dt, double* strain_curr, const double* strain_t, double* stress_curr, double* eps_K_curr, double* eps_M_curr,
                             double* eps_pl_curr, double& e_pl_v, double& e_pl_eff, double& lam, Math_Group::Matrix* Consistent_Tangent,
 							bool Output, double Temperature);
 

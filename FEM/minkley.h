@@ -55,12 +55,6 @@ public:
     void CalViscoplasticJacobian(const double dt, const Eigen::Matrix<double,6,1> &stress_curr, const double sig_eff,
                                                const double lam_curr, Eigen::Matrix<double,27,27> &Jac);
     void CalEPdGdE(Eigen::Matrix<double,27,6> &dGdE);
-    void NumericalJacobian(const double dt, const Eigen::Matrix<double,6,1> &dstrain_curr, const double e_curr,
-                                         const Eigen::Matrix<double,6,1> &stress_curr, const Eigen::Matrix<double,6,1> &dstrain_Kel_curr,
-                                         const Eigen::Matrix<double,6,1> &dstrain_Kel_t, const Eigen::Matrix<double,6,1> &dstrain_Max_curr,
-                                         const Eigen::Matrix<double,6,1> &dstrain_Max_t, const Eigen::Matrix<double,6,1> &dstrain_pl_curr,
-                                         const Eigen::Matrix<double,6,1> &dstrain_pl_t, const double e_pl_vol_curr, const double e_pl_vol_t,
-                                         const double e_pl_eff_curr, const double e_pl_eff_t, const double lam_curr, Eigen::Matrix<double,27,27> &Jac_num);
 
 private:
     double A(const double theta, const double alpha);
