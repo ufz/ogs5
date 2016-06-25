@@ -331,37 +331,41 @@ void SolidMinkley::CalViscoplasticResidual(const double dt, const Eigen::Matrix<
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-//Note: Kelvin mapping of odot changed according to symbolic conversion (origin of previous version unknown)
+/*Kelvin mapping of odot changed according to symbolic conversion.
+Note: the factors of 2 and sqrt(2) come from the fact that the
+incoming quantities are transformed to actual tensor coordinates
+and the resulting 4th order tensor is then remapped with the
+Kelvin scheme*/
 Eigen::Matrix<double,6,6> SolidMinkley::s_odot_s(const Eigen::Matrix<double,6,1> &vec)
 {
     Eigen::Matrix<double,6,6> odot;
 
     odot(0,0) = vec(0)*vec(0);
-    odot(0,1) = odot(1,0) = vec(3)*vec(3);
-    odot(0,2) = odot(2,0) = vec(5)*vec(5);
-    odot(0,3) = odot(3,0) = vec(0)*vec(3)*std::sqrt(2.);
-    odot(0,4) = odot(4,0) = vec(3)*vec(5)*std::sqrt(2.);
-    odot(0,5) = odot(5,0) = vec(0)*vec(5)*std::sqrt(2.);
+	odot(0,1) = odot(1,0) = vec(3)*vec(3)/2.;
+	odot(0,2) = odot(2,0) = vec(5)*vec(5)/2.;
+	odot(0,3) = odot(3,0) = vec(0)*vec(3);
+	odot(0,4) = odot(4,0) = vec(3)*vec(5)/std::sqrt(2.);
+	odot(0,5) = odot(5,0) = vec(0)*vec(5);
 
     odot(1,1) = vec(1)*vec(1);
-    odot(1,2) = odot(2,1) = vec(4)*vec(4);
-    odot(1,3) = odot(3,1) = vec(3)*vec(1)*std::sqrt(2.);
-    odot(1,4) = odot(4,1) = vec(1)*vec(4)*std::sqrt(2.);
-    odot(1,5) = odot(5,1) = vec(3)*vec(4)*std::sqrt(2.);
+	odot(1,2) = odot(2,1) = vec(4)*vec(4)/2.;
+	odot(1,3) = odot(3,1) = vec(3)*vec(1);
+	odot(1,4) = odot(4,1) = vec(1)*vec(4);
+	odot(1,5) = odot(5,1) = vec(3)*vec(4)/std::sqrt(2.);
 
     odot(2,2) = vec(2)*vec(2);
-    odot(2,3) = odot(3,2) = vec(5)*vec(4)*std::sqrt(2.);
-    odot(2,4) = odot(4,2) = vec(4)*vec(2)*std::sqrt(2.);
-    odot(2,5) = odot(5,2) = vec(5)*vec(2)*std::sqrt(2.);
+	odot(2,3) = odot(3,2) = vec(5)*vec(4)/std::sqrt(2.);
+	odot(2,4) = odot(4,2) = vec(4)*vec(2);
+	odot(2,5) = odot(5,2) = vec(5)*vec(2);
 
-    odot(3,3) = vec(0)*vec(1) + vec(3)*vec(3);
-    odot(3,4) = odot(4,3) = vec(3)*vec(4) + vec(5)*vec(1);
-    odot(3,5) = odot(5,3) = vec(0)*vec(4) + vec(3)*vec(5);
+	odot(3,3) = vec(0)*vec(1) + vec(3)*vec(3)/2.;
+	odot(3,4) = odot(4,3) = vec(3)*vec(4)/2. + vec(5)*vec(1)/std::sqrt(2.);
+	odot(3,5) = odot(5,3) = vec(0)*vec(4)/std::sqrt(2.) + vec(3)*vec(5)/2.;
 
-    odot(4,4) = vec(1)*vec(2) + vec(4)*vec(4);
-    odot(4,5) = odot(5,4) = vec(3)*vec(2) + vec(5)*vec(4);
+	odot(4,4) = vec(1)*vec(2) + vec(4)*vec(4)/2.;
+	odot(4,5) = odot(5,4) = vec(3)*vec(2)/std::sqrt(2.) + vec(5)*vec(4)/2.;
 
-    odot(5,5) = vec(0)*vec(2) + vec(5)*vec(5);
+	odot(5,5) = vec(0)*vec(2) + vec(5)*vec(5)/2.;
     return -odot;
 }
 

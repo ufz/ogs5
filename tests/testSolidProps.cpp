@@ -824,7 +824,6 @@ TEST(SolidProps, MinkleyFullJacobian)
                 low = residual(i);
             }
             Jac_num(i,j) = (up-low)/(2.*pertub);
-            std::cout << i << " " << j << " " << Jacobian(i,j) << " " << Jac_num(i,j) << std::endl;
             ASSERT_NEAR(Jacobian(i,j),Jac_num(i,j),1.e-6);
         }
 }
