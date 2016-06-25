@@ -1769,10 +1769,9 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
         Matrix* Consistent_Tangent, bool Output, double Temperature)
 {
 	//stress, strain, internal variable
-    Eigen::Matrix<double,6,1> eps_i, sig_j, eps_K_j, eps_K_t, eps_M_j, eps_M_t;
+	Eigen::Matrix<double,6,1> sig_j, eps_K_j, eps_M_j;
 	//deviatoric stress, strain
-    Eigen::Matrix<double,6,1> epsd_i, sigd_j;
-    double e_i;
+	Eigen::Matrix<double,6,1> sigd_j;
 	//local residual vector and Jacobian
     Eigen::Matrix<double,18,1> res_loc, inc_loc;
     Eigen::Matrix<double,18,18> K_loc;
@@ -1780,13 +1779,15 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
 
 	//initialisation of Kelvin vectors
 	//Note: Can be done in one loop instead of 5 if done right here.
-	eps_i = Voigt_to_Kelvin_Strain(strain_curr);
-    eps_K_t = eps_K_j = Voigt_to_Kelvin_Strain(strain_K_curr);
-    eps_M_t = eps_M_j = Voigt_to_Kelvin_Strain(strain_M_curr);
+	const Eigen::Matrix<double,6,1> eps_i(Voigt_to_Kelvin_Strain(strain_curr));
+	const Eigen::Matrix<double,6,1> eps_K_t(Voigt_to_Kelvin_Strain(strain_K_curr));
+	const Eigen::Matrix<double,6,1> eps_M_t(Voigt_to_Kelvin_Strain(strain_M_curr));
+	eps_M_j = eps_M_t;
+	eps_K_j = eps_K_t;
 
 	//calculation of deviatoric and spherical parts
-	e_i = eps_i(0) + eps_i(1) + eps_i(2);
-    epsd_i = smath->P_dev*eps_i;
+	const double e_i = eps_i(0) + eps_i(1) + eps_i(2);
+	const Eigen::Matrix<double,6,1> epsd_i(smath->P_dev*eps_i);
 
 	//dimensionless stresses
     sigd_j = 2.0 * (epsd_i - eps_M_t - eps_K_t); //initial guess as elastic predictor
@@ -1887,11 +1888,10 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
 										  double& lam, Matrix* Consistent_Tangent,bool Output, double Temperature)
 {
     //stress, strain, internal variable
-	Eigen::Matrix<double,6,1> eps_i, sig_j, eps_K_j, eps_K_t, eps_M_j, eps_M_t, eps_pl_j, eps_pl_t;
+	Eigen::Matrix<double,6,1> sig_j, eps_K_j, eps_M_j, eps_pl_j;
     //deviatoric stress, strain
-	Eigen::Matrix<double,6,1> epsd_i, sigd_j;
-	double e_i;
-    double e_pl_v_t = e_pl_v, e_pl_eff_t = e_pl_eff;
+	Eigen::Matrix<double,6,1> sigd_j;
+	const double e_pl_v_t = e_pl_v, e_pl_eff_t = e_pl_eff;
     //local residual vector and Jacobian
     Eigen::Matrix<double,18,1> res_loc, inc_loc;
     Eigen::Matrix<double,18,18> K_loc;
@@ -1900,18 +1900,31 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
 
     //initialisation of Kelvin vectors
     //Note: Can be done in one loop instead of 5 if done right here.
-    eps_i = Voigt_to_Kelvin_Strain(strain_curr);
-    eps_K_t = eps_K_j = Voigt_to_Kelvin_Strain(eps_K_curr);
-    eps_M_t = eps_M_j = Voigt_to_Kelvin_Strain(eps_M_curr);
-    eps_pl_t = eps_pl_j = Voigt_to_Kelvin_Strain(eps_pl_curr);
+	const Eigen::Matrix<double,6,1> eps_i(Voigt_to_Kelvin_Strain(strain_curr));
+	const Eigen::Matrix<double,6,1> eps_K_t(Voigt_to_Kelvin_Strain(eps_K_curr));
+	const Eigen::Matrix<double,6,1> eps_M_t(Voigt_to_Kelvin_Strain(eps_M_curr));
+	const Eigen::Matrix<double,6,1> eps_pl_t(Voigt_to_Kelvin_Strain(eps_pl_curr));
+	eps_M_j = eps_M_t;
+	eps_K_j = eps_K_t;
+	eps_pl_j = eps_pl_t;
 
     //calculation of deviatoric and spherical parts
-    e_i = eps_i(0) + eps_i(1) + eps_i(2);
-    epsd_i = smath->P_dev*eps_i;
+	const double e_i = eps_i(0) + eps_i(1) + eps_i(2);
+	const Eigen::Matrix<double,6,1> epsd_i(smath->P_dev*eps_i);
+
+	std::cout << "Data recieved\n";
+	std::cout << "eps_pl_curr_zz: " << eps_pl_j(2) << std::endl;
+	std::cout << "eps_M_curr_zz: " << eps_M_j(2) << std::endl;
+	std::cout << "eps_K_curr_zz: " << eps_K_j(2) << std::endl;
+	std::cout << "strain_curr_zz: " << eps_i(2) << std::endl;
+	std::cout << "stress_curr_zz: " << stress_curr[2] << std::endl;
+	std::cout << "e_pl_v: " << e_pl_v << std::endl;
+	std::cout << "e_i: " << e_i << std::endl;
 
     //dimensionless stresses
 	sigd_j = 2.0 * (epsd_i - eps_M_j - eps_K_j - eps_pl_j); //initial guess as elastic predictor
 	sig_j = sigd_j + material_minkley->KM0/material_minkley->GM0 * (e_i - e_pl_v) * smath->ivec;
+	std::cout << "Stress guesstimate_zz " << sig_j(2)*material_minkley->GM0 << std::endl;
 
     //Calculate effective stress and update material properties
     sig_eff = smath->CalEffectiveStress(sigd_j);
@@ -2016,6 +2029,7 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
         ExtractConsistentTangent(K_loc,dGdE,dsigdE);
     }
 
+	std::cout << "Nr. of local iterations " << counter << std::endl;
     //add hydrostatic part to stress and tangent
     sig_j *= material_minkley->GM0;
     dsigdE *= material_minkley->GM0;

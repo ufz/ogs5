@@ -143,7 +143,7 @@ void SolidMinkley::CalViscoelasticResidual(const double dt, const Eigen::Matrix<
     const Eigen::Matrix<double,6,1> dstress_curr(GM0*smath->P_dev*stress_curr);
 
     //calculate stress residual
-    res.block<6,1>(0,0) = stress_curr -(2. * (dstrain_curr - dstrain_Kel_curr - dstrain_Max_curr - dstrain_p_curr) + KM0/GM0 * (e_curr - e_p_curr) * smath->ivec);
+	res.block<6,1>(0,0) = stress_curr - (2. * (dstrain_curr - dstrain_Kel_curr - dstrain_Max_curr - dstrain_p_curr) + KM0/GM0 * (e_curr - e_p_curr) * smath->ivec);
     //calculate Kelvin strain residual
     res.block<6,1>(6,0) = (dstrain_Kel_curr - dstrain_Kel_t)/dt - 1./(2.*etaK0) * (dstress_curr- 2.*GK0*dstrain_Kel_curr);
     //calculate Kelvin strain residual
