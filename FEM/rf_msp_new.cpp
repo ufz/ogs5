@@ -1812,7 +1812,7 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
 	//Loop variables
 	int counter = 0;
 	const int counter_max(20);
-    const double local_tolerance(1.e-10);
+	const double local_tolerance(1.e-16);
 
 	if (Output) //Need not be performant;
 	{
@@ -1942,7 +1942,7 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
     //Loop variables
     int counter = 0;
     const int counter_max(20);
-    const double local_tolerance(1.e-10);
+	const double local_tolerance(1.e-16);
 
 	if (Output)
 	{
@@ -1958,7 +1958,7 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
         //Get Jacobian
         material_minkley->CalViscoelasticJacobian(dt,sig_j,sig_eff,K_loc);
         //Solve linear system
-        inc_loc = K_loc.householderQr().solve(-res_loc);
+		inc_loc = K_loc.fullPivHouseholderQr().solve(-res_loc);
         //increment solution vectors
         sig_j += inc_loc.block<6,1>(0,0);
         eps_K_j += inc_loc.block<6,1>(6,0);
@@ -1991,7 +1991,7 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
             //Get Jacobian
             material_minkley->CalViscoplasticJacobian(dt,sig_j,sig_eff,lam,K_loc_p);
             //Solve linear system
-            inc_loc_p = K_loc_p.householderQr().solve(-res_loc_p);
+			inc_loc_p = K_loc_p.fullPivHouseholderQr().solve(-res_loc_p);
             //increment solution vectors
             sig_j += inc_loc_p.block<6,1>(0,0);
             eps_K_j += inc_loc_p.block<6,1>(6,0);
