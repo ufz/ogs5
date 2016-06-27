@@ -120,7 +120,7 @@ public:
 	double X(const long i) const { return x[i]; }
 	double RHS(const long i) const { return b[i]; }
 	double NormX();
-	double NormRHS() { return bNorm; } //Check: return Norm(b) for ANGUS+
+	double NormRHS() { return bNorm; }
 #if defined(USE_MPI)
 	int DOF() { return A->Dof(); }
 	long Size() { return A->Size(); }
