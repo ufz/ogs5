@@ -47,7 +47,7 @@ else ()
 			COMMAND ${MPI_RUN_COMMAND} ${EXECUTABLE_OUTPUT_PATH}/ogs --output-directory ${BENCHMARK_OUTPUT_DIRECTORY} ${benchmarkStrippedName}
 			OUTPUT_FILE ${BENCHMARK_OUTPUT_DIRECTORY}/${benchmarkStrippedName}.log
 			ERROR_FILE ${BENCHMARK_OUTPUT_DIRECTORY}/${benchmarkStrippedName}.error
-			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/../benchmarks/${benchmarkDir}
+			WORKING_DIRECTORY ${BENCHMARK_DIR}/${benchmarkDir}
 			RESULT_VARIABLE EXIT_CODE)
 	endif()
 
