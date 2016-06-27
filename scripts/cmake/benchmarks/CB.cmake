@@ -134,14 +134,14 @@ Benchmark(AUTHOR CB
 
 Benchmark(AUTHOR CB
 	PATH C/Engesgaard/Kin/slow_kin_pqc/pds
-	CONFIG FEM
+	CONFIG PQC
 	RUNTIME 2
 	OUTPUT_FILES pds_ply_OUT_LINE_t1.tec
 )
 
 Benchmark(AUTHOR CB
 	PATH C/Engesgaard/Kin/slow_kin_pqc_krc/pds
-	CONFIG FEM
+	CONFIG PQC
 	RUNTIME 430
 	OUTPUT_FILES
 		pds_ply_OUT_LINE_t1.tec
@@ -168,7 +168,7 @@ Benchmark(AUTHOR CB
 	PATH C/NAPL-dissolution/1D_NAPL-diss_flow/lin/1D_TPF_resS_flow
 	CONFIG FEM
 	RUNTIME 2
-	OUTPUT_FILES lin/1D_TPF_resS_flow_ply_OUT_LINE_t0.tec
+	OUTPUT_FILES 1D_TPF_resS_flow_ply_OUT_LINE_t0.tec
 )
 
 Benchmark(AUTHOR CB
