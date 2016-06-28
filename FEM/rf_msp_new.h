@@ -155,7 +155,7 @@ public:
 	void Kelvin_to_Voigt_Stress(const Eigen::Matrix<double,6,1> &kelvin_stress, double *voigt_stress);
 	void Kelvin_to_Voigt_Strain(const Eigen::Matrix<double,6,1> &kelvin_strain, double *voigt_strain);
 	//general routine to get consistent tangent from local Newton iteration of material functionals
-	void ExtractConsistentTangent(const Eigen::MatrixXd &Jac, const Eigen::MatrixXd &dGdE, Eigen::Matrix<double,6,6> &dsigdE);
+	void ExtractConsistentTangent(const Eigen::MatrixXd &Jac, const Eigen::MatrixXd &dGdE,  const bool pivoting, Eigen::Matrix<double,6,6> &dsigdE);
     //general local Newton routines to integrate inelastic material models
 	void LocalNewtonBurgers(const double dt, double* strain_curr, double* stress_curr, double* eps_K_curr, double* eps_M_curr,
                             Math_Group::Matrix* Consistent_Tangent, bool Output, double Temperature);

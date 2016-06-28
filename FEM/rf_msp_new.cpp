@@ -595,7 +595,7 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 				//  9: m_KM // slope of elesticity temperature dependence of K_M
 				// 10: T_ref // reference temperature;
 				// 11: B // constant factor for Arrhenius term
-			    // 12: Q // activation energy in Arrhenius term
+				// 12: Q // activation energy in Arrhenius term
 				data_Creep = new Matrix(14);
 				in_sd.str(GetLineFromFile1(msp_file));
 				for(i = 0; i < 14; i++)
@@ -604,8 +604,8 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 
 				//Local Newton scheme for Burgers model. TN 06.06.2014
 				//initialised fully 3D
-                material_burgers = new Burgers::SolidBurgers(data_Creep);
-                smath = new SolidMath::Invariants();
+				material_burgers = new Burgers::SolidBurgers(data_Creep);
+				smath = new SolidMath::Invariants();
 			}
 			if(line_string.find("MINKLEY") != string::npos)
 			{
@@ -628,14 +628,14 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 
 				data_Creep = new Matrix(15);
 				in_sd.str(GetLineFromFile1(msp_file));
-                for(i = 0; i < 16; i++)
+				for(i = 0; i < 16; i++)
 					in_sd >> (*data_Creep)(i);
 				in_sd.clear();
 
 				//Local Newton scheme for Burgers model. TN 06.06.2014
 				//initialised fully 3D
-                material_minkley = new Minkley::SolidMinkley(data_Creep);
-                smath = new SolidMath::Invariants();
+				material_minkley = new Minkley::SolidMinkley(data_Creep);
+				smath = new SolidMath::Invariants();
 			}
 		}
 		// WX:10.2012, threshold dev. stress for Lubby2
@@ -1735,21 +1735,18 @@ void CSolidProperties::Kelvin_to_Voigt_Stress(const Eigen::Matrix<double,6,1> &k
    Programing:
    06/2014 TN Implementation
 **************************************************************************/
-void CSolidProperties::ExtractConsistentTangent(const Eigen::MatrixXd &Jac, const Eigen::MatrixXd &dGdE, Eigen::Matrix<double,6,6> &dsigdE)
+void CSolidProperties::ExtractConsistentTangent(const Eigen::MatrixXd &Jac, const Eigen::MatrixXd &dGdE, const bool pivoting, Eigen::Matrix<double,6,6> &dsigdE)
 {
-    const unsigned int local_dim(Jac.cols());
-	//Matrix* dzdE;
-	//dzdE = new Matrix(local_dim,6);
+	const unsigned int local_dim(Jac.cols());
 	//Check Dimensions
-	if (local_dim != dGdE.rows())
-		std::cout << "WARNING: Dimensions of dGdE and Jac given to CSolidProperties::ExtractConsistentTangent do not match. Results may be flawed.\n";
-	if (dGdE.cols() != 6)
-		std::cout << "WARNING: Invalid number of Columns of dGdE given to CSolidProperties::ExtractConsistentTangent. Results may be flawed.\n";
+	assert(local_dim == dGdE.rows() && dGdE.cols() == 6);
 
 	Eigen::MatrixXd dzdE(local_dim,6);
 	//solve linear system
-	//dzdE = Jac.fullPivLu().solve(-1.0*dGdE); //Could consider moving to different Eigen solver.
-    dzdE = Jac.householderQr().solve(-1.0*dGdE); //Could consider moving to different Eigen solver.
+	if (pivoting)
+		dzdE = Jac.fullPivLu().solve(-1.0*dGdE); //Could consider moving to different Eigen solver.
+	else
+		dzdE = Jac.householderQr().solve(-1.0*dGdE); //Could consider moving to different Eigen solver.
 	//in-built Gauss elimination solver was at least 4 OoM more inaccurate.
 
 	//Extract matrix part relevant for global tangent
@@ -1859,7 +1856,7 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
 	//Calculate dGdE for time step
     material_burgers->CaldGdEBurgers(dGdE);
 	//get dsigdE matrix
-	ExtractConsistentTangent(K_loc,dGdE,dsigdE);
+	ExtractConsistentTangent(K_loc,dGdE,false,dsigdE);
 
 	//add hydrostatic part to stress and tangent
     sig_j = material_burgers->GM * sigd_j + material_burgers->KM * e_i * smath->ivec;
@@ -2020,7 +2017,7 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
         //Calculate dGdE for time step
         material_minkley->CalEPdGdE(dGdE);
         //get dsigdE matrix
-        ExtractConsistentTangent(K_loc_p,dGdE,dsigdE);
+		ExtractConsistentTangent(K_loc_p,dGdE,true,dsigdE);
     }
     else
     {
@@ -2029,7 +2026,7 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
         //Calculate dGdE for time step
         material_minkley->CaldGdE(dGdE);
         //get dsigdE matrix
-        ExtractConsistentTangent(K_loc,dGdE,dsigdE);
+		ExtractConsistentTangent(K_loc,dGdE,true,dsigdE);
     }
 	if (counter == counter_max)
 		std::cout << "WARNING: Maximum iteration number needed in LocalNewtonMinkley. Convergence not guaranteed." << std::endl;
