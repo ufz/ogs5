@@ -2456,19 +2456,75 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		}
 			if (smat->Creep_mode == 1001) //BURGERS.
 			{
+			//get total strains at time t and current iteration i
+			double *strain_t, *strain_curr;
+			strain_t = new double[6]; strain_curr = new double[6];
+
+			//get stresses as well as internal variables at time t and current iteration i (equal before local Newton)
+			double *stress_curr, *eps_K_curr, *eps_M_curr;
+			stress_curr = new double[6]; eps_K_curr = new double[6]; eps_M_curr = new double[6];
+			for (int compnt (0); compnt<ns; compnt++){
+				strain_t[compnt] = (*eleV_DM->Strain_t_ip)(compnt,gp);
+				strain_curr[compnt] = strain_t[compnt] + dstrain[compnt];
+				stress_curr[compnt] = (*eleV_DM->Stress)(compnt, gp);
+				eps_K_curr[compnt] = (*eleV_DM->Strain_Kel)(compnt,gp);
+				eps_M_curr[compnt] = (*eleV_DM->Strain_Max)(compnt,gp);
+			}
+			//Fill remaining 3D components with 0 if only 2D
+			if (ns == 4)
+				for (int compnt (4); compnt<6; compnt++){
+					strain_t[compnt] = 0.0;
+					strain_curr[compnt] = 0.0;
+					stress_curr[compnt] = 0.0;
+					eps_K_curr[compnt] = 0.0;
+					eps_M_curr[compnt] = 0.0;
+				}
+
+			//6x6 tangent
+			Matrix* ConsD;
+			ConsD = new Matrix(6,6);
+			bool output=false;
+			//                if (MeshElement->GetIndex() == 1031 && gp==0 && update < 1)
+			//                    output = true;
+			//Pass as 6D vectors, i.e. set stress and strain [4] and [5] to zero for 2D and AXI as well as strain[3] to zero for 2D (plane strain)
+			smat->LocalNewtonBurgers(dt, strain_curr, stress_curr, eps_K_curr, eps_M_curr, ConsD,output, t1);
+
+			//Then update (and reduce for 2D) stress increment vector and reduce (for 2D) ConsistDep, update internal variables
+			for (int compnt(0); compnt<ns; compnt++){
+				dstress[compnt] = stress_curr[compnt];
+				if (update > 0){
+				(*eleV_DM->Strain_Kel)(compnt,gp) = eps_K_curr[compnt];
+				(*eleV_DM->Strain_Max)(compnt,gp) = eps_M_curr[compnt];
+				(*eleV_DM->Strain_t_ip)(compnt,gp) = strain_curr[compnt];
+				}
+				for (int compnt2(0); compnt2<ns; compnt2++)
+					(*De)(compnt,compnt2) = (*ConsD)(compnt,compnt2);
+					(*eleV_DM->Strain)(compnt,gp) = strain_curr[compnt];
+				}
+
+				delete [] strain_t; delete [] strain_curr;
+				delete [] stress_curr; delete [] eps_K_curr;
+				delete [] eps_M_curr;
+				delete ConsD;
+				ConsD = NULL;
+			}
+
+            if (smat->Creep_mode == 1002) //MINKLEY
+            {
 				//get total strains at time t and current iteration i
 				double *strain_t, *strain_curr;
 				strain_t = new double[6]; strain_curr = new double[6];
 
 				//get stresses as well as internal variables at time t and current iteration i (equal before local Newton)
-                double *stress_curr, *eps_K_curr, *eps_M_curr;
-                stress_curr = new double[6]; eps_K_curr = new double[6]; eps_M_curr = new double[6];
+				double *stress_curr, *eps_K_curr, *eps_pl_curr, *eps_M_curr;
+				stress_curr = new double[6]; eps_K_curr = new double[6]; eps_pl_curr = new double[6]; eps_M_curr = new double[6];
 				for (int compnt (0); compnt<ns; compnt++){
-                    strain_t[compnt] = (*eleV_DM->Strain_t_ip)(compnt,gp);
-                    strain_curr[compnt] = strain_t[compnt] + dstrain[compnt];
-                    stress_curr[compnt] = (*eleV_DM->Stress)(compnt, gp);
-                    eps_K_curr[compnt] = (*eleV_DM->Strain_Kel)(compnt,gp);
-                    eps_M_curr[compnt] = (*eleV_DM->Strain_Max)(compnt,gp);
+					stress_curr[compnt] = (*eleV_DM->Stress)(compnt, gp);
+					eps_K_curr[compnt] = (*eleV_DM->Strain_Kel)(compnt,gp);
+					eps_M_curr[compnt] = (*eleV_DM->Strain_Max)(compnt,gp);
+					eps_pl_curr[compnt] = (*eleV_DM->Strain_pl)(compnt,gp);
+					strain_t[compnt] = (*eleV_DM->Strain_t_ip)(compnt,gp);
+					strain_curr[compnt] = strain_t[compnt] + dstrain[compnt];
 				}
 				//Fill remaining 3D components with 0 if only 2D
 				if (ns == 4)
@@ -2477,136 +2533,52 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						strain_curr[compnt] = 0.0;
 						stress_curr[compnt] = 0.0;
 						eps_K_curr[compnt] = 0.0;
-                        eps_M_curr[compnt] = 0.0;
+						eps_M_curr[compnt] = 0.0;
+						eps_pl_curr[compnt] = 0.0;
 					}
+
+				double e_pl_v = (*eleV_DM->e_pl)(gp);
+				double e_pl_eff = (*eleV_DM->pStrain)(gp);
+				double lam = 0.;//(*eleV_DM->lambda_pl)(gp);
+
 
 				//6x6 tangent
 				Matrix* ConsD;
 				ConsD = new Matrix(6,6);
-                bool output=false;
-//                if (MeshElement->GetIndex() == 1031 && gp==0 && update < 1)
-//                    output = true;
+
+				bool output=false;
+				//                if (MeshElement->GetIndex() == 1031 && gp==0 && update < 1)
+				//                    output = true;
 				//Pass as 6D vectors, i.e. set stress and strain [4] and [5] to zero for 2D and AXI as well as strain[3] to zero for 2D (plane strain)
-				smat->LocalNewtonBurgers(dt, strain_curr, stress_curr, eps_K_curr, eps_M_curr, ConsD,output, t1);
-				
+				smat->LocalNewtonMinkley(dt, strain_curr, stress_curr, eps_K_curr, eps_M_curr, eps_pl_curr, e_pl_v, e_pl_eff, lam, ConsD,output, t1);
+
 				//Then update (and reduce for 2D) stress increment vector and reduce (for 2D) ConsistDep, update internal variables
 				for (int compnt(0); compnt<ns; compnt++){
 					dstress[compnt] = stress_curr[compnt];
-                    if (update > 0){
+					if (update > 0)
+					{
 						(*eleV_DM->Strain_Kel)(compnt,gp) = eps_K_curr[compnt];
-                        (*eleV_DM->Strain_Max)(compnt,gp) = eps_M_curr[compnt];
-                        (*eleV_DM->Strain_t_ip)(compnt,gp) = strain_curr[compnt];
-                    }
+						(*eleV_DM->Strain_Max)(compnt,gp) = eps_M_curr[compnt];
+						(*eleV_DM->Strain_pl)(compnt,gp) = eps_pl_curr[compnt];
+						(*eleV_DM->Strain_t_ip)(compnt,gp) = strain_curr[compnt];
+					}
 					for (int compnt2(0); compnt2<ns; compnt2++)
 						(*De)(compnt,compnt2) = (*ConsD)(compnt,compnt2);
-                    (*eleV_DM->Strain)(compnt,gp) = strain_curr[compnt];
+					(*eleV_DM->Strain)(compnt,gp) = strain_curr[compnt];
+				}
+
+				if (update > 0)
+				{
+					(*eleV_DM->e_pl)(gp) = e_pl_v;
+					(*eleV_DM->lambda_pl)(gp) = lam;
+					(*eleV_DM->pStrain)(gp) = e_pl_eff;
 				}
 
 				delete [] strain_t; delete [] strain_curr;
-                delete [] stress_curr; delete [] eps_K_curr;
-                delete [] eps_M_curr;
+				delete [] stress_curr; delete [] eps_K_curr;
+				delete [] eps_M_curr; delete [] eps_pl_curr;
 				delete ConsD;
 				ConsD = NULL;
-			}
-
-            if (smat->Creep_mode == 1002) //MINKLEY
-            {
-                //get total strains at time t and current iteration i
-                double *strain_t, *strain_curr;
-                strain_t = new double[6]; strain_curr = new double[6];
-//                for (int compnt (0); compnt<ns; compnt++) {
-//                    strain_t[compnt] = 0.0;
-//                    for(int node_nr = 0; node_nr < nnodesHQ; node_nr++){
-//                        strain_t[compnt] += pcs->GetNodeValue(nodes[node_nr],Idx_Strain[compnt]) * shapefctHQ[node_nr];
-//                        if (compnt == 3)
-//                            std::cout << node_nr << "th Node value " << pcs->GetNodeValue(nodes[node_nr],Idx_Strain[compnt]) << std::endl;
-//                    }
-
-//                    strain_curr[compnt] = strain_t[compnt] + dstrain[compnt];
-//                }
-
-
-                //get stresses as well as internal variables at time t and current iteration i (equal before local Newton)
-                double *stress_curr, *eps_K_curr, *eps_pl_curr, *eps_M_curr;
-                stress_curr = new double[6]; eps_K_curr = new double[6]; eps_pl_curr = new double[6]; eps_M_curr = new double[6];
-                for (int compnt (0); compnt<ns; compnt++){
-                    stress_curr[compnt] = (*eleV_DM->Stress)(compnt, gp);
-                    eps_K_curr[compnt] = (*eleV_DM->Strain_Kel)(compnt,gp);
-                    eps_M_curr[compnt] = (*eleV_DM->Strain_Max)(compnt,gp);
-                    eps_pl_curr[compnt] = (*eleV_DM->Strain_pl)(compnt,gp);
-                    strain_t[compnt] = (*eleV_DM->Strain_t_ip)(compnt,gp);
-                    strain_curr[compnt] = strain_t[compnt] + dstrain[compnt];
-                }
-                //Fill remaining 3D components with 0 if only 2D
-                if (ns == 4)
-                    for (int compnt (4); compnt<6; compnt++){
-                        strain_t[compnt] = 0.0;
-                        strain_curr[compnt] = 0.0;
-                        stress_curr[compnt] = 0.0;
-                        eps_K_curr[compnt] = 0.0;
-                        eps_M_curr[compnt] = 0.0;
-                        eps_pl_curr[compnt] = 0.0;
-                    }
-
-                double e_pl_v = (*eleV_DM->e_pl)(gp);
-                double e_pl_eff = (*eleV_DM->pStrain)(gp);
-				double lam = 0.;//(*eleV_DM->lambda_pl)(gp);
-
-//				std::cout << "Strain coming in\n";
-//				std::cout << "eps_pl_curr_zz: " << eps_pl_curr[2] << std::endl;
-//				std::cout << "eps_M_curr_zz: " << eps_M_curr[2] << std::endl;
-//				std::cout << "eps_K_curr_zz: " << eps_K_curr[2] << std::endl;
-//				std::cout << "strain_curr_zz: " << strain_curr[2] << std::endl;
-//				std::cout << "stress_curr_zz: " << stress_curr[2] << std::endl;
-//				std::cout << "e_pl_v: " << e_pl_v << std::endl;
-				//std::cout << "dstrain: " << dstrain[3] << std::endl;
-
-
-                //6x6 tangent
-                Matrix* ConsD;
-                ConsD = new Matrix(6,6);
-
-                bool output=false;
-//                if (MeshElement->GetIndex() == 1031 && gp==0 && update < 1)
-//                    output = true;
-                //Pass as 6D vectors, i.e. set stress and strain [4] and [5] to zero for 2D and AXI as well as strain[3] to zero for 2D (plane strain)
-				smat->LocalNewtonMinkley(dt, strain_curr, stress_curr, eps_K_curr, eps_M_curr, eps_pl_curr, e_pl_v, e_pl_eff, lam, ConsD,output, t1);
-
-                //Then update (and reduce for 2D) stress increment vector and reduce (for 2D) ConsistDep, update internal variables
-                for (int compnt(0); compnt<ns; compnt++){
-                    dstress[compnt] = stress_curr[compnt];
-                    if (update > 0)
-                    {
-                        (*eleV_DM->Strain_Kel)(compnt,gp) = eps_K_curr[compnt];
-                        (*eleV_DM->Strain_Max)(compnt,gp) = eps_M_curr[compnt];
-                        (*eleV_DM->Strain_pl)(compnt,gp) = eps_pl_curr[compnt];
-                        (*eleV_DM->Strain_t_ip)(compnt,gp) = strain_curr[compnt];
-                    }
-                    for (int compnt2(0); compnt2<ns; compnt2++)
-                        (*De)(compnt,compnt2) = (*ConsD)(compnt,compnt2);
-                    (*eleV_DM->Strain)(compnt,gp) = strain_curr[compnt];
-                }
-
-                if (update > 0)
-                {
-                    (*eleV_DM->e_pl)(gp) = e_pl_v;
-                    (*eleV_DM->lambda_pl)(gp) = lam;
-					(*eleV_DM->pStrain)(gp) = e_pl_eff;
-                }
-
-//				std::cout << "Strain going out\n";
-//				std::cout << "eps_pl_curr_zz: " << eps_pl_curr[2] << std::endl;
-//				std::cout << "eps_M_curr_zz: " << eps_M_curr[2] << std::endl;
-//				std::cout << "eps_K_curr_zz: " << eps_K_curr[2] << std::endl;
-//				std::cout << "strain_curr_zz: " << strain_curr[2] << std::endl;
-//				std::cout << "stress_curr_zz: " << stress_curr[2] << std::endl;
-//				std::cout << "e_pl_v: " << e_pl_v << std::endl;
-
-                delete [] strain_t; delete [] strain_curr;
-                delete [] stress_curr; delete [] eps_K_curr;
-                delete [] eps_M_curr; delete [] eps_pl_curr;
-                delete ConsD;
-                ConsD = NULL;
             }
 
 			// Fluid coupling;

@@ -18,7 +18,8 @@ SolidMinkley::SolidMinkley(const Matrix* data)
     {
         mvM = std::log(1.+std::sqrt(2.)); //m -- effective stress factor in viscosity relationship
         nvM = 0.; //n -- effective stress exponent in viscosity relationship
-        std::cout << "WARNING. Viscosity parameter m was chosen lower than 1e-3. Setting model parameters to achieve constant viscosity.";
+		std::cout << "WARNING. Viscosity parameter m was chosen lower than 1e-3. "
+					 "Setting model parameters to achieve constant viscosity.";
     }
     else
     {
@@ -73,7 +74,8 @@ void SolidMinkley::UpdateMinkleyProperties(double s_eff, const double eps_p_eff,
 double SolidMinkley::A(const double theta, const double alpha)
 {
     double A;
-    A = std::cos(thetaT)/3. * (3. + std::tan(thetaT) * std::tan(3.*thetaT) + 1./std::sqrt(3.) * sgn(theta) * (std::tan(3.*thetaT) - 3. * std::tan(thetaT)) * std::sin(alpha));
+	A = std::cos(thetaT)/3. * (3. + std::tan(thetaT) * std::tan(3.*thetaT) + 1./std::sqrt(3.) *
+							   sgn(theta) * (std::tan(3.*thetaT) - 3. * std::tan(thetaT)) * std::sin(alpha));
     return A;
 }
 
@@ -86,7 +88,8 @@ double SolidMinkley::A(const double theta, const double alpha)
 double SolidMinkley::B(const double theta, const double alpha)
 {
     double B;
-    B = 1./(3.*std::cos(3.*thetaT)) * (sgn(theta) * std::sin(thetaT) + std::sin(alpha) * std::cos(thetaT)/std::sqrt(3.));
+	B = 1./(3.*std::cos(3.*thetaT)) * (sgn(theta) * std::sin(thetaT) + std::sin(alpha) *
+									   std::cos(thetaT)/std::sqrt(3.));
     return B;
 }
 
@@ -140,16 +143,17 @@ Eigen::Matrix<double,6,1> SolidMinkley::DetaM_Dsigma(double sig_eff, const Eigen
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-void SolidMinkley::CalViscoelasticResidual(const double dt, const Eigen::Matrix<double,6,1> &dstrain_curr, const double e_curr, const double e_p_curr,
-                                           const Eigen::Matrix<double,6,1> &stress_curr, const Eigen::Matrix<double,6,1> &dstrain_Kel_curr,
-                                           const Eigen::Matrix<double,6,1> &dstrain_Kel_t, const Eigen::Matrix<double,6,1> &dstrain_Max_curr,
-                                           const Eigen::Matrix<double,6,1> &dstrain_Max_t, const Eigen::Matrix<double,6,1> &dstrain_p_curr,
-                                           Eigen::Matrix<double,18,1> &res)
+void SolidMinkley::CalViscoelasticResidual(const double dt, const Eigen::Matrix<double,6,1> &dstrain_curr,
+										   const double e_curr, const double e_p_curr, const Eigen::Matrix<double,6,1> &stress_curr,
+										   const Eigen::Matrix<double,6,1> &dstrain_Kel_curr, const Eigen::Matrix<double,6,1> &dstrain_Kel_t,
+										   const Eigen::Matrix<double,6,1> &dstrain_Max_curr, const Eigen::Matrix<double,6,1> &dstrain_Max_t,
+										   const Eigen::Matrix<double,6,1> &dstrain_p_curr, Eigen::Matrix<double,18,1> &res)
 {
     const Eigen::Matrix<double,6,1> dstress_curr(GM0*smath->P_dev*stress_curr);
 
     //calculate stress residual
-	res.block<6,1>(0,0) = stress_curr - (2. * (dstrain_curr - dstrain_Kel_curr - dstrain_Max_curr - dstrain_p_curr) + KM0/GM0 * (e_curr - e_p_curr) * smath->ivec);
+	res.block<6,1>(0,0) = stress_curr - (2. * (dstrain_curr - dstrain_Kel_curr - dstrain_Max_curr - dstrain_p_curr) +
+										 KM0/GM0 * (e_curr - e_p_curr) * smath->ivec);
     //calculate Kelvin strain residual
     res.block<6,1>(6,0) = (dstrain_Kel_curr - dstrain_Kel_t)/dt - 1./(2.*etaK0) * (dstress_curr- 2.*GK0*dstrain_Kel_curr);
     //calculate Kelvin strain residual
@@ -163,8 +167,8 @@ void SolidMinkley::CalViscoelasticResidual(const double dt, const Eigen::Matrix<
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-void SolidMinkley::CalViscoelasticJacobian(const double dt, const Eigen::Matrix<double,6,1> &stress_curr, const double sig_eff,
-                                           Eigen::Matrix<double,18,18> &Jac)
+void SolidMinkley::CalViscoelasticJacobian(const double dt, const Eigen::Matrix<double,6,1> &stress_curr,
+										   const double sig_eff, Eigen::Matrix<double,18,18> &Jac)
 {
     //6x6 submatrices of the Jacobian
     const Eigen::Matrix<double,6,1> sigd_curr(GM0*smath->P_dev*stress_curr);
@@ -318,7 +322,8 @@ void SolidMinkley::CalViscoplasticResidual(const double dt, const Eigen::Matrix<
     res.block<1,1>(24,0)(0) = (e_pl_vol_curr - e_pl_vol_t)/dt - lam_curr * vol_flow;
 
     //calculate effective plastic strain residual
-    res.block<1,1>(25,0)(0) = (e_pl_eff_curr - e_pl_eff_t)/dt - std::sqrt(2./3. * lam_curr * lam_curr * (double)(dev_flow.transpose() * dev_flow));
+	res.block<1,1>(25,0)(0) = (e_pl_eff_curr - e_pl_eff_t)/dt - std::sqrt(2./3. * lam_curr * lam_curr *
+																		  (double)(dev_flow.transpose() * dev_flow));
 
     //yield function with viscoplastic regularisation
     res.block<1,1>(26,0)(0) = YieldMohrCoulomb(stress_curr * GM0)/GM0 - lam_curr * eta_reg;
