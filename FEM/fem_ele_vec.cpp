@@ -991,11 +991,11 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 
 		if (smat->gravity_ramp)
 		{
-		const int curveIndex = smat->grav_curve_id;
-		const int curveMethod = 0;
+			const int curveIndex = smat->grav_curve_id;
+			const int curveMethod = 0;
 
-		int valid;
-		timeFactor = GetCurveValue(curveIndex, curveMethod, aktuelle_zeit, &valid);
+			int valid;
+			timeFactor = GetCurveValue(curveIndex, curveMethod, aktuelle_zeit, &valid);
 		}
 
 
@@ -2199,7 +2199,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		   char tf_name[10];
 		   #ifdef USE_MPI
 		   sprintf(tf_name,"%d",myrank);
-		    string fname = FileName+tf_name+".stress";
+			string fname = FileName+tf_name+".stress";
 		   #else
 		    string fname = FileName+".stress";
 		   #endif

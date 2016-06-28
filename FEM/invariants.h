@@ -21,7 +21,7 @@ public:
 	Invariants()
 	{
 		//set identity matrix here
-		ident.setIdentity(6,6);
+		ident.setIdentity();
 
 		//set identity vector (Kelvin mapping of 2nd order Identity)
 		for (size_t i=0; i<3; i++)
@@ -32,18 +32,13 @@ public:
 
 		const double third(1./3.);
 		//deviatoric projection
-		P_dev.setZero(6,6);
-		for (size_t i=0; i<6; i++)
-			P_dev(i,i) = 1.;
-		for (size_t i=0; i<3; i++)
-			for (size_t j=0; j<3; j++)
-				P_dev(i,j) -= third;
-
+		P_dev.setIdentity();
 		P_sph.setZero(6,6);
 		for (size_t i=0; i<3; i++)
-			for (size_t j=0; j<3; j++)
+			for (size_t j=0; j<3; j++){
+				P_dev(i,j) -= third;
 				P_sph(i,j) = third;
-
+			}
 	}
     ~Invariants();
     double CalEffectiveStress(const Eigen::Matrix<double,6,1> &dev_stress);
