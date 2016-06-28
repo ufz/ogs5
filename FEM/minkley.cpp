@@ -53,8 +53,8 @@ void SolidMinkley::UpdateMinkleyProperties(double s_eff, const double eps_p_eff,
 		etaM = etaM0 / std::sinh(mvM * std::pow(s_eff,nvM));//viscosity function update
 	else
 		etaM = etaM0;
-    etaM *= std::exp(l0*(Temperature-T0));
-    coh = coh0 * (1. + eps_p_eff * hard);//linear isotropic hardening/softening
+	etaM *= std::exp(l0*(Temperature-T0));
+	coh = coh0 * (1. + eps_p_eff * hard);//linear isotropic hardening/softening
 	if (etaM/etaM0 < 1.e-2)
 		std::cout << "WARNING: Maxwell viscosity sank to 100th of original value." << std::endl;
 
@@ -96,7 +96,7 @@ double SolidMinkley::B(const double theta, const double alpha)
 **************************************************************************/
 double SolidMinkley::YieldMohrCoulomb(const Eigen::Matrix<double,6,1> &sig)
 {
-    double F;
+	double F(0.);
     const Eigen::Matrix<double,6,1> sigd(smath->P_dev*sig);
     const double theta(smath->CalLodeAngle(sigd));
 
@@ -121,7 +121,7 @@ double SolidMinkley::YieldMohrCoulomb(const Eigen::Matrix<double,6,1> &sig)
 **************************************************************************/
 Eigen::Matrix<double,6,1> SolidMinkley::DetaM_Dsigma(double sig_eff, const Eigen::Matrix<double,6,1> &sigd_i)
 {
-    Eigen::Matrix<double,6,1> res;
+	Eigen::Matrix<double,6,1> res;
 	if (sig_eff < DBL_EPSILON)
 		return sigd_i * 0.;
 	else{
@@ -144,15 +144,15 @@ void SolidMinkley::CalViscoelasticResidual(const double dt, const Eigen::Matrix<
 										   const Eigen::Matrix<double,6,1> &dstrain_Max_curr, const Eigen::Matrix<double,6,1> &dstrain_Max_t,
 										   const Eigen::Matrix<double,6,1> &dstrain_p_curr, Eigen::Matrix<double,18,1> &res)
 {
-    const Eigen::Matrix<double,6,1> dstress_curr(GM0*smath->P_dev*stress_curr);
+	const Eigen::Matrix<double,6,1> dstress_curr(GM0*smath->P_dev*stress_curr);
 
-    //calculate stress residual
+	//calculate stress residual
 	res.block<6,1>(0,0) = stress_curr - (2. * (dstrain_curr - dstrain_Kel_curr - dstrain_Max_curr - dstrain_p_curr) +
 										 KM0/GM0 * (e_curr - e_p_curr) * smath->ivec);
-    //calculate Kelvin strain residual
-    res.block<6,1>(6,0) = (dstrain_Kel_curr - dstrain_Kel_t)/dt - 1./(2.*etaK0) * (dstress_curr- 2.*GK0*dstrain_Kel_curr);
-    //calculate Kelvin strain residual
-    res.block<6,1>(12,0) = (dstrain_Max_curr - dstrain_Max_t)/dt - 1./(2.*etaM) * dstress_curr;
+	//calculate Kelvin strain residual
+	res.block<6,1>(6,0) = (dstrain_Kel_curr - dstrain_Kel_t)/dt - 1./(2.*etaK0) * (dstress_curr- 2.*GK0*dstrain_Kel_curr);
+	//calculate Kelvin strain residual
+	res.block<6,1>(12,0) = (dstrain_Max_curr - dstrain_Max_t)/dt - 1./(2.*etaM) * dstress_curr;
 }
 
 
@@ -261,7 +261,7 @@ double SolidMinkley::DG_Dtheta(const double theta, const double J2, const double
 **************************************************************************/
 double SolidMinkley::Dtheta_DJ2(const double theta, const double J2)
 {
-    return - std::tan(3.*theta)/(2.*J2);
+	return -std::tan(3.*theta)/(2.*J2);
 }
 
 /**************************************************************************
@@ -337,35 +337,35 @@ and the resulting 4th order tensor is then remapped with the
 Kelvin scheme*/
 Eigen::Matrix<double,6,6> SolidMinkley::s_odot_s(const Eigen::Matrix<double,6,1> &vec)
 {
-    Eigen::Matrix<double,6,6> odot;
+	Eigen::Matrix<double,6,6> odot;
 
-    odot(0,0) = vec(0)*vec(0);
-	odot(0,1) = odot(1,0) = vec(3)*vec(3)/2.;
-	odot(0,2) = odot(2,0) = vec(5)*vec(5)/2.;
-	odot(0,3) = odot(3,0) = vec(0)*vec(3);
-	odot(0,4) = odot(4,0) = vec(3)*vec(5)/std::sqrt(2.);
-	odot(0,5) = odot(5,0) = vec(0)*vec(5);
+	odot(0,0) = -vec(0)*vec(0);
+	odot(0,1) = odot(1,0) = -vec(3)*vec(3)/2.;
+	odot(0,2) = odot(2,0) = -vec(5)*vec(5)/2.;
+	odot(0,3) = odot(3,0) = -vec(0)*vec(3);
+	odot(0,4) = odot(4,0) = -vec(3)*vec(5)/std::sqrt(2.);
+	odot(0,5) = odot(5,0) = -vec(0)*vec(5);
 
-    odot(1,1) = vec(1)*vec(1);
-	odot(1,2) = odot(2,1) = vec(4)*vec(4)/2.;
-	odot(1,3) = odot(3,1) = vec(3)*vec(1);
-	odot(1,4) = odot(4,1) = vec(1)*vec(4);
-	odot(1,5) = odot(5,1) = vec(3)*vec(4)/std::sqrt(2.);
+	odot(1,1) = -vec(1)*vec(1);
+	odot(1,2) = odot(2,1) = -vec(4)*vec(4)/2.;
+	odot(1,3) = odot(3,1) = -vec(3)*vec(1);
+	odot(1,4) = odot(4,1) = -vec(1)*vec(4);
+	odot(1,5) = odot(5,1) = -vec(3)*vec(4)/std::sqrt(2.);
 
-    odot(2,2) = vec(2)*vec(2);
-	odot(2,3) = odot(3,2) = vec(5)*vec(4)/std::sqrt(2.);
-	odot(2,4) = odot(4,2) = vec(4)*vec(2);
-	odot(2,5) = odot(5,2) = vec(5)*vec(2);
+	odot(2,2) = -vec(2)*vec(2);
+	odot(2,3) = odot(3,2) = -vec(5)*vec(4)/std::sqrt(2.);
+	odot(2,4) = odot(4,2) = -vec(4)*vec(2);
+	odot(2,5) = odot(5,2) = -vec(5)*vec(2);
 
-	odot(3,3) = vec(0)*vec(1) + vec(3)*vec(3)/2.;
-	odot(3,4) = odot(4,3) = vec(3)*vec(4)/2. + vec(5)*vec(1)/std::sqrt(2.);
-	odot(3,5) = odot(5,3) = vec(0)*vec(4)/std::sqrt(2.) + vec(3)*vec(5)/2.;
+	odot(3,3) = -vec(0)*vec(1) - vec(3)*vec(3)/2.;
+	odot(3,4) = odot(4,3) = -vec(3)*vec(4)/2. - vec(5)*vec(1)/std::sqrt(2.);
+	odot(3,5) = odot(5,3) = -vec(0)*vec(4)/std::sqrt(2.) - vec(3)*vec(5)/2.;
 
-	odot(4,4) = vec(1)*vec(2) + vec(4)*vec(4)/2.;
-	odot(4,5) = odot(5,4) = vec(3)*vec(2)/std::sqrt(2.) + vec(5)*vec(4)/2.;
+	odot(4,4) = -vec(1)*vec(2) - vec(4)*vec(4)/2.;
+	odot(4,5) = odot(5,4) = -vec(3)*vec(2)/std::sqrt(2.) - vec(5)*vec(4)/2.;
 
-	odot(5,5) = vec(0)*vec(2) + vec(5)*vec(5)/2.;
-    return -odot;
+	odot(5,5) = -vec(0)*vec(2) - vec(5)*vec(5)/2.;
+	return odot;
 }
 
 /**************************************************************************
@@ -463,21 +463,21 @@ double SolidMinkley::DDtheta_DDJ3(const double theta, const double J3)
 void SolidMinkley::CalViscoplasticJacobian(const double dt, const Eigen::Matrix<double,6,1> &stress_curr, const double sig_eff,
                                            const double lam_curr, Eigen::Matrix<double,27,27> &Jac)
 {
-    //submatrices of the Jacobian
-    const Eigen::Matrix<double,6,1> sigd_curr(GM0*smath->P_dev*stress_curr);
+	//submatrices of the Jacobian
+	const Eigen::Matrix<double,6,1> sigd_curr(GM0*smath->P_dev*stress_curr);
 	const double J_2(smath->CalJ2(sigd_curr)), J_3(smath->CalJ3(sigd_curr)), theta(smath->CalLodeAngle(sigd_curr));
-    const Eigen::Matrix<double,6,1> sigd_curr_inv(smath->InvertVector(sigd_curr));
-    const Eigen::Matrix<double,6,1> dev_sigd_curr_inv (smath->P_dev * sigd_curr_inv);
-    const double vol_flow(3. * DG_DI1(psi));
-    const Eigen::Matrix<double,6,1> dmu_vM = DetaM_Dsigma(sig_eff*GM0,sigd_curr);
-    Eigen::Matrix<double,6,1> dev_flow;
-    Eigen::Matrix<double,6,6> Ddev_flowDsigma;
-    const double DthetaDJ2(Dtheta_DJ2(theta,J_2));
-    const double DthetaDJ3(Dtheta_DJ3(theta,J_3));
+	const Eigen::Matrix<double,6,1> sigd_curr_inv(smath->InvertVector(sigd_curr));
+	const Eigen::Matrix<double,6,1> dev_sigd_curr_inv (smath->P_dev * sigd_curr_inv);
+	const double vol_flow(3. * DG_DI1(psi));
+	const Eigen::Matrix<double,6,1> dmu_vM = DetaM_Dsigma(sig_eff*GM0,sigd_curr);
+	Eigen::Matrix<double,6,1> dev_flow;
+	Eigen::Matrix<double,6,6> Ddev_flowDsigma;
+	const double DthetaDJ2(Dtheta_DJ2(theta,J_2));
+	const double DthetaDJ3(Dtheta_DJ3(theta,J_3));
 
-    //Check Dimension of Jacobian
+	//Check Dimension of Jacobian
 	assert(Jac.cols() == 27 && Jac.rows() == 27);
-    Jac.setZero(27,27);
+	Jac.setZero(27,27);
 
 	if (std::abs(J_3) < 0.)
 	{
@@ -486,114 +486,111 @@ void SolidMinkley::CalViscoplasticJacobian(const double dt, const Eigen::Matrix<
 	}
 	else
     {
-        const double DGDtheta(DG_Dtheta(theta,J_2,psi));
-        dev_flow = (DG_DJ2(theta,J_2,psi) + DGDtheta * DthetaDJ2)*sigd_curr +
-                (DGDtheta * DthetaDJ3 * J_3) * dev_sigd_curr_inv;
-        Ddev_flowDsigma = (
-                    (DG_DJ2(theta,J_2,psi) + DGDtheta * DthetaDJ2) * smath->P_dev +
-                    (DGDtheta * DthetaDJ3 * J_3) * smath->P_dev * s_odot_s(sigd_curr_inv) * smath->P_dev +
-                    (DDG_DDJ2(theta,J_2,psi) + DDG_DJ2_Dtheta(theta,J_2,psi) * DthetaDJ2 +
-                        DGDtheta * DDtheta_DDJ2(theta,J_2)) * sigd_curr*sigd_curr.transpose() +
-                    (DDG_DJ2_Dtheta(theta,J_2,psi) + DDG_DDtheta(theta,J_2,psi) * DthetaDJ2 +
-                        DGDtheta * DDtheta_DJ2_Dtheta(theta,J_2)) *
-                        (DthetaDJ2 * sigd_curr*sigd_curr.transpose() +
-                         DthetaDJ3 * J_3 * sigd_curr * dev_sigd_curr_inv.transpose()) +
-                    DDG_DJ2_Dtheta(theta,J_2,psi) * DthetaDJ3 * J_3 * dev_sigd_curr_inv * sigd_curr.transpose() +
-                    DGDtheta * J_3 * (DthetaDJ3 + DDtheta_DDJ3(theta,J_3) * J_3) * dev_sigd_curr_inv * dev_sigd_curr_inv.transpose() +
-                    J_3 * (DDG_DDtheta(theta,J_2,psi) * DthetaDJ3 + DGDtheta * DDtheta_DJ3_Dtheta(theta,J_3)) *
-                        (DthetaDJ2 * dev_sigd_curr_inv * sigd_curr.transpose() + DthetaDJ3 * J_3 * dev_sigd_curr_inv * dev_sigd_curr_inv.transpose())
-                    ) * GM0;
-    }
+		const double DGDtheta(DG_Dtheta(theta,J_2,psi));
+		dev_flow = (DG_DJ2(theta,J_2,psi) + DGDtheta * DthetaDJ2)*sigd_curr +
+				(DGDtheta * DthetaDJ3 * J_3) * dev_sigd_curr_inv;
+		Ddev_flowDsigma = (
+					(DG_DJ2(theta,J_2,psi) + DGDtheta * DthetaDJ2) * smath->P_dev +
+					(DGDtheta * DthetaDJ3 * J_3) * smath->P_dev * s_odot_s(sigd_curr_inv) * smath->P_dev +
+					(DDG_DDJ2(theta,J_2,psi) + DDG_DJ2_Dtheta(theta,J_2,psi) * DthetaDJ2 +
+						DGDtheta * DDtheta_DDJ2(theta,J_2)) * sigd_curr*sigd_curr.transpose() +
+					(DDG_DJ2_Dtheta(theta,J_2,psi) + DDG_DDtheta(theta,J_2,psi) * DthetaDJ2 +
+						DGDtheta * DDtheta_DJ2_Dtheta(theta,J_2)) *
+						(DthetaDJ2 * sigd_curr*sigd_curr.transpose() +
+						 DthetaDJ3 * J_3 * sigd_curr * dev_sigd_curr_inv.transpose()) +
+					DDG_DJ2_Dtheta(theta,J_2,psi) * DthetaDJ3 * J_3 * dev_sigd_curr_inv * sigd_curr.transpose() +
+					DGDtheta * J_3 * (DthetaDJ3 + DDtheta_DDJ3(theta,J_3) * J_3) * dev_sigd_curr_inv * dev_sigd_curr_inv.transpose() +
+					J_3 * (DDG_DDtheta(theta,J_2,psi) * DthetaDJ3 + DGDtheta * DDtheta_DJ3_Dtheta(theta,J_3)) *
+						(DthetaDJ2 * dev_sigd_curr_inv * sigd_curr.transpose() + DthetaDJ3 * J_3 * dev_sigd_curr_inv * dev_sigd_curr_inv.transpose())
+					) * GM0;
+		}
 
-    const double eff_flow = std::sqrt(2./3. * lam_curr * lam_curr * (double)(dev_flow.transpose()*dev_flow));
+	const double eff_flow = std::sqrt(2./3. * lam_curr * lam_curr * (double)(dev_flow.transpose()*dev_flow));
 
-    //build G_11
-    //G_66 = smath->ident/dt +
-    Jac.block<6,6>(0,0) = smath->ident;
+	//build G_11
+	//G_66 = smath->ident/dt +
+	Jac.block<6,6>(0,0) = smath->ident;
 
-    //build G_12, G_13 and G_14
-    Jac.block<6,6>(0,6) = 2. * smath->ident;
-    Jac.block<6,6>(0,12) = 2. * smath->ident;
-    Jac.block<6,6>(0,18) = 2. * smath->ident;
+	//build G_12, G_13 and G_14
+	Jac.block<6,6>(0,6) = 2. * smath->ident;
+	Jac.block<6,6>(0,12) = 2. * smath->ident;
+	Jac.block<6,6>(0,18) = 2. * smath->ident;
 
-    //build G_15
-    Jac.block<6,1>(0,24) = KM0/GM0 * smath->ivec;
+	//build G_15
+	Jac.block<6,1>(0,24) = KM0/GM0 * smath->ivec;
 
-    //G_16 and G_17 remain zeros and are not set separately
+	//G_16 and G_17 remain zeros and are not set separately
 
-    //build G_21
-    Jac.block<6,6>(6,0) = -GM0/(2.*etaK0) * smath->P_dev;
+	//build G_21
+	Jac.block<6,6>(6,0) = -GM0/(2.*etaK0) * smath->P_dev;
 
-    //build G_22
-    Jac.block<6,6>(6,6) = (1./dt + GK0/etaK0) * smath->ident;
+	//build G_22
+	Jac.block<6,6>(6,6) = (1./dt + GK0/etaK0) * smath->ident;
 
-    //G_23 through G_27 are zero
+	//G_23 through G_27 are zero
 
-    //build G_31
-    Jac.block<6,6>(12,0) = -1./(2.*etaM) * (GM0*smath->P_dev - sigd_curr * dmu_vM.transpose() / etaM);
+	//build G_31
+	Jac.block<6,6>(12,0) = -1./(2.*etaM) * (GM0*smath->P_dev - sigd_curr * dmu_vM.transpose() / etaM);
 
-    //G_32 is 0
+	//G_32 is 0
 
-    //G_33
-    Jac.block<6,6>(12,12) = smath->ident/dt;
+	//G_33
+	Jac.block<6,6>(12,12) = smath->ident/dt;
 
-    //G_34 through G_37 are zero
+	//G_34 through G_37 are zero
 
-    //G_41
-    Jac.block<6,6>(18,0) = - lam_curr * Ddev_flowDsigma;
+	//G_41
+	Jac.block<6,6>(18,0) = - lam_curr * Ddev_flowDsigma;
 
-    //build G_42 and G_43 are zero
+	//build G_42 and G_43 are zero
 
-    //build G_44
-    Jac.block<6,6>(18,18) = smath->ident/dt;
+	//build G_44
+	Jac.block<6,6>(18,18) = smath->ident/dt;
 
-    //G_45 and G_46 are zero
+	//G_45 and G_46 are zero
 
-    //build G_47
-    Jac.block<6,1>(18,26) = -dev_flow;
+	//build G_47
+	Jac.block<6,1>(18,26) = -dev_flow;
 
-    //G_51 to G_54 are zero
+	//G_51 to G_54 are zero
 
-    //build G_55
-    Jac.block<1,1>(24,24)(0) = 1./dt;
+	//build G_55
+	Jac.block<1,1>(24,24)(0) = 1./dt;
 
-    //G_56 is zero
+	//G_56 is zero
 
-    //G_57
-    Jac.block<1,1>(24,26)(0) = -vol_flow;
+	//G_57
+	Jac.block<1,1>(24,26)(0) = -vol_flow;
 
-    //Conditional build of G_61 und G_67
-    if (std::abs(eff_flow) > 0.)
-    {
-        Jac.block<1,6>(25,0) = -2. * lam_curr*lam_curr/(3.*eff_flow) * dev_flow.transpose() * Ddev_flowDsigma.transpose();
-        Jac.block<1,1>(25,26)(0) = -2./(3.*eff_flow) * std::abs(lam_curr) * (double)(dev_flow.transpose()*dev_flow);
-    }
+	//Conditional build of G_61 und G_67
+	if (std::abs(eff_flow) > 0.)
+	{
+		Jac.block<1,6>(25,0) = -2. * lam_curr*lam_curr/(3.*eff_flow) * dev_flow.transpose() * Ddev_flowDsigma.transpose();
+		Jac.block<1,1>(25,26)(0) = -2./(3.*eff_flow) * std::abs(lam_curr) * (double)(dev_flow.transpose()*dev_flow);
+	}
     //G_62 to G_64 and G_65 are zero
 
-    //build G_66
-    Jac.block<1,1>(25,25)(0) = 1./dt;
+	//build G_66
+	Jac.block<1,1>(25,25)(0) = 1./dt;
 
-    //Yield surface derivatives
-    if (std::abs(J_3) > 0.)
-    {
-        dev_flow = (DG_DJ2(theta,J_2,phi) + DG_Dtheta(theta,J_2,phi) * DthetaDJ2)*sigd_curr +
-                (DG_Dtheta(theta,J_2,phi) * DthetaDJ3 * J_3) * dev_sigd_curr_inv;
-    }
-    else
-    {
-        dev_flow.Zero(6,1);
-    }
+	//Yield surface derivatives
+	if (std::abs(J_3) > 0.)
+		dev_flow = (DG_DJ2(theta,J_2,phi) + DG_Dtheta(theta,J_2,phi) * DthetaDJ2)*sigd_curr +
+				(DG_Dtheta(theta,J_2,phi) * DthetaDJ3 * J_3) * dev_sigd_curr_inv;
 
-    //build G_71
-    Jac.block<1,6>(26,0) = (DG_DI1(phi) * smath->ivec + dev_flow).transpose();
+	else
+		dev_flow.Zero(6,1);
 
-    //G_72 - G_75 zero
+	//build G_71
+	Jac.block<1,6>(26,0) = (DG_DI1(phi) * smath->ivec + dev_flow).transpose();
 
-    //build G_76
-    Jac.block<1,1>(26,25)(0) = -coh0 * hard * std::cos(phi) / GM0;
+	//G_72 - G_75 zero
 
-    //build G_77
-    Jac.block<1,1>(26,26)(0) = -eta_reg;
+	//build G_76
+	Jac.block<1,1>(26,25)(0) = -coh0 * hard * std::cos(phi) / GM0;
+
+	//build G_77
+	Jac.block<1,1>(26,26)(0) = -eta_reg;
 
 }
 
