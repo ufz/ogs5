@@ -60,6 +60,7 @@ class Invariants;
 }
 namespace SolidProp
 {
+typedef Eigen::Matrix<double,6,1> KVec;
 class CSolidProperties
 {
 public:
@@ -150,10 +151,10 @@ public:
 	void setSolidReactiveSystem(FiniteElement::SolidReactiveSystem reactive_system);
 
 	//Kelvin/Voigt mapping routines for 6D vectors
-	Eigen::Matrix<double,6,1> Voigt_to_Kelvin_Stress(const double *voigt_stress);
-	Eigen::Matrix<double,6,1> Voigt_to_Kelvin_Strain(const double *voigt_strain);
-	void Kelvin_to_Voigt_Stress(const Eigen::Matrix<double,6,1> &kelvin_stress, double *voigt_stress);
-	void Kelvin_to_Voigt_Strain(const Eigen::Matrix<double,6,1> &kelvin_strain, double *voigt_strain);
+	KVec Voigt_to_Kelvin_Stress(const double *voigt_stress);
+	KVec Voigt_to_Kelvin_Strain(const double *voigt_strain);
+	void Kelvin_to_Voigt_Stress(const KVec &kelvin_stress, double *voigt_stress);
+	void Kelvin_to_Voigt_Strain(const KVec &kelvin_strain, double *voigt_strain);
 	//general routine to get consistent tangent from local Newton iteration of material functionals
 	void ExtractConsistentTangent(const Eigen::MatrixXd &Jac, const Eigen::MatrixXd &dGdE,  const bool pivoting, Eigen::Matrix<double,6,6> &dsigdE);
     //general local Newton routines to integrate inelastic material models

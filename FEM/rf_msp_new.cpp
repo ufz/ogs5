@@ -1654,9 +1654,9 @@ double CSolidProperties::Kronecker(const int ii, const int jj)
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-Eigen::Matrix<double,6,1> CSolidProperties::Voigt_to_Kelvin_Strain(const double *voigt_strain)
+KVec CSolidProperties::Voigt_to_Kelvin_Strain(const double *voigt_strain)
 {
-	Eigen::Matrix<double,6,1> kelvin_strain;
+	KVec kelvin_strain;
 	for (size_t i=0; i<3; i++)
 	{
 		//Normal components
@@ -1675,9 +1675,9 @@ Eigen::Matrix<double,6,1> CSolidProperties::Voigt_to_Kelvin_Strain(const double 
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-Eigen::Matrix<double,6,1> CSolidProperties::Voigt_to_Kelvin_Stress(const double *voigt_stress)
+KVec CSolidProperties::Voigt_to_Kelvin_Stress(const double *voigt_stress)
 {
-	Eigen::Matrix<double,6,1> kelvin_stress;
+	KVec kelvin_stress;
 	for (size_t i=0; i<3; i++)
 	{
 		//Normal components
@@ -1696,7 +1696,7 @@ Eigen::Matrix<double,6,1> CSolidProperties::Voigt_to_Kelvin_Stress(const double 
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-void CSolidProperties::Kelvin_to_Voigt_Strain(const Eigen::Matrix<double,6,1> &kelvin_strain, double *voigt_strain)
+void CSolidProperties::Kelvin_to_Voigt_Strain(const KVec &kelvin_strain, double *voigt_strain)
 {
 	for (size_t i=0; i<3; i++)
 	{
@@ -1716,7 +1716,7 @@ void CSolidProperties::Kelvin_to_Voigt_Strain(const Eigen::Matrix<double,6,1> &k
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-void CSolidProperties::Kelvin_to_Voigt_Stress(const Eigen::Matrix<double,6,1> &kelvin_stress, double *voigt_stress)
+void CSolidProperties::Kelvin_to_Voigt_Stress(const KVec &kelvin_stress, double *voigt_stress)
 {
 	for (size_t i=0; i<3; i++)
 	{
@@ -1766,9 +1766,9 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
         Matrix* Consistent_Tangent, bool Output, double Temperature)
 {
 	//stress, strain, internal variable
-	Eigen::Matrix<double,6,1> sig_j, eps_K_j, eps_M_j;
+	KVec sig_j, eps_K_j, eps_M_j;
 	//deviatoric stress, strain
-	Eigen::Matrix<double,6,1> sigd_j;
+	KVec sigd_j;
 	//local residual vector and Jacobian
 	Eigen::Matrix<double,18,1> res_loc, inc_loc;
 	Eigen::Matrix<double,18,18> K_loc;
@@ -1776,15 +1776,15 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
 
 	//initialisation of Kelvin vectors
 	//Note: Can be done in one loop instead of 5 if done right here.
-	const Eigen::Matrix<double,6,1> eps_i(Voigt_to_Kelvin_Strain(strain_curr));
-	const Eigen::Matrix<double,6,1> eps_K_t(Voigt_to_Kelvin_Strain(strain_K_curr));
-	const Eigen::Matrix<double,6,1> eps_M_t(Voigt_to_Kelvin_Strain(strain_M_curr));
+	const KVec eps_i(Voigt_to_Kelvin_Strain(strain_curr));
+	const KVec eps_K_t(Voigt_to_Kelvin_Strain(strain_K_curr));
+	const KVec eps_M_t(Voigt_to_Kelvin_Strain(strain_M_curr));
 	eps_M_j = eps_M_t;
 	eps_K_j = eps_K_t;
 
 	//calculation of deviatoric and spherical parts
 	const double e_i = eps_i(0) + eps_i(1) + eps_i(2);
-	const Eigen::Matrix<double,6,1> epsd_i(smath->P_dev*eps_i);
+	const KVec epsd_i(smath->P_dev*eps_i);
 
 	//dimensionless stresses
 	sigd_j = 2.0 * (epsd_i - eps_M_t - eps_K_t); //initial guess as elastic predictor
@@ -1888,9 +1888,9 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
 										  double& lam, Matrix* Consistent_Tangent,bool Output, double Temperature)
 {
 	//stress, strain, internal variable
-	Eigen::Matrix<double,6,1> sig_j, eps_K_j, eps_M_j, eps_pl_j;
+	KVec sig_j, eps_K_j, eps_M_j, eps_pl_j;
 	//deviatoric stress, strain
-	Eigen::Matrix<double,6,1> sigd_j;
+	KVec sigd_j;
 	const double e_pl_v_t = e_pl_v, e_pl_eff_t = e_pl_eff;
 	//local residual vector and Jacobian
 	Eigen::Matrix<double,18,1> res_loc, inc_loc;
@@ -1900,17 +1900,17 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
 
 	//initialisation of Kelvin vectors
 	//Note: Can be done in one loop instead of 5 if done right here.
-	const Eigen::Matrix<double,6,1> eps_i(Voigt_to_Kelvin_Strain(strain_curr));
-	const Eigen::Matrix<double,6,1> eps_K_t(Voigt_to_Kelvin_Strain(eps_K_curr));
-	const Eigen::Matrix<double,6,1> eps_M_t(Voigt_to_Kelvin_Strain(eps_M_curr));
-	const Eigen::Matrix<double,6,1> eps_pl_t(Voigt_to_Kelvin_Strain(eps_pl_curr));
+	const KVec eps_i(Voigt_to_Kelvin_Strain(strain_curr));
+	const KVec eps_K_t(Voigt_to_Kelvin_Strain(eps_K_curr));
+	const KVec eps_M_t(Voigt_to_Kelvin_Strain(eps_M_curr));
+	const KVec eps_pl_t(Voigt_to_Kelvin_Strain(eps_pl_curr));
 	eps_M_j = eps_M_t;
 	eps_K_j = eps_K_t;
 	eps_pl_j = eps_pl_t;
 
 	//calculation of deviatoric and spherical parts
 	const double e_i = eps_i(0) + eps_i(1) + eps_i(2);
-	const Eigen::Matrix<double,6,1> epsd_i(smath->P_dev*eps_i);
+	const KVec epsd_i(smath->P_dev*eps_i);
 
 	//dimensionless stresses
 	sigd_j = 2.0 * (epsd_i - eps_M_j - eps_K_j - eps_pl_j); //initial guess as elastic predictor
