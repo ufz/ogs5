@@ -171,11 +171,7 @@ void SolidMinkley::CalViscoelasticJacobian(const double dt, const Eigen::Matrix<
     const Eigen::Matrix<double,6,1> dmu_vM = DetaM_Dsigma(sig_eff*GM0,sigd_curr);
 
     //Check Dimension of Jacobian
-    if (Jac.cols() != 18 || Jac.rows() != 18)
-    {
-        std::cout << "WARNING: Jacobian given to SolidMinkley::CalViscoelasticJacobian has wrong size. Resizing to 18x18\n";
-        Jac.resize(18,18);
-    }
+	assert(Jac.cols() == 18 && Jac.rows() == 18);
     Jac.setZero(18,18);
 
     //build G_11
@@ -214,12 +210,7 @@ void SolidMinkley::CaldGdE(Eigen::Matrix<double,18,6> &dGdE)
 {
 
     //Check Dimension of dGdE
-    if (dGdE.cols() != 6 || dGdE.rows() != 18)
-    {
-        std::cout << "WARNING: dGdE given to SolidMinkley::CaldGdE has wrong size. Resizing to 18x6\n";
-        dGdE.resize(18,6);
-    }
-
+	assert(dGdE.cols() == 6 && dGdE.rows() == 18);
     dGdE.setZero(18,6);
     dGdE.block<6,6>(0,0) = -2. * smath->P_dev - 3. * KM0/GM0 * smath->P_sph;
 }
@@ -485,11 +476,7 @@ void SolidMinkley::CalViscoplasticJacobian(const double dt, const Eigen::Matrix<
     const double DthetaDJ3(Dtheta_DJ3(theta,J_3));
 
     //Check Dimension of Jacobian
-    if (Jac.cols() != 27 || Jac.rows() != 27)
-    {
-        std::cout << "WARNING: Jacobian given to SolidMinkley::CalViscoplasticJacobian has wrong size. Resizing to 27x27\n";
-        Jac.resize(27,27);
-    }
+	assert(Jac.cols() == 27 && Jac.rows() == 27);
     Jac.setZero(27,27);
 
 	if (std::abs(J_3) < 0.)
@@ -619,12 +606,7 @@ void SolidMinkley::CalViscoplasticJacobian(const double dt, const Eigen::Matrix<
 void SolidMinkley::CalEPdGdE(Eigen::Matrix<double,27,6> &dGdE)
 {
     //Check Dimension of dGdE
-    if (dGdE.cols() != 6 || dGdE.rows() != 27)
-    {
-        std::cout << "WARNING: dGdE given to SolidMinkley::CalEPdGdE has wrong size. Resizing to 27x6\n";
-        dGdE.resize(27,6);
-    }
-
+	assert(dGdE.cols() == 6 && dGdE.rows() == 27);
     dGdE.setZero(27,6);
     dGdE.block<6,6>(0,0) = -2. * smath->P_dev - 3. * KM0/GM0 * smath->P_sph;
 }

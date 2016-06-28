@@ -45,7 +45,7 @@ void SolidBurgers::UpdateBurgersProperties(const double s_eff, const double Temp
 	KM = KM0 + m_KM*dT;
 	GK = GK0 * std::exp(mK * s_eff);
 	etaK = etaK0 * std::exp(mvK * s_eff);
-    etaM = etaM0 * std::exp(mvM * s_eff) * B * std::exp(Q/(PhysicalConstant::IdealGasConstant*Temperature));
+	etaM = etaM0 * std::exp(mvM * s_eff) * B * std::exp(Q/(PhysicalConstant::IdealGasConstant*Temperature));
 	if (etaM/etaM0 < 1.e-2)
 		std::cout << "WARNING: Maxwell viscosity sank to 100th of original value." << std::endl;
 }
@@ -56,9 +56,11 @@ void SolidBurgers::UpdateBurgersProperties(const double s_eff, const double Temp
    Programing:
    06/2014 TN Implementation
 **************************************************************************/
-void SolidBurgers::CalResidualBurgers(const double dt, const Eigen::Matrix<double,6,1> &strain_curr, const Eigen::Matrix<double,6,1> &stress_curr,
-                                      Eigen::Matrix<double,6,1> &strain_Kel_curr, const Eigen::Matrix<double,6,1> &strain_Kel_t,
-                                      Eigen::Matrix<double,6,1> &strain_Max_curr, const Eigen::Matrix<double,6,1> &strain_Max_t, Eigen::Matrix<double,18,1> &res)
+void SolidBurgers::CalResidualBurgers(const double dt, const Eigen::Matrix<double,6,1> &strain_curr,
+									  const Eigen::Matrix<double,6,1> &stress_curr, Eigen::Matrix<double,6,1> &strain_Kel_curr,
+									  const Eigen::Matrix<double,6,1> &strain_Kel_t,
+									  Eigen::Matrix<double,6,1> &strain_Max_curr, const Eigen::Matrix<double,6,1> &strain_Max_t,
+									  Eigen::Matrix<double,18,1> &res)
 {
     //calculate stress residual
     res.block<6,1>(0,0) = stress_curr - 2. * (strain_curr - strain_Kel_curr - strain_Max_curr);
@@ -78,14 +80,11 @@ void SolidBurgers::CalResidualBurgers(const double dt, const Eigen::Matrix<doubl
    Programing:
    06/2014 TN Implementation
 **************************************************************************/
-void SolidBurgers::CalJacobianBurgers(const double dt, Eigen::Matrix<double,18,18> &Jac, const double s_eff, const Eigen::Matrix<double,6,1> &sig_i, const Eigen::Matrix<double,6,1> &eps_K_i)
+void SolidBurgers::CalJacobianBurgers(const double dt, Eigen::Matrix<double,18,18> &Jac, const double s_eff,
+									  const Eigen::Matrix<double,6,1> &sig_i, const Eigen::Matrix<double,6,1> &eps_K_i)
 {
     //Check Dimension of Jacobian
-    if (Jac.cols() != 18 || Jac.rows() != 18)
-    {
-        std::cout << "WARNING: Jacobian given to Burgers::CalJacobianBurgers has wrong size. Resizing to 18x18\n";
-        Jac.resize(18,18);
-    }
+	assert(Jac.cols() == 18 && Jac.rows() && 18);
     Jac.setZero(18,18);
 
     //build G_11
@@ -138,12 +137,7 @@ void SolidBurgers::CaldGdEBurgers(Eigen::Matrix<double,18,6> &dGdE)
 {
 
     //Check Dimension of dGdE
-    if (dGdE.cols() != 6 || dGdE.rows() != 18)
-    {
-        std::cout << "WARNING: dGdE given to Burgers::CaldGdEBurgers has wrong size. Resizing to 18x6\n";
-        dGdE.resize(18,6);
-    }
-
+	assert(dGdE.cols() == 6 && dGdE.rows() == 18);
     dGdE.setZero(18,6);
     dGdE.block<6,6>(0,0) = -2. * smath->P_dev;
 
