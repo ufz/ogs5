@@ -26,6 +26,7 @@ public:
     SolidBurgers(const Matrix* data);
 	~SolidBurgers()
 	{
+		delete smath;
 		smath = NULL;
 	}
     //basic material parameters

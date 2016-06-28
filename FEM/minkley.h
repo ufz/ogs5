@@ -26,6 +26,7 @@ public:
     SolidMinkley(const Matrix* data);
 	~SolidMinkley()
 	{
+		delete smath;
 		smath = NULL;
 	}
     //basic material parameters
