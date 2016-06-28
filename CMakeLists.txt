@@ -9,7 +9,7 @@ endif()
 cmake_policy(SET CMP0011 OLD)
 
 # Project name
-project(OGS)
+project(OGS-5)
 
 ###############
 ### Options ###
@@ -313,7 +313,7 @@ if (OGS_BUILD_TESTS)
 	add_subdirectory(tests)
 endif ()
 
-include( scripts/cmake/packaging/Pack.cmake)
+include(scripts/cmake/packaging/Pack.cmake)
 
 if (OGS_BUILD_UTILITIES)
 	add_subdirectory (UTL/MSHGEOTOOLS/)
