@@ -24,6 +24,8 @@ SolidBurgers::SolidBurgers(const Math_Group::Matrix* data)
     etaK = etaK0;
     etaM = etaM0;
 
+	SolidMath::InitialiseProjectionTensors();
+
 }
 
 /**************************************************************************

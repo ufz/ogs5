@@ -38,6 +38,8 @@ SolidMinkley::SolidMinkley(const Math_Group::Matrix* data)
     etaM = etaM0;
     coh = coh0;
 
+	SolidMath::InitialiseProjectionTensors();
+
 }
 
 /**************************************************************************
