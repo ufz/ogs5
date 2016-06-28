@@ -14,7 +14,7 @@ Invariants::~Invariants()
    07/2014 TN Implementation
    06/2015 TN modification
 **************************************************************************/
-double Invariants::CalEffectiveStress(const Eigen::Matrix<double,6,1> &dev_stress)
+const double Invariants::CalEffectiveStress(const Eigen::Matrix<double,6,1> &dev_stress)
 {
     double s(0.);
     s = 3.* CalJ2(dev_stress); //Kelvin mapped deviatoric stress has to be used
@@ -29,7 +29,7 @@ double Invariants::CalEffectiveStress(const Eigen::Matrix<double,6,1> &dev_stres
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-double Invariants::CalJ2(const Eigen::Matrix<double,6,1> &dev_vec)
+const double Invariants::CalJ2(const Eigen::Matrix<double,6,1> &dev_vec)
 {
     double s(0.);
     s = dev_vec.transpose() * dev_vec; //Kelvin mapping, deviator
@@ -45,7 +45,7 @@ double Invariants::CalJ2(const Eigen::Matrix<double,6,1> &dev_vec)
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-double Invariants::CalJ3(const Eigen::Matrix<double,6,1> &dev_vec)
+const double Invariants::CalJ3(const Eigen::Matrix<double,6,1> &dev_vec)
 {
     Eigen::Matrix<double,3,3> tens;
     tens = KelvinVectorToTensor(dev_vec); //TN: Not strictly necessary. Can be written explicitly for vector coordinates
@@ -58,7 +58,7 @@ double Invariants::CalJ3(const Eigen::Matrix<double,6,1> &dev_vec)
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-Eigen::Matrix<double,3,3>  Invariants::KelvinVectorToTensor(const Eigen::Matrix<double,6,1> &vec)
+const Eigen::Matrix<double,3,3>  Invariants::KelvinVectorToTensor(const Eigen::Matrix<double,6,1> &vec)
 {
     Eigen::Matrix<double,3,3> tens;
     tens(0,0) = vec(0);
@@ -76,7 +76,7 @@ Eigen::Matrix<double,3,3>  Invariants::KelvinVectorToTensor(const Eigen::Matrix<
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-Eigen::Matrix<double,6,1>  Invariants::TensorToKelvinVector(const Eigen::Matrix<double,3,3> &tens)
+const Eigen::Matrix<double,6,1>  Invariants::TensorToKelvinVector(const Eigen::Matrix<double,3,3> &tens)
 {
     Eigen::Matrix<double,6,1> vec;
     vec(0) = tens(0,0);
@@ -96,7 +96,7 @@ Eigen::Matrix<double,6,1>  Invariants::TensorToKelvinVector(const Eigen::Matrix<
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-Eigen::Matrix<double,6,1> Invariants::InvertVector(const Eigen::Matrix<double,6,1> &vec)
+const Eigen::Matrix<double,6,1> Invariants::InvertVector(const Eigen::Matrix<double,6,1> &vec)
 {
     Eigen::Matrix<double,3,3> tens = KelvinVectorToTensor(vec);
     return TensorToKelvinVector(tens.inverse());
@@ -110,7 +110,7 @@ Eigen::Matrix<double,6,1> Invariants::InvertVector(const Eigen::Matrix<double,6,
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-double Invariants::CalLodeAngle(const Eigen::Matrix<double,6,1> &dev_vec)
+const double Invariants::CalLodeAngle(const Eigen::Matrix<double,6,1> &dev_vec)
 {
     const double J2(CalJ2(dev_vec));
     double theta,thetaR;
@@ -130,7 +130,7 @@ double Invariants::CalLodeAngle(const Eigen::Matrix<double,6,1> &dev_vec)
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-double Invariants::CalI1(const Eigen::Matrix<double,6,1> &vec)
+const double Invariants::CalI1(const Eigen::Matrix<double,6,1> &vec)
 {
     return vec(0) + vec(1) + vec(2);
 }
