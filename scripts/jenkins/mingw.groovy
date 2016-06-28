@@ -1,4 +1,4 @@
-defaultCMakeOptions = '-DCMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE'
+defaultCMakeOptions = '-DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE'
 
 node('docker')
 {
