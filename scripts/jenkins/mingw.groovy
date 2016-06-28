@@ -14,13 +14,13 @@ node('docker')
 
         stage 'Build'
         build 'build', ''
-        // if (env.BRANCH_NAME == 'master')
-        build 'build', 'package'
+        if (env.BRANCH_NAME == 'master')
+            build 'build', 'package'
     }
 
     stage 'Post'
     archive 'build*/*.zip'
-    step([$class: 'S3BucketPublisher', dontWaitForConcurrentBuildCompletion: false, entries: [[bucket: 'opengeosys/ogs5-binaries/head', excludedFile: '', flatten: true, gzipFiles: false, managedArtifacts: false, noUploadOnFailure: true, selectedRegion: 'eu-central-1', sourceFile: 'build*/*.zip', storageClass: 'STANDARD', uploadFromSlave: false, useServerSideEncryption: false]], profileName: 'S3 UFZ', userMetadata: []])
+    step([$class: 'S3BucketPublisher', dontWaitForConcurrentBuildCompletion: false, entries: [[bucket: 'opengeosys/ogs5-binaries/head', excludedFile: '', flatten: true, gzipFiles: false, managedArtifacts: true, noUploadOnFailure: true, selectedRegion: 'eu-central-1', sourceFile: 'build*/*.zip', storageClass: 'STANDARD', uploadFromSlave: false, useServerSideEncryption: false]], profileName: 'S3 UFZ', userMetadata: []])
 
 
     step([$class: 'GitHubCommitNotifier', resultOnFailure: 'FAILURE', statusMessage: [content: 'Finished Jenkins mingw build']])

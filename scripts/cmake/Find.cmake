@@ -10,11 +10,7 @@ endif()
 
 find_package (PythonInterp)
 find_package(Subversion)
-find_package(Git)
-
-if(WIN32 AND GIT_FOUND)
-	find_package(MsysGit)
-endif() # WIN32 AND GIT_FOUND
+find_package(Git REQUIRED)
 
 find_program(BASH_TOOL_PATH bash DOC "The bash executable")
 find_program(DOT_TOOL_PATH dot DOC "Dot tool from graphviz")
