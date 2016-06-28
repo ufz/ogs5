@@ -36,7 +36,7 @@ static void InitialiseProjectionTensors()
 		for (size_t j=0; j<3; j++){
 			P_dev(i,j) -= third;
 			P_sph(i,j) = third;
-	}
+		}
 }
 
 //Maps a 6D Kelvin vector back into 3D Tensor coordinates

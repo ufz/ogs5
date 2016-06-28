@@ -17,10 +17,10 @@ class SolidBurgers
 public:
 	SolidBurgers(const Math_Group::Matrix* data);
 	~SolidBurgers(){}
-    //basic material parameters
-    double GK0, GM0, KM0, etaK0, etaM0, mK, mvK, mvM, l0, T_ref, m_GM, m_KM, B, Q;
-    //solution dependent values
-    double GM, KM, GK, etaK, etaM;
+	//basic material parameters
+	double GK0, GM0, KM0, etaK0, etaM0, mK, mvK, mvM, l0, T_ref, m_GM, m_KM, B, Q;
+	//solution dependent values
+	double GM, KM, GK, etaK, etaM;
 
 	void UpdateBurgersProperties(const double s_eff, const double Delta_T);
 	void CalResidualBurgers(const double dt, const KVec &strain_curr,

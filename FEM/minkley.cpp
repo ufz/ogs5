@@ -4,39 +4,39 @@ namespace Minkley{
 
 //Template to implement Signum Function
 template <typename T> int sgn(T val) {
-      return (T(0) < val) - (val < T(0));
+	return (T(0) < val) - (val < T(0));
 }
 
 SolidMinkley::SolidMinkley(const Math_Group::Matrix* data)
 {
-    GK0 = (*data)(0); //Kelvin shear modulus
-    etaK0 = (*data)(1); //Kelvin viscosity
-    GM0 = (*data)(2); //Maxwell shear modulus
-    KM0 = (*data)(3); //Maxwell bulk modulus
-    etaM0 = (*data)(4); //Maxwell viscosity
-    if (std::abs((*data)(5)) < 1.e-3)
-    {
-        mvM = std::log(1.+std::sqrt(2.)); //m -- effective stress factor in viscosity relationship
-        nvM = 0.; //n -- effective stress exponent in viscosity relationship
+	GK0 = (*data)(0); //Kelvin shear modulus
+	etaK0 = (*data)(1); //Kelvin viscosity
+	GM0 = (*data)(2); //Maxwell shear modulus
+	KM0 = (*data)(3); //Maxwell bulk modulus
+	etaM0 = (*data)(4); //Maxwell viscosity
+	if (std::abs((*data)(5)) < 1.e-3)
+	{
+		mvM = std::log(1.+std::sqrt(2.)); //m -- effective stress factor in viscosity relationship
+		nvM = 0.; //n -- effective stress exponent in viscosity relationship
 		std::cout << "WARNING. Viscosity parameter m was chosen lower than 1e-3. "
 					 "Setting model parameters to achieve constant viscosity.";
-    }
-    else
-    {
-        mvM = (*data)(5); //m -- effective stress factor in viscosity relationship
-        nvM = (*data)(6); //n -- effective stress exponent in viscosity relationship
-    }
-    coh0 = (*data)(7); //initial cohesion
-    hard = (*data)(8); //hardening/softening modulus
-    phi = (*data)(9)*PI/180.; //friction angle
-    psi = (*data)(10)*PI/180.; //dilatancy angle
-    thetaT = (*data)(11)*PI/180.; //transition angle
-    eta_reg = (*data)(12); //viscosity for viscoplastic regularisation
-    l0 = (*data)(13); // temperature parameter for Maxwell viscosity
-    T0 = (*data)(14); // reference temperature for Maxwell viscosity
+	}
+	else
+	{
+		mvM = (*data)(5); //m -- effective stress factor in viscosity relationship
+		nvM = (*data)(6); //n -- effective stress exponent in viscosity relationship
+	}
+	coh0 = (*data)(7); //initial cohesion
+	hard = (*data)(8); //hardening/softening modulus
+	phi = (*data)(9)*PI/180.; //friction angle
+	psi = (*data)(10)*PI/180.; //dilatancy angle
+	thetaT = (*data)(11)*PI/180.; //transition angle
+	eta_reg = (*data)(12); //viscosity for viscoplastic regularisation
+	l0 = (*data)(13); // temperature parameter for Maxwell viscosity
+	T0 = (*data)(14); // reference temperature for Maxwell viscosity
 
-    etaM = etaM0;
-    coh = coh0;
+	etaM = etaM0;
+	coh = coh0;
 
 	SolidMath::InitialiseProjectionTensors();
 
@@ -69,10 +69,10 @@ void SolidMinkley::UpdateMinkleyProperties(double s_eff, const double eps_p_eff,
 **************************************************************************/
 double SolidMinkley::A(const double theta, const double alpha)
 {
-    double A;
+	double A;
 	A = std::cos(thetaT)/3. * (3. + std::tan(thetaT) * std::tan(3.*thetaT) + 1./std::sqrt(3.) *
 							   sgn(theta) * (std::tan(3.*thetaT) - 3. * std::tan(thetaT)) * std::sin(alpha));
-    return A;
+	return A;
 }
 
 /**************************************************************************
@@ -83,10 +83,10 @@ double SolidMinkley::A(const double theta, const double alpha)
 **************************************************************************/
 double SolidMinkley::B(const double theta, const double alpha)
 {
-    double B;
+	double B;
 	B = 1./(3.*std::cos(3.*thetaT)) * (sgn(theta) * std::sin(thetaT) + std::sin(alpha) *
 									   std::cos(thetaT)/std::sqrt(3.));
-    return B;
+	return B;
 }
 
 /**************************************************************************
@@ -101,17 +101,17 @@ double SolidMinkley::YieldMohrCoulomb(const KVec &sig)
 	const KVec sigd(SolidMath::P_dev*sig);
 	const double theta(SolidMath::CalLodeAngle(sigd));
 
-    if (std::abs(theta) < thetaT){
+	if (std::abs(theta) < thetaT){
 		F = SolidMath::CalI1(sig)/3. * std::sin(phi) +
 				std::sqrt(SolidMath::CalJ2(sigd)) * (std::cos(theta) - 1./std::sqrt(3.) * std::sin(phi)*std::sin(theta)) -
-                coh * std::cos(phi);
-    }
-    else
+				coh * std::cos(phi);
+	}
+	else
 		F = SolidMath::CalI1(sig)/3. * std::sin(phi) +
 				std::sqrt(SolidMath::CalJ2(sigd)) * (A(theta,phi) - B(theta,phi)*std::sin(3.*theta)) -
-                coh * std::cos(phi);
+				coh * std::cos(phi);
 
-    return F;
+	return F;
 }
 
 /**************************************************************************
@@ -128,7 +128,7 @@ KVec SolidMinkley::DetaM_Dsigma(double sig_eff, const KVec &sigd_i)
 	else{
 		res = 3./2. * sigd_i * GM0; //sig_eff in denominator lumped into pow function (-2 instead of -1)
 		res *= - etaM0 * mvM * nvM * std::pow(sig_eff,nvM-2.) /
-			(std::tanh(mvM * std::pow(sig_eff,nvM)) * std::sinh(mvM * std::pow(sig_eff,nvM)));
+				(std::tanh(mvM * std::pow(sig_eff,nvM)) * std::sinh(mvM * std::pow(sig_eff,nvM)));
 		return res;
 	}
 }
@@ -166,37 +166,37 @@ void SolidMinkley::CalViscoelasticResidual(const double dt, const KVec &dstrain_
 void SolidMinkley::CalViscoelasticJacobian(const double dt, const KVec &stress_curr,
 										   const double sig_eff, Eigen::Matrix<double,18,18> &Jac)
 {
-    //6x6 submatrices of the Jacobian
+	//6x6 submatrices of the Jacobian
 	const KVec sigd_curr(GM0*SolidMath::P_dev*stress_curr);
 	const KVec dmu_vM = DetaM_Dsigma(sig_eff*GM0,sigd_curr);
 
-    //Check Dimension of Jacobian
+	//Check Dimension of Jacobian
 	//assert(Jac.cols() == 18 && Jac.rows() == 18);
-    Jac.setZero(18,18);
+	Jac.setZero(18,18);
 
-    //build G_11
+	//build G_11
 	Jac.block<6,6>(0,0) = SolidMath::ident;
 
-    //build G_12
+	//build G_12
 	Jac.block<6,6>(0,6) = 2. * SolidMath::ident;
 
-    //build G_13
+	//build G_13
 	Jac.block<6,6>(0,12) = 2. * SolidMath::ident;
 
-    //build G_21
+	//build G_21
 	Jac.block<6,6>(6,0) = -GM0/(2.*etaK0) * SolidMath::P_dev;
 
-    //build G_22
+	//build G_22
 	Jac.block<6,6>(6,6) = (1./dt + GK0/etaK0) * SolidMath::ident;
 
-    //nothing to do for G_23
+	//nothing to do for G_23
 
-    //build G_31
+	//build G_31
 	Jac.block<6,6>(12,0) = -1./(2.*etaM) * (GM0*SolidMath::P_dev - sigd_curr * dmu_vM.transpose() / etaM);
 
-    //nothing to do for G_32
+	//nothing to do for G_32
 
-    //build G_33
+	//build G_33
 	Jac.block<6,6>(12,12) = 1./dt * SolidMath::ident;
 }
 
@@ -209,9 +209,9 @@ void SolidMinkley::CalViscoelasticJacobian(const double dt, const KVec &stress_c
 void SolidMinkley::CaldGdE(Eigen::Matrix<double,18,6> &dGdE)
 {
 
-    //Check Dimension of dGdE
+	//Check Dimension of dGdE
 	//assert(dGdE.cols() == 6 && dGdE.rows() == 18);
-    dGdE.setZero(18,6);
+	dGdE.setZero(18,6);
 	dGdE.block<6,6>(0,0) = -2. * SolidMath::P_dev - 3. * KM0/GM0 * SolidMath::P_sph;
 }
 
@@ -223,7 +223,7 @@ void SolidMinkley::CaldGdE(Eigen::Matrix<double,18,6> &dGdE)
 **************************************************************************/
 double SolidMinkley::DG_DI1(const double alpha)
 {
-    return std::sin(alpha)/3.;
+	return std::sin(alpha)/3.;
 }
 
 /**************************************************************************
@@ -234,10 +234,10 @@ double SolidMinkley::DG_DI1(const double alpha)
 **************************************************************************/
 double SolidMinkley::DG_DJ2(const double theta, const double J2, const double alpha)
 {
-    if (std::abs(theta) < thetaT)
-        return (std::cos(theta) - std::sin(alpha)*std::sin(theta)/std::sqrt(3.))/(2.*std::sqrt(J2));
-    else
-        return (A(theta,alpha) - B(theta,alpha)*std::sin(3.*theta))/(2.*std::sqrt(J2));
+	if (std::abs(theta) < thetaT)
+		return (std::cos(theta) - std::sin(alpha)*std::sin(theta)/std::sqrt(3.))/(2.*std::sqrt(J2));
+	else
+		return (A(theta,alpha) - B(theta,alpha)*std::sin(3.*theta))/(2.*std::sqrt(J2));
 }
 
 /**************************************************************************
@@ -248,10 +248,10 @@ double SolidMinkley::DG_DJ2(const double theta, const double J2, const double al
 **************************************************************************/
 double SolidMinkley::DG_Dtheta(const double theta, const double J2, const double alpha)
 {
-    if (std::abs(theta) < thetaT)
-        return -std::sqrt(J2) * (std::sin(theta) + std::sin(alpha)*std::cos(theta)/std::sqrt(3.));
-    else
-        return -std::sqrt(J2) * 3. * B(theta,alpha) * std::cos(3.*theta);
+	if (std::abs(theta) < thetaT)
+		return -std::sqrt(J2) * (std::sin(theta) + std::sin(alpha)*std::cos(theta)/std::sqrt(3.));
+	else
+		return -std::sqrt(J2) * 3. * B(theta,alpha) * std::cos(3.*theta);
 }
 
 /**************************************************************************
@@ -273,7 +273,7 @@ double SolidMinkley::Dtheta_DJ2(const double theta, const double J2)
 **************************************************************************/
 double SolidMinkley::Dtheta_DJ3(const double theta, const double J3)
 {
-    return std::tan(3.*theta)/(3.*J3);
+	return std::tan(3.*theta)/(3.*J3);
 }
 
 /**************************************************************************
@@ -287,42 +287,42 @@ void SolidMinkley::CalViscoplasticResidual(const double dt, const KVec &dstrain_
 										   const KVec &dstrain_Kel_t, const KVec &dstrain_Max_curr,
 										   const KVec &dstrain_Max_t, const KVec &dstrain_pl_curr,
 										   const KVec &dstrain_pl_t, const double e_pl_vol_curr, const double e_pl_vol_t,
-                                           const double e_pl_eff_curr, const double e_pl_eff_t, const double lam_curr, Eigen::Matrix<double,27,1> &res)
+										   const double e_pl_eff_curr, const double e_pl_eff_t, const double lam_curr, Eigen::Matrix<double,27,1> &res)
 {
 	const KVec sigd_curr(GM0 *SolidMath::P_dev*stress_curr);
 	const double J_2(SolidMath::CalJ2(sigd_curr)), J_3(SolidMath::CalJ3(sigd_curr)), theta(SolidMath::CalLodeAngle(sigd_curr));
 	const KVec dev_sigd_curr_inv (SolidMath::P_dev * SolidMath::InvertVector(sigd_curr));
-    const double vol_flow(3. * DG_DI1(psi));
+	const double vol_flow(3. * DG_DI1(psi));
 
 	KVec dev_flow;
-    if (std::abs(J_3) > 0.)
-        dev_flow = (DG_DJ2(theta,J_2,psi) + DG_Dtheta(theta,J_2,psi) * Dtheta_DJ2(theta,J_2))* sigd_curr +
-                (DG_Dtheta(theta,J_2,psi) * Dtheta_DJ3(theta,J_3) * J_3) * dev_sigd_curr_inv;
-    else
-        dev_flow.setZero(6);
+	if (std::abs(J_3) > 0.)
+		dev_flow = (DG_DJ2(theta,J_2,psi) + DG_Dtheta(theta,J_2,psi) * Dtheta_DJ2(theta,J_2))* sigd_curr +
+				(DG_Dtheta(theta,J_2,psi) * Dtheta_DJ3(theta,J_3) * J_3) * dev_sigd_curr_inv;
+	else
+		dev_flow.setZero(6);
 
-    //calculate stress residual
-    res.block<6,1>(0,0) = stress_curr - (2. * (dstrain_curr - dstrain_Kel_curr - dstrain_Max_curr - dstrain_pl_curr) +
+	//calculate stress residual
+	res.block<6,1>(0,0) = stress_curr - (2. * (dstrain_curr - dstrain_Kel_curr - dstrain_Max_curr - dstrain_pl_curr) +
 										 KM0/GM0 * (e_curr - e_pl_vol_curr) * SolidMath::ivec);
 
-    //calculate deviatoric Kelvin strain residual
-    res.block<6,1>(6,0) = (dstrain_Kel_curr - dstrain_Kel_t)/dt - 1./(2.*etaK0) * (sigd_curr - 2.*GK0*dstrain_Kel_curr);
+	//calculate deviatoric Kelvin strain residual
+	res.block<6,1>(6,0) = (dstrain_Kel_curr - dstrain_Kel_t)/dt - 1./(2.*etaK0) * (sigd_curr - 2.*GK0*dstrain_Kel_curr);
 
-    //calculate deviatoric Maxwell strain residual
-    res.block<6,1>(12,0) = (dstrain_Max_curr - dstrain_Max_t)/dt - 1./(2.*etaM) * sigd_curr;
+	//calculate deviatoric Maxwell strain residual
+	res.block<6,1>(12,0) = (dstrain_Max_curr - dstrain_Max_t)/dt - 1./(2.*etaM) * sigd_curr;
 
-    //calculate deviatoric plastic strain residual
-    res.block<6,1>(18,0) = (dstrain_pl_curr - dstrain_pl_t)/dt - lam_curr * dev_flow;
+	//calculate deviatoric plastic strain residual
+	res.block<6,1>(18,0) = (dstrain_pl_curr - dstrain_pl_t)/dt - lam_curr * dev_flow;
 
-    //calculate volumetric plastic strain residual
-    res.block<1,1>(24,0)(0) = (e_pl_vol_curr - e_pl_vol_t)/dt - lam_curr * vol_flow;
+	//calculate volumetric plastic strain residual
+	res.block<1,1>(24,0)(0) = (e_pl_vol_curr - e_pl_vol_t)/dt - lam_curr * vol_flow;
 
-    //calculate effective plastic strain residual
+	//calculate effective plastic strain residual
 	res.block<1,1>(25,0)(0) = (e_pl_eff_curr - e_pl_eff_t)/dt - std::sqrt(2./3. * lam_curr * lam_curr *
 																		  (double)(dev_flow.transpose() * dev_flow));
 
-    //yield function with viscoplastic regularisation
-    res.block<1,1>(26,0)(0) = YieldMohrCoulomb(stress_curr * GM0)/GM0 - lam_curr * eta_reg;
+	//yield function with viscoplastic regularisation
+	res.block<1,1>(26,0)(0) = YieldMohrCoulomb(stress_curr * GM0)/GM0 - lam_curr * eta_reg;
 }
 
 /**************************************************************************
@@ -377,10 +377,10 @@ Eigen::Matrix<double,6,6> SolidMinkley::s_odot_s(const KVec &vec)
 **************************************************************************/
 double SolidMinkley::DDG_DDJ2(const double theta, const double J2, const double alpha)
 {
-    if (std::abs(theta) < thetaT)
-        return (std::cos(theta) - std::sin(alpha)*std::sin(theta)/std::sqrt(3.))/(-4.*std::pow(J2,1.5));
-    else
-        return (A(theta,alpha) - B(theta,alpha)*std::sin(3.*theta))/(-4.*std::pow(J2,1.5));
+	if (std::abs(theta) < thetaT)
+		return (std::cos(theta) - std::sin(alpha)*std::sin(theta)/std::sqrt(3.))/(-4.*std::pow(J2,1.5));
+	else
+		return (A(theta,alpha) - B(theta,alpha)*std::sin(3.*theta))/(-4.*std::pow(J2,1.5));
 }
 
 /**************************************************************************
@@ -391,10 +391,10 @@ double SolidMinkley::DDG_DDJ2(const double theta, const double J2, const double 
 **************************************************************************/
 double SolidMinkley::DDG_DJ2_Dtheta(const double theta, const double J2, const double alpha)
 {
-    if (std::abs(theta) < thetaT)
-        return (std::sin(theta) + std::sin(alpha)*std::cos(theta)/std::sqrt(3.))/(-2.*std::sqrt(J2));
-    else
-        return 3. * B(theta,alpha) * std::cos(3.*theta) / (-2.*std::sqrt(J2));
+	if (std::abs(theta) < thetaT)
+		return (std::sin(theta) + std::sin(alpha)*std::cos(theta)/std::sqrt(3.))/(-2.*std::sqrt(J2));
+	else
+		return 3. * B(theta,alpha) * std::cos(3.*theta) / (-2.*std::sqrt(J2));
 }
 
 /**************************************************************************
@@ -405,10 +405,10 @@ double SolidMinkley::DDG_DJ2_Dtheta(const double theta, const double J2, const d
 **************************************************************************/
 double SolidMinkley::DDG_DDtheta(const double theta, const double J2, const double alpha)
 {
-    if (std::abs(theta) < thetaT)
-        return (std::cos(theta) - std::sin(alpha)*std::sin(theta)/std::sqrt(3.))*(-std::sqrt(J2));
-    else
-        return 9.*B(theta,alpha)*std::sin(3.*theta)*std::sqrt(J2);
+	if (std::abs(theta) < thetaT)
+		return (std::cos(theta) - std::sin(alpha)*std::sin(theta)/std::sqrt(3.))*(-std::sqrt(J2));
+	else
+		return 9.*B(theta,alpha)*std::sin(3.*theta)*std::sqrt(J2);
 }
 
 /**************************************************************************
@@ -419,7 +419,7 @@ double SolidMinkley::DDG_DDtheta(const double theta, const double J2, const doub
 **************************************************************************/
 double SolidMinkley::DDtheta_DDJ2(const double theta, const double J2)
 {
-    return std::tan(3.*theta)/(2.*J2*J2);
+	return std::tan(3.*theta)/(2.*J2*J2);
 }
 
 /**************************************************************************
@@ -430,7 +430,7 @@ double SolidMinkley::DDtheta_DDJ2(const double theta, const double J2)
 **************************************************************************/
 double SolidMinkley::DDtheta_DJ2_Dtheta(const double theta, const double J2)
 {
-    return -3./(2.*J2 * std::pow(std::cos(3.*theta),2.));
+	return -3./(2.*J2 * std::pow(std::cos(3.*theta),2.));
 }
 
 /**************************************************************************
@@ -441,7 +441,7 @@ double SolidMinkley::DDtheta_DJ2_Dtheta(const double theta, const double J2)
 **************************************************************************/
 double SolidMinkley::DDtheta_DJ3_Dtheta(const double theta, const double J3)
 {
-    return 1./(J3 * std::pow(std::cos(3.*theta),2.));
+	return 1./(J3 * std::pow(std::cos(3.*theta),2.));
 }
 
 /**************************************************************************
@@ -452,7 +452,7 @@ double SolidMinkley::DDtheta_DJ3_Dtheta(const double theta, const double J3)
 **************************************************************************/
 double SolidMinkley::DDtheta_DDJ3(const double theta, const double J3)
 {
-    return -std::tan(3.*theta)/(3.*J3*J3);
+	return -std::tan(3.*theta)/(3.*J3*J3);
 }
 
 /**************************************************************************
@@ -462,7 +462,7 @@ double SolidMinkley::DDtheta_DDJ3(const double theta, const double J3)
    06/2015 TN Implementation
 **************************************************************************/
 void SolidMinkley::CalViscoplasticJacobian(const double dt, const KVec &stress_curr, const double sig_eff,
-                                           const double lam_curr, Eigen::Matrix<double,27,27> &Jac)
+										   const double lam_curr, Eigen::Matrix<double,27,27> &Jac)
 {
 	//submatrices of the Jacobian
 	const KVec sigd_curr(GM0*SolidMath::P_dev*stress_curr);
@@ -486,7 +486,7 @@ void SolidMinkley::CalViscoplasticJacobian(const double dt, const KVec &stress_c
 		Ddev_flowDsigma.Zero(6,6);
 	}
 	else
-    {
+	{
 		const double DGDtheta(DG_Dtheta(theta,J_2,psi));
 		dev_flow = (DG_DJ2(theta,J_2,psi) + DGDtheta * DthetaDJ2)*sigd_curr +
 				(DGDtheta * DthetaDJ3 * J_3) * dev_sigd_curr_inv;
@@ -494,17 +494,17 @@ void SolidMinkley::CalViscoplasticJacobian(const double dt, const KVec &stress_c
 					(DG_DJ2(theta,J_2,psi) + DGDtheta * DthetaDJ2) * SolidMath::P_dev +
 					(DGDtheta * DthetaDJ3 * J_3) * SolidMath::P_dev * s_odot_s(sigd_curr_inv) * SolidMath::P_dev +
 					(DDG_DDJ2(theta,J_2,psi) + DDG_DJ2_Dtheta(theta,J_2,psi) * DthetaDJ2 +
-						DGDtheta * DDtheta_DDJ2(theta,J_2)) * sigd_curr*sigd_curr.transpose() +
+					 DGDtheta * DDtheta_DDJ2(theta,J_2)) * sigd_curr*sigd_curr.transpose() +
 					(DDG_DJ2_Dtheta(theta,J_2,psi) + DDG_DDtheta(theta,J_2,psi) * DthetaDJ2 +
-						DGDtheta * DDtheta_DJ2_Dtheta(theta,J_2)) *
-						(DthetaDJ2 * sigd_curr*sigd_curr.transpose() +
-						 DthetaDJ3 * J_3 * sigd_curr * dev_sigd_curr_inv.transpose()) +
+					 DGDtheta * DDtheta_DJ2_Dtheta(theta,J_2)) *
+					(DthetaDJ2 * sigd_curr*sigd_curr.transpose() +
+					 DthetaDJ3 * J_3 * sigd_curr * dev_sigd_curr_inv.transpose()) +
 					DDG_DJ2_Dtheta(theta,J_2,psi) * DthetaDJ3 * J_3 * dev_sigd_curr_inv * sigd_curr.transpose() +
 					DGDtheta * J_3 * (DthetaDJ3 + DDtheta_DDJ3(theta,J_3) * J_3) * dev_sigd_curr_inv * dev_sigd_curr_inv.transpose() +
 					J_3 * (DDG_DDtheta(theta,J_2,psi) * DthetaDJ3 + DGDtheta * DDtheta_DJ3_Dtheta(theta,J_3)) *
-						(DthetaDJ2 * dev_sigd_curr_inv * sigd_curr.transpose() + DthetaDJ3 * J_3 * dev_sigd_curr_inv * dev_sigd_curr_inv.transpose())
+					(DthetaDJ2 * dev_sigd_curr_inv * sigd_curr.transpose() + DthetaDJ3 * J_3 * dev_sigd_curr_inv * dev_sigd_curr_inv.transpose())
 					) * GM0;
-		}
+	}
 
 	const double eff_flow = std::sqrt(2./3. * lam_curr * lam_curr * (double)(dev_flow.transpose()*dev_flow));
 
@@ -569,7 +569,7 @@ void SolidMinkley::CalViscoplasticJacobian(const double dt, const KVec &stress_c
 		Jac.block<1,6>(25,0) = -2. * lam_curr*lam_curr/(3.*eff_flow) * dev_flow.transpose() * Ddev_flowDsigma.transpose();
 		Jac.block<1,1>(25,26)(0) = -2./(3.*eff_flow) * std::abs(lam_curr) * (double)(dev_flow.transpose()*dev_flow);
 	}
-    //G_62 to G_64 and G_65 are zero
+	//G_62 to G_64 and G_65 are zero
 
 	//build G_66
 	Jac.block<1,1>(25,25)(0) = 1./dt;
@@ -603,9 +603,9 @@ void SolidMinkley::CalViscoplasticJacobian(const double dt, const KVec &stress_c
 **************************************************************************/
 void SolidMinkley::CalEPdGdE(Eigen::Matrix<double,27,6> &dGdE)
 {
-    //Check Dimension of dGdE
+	//Check Dimension of dGdE
 	//assert(dGdE.cols() == 6 && dGdE.rows() == 27);
-    dGdE.setZero(27,6);
+	dGdE.setZero(27,6);
 	dGdE.block<6,6>(0,0) = -2. * SolidMath::P_dev - 3. * KM0/GM0 * SolidMath::P_sph;
 }
 
