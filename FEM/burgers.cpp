@@ -27,11 +27,6 @@ SolidBurgers::SolidBurgers(const Matrix* data)
     smath = new Invariants();
 }
 
-SolidBurgers::~SolidBurgers()
-{
-    smath = NULL;
-}
-
 /**************************************************************************
    FEMLib-Method: Burgers::UpdateBurgersProperties()
    Task: Updates BURGERS material parameters in LUBBY2 fashion

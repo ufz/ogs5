@@ -41,11 +41,6 @@ SolidMinkley::SolidMinkley(const Matrix* data)
     smath = new Invariants();
 }
 
-SolidMinkley::~SolidMinkley()
-{
-    smath = NULL;
-}
-
 /**************************************************************************
    FEMLib-Method: Minkley::UpdateMinkleyProperties()
    Task: Updates BURGERS material parameters in LUBBY2 fashion

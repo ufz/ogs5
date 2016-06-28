@@ -24,7 +24,10 @@ class SolidMinkley
 {
 public:
     SolidMinkley(const Matrix* data);
-    ~SolidMinkley();
+	~SolidMinkley()
+	{
+		smath = NULL;
+	}
     //basic material parameters
     double GK0, GM0, KM0, etaK0, etaM0, mvM;
     //solution dependent values

@@ -24,7 +24,10 @@ class SolidBurgers
 {
 public:
     SolidBurgers(const Matrix* data);
-    ~SolidBurgers();
+	~SolidBurgers()
+	{
+		smath = NULL;
+	}
     //basic material parameters
     double GK0, GM0, KM0, etaK0, etaM0, mK, mvK, mvM, l0, T_ref, m_GM, m_KM, B, Q;
     //solution dependent values
