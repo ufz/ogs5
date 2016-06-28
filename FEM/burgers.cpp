@@ -51,11 +51,10 @@ void SolidBurgers::UpdateBurgersProperties(const double s_eff, const double Temp
    Programing:
    06/2014 TN Implementation
 **************************************************************************/
-void SolidBurgers::CalResidualBurgers(const double dt, const Eigen::Matrix<double,6,1> &strain_curr,
-									  const Eigen::Matrix<double,6,1> &stress_curr, Eigen::Matrix<double,6,1> &strain_Kel_curr,
-									  const Eigen::Matrix<double,6,1> &strain_Kel_t,
-									  Eigen::Matrix<double,6,1> &strain_Max_curr, const Eigen::Matrix<double,6,1> &strain_Max_t,
-									  Eigen::Matrix<double,18,1> &res)
+void SolidBurgers::CalResidualBurgers(const double dt, const KVec &strain_curr,
+									  const KVec &stress_curr, KVec &strain_Kel_curr,
+									  const KVec &strain_Kel_t, KVec &strain_Max_curr,
+									  const KVec &strain_Max_t, Eigen::Matrix<double,18,1> &res)
 {
     //calculate stress residual
     res.block<6,1>(0,0) = stress_curr - 2. * (strain_curr - strain_Kel_curr - strain_Max_curr);
@@ -76,7 +75,7 @@ void SolidBurgers::CalResidualBurgers(const double dt, const Eigen::Matrix<doubl
    06/2014 TN Implementation
 **************************************************************************/
 void SolidBurgers::CalJacobianBurgers(const double dt, Eigen::Matrix<double,18,18> &Jac, const double s_eff,
-									  const Eigen::Matrix<double,6,1> &sig_i, const Eigen::Matrix<double,6,1> &eps_K_i)
+									  const KVec &sig_i, const KVec &eps_K_i)
 {
     //Check Dimension of Jacobian
 	assert(Jac.cols() == 18 && Jac.rows() && 18);
@@ -109,10 +108,10 @@ void SolidBurgers::CalJacobianBurgers(const double dt, Eigen::Matrix<double,18,1
 
     if (s_eff > 0.)
     {
-        const Eigen::Matrix<double,6,1> dG_K = mK * 3.*GK*GM/(2.*s_eff)*sig_i;
-        const Eigen::Matrix<double,6,1> dmu_vK = mvK * 3.*GM*etaK/(2.*s_eff)*sig_i;
-        const Eigen::Matrix<double,6,1> dmu_vM = mvM * 3.*GM*etaM/(2.*s_eff)*sig_i;
-        const Eigen::Matrix<double,6,1> eps_K_aid = 1./(etaK*etaK)*(GM*sig_i-2.*GK*eps_K_i);
+		const KVec dG_K = mK * 3.*GK*GM/(2.*s_eff)*sig_i;
+		const KVec dmu_vK = mvK * 3.*GM*etaK/(2.*s_eff)*sig_i;
+		const KVec dmu_vM = mvM * 3.*GM*etaM/(2.*s_eff)*sig_i;
+		const KVec eps_K_aid = 1./(etaK*etaK)*(GM*sig_i-2.*GK*eps_K_i);
 
         //build G_21
         Jac.block<6,6>(6,0) += 0.5*eps_K_aid*dmu_vK.transpose() + 1./etaK * eps_K_i * dG_K.transpose();

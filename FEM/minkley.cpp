@@ -94,10 +94,10 @@ double SolidMinkley::B(const double theta, const double alpha)
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-double SolidMinkley::YieldMohrCoulomb(const Eigen::Matrix<double,6,1> &sig)
+double SolidMinkley::YieldMohrCoulomb(const KVec &sig)
 {
 	double F(0.);
-    const Eigen::Matrix<double,6,1> sigd(smath->P_dev*sig);
+	const KVec sigd(smath->P_dev*sig);
     const double theta(smath->CalLodeAngle(sigd));
 
     if (std::abs(theta) < thetaT){
@@ -119,9 +119,9 @@ double SolidMinkley::YieldMohrCoulomb(const Eigen::Matrix<double,6,1> &sig)
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-Eigen::Matrix<double,6,1> SolidMinkley::DetaM_Dsigma(double sig_eff, const Eigen::Matrix<double,6,1> &sigd_i)
+KVec SolidMinkley::DetaM_Dsigma(double sig_eff, const KVec &sigd_i)
 {
-	Eigen::Matrix<double,6,1> res;
+	KVec res;
 	if (sig_eff < DBL_EPSILON)
 		return sigd_i * 0.;
 	else{
@@ -138,13 +138,13 @@ Eigen::Matrix<double,6,1> SolidMinkley::DetaM_Dsigma(double sig_eff, const Eigen
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-void SolidMinkley::CalViscoelasticResidual(const double dt, const Eigen::Matrix<double,6,1> &dstrain_curr,
-										   const double e_curr, const double e_p_curr, const Eigen::Matrix<double,6,1> &stress_curr,
-										   const Eigen::Matrix<double,6,1> &dstrain_Kel_curr, const Eigen::Matrix<double,6,1> &dstrain_Kel_t,
-										   const Eigen::Matrix<double,6,1> &dstrain_Max_curr, const Eigen::Matrix<double,6,1> &dstrain_Max_t,
-										   const Eigen::Matrix<double,6,1> &dstrain_p_curr, Eigen::Matrix<double,18,1> &res)
+void SolidMinkley::CalViscoelasticResidual(const double dt, const KVec &dstrain_curr,
+										   const double e_curr, const double e_p_curr, const KVec &stress_curr,
+										   const KVec &dstrain_Kel_curr, const KVec &dstrain_Kel_t,
+										   const KVec &dstrain_Max_curr, const KVec &dstrain_Max_t,
+										   const KVec &dstrain_p_curr, Eigen::Matrix<double,18,1> &res)
 {
-	const Eigen::Matrix<double,6,1> dstress_curr(GM0*smath->P_dev*stress_curr);
+	const KVec dstress_curr(GM0*smath->P_dev*stress_curr);
 
 	//calculate stress residual
 	res.block<6,1>(0,0) = stress_curr - (2. * (dstrain_curr - dstrain_Kel_curr - dstrain_Max_curr - dstrain_p_curr) +
@@ -162,12 +162,12 @@ void SolidMinkley::CalViscoelasticResidual(const double dt, const Eigen::Matrix<
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-void SolidMinkley::CalViscoelasticJacobian(const double dt, const Eigen::Matrix<double,6,1> &stress_curr,
+void SolidMinkley::CalViscoelasticJacobian(const double dt, const KVec &stress_curr,
 										   const double sig_eff, Eigen::Matrix<double,18,18> &Jac)
 {
     //6x6 submatrices of the Jacobian
-    const Eigen::Matrix<double,6,1> sigd_curr(GM0*smath->P_dev*stress_curr);
-    const Eigen::Matrix<double,6,1> dmu_vM = DetaM_Dsigma(sig_eff*GM0,sigd_curr);
+	const KVec sigd_curr(GM0*smath->P_dev*stress_curr);
+	const KVec dmu_vM = DetaM_Dsigma(sig_eff*GM0,sigd_curr);
 
     //Check Dimension of Jacobian
 	assert(Jac.cols() == 18 && Jac.rows() == 18);
@@ -281,19 +281,19 @@ double SolidMinkley::Dtheta_DJ3(const double theta, const double J3)
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-void SolidMinkley::CalViscoplasticResidual(const double dt, const Eigen::Matrix<double,6,1> &dstrain_curr, const double e_curr,
-                                           const Eigen::Matrix<double,6,1> &stress_curr, const Eigen::Matrix<double,6,1> &dstrain_Kel_curr,
-                                           const Eigen::Matrix<double,6,1> &dstrain_Kel_t, const Eigen::Matrix<double,6,1> &dstrain_Max_curr,
-                                           const Eigen::Matrix<double,6,1> &dstrain_Max_t, const Eigen::Matrix<double,6,1> &dstrain_pl_curr,
-                                           const Eigen::Matrix<double,6,1> &dstrain_pl_t, const double e_pl_vol_curr, const double e_pl_vol_t,
+void SolidMinkley::CalViscoplasticResidual(const double dt, const KVec &dstrain_curr, const double e_curr,
+										   const KVec &stress_curr, const KVec &dstrain_Kel_curr,
+										   const KVec &dstrain_Kel_t, const KVec &dstrain_Max_curr,
+										   const KVec &dstrain_Max_t, const KVec &dstrain_pl_curr,
+										   const KVec &dstrain_pl_t, const double e_pl_vol_curr, const double e_pl_vol_t,
                                            const double e_pl_eff_curr, const double e_pl_eff_t, const double lam_curr, Eigen::Matrix<double,27,1> &res)
 {
-    const Eigen::Matrix<double,6,1> sigd_curr(GM0 *smath->P_dev*stress_curr);
+	const KVec sigd_curr(GM0 *smath->P_dev*stress_curr);
     const double J_2(smath->CalJ2(sigd_curr)), J_3(smath->CalJ3(sigd_curr)), theta(smath->CalLodeAngle(sigd_curr));
-    const Eigen::Matrix<double,6,1> dev_sigd_curr_inv (smath->P_dev * smath->InvertVector(sigd_curr));
+	const KVec dev_sigd_curr_inv (smath->P_dev * smath->InvertVector(sigd_curr));
     const double vol_flow(3. * DG_DI1(psi));
 
-    Eigen::Matrix<double,6,1> dev_flow;
+	KVec dev_flow;
     if (std::abs(J_3) > 0.)
         dev_flow = (DG_DJ2(theta,J_2,psi) + DG_Dtheta(theta,J_2,psi) * Dtheta_DJ2(theta,J_2))* sigd_curr +
                 (DG_Dtheta(theta,J_2,psi) * Dtheta_DJ3(theta,J_3) * J_3) * dev_sigd_curr_inv;
@@ -335,7 +335,7 @@ Note: the factors of 2 and sqrt(2) come from the fact that the
 incoming quantities are transformed to actual tensor coordinates
 and the resulting 4th order tensor is then remapped with the
 Kelvin scheme*/
-Eigen::Matrix<double,6,6> SolidMinkley::s_odot_s(const Eigen::Matrix<double,6,1> &vec)
+Eigen::Matrix<double,6,6> SolidMinkley::s_odot_s(const KVec &vec)
 {
 	Eigen::Matrix<double,6,6> odot;
 
@@ -460,17 +460,17 @@ double SolidMinkley::DDtheta_DDJ3(const double theta, const double J3)
    Programing:
    06/2015 TN Implementation
 **************************************************************************/
-void SolidMinkley::CalViscoplasticJacobian(const double dt, const Eigen::Matrix<double,6,1> &stress_curr, const double sig_eff,
+void SolidMinkley::CalViscoplasticJacobian(const double dt, const KVec &stress_curr, const double sig_eff,
                                            const double lam_curr, Eigen::Matrix<double,27,27> &Jac)
 {
 	//submatrices of the Jacobian
-	const Eigen::Matrix<double,6,1> sigd_curr(GM0*smath->P_dev*stress_curr);
+	const KVec sigd_curr(GM0*smath->P_dev*stress_curr);
 	const double J_2(smath->CalJ2(sigd_curr)), J_3(smath->CalJ3(sigd_curr)), theta(smath->CalLodeAngle(sigd_curr));
-	const Eigen::Matrix<double,6,1> sigd_curr_inv(smath->InvertVector(sigd_curr));
-	const Eigen::Matrix<double,6,1> dev_sigd_curr_inv (smath->P_dev * sigd_curr_inv);
+	const KVec sigd_curr_inv(smath->InvertVector(sigd_curr));
+	const KVec dev_sigd_curr_inv (smath->P_dev * sigd_curr_inv);
 	const double vol_flow(3. * DG_DI1(psi));
-	const Eigen::Matrix<double,6,1> dmu_vM = DetaM_Dsigma(sig_eff*GM0,sigd_curr);
-	Eigen::Matrix<double,6,1> dev_flow;
+	const KVec dmu_vM = DetaM_Dsigma(sig_eff*GM0,sigd_curr);
+	KVec dev_flow;
 	Eigen::Matrix<double,6,6> Ddev_flowDsigma;
 	const double DthetaDJ2(Dtheta_DJ2(theta,J_2));
 	const double DthetaDJ3(Dtheta_DJ3(theta,J_3));
