@@ -154,17 +154,10 @@ endif()
 mark_as_advanced(FORCE OGS_PYTHON OGS_CMAKE_DEBUG OGS_ONE_BIG_GTEST OGS_BUILD_INFO CMAKE_CMD_ARGS OGS_DELETE_EDGES_AFTER_INIT)
 
 ###########################################################################
-### OGS version information. Adjust these if you release a new version. ###
+### OGS version information is now obtained from Git tags. Adjust authors & date.
 ###########################################################################
-set (OGS_VERSION_MAJOR 5)
-set (OGS_VERSION_MINOR 7)
-set (OGS_VERSION_PATCH 0)
 set (OGS_RELEASE_PERSONS "WH/WW/LB")
-#set (OGS_VERSION "${OGS_VERSION_MAJOR}.${OGS_VERSION_MINOR}.${OGS_VERSION_PATCH}(${OGS_RELEASE_PERSONS})")
-set (OGS_VERSION "${OGS_VERSION_MAJOR}.${OGS_VERSION_MINOR}(${OGS_RELEASE_PERSONS})")
-# should we use ISO dates: 2010-12-31 ?
 set (OGS_DATE "07.07.2015")
-
 
 ###################
 ### Fem configs ###
