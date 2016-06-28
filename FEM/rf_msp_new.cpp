@@ -605,7 +605,8 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 				//Local Newton scheme for Burgers model. TN 06.06.2014
 				//initialised fully 3D
 				material_burgers = new Burgers::SolidBurgers(data_Creep);
-				smath = new SolidMath::Invariants();
+
+				SolidMath::InitialiseProjectionTensors();
 			}
 			if(line_string.find("MINKLEY") != string::npos)
 			{
@@ -635,7 +636,8 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 				//Local Newton scheme for Burgers model. TN 06.06.2014
 				//initialised fully 3D
 				material_minkley = new Minkley::SolidMinkley(data_Creep);
-				smath = new SolidMath::Invariants();
+
+				SolidMath::InitialiseProjectionTensors();
 			}
 		}
 		// WX:10.2012, threshold dev. stress for Lubby2
@@ -1088,7 +1090,6 @@ CSolidProperties::CSolidProperties()
 	non_reactive_solid_density = 0.0;
 	material_minkley = NULL;
 	material_burgers = NULL;
-	smath = NULL;
 
 	specific_heat_source = 0.0;
 
@@ -1784,13 +1785,13 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
 
 	//calculation of deviatoric and spherical parts
 	const double e_i = eps_i(0) + eps_i(1) + eps_i(2);
-	const KVec epsd_i(smath->P_dev*eps_i);
+	const KVec epsd_i(SolidMath::P_dev*eps_i);
 
 	//dimensionless stresses
 	sigd_j = 2.0 * (epsd_i - eps_M_t - eps_K_t); //initial guess as elastic predictor
 
 	//Calculate effective stress and update material properties
-	sig_eff = smath->CalEffectiveStress(sigd_j);
+	sig_eff = SolidMath::CalEffectiveStress(sigd_j);
 
 	if (!T_Process)
 	{
@@ -1834,7 +1835,7 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
 		eps_K_j += inc_loc.block<6,1>(6,0);
 		eps_M_j += inc_loc.block<6,1>(12,0);
 		//Calculate effective stress and update material properties
-		sig_eff = smath->CalEffectiveStress(sigd_j);
+		sig_eff = SolidMath::CalEffectiveStress(sigd_j);
 		material_burgers->UpdateBurgersProperties(sig_eff*material_burgers->GM, Temperature);
 		//evaluation of new residual
 		material_burgers->CalResidualBurgers(dt,epsd_i,sigd_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,res_loc);
@@ -1859,8 +1860,8 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
 	ExtractConsistentTangent(K_loc,dGdE,false,dsigdE);
 
 	//add hydrostatic part to stress and tangent
-	sig_j = material_burgers->GM * sigd_j + material_burgers->KM * e_i * smath->ivec;
-	dsigdE = material_burgers->GM * dsigdE*smath->P_dev + 3.*material_burgers->KM*smath->P_sph;
+	sig_j = material_burgers->GM * sigd_j + material_burgers->KM * e_i * SolidMath::ivec;
+	dsigdE = material_burgers->GM * dsigdE*SolidMath::P_dev + 3.*material_burgers->KM*SolidMath::P_sph;
 
 	//Sort into Consistent Tangent matrix for global Newton iteration and into standard OGS arrays
 	Kelvin_to_Voigt_Stress(sig_j,stress_curr);
@@ -1910,15 +1911,15 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
 
 	//calculation of deviatoric and spherical parts
 	const double e_i = eps_i(0) + eps_i(1) + eps_i(2);
-	const KVec epsd_i(smath->P_dev*eps_i);
+	const KVec epsd_i(SolidMath::P_dev*eps_i);
 
 	//dimensionless stresses
 	sigd_j = 2.0 * (epsd_i - eps_M_j - eps_K_j - eps_pl_j); //initial guess as elastic predictor
-	sig_j = sigd_j + material_minkley->KM0/material_minkley->GM0 * (e_i - e_pl_v) * smath->ivec;
+	sig_j = sigd_j + material_minkley->KM0/material_minkley->GM0 * (e_i - e_pl_v) * SolidMath::ivec;
 	//std::cout << "Stress guesstimate_zz " << sig_j(2)*material_minkley->GM0 << std::endl;
 
 	//Calculate effective stress and update material properties
-	sig_eff = smath->CalEffectiveStress(sigd_j);
+	sig_eff = SolidMath::CalEffectiveStress(sigd_j);
 
 	material_minkley->UpdateMinkleyProperties(sig_eff*material_minkley->GM0, e_pl_eff, Temperature);
 
@@ -1952,7 +1953,7 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
 		eps_K_j += inc_loc.block<6,1>(6,0);
 		eps_M_j += inc_loc.block<6,1>(12,0);
 		//Calculate effective stress and update material properties
-		sig_eff = smath->CalEffectiveStress(smath->P_dev*sig_j);
+		sig_eff = SolidMath::CalEffectiveStress(SolidMath::P_dev*sig_j);
 		material_minkley->UpdateMinkleyProperties(sig_eff*material_minkley->GM0, e_pl_eff, Temperature);
 		//evaluation of new residual
 		material_minkley->CalViscoelasticResidual(dt,epsd_i,e_i,e_pl_v,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,res_loc);
@@ -1989,7 +1990,7 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, 
 			e_pl_eff += inc_loc_p.block<1,1>(25,0)(0);
 			lam += inc_loc_p.block<1,1>(26,0)(0);
 			//Calculate effective stress and update material properties
-			sig_eff = smath->CalEffectiveStress(smath->P_dev*sig_j);
+			sig_eff = SolidMath::CalEffectiveStress(SolidMath::P_dev*sig_j);
 			material_minkley->UpdateMinkleyProperties(sig_eff*material_minkley->GM0, e_pl_eff, Temperature);
 			//evaluation of new residual
 			material_minkley->CalViscoplasticResidual(dt,epsd_i,e_i,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,eps_pl_t, \

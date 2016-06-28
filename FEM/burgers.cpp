@@ -24,7 +24,6 @@ SolidBurgers::SolidBurgers(const Math_Group::Matrix* data)
     etaK = etaK0;
     etaM = etaM0;
 
-	smath = new SolidMath::Invariants();
 }
 
 /**************************************************************************
@@ -82,29 +81,29 @@ void SolidBurgers::CalJacobianBurgers(const double dt, Eigen::Matrix<double,18,1
     Jac.setZero(18,18);
 
     //build G_11
-    Jac.block<6,6>(0,0) = smath->ident;
+	Jac.block<6,6>(0,0) = SolidMath::ident;
 
     //build G_12
-    Jac.block<6,6>(0,6) = 2. * smath->ident;
+	Jac.block<6,6>(0,6) = 2. * SolidMath::ident;
 
     //build G_13
-    Jac.block<6,6>(0,12) = 2. * smath->ident;
+	Jac.block<6,6>(0,12) = 2. * SolidMath::ident;
 
     //build G_21
-    Jac.block<6,6>(6,0) = -GM/(2.*etaK) * smath->ident;
+	Jac.block<6,6>(6,0) = -GM/(2.*etaK) * SolidMath::ident;
 
     //build G_22
-    Jac.block<6,6>(6,6) = (1./dt + GK/etaK) * smath->ident;
+	Jac.block<6,6>(6,6) = (1./dt + GK/etaK) * SolidMath::ident;
 
     //nothing to do for G_23
 
     //build G_31
-    Jac.block<6,6>(12,0) = - GM/(2.*etaM)* smath->ident;
+	Jac.block<6,6>(12,0) = - GM/(2.*etaM)* SolidMath::ident;
 
     //nothing to do for G_32
 
     //build G_33
-    Jac.block<6,6>(12,12) = 1./dt * smath->ident;
+	Jac.block<6,6>(12,12) = 1./dt * SolidMath::ident;
 
     if (s_eff > 0.)
     {
@@ -133,7 +132,7 @@ void SolidBurgers::CaldGdEBurgers(Eigen::Matrix<double,18,6> &dGdE)
     //Check Dimension of dGdE
 	//assert(dGdE.cols() == 6 && dGdE.rows() == 18);
     dGdE.setZero(18,6);
-    dGdE.block<6,6>(0,0) = -2. * smath->P_dev;
+	dGdE.block<6,6>(0,0) = -2. * SolidMath::P_dev;
 
 }
 
