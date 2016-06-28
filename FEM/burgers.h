@@ -17,14 +17,13 @@ namespace SolidMath
 }
 
 namespace Burgers{
-using Math_Group::Matrix;
-using SolidMath::Invariants;
+
 typedef Eigen::Matrix<double,6,1> KVec;
 
 class SolidBurgers
 {
 public:
-    SolidBurgers(const Matrix* data);
+	SolidBurgers(const Math_Group::Matrix* data);
 	~SolidBurgers()
 	{
 		delete smath;
@@ -44,7 +43,7 @@ public:
 							const KVec &sig_i, const KVec &eps_K_i);
     void CaldGdEBurgers(Eigen::Matrix<double,18,6> &dGdE);
 
-    Invariants* smath;
+	SolidMath::Invariants* smath;
 
 };
 }

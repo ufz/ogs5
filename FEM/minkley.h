@@ -18,14 +18,12 @@ namespace SolidMath
 }
 
 namespace Minkley{
-using Math_Group::Matrix;
-using SolidMath::Invariants;
 typedef Eigen::Matrix<double,6,1> KVec;
 
 class SolidMinkley
 {
 public:
-    SolidMinkley(const Matrix* data);
+	SolidMinkley(const Math_Group::Matrix* data);
 	~SolidMinkley()
 	{
 		delete smath;
@@ -42,7 +40,7 @@ public:
     double l0; // temperature parameter for Maxwell viscosity
     double T0; // reference temperature for Maxwell viscosity
 
-    Invariants* smath;
+	SolidMath::Invariants* smath;
 
     void UpdateMinkleyProperties(double s_eff, const double eps_p_eff, double Temperature);
 	double YieldMohrCoulomb(const KVec &sig);

@@ -2,7 +2,7 @@
 #include "PhysicalConstant.h"
 namespace Burgers{
 
-SolidBurgers::SolidBurgers(const Matrix* data)
+SolidBurgers::SolidBurgers(const Math_Group::Matrix* data)
 {
     GK0 = (*data)(0); //Kelvin shear modulus
     mK = (*data)(1); //dependency parameter for "
@@ -24,7 +24,7 @@ SolidBurgers::SolidBurgers(const Matrix* data)
     etaK = etaK0;
     etaM = etaM0;
 
-    smath = new Invariants();
+	smath = new SolidMath::Invariants();
 }
 
 /**************************************************************************
@@ -78,7 +78,7 @@ void SolidBurgers::CalJacobianBurgers(const double dt, Eigen::Matrix<double,18,1
 									  const KVec &sig_i, const KVec &eps_K_i)
 {
     //Check Dimension of Jacobian
-	assert(Jac.cols() == 18 && Jac.rows() && 18);
+	//assert(Jac.cols() == 18 && Jac.rows() && 18);
     Jac.setZero(18,18);
 
     //build G_11
@@ -131,7 +131,7 @@ void SolidBurgers::CaldGdEBurgers(Eigen::Matrix<double,18,6> &dGdE)
 {
 
     //Check Dimension of dGdE
-	assert(dGdE.cols() == 6 && dGdE.rows() == 18);
+	//assert(dGdE.cols() == 6 && dGdE.rows() == 18);
     dGdE.setZero(18,6);
     dGdE.block<6,6>(0,0) = -2. * smath->P_dev;
 

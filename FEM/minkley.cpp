@@ -7,7 +7,7 @@ template <typename T> int sgn(T val) {
       return (T(0) < val) - (val < T(0));
 }
 
-SolidMinkley::SolidMinkley(const Matrix* data)
+SolidMinkley::SolidMinkley(const Math_Group::Matrix* data)
 {
     GK0 = (*data)(0); //Kelvin shear modulus
     etaK0 = (*data)(1); //Kelvin viscosity
@@ -38,7 +38,7 @@ SolidMinkley::SolidMinkley(const Matrix* data)
     etaM = etaM0;
     coh = coh0;
 
-    smath = new Invariants();
+	smath = new SolidMath::Invariants();
 }
 
 /**************************************************************************
@@ -170,7 +170,7 @@ void SolidMinkley::CalViscoelasticJacobian(const double dt, const KVec &stress_c
 	const KVec dmu_vM = DetaM_Dsigma(sig_eff*GM0,sigd_curr);
 
     //Check Dimension of Jacobian
-	assert(Jac.cols() == 18 && Jac.rows() == 18);
+	//assert(Jac.cols() == 18 && Jac.rows() == 18);
     Jac.setZero(18,18);
 
     //build G_11
@@ -209,7 +209,7 @@ void SolidMinkley::CaldGdE(Eigen::Matrix<double,18,6> &dGdE)
 {
 
     //Check Dimension of dGdE
-	assert(dGdE.cols() == 6 && dGdE.rows() == 18);
+	//assert(dGdE.cols() == 6 && dGdE.rows() == 18);
     dGdE.setZero(18,6);
     dGdE.block<6,6>(0,0) = -2. * smath->P_dev - 3. * KM0/GM0 * smath->P_sph;
 }
@@ -476,7 +476,7 @@ void SolidMinkley::CalViscoplasticJacobian(const double dt, const KVec &stress_c
 	const double DthetaDJ3(Dtheta_DJ3(theta,J_3));
 
 	//Check Dimension of Jacobian
-	assert(Jac.cols() == 27 && Jac.rows() == 27);
+	//assert(Jac.cols() == 27 && Jac.rows() == 27);
 	Jac.setZero(27,27);
 
 	if (std::abs(J_3) < 0.)
@@ -603,7 +603,7 @@ void SolidMinkley::CalViscoplasticJacobian(const double dt, const KVec &stress_c
 void SolidMinkley::CalEPdGdE(Eigen::Matrix<double,27,6> &dGdE)
 {
     //Check Dimension of dGdE
-	assert(dGdE.cols() == 6 && dGdE.rows() == 27);
+	//assert(dGdE.cols() == 6 && dGdE.rows() == 27);
     dGdE.setZero(27,6);
     dGdE.block<6,6>(0,0) = -2. * smath->P_dev - 3. * KM0/GM0 * smath->P_sph;
 }
