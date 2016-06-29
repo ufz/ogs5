@@ -40,6 +40,10 @@
 #include "tools.h" // GetLineFromFile
 #include "PhysicalConstant.h"
 
+#include "Eigen/Dense"
+#include "minkley.h"
+#include "burgers.h"
+
 std::vector<SolidProp::CSolidProperties*> msp_vector;
 std::vector<std::string> msp_key_word_vector; // OK
 
@@ -575,6 +579,64 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 					in_sd >> (*data_Creep)(i, 0);
 				in_sd.clear();
 			}
+			if(line_string.find("BURGERS") != string::npos)
+			{
+				Creep_mode = 1001;
+				// data_Creep:
+				//  0: G_K0
+				//  1: m_K
+				//  2: mu_K
+				//  3: m_vK
+				//  4: G_M0
+				//  5: K_M0
+				//  6: mu_M
+				//  7: m_vM
+				//  8: m_GM // slope of elesticity temperature dependence of G_M
+				//  9: m_KM // slope of elesticity temperature dependence of K_M
+				// 10: T_ref // reference temperature;
+				// 11: B // constant factor for Arrhenius term
+				// 12: Q // activation energy in Arrhenius term
+				data_Creep = new Matrix(14);
+				in_sd.str(GetLineFromFile1(msp_file));
+				for(i = 0; i < 14; i++)
+					in_sd >> (*data_Creep)(i);
+				in_sd.clear();
+
+				//Local Newton scheme for Burgers model. TN 06.06.2014
+				//initialised fully 3D
+				material_burgers = new Burgers::SolidBurgers(data_Creep);
+			}
+			if(line_string.find("MINKLEY") != string::npos)
+			{
+				Creep_mode = 1002;
+				// data_Creep:
+				//  0: Kelvin shear modulus
+				//  1: Kelvin shear viscosity
+				//  2: Maxwell shear modulus
+				//  3: Maxwell bulk modulus
+				//  4: Maxwell shear viscosity
+				//  5: m -- effective stress factor in viscosity relationship
+				//  6: n -- effective stress exponent in viscosity relationship
+				//  7: initial cohesion
+				//  8: hardening/softening modulus
+				//  9: friction angle
+				// 10: dilatancy angle
+				// 11: transition angle for corner smoothing
+				// 12: viscosity for viscoplastic regularisation
+				// 13: l_0 // for temperature dependency of maxwell viscosity
+
+				data_Creep = new Matrix(15);
+				in_sd.str(GetLineFromFile1(msp_file));
+				for(i = 0; i < 16; i++)
+					in_sd >> (*data_Creep)(i);
+				in_sd.clear();
+
+				//Local Newton scheme for Burgers model. TN 06.06.2014
+				//initialised fully 3D
+				material_minkley = new Minkley::SolidMinkley(data_Creep);
+
+				//SolidMath::InitialiseProjectionTensors();
+			}
 		}
 		// WX:10.2012, threshold dev. stress for Lubby2
 		if (line_string.find("$THRESHOLD_DEV_STR") != string::npos)
@@ -641,6 +703,14 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 			in_sd.str(GetLineFromFile1(msp_file));
 			in_sd >> grav_const;
 			in_sd.clear();
+		}
+		if(line_string.find("$GRAVITY_RAMP")!=string::npos)
+		{
+			in_sd.str(GetLineFromFile1(msp_file));
+			in_sd>>grav_curve_id;
+			in_sd>>grav_const;
+			in_sd.clear();
+			gravity_ramp = 1;
 		}
 		//....................................................................
 		// subkeyword found
@@ -935,6 +1005,7 @@ CSolidProperties::CSolidProperties()
 	T_0 = 0.0;
 	Creep_mode = -1;
 	grav_const = 9.81; // WW
+	gravity_ramp = 0;
 	excavation = -1; // 12.2009. WW
 	excavated = false; // To be .....  12.2009. WW
 	E_Function_Model = -1; // WX:06.2012 E dependence
@@ -1015,6 +1086,8 @@ CSolidProperties::CSolidProperties()
 	reaction_entropy = 0.0;
 	non_reactive_solid_volume_fraction = 0.0;
 	non_reactive_solid_density = 0.0;
+	material_minkley = NULL;
+	material_burgers = NULL;
 
 	specific_heat_source = 0.0;
 
@@ -1152,6 +1225,9 @@ CSolidProperties::~CSolidProperties()
 	rhs_l = NULL;
 	x_l = NULL;
 	Li = NULL;
+	material_minkley = NULL;
+	material_burgers = NULL;
+	smath = NULL;
 }
 //----------------------------------------------------------------------------
 
@@ -1570,6 +1646,401 @@ double CSolidProperties::Kronecker(const int ii, const int jj)
 }
 
 /**************************************************************************
+   FEMLib-Method: CSolidProperties::Voigt_to_Kelvin_Strain
+   Task: Maps a strain vector in Voigt notation into on in Kelvin notation
+   This is an auxilliary routine that will not be needed when the entire FE
+   code is set up in Kelvin notation
+   Programing:
+   06/2015 TN Implementation
+**************************************************************************/
+KVec CSolidProperties::Voigt_to_Kelvin_Strain(const double *voigt_strain)
+{
+	KVec kelvin_strain;
+	for (size_t i=0; i<3; i++)
+	{
+		//Normal components
+		kelvin_strain(i) = voigt_strain[i];
+		//Shear components
+		kelvin_strain(i+3) = voigt_strain[i+3]/sqrt(2.);
+	}
+	return kelvin_strain;
+}
+
+/**************************************************************************
+   FEMLib-Method: CSolidProperties::Voigt_to_Kelvin_Stress
+   Task: Maps a stress vector in Voigt notation into on in Kelvin notation
+   This is an auxilliary routine that will not be needed when the entire FE
+   code is set up in Kelvin notation
+   Programing:
+   06/2015 TN Implementation
+**************************************************************************/
+KVec CSolidProperties::Voigt_to_Kelvin_Stress(const double *voigt_stress)
+{
+	KVec kelvin_stress;
+	for (size_t i=0; i<3; i++)
+	{
+		//Normal components
+		kelvin_stress(i) = voigt_stress[i];
+		//Shear components
+		kelvin_stress(i+3) = voigt_stress[i+3]*sqrt(2.);
+	}
+	return kelvin_stress;
+}
+
+/**************************************************************************
+   FEMLib-Method: CSolidProperties::Kelvin_to_Voigt_Strain()
+   Task: Maps a strain vector in Kelvin notation into on in Voigt notation
+   This is an auxilliary routine that will not be needed when the entire FE
+   code is set up in Kelvin notation
+   Programing:
+   06/2015 TN Implementation
+**************************************************************************/
+void CSolidProperties::Kelvin_to_Voigt_Strain(const KVec &kelvin_strain, double *voigt_strain)
+{
+	for (size_t i=0; i<3; i++)
+	{
+		//Normal components
+		voigt_strain[i] = kelvin_strain(i);
+		//Shear components
+		voigt_strain[i+3] = kelvin_strain(i+3)*sqrt(2.);
+	}
+	return;
+}
+
+/**************************************************************************
+   FEMLib-Method: CSolidProperties::Kelvin_to_Voigt_Stress()
+   Task: Maps a stress vector in Kelvin notation into on in Voigt notation
+   This is an auxilliary routine that will not be needed when the entire FE
+   code is set up in Kelvin notation
+   Programing:
+   06/2015 TN Implementation
+**************************************************************************/
+void CSolidProperties::Kelvin_to_Voigt_Stress(const KVec &kelvin_stress, double *voigt_stress)
+{
+	for (size_t i=0; i<3; i++)
+	{
+	    //Normal components
+	    voigt_stress[i] = kelvin_stress(i);
+	    //Shear components
+	    voigt_stress[i+3] = kelvin_stress(i+3)/sqrt(2.);
+	}
+	return;
+}
+
+
+/**************************************************************************
+   FEMLib-Method: CSolidProperties::ExtractConsistentTangent()
+   Task: general routine to get 6x6 consistent tangent from local Newton iteration of material functionals
+   Programing:
+   06/2014 TN Implementation
+**************************************************************************/
+void CSolidProperties::ExtractConsistentTangent(const Eigen::MatrixXd &Jac, const Eigen::MatrixXd &dGdE, const bool pivoting, Eigen::Matrix<double,6,6> &dsigdE)
+{
+	const unsigned int local_dim(Jac.cols());
+	//Check Dimensions
+	assert(local_dim == dGdE.rows() && dGdE.cols() == 6);
+
+	Eigen::MatrixXd dzdE(local_dim,6);
+	//solve linear system
+	if (pivoting)
+		dzdE = Jac.fullPivLu().solve(-1.0*dGdE); //Could consider moving to different Eigen solver.
+	else
+		dzdE = Jac.householderQr().solve(-1.0*dGdE); //Could consider moving to different Eigen solver.
+	//in-built Gauss elimination solver was at least 4 OoM more inaccurate.
+
+	//Extract matrix part relevant for global tangent
+	dsigdE = dzdE.block<6,6>(0,0);
+}
+
+
+/**************************************************************************
+   FEMLib-Method: CSolidProperties::LocalNewtonBurgers()
+   Task: general local Newton routine to integrate inelastic material models
+   Programing:
+   06/2014 TN Implementation
+   03/2015 NB Modified
+**************************************************************************/
+void CSolidProperties::LocalNewtonBurgers(const double dt, double* strain_curr,
+		double* stress_curr, double* strain_K_curr, double* strain_M_curr,
+        Matrix* Consistent_Tangent, bool Output, double Temperature)
+{
+	//stress, strain, internal variable
+	KVec sig_j, eps_K_j, eps_M_j;
+	//deviatoric stress, strain
+	KVec sigd_j;
+	//local residual vector and Jacobian
+	Eigen::Matrix<double,18,1> res_loc, inc_loc;
+	Eigen::Matrix<double,18,18> K_loc;
+	double sig_eff(1.);
+
+	//initialisation of Kelvin vectors
+	//Note: Can be done in one loop instead of 5 if done right here.
+	const KVec eps_i(Voigt_to_Kelvin_Strain(strain_curr));
+	const KVec eps_K_t(Voigt_to_Kelvin_Strain(strain_K_curr));
+	const KVec eps_M_t(Voigt_to_Kelvin_Strain(strain_M_curr));
+	eps_M_j = eps_M_t;
+	eps_K_j = eps_K_t;
+
+	//calculation of deviatoric and spherical parts
+	const double e_i = eps_i(0) + eps_i(1) + eps_i(2);
+	const KVec epsd_i(SolidMath::P_dev*eps_i);
+
+	//dimensionless stresses
+	sigd_j = 2.0 * (epsd_i - eps_M_t - eps_K_t); //initial guess as elastic predictor
+
+	//Calculate effective stress and update material properties
+	sig_eff = SolidMath::CalEffectiveStress(sigd_j);
+
+	if (!T_Process)
+	{
+		Temperature= material_burgers->T_ref;
+		material_burgers->B = 1;
+		material_burgers->Q = 0; // for cutting off Arrhenius term
+	}
+
+	material_burgers->UpdateBurgersProperties(sig_eff*material_burgers->GM, Temperature);
+
+	//initial evaluation of residual and Jacobian
+	material_burgers->CalResidualBurgers(dt,epsd_i,sigd_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,res_loc);
+	//initial evaluation of Jacobian
+	material_burgers->CalJacobianBurgers(dt,K_loc,sig_eff,sigd_j,eps_K_j); //Note - With constant properties a single evaluation would be sufficient.
+
+	//Loop variables
+	int counter = 0;
+	const int counter_max(20);
+	const double local_tolerance(1.e-16);
+
+	if (Output) //Need not be performant;
+	{
+		CRFProcess* m_pcs  = PCSGet("DEFORMATION");
+		ofstream Dum("local.txt", ios::app);
+		Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc.norm() <<  " initial" << std::endl;
+		Dum.close();
+	};
+	//    for (int counter(0); counter<counter_max && res_loc.norm() > local_tolerance; ++counter)
+	while (res_loc.norm() > local_tolerance && counter < counter_max)
+	{
+		counter++;
+		//Get Jacobian
+		material_burgers->CalJacobianBurgers(dt,K_loc,sig_eff,sigd_j,eps_K_j);//for solution dependent Jacobians
+		//Solve linear system
+		//inc_loc = K_loc.fullPivHouseholderQr().solve(res_loc); //other linear solvers (faster but less accurate) can be considered.
+		//inc_loc = K_loc.fullPivLu().solve(res_loc); //other linear solvers (faster but less accurate) can be considered
+		//inc_loc = K_loc.colPivHouseholderQr().solve(res_loc);
+		inc_loc = K_loc.householderQr().solve(-res_loc);
+		//increment solution vectors
+		sigd_j += inc_loc.block<6,1>(0,0);
+		eps_K_j += inc_loc.block<6,1>(6,0);
+		eps_M_j += inc_loc.block<6,1>(12,0);
+		//Calculate effective stress and update material properties
+		sig_eff = SolidMath::CalEffectiveStress(sigd_j);
+		material_burgers->UpdateBurgersProperties(sig_eff*material_burgers->GM, Temperature);
+		//evaluation of new residual
+		material_burgers->CalResidualBurgers(dt,epsd_i,sigd_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,res_loc);
+		if (Output)
+		{
+			CRFProcess* m_pcs  = PCSGet("DEFORMATION");
+			ofstream Dum("local.txt", ios::app);
+			Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc.norm() <<  " visco" << std::endl;
+			Dum.close();
+		};
+	}
+	if (counter == counter_max)
+		std::cout << "WARNING: Maximum iteration number needed in LocalNewtonBurgers. Convergence not guaranteed." << std::endl;
+
+	//dGdE matrix and dsigdE matrix
+	Eigen::Matrix<double,18,6> dGdE;
+	Eigen::Matrix<double,6,6> dsigdE;
+	
+	//Calculate dGdE for time step
+	material_burgers->CaldGdEBurgers(dGdE);
+	//get dsigdE matrix
+	ExtractConsistentTangent(K_loc,dGdE,false,dsigdE);
+
+	//add hydrostatic part to stress and tangent
+	sig_j = material_burgers->GM * sigd_j + material_burgers->KM * e_i * SolidMath::ivec;
+	dsigdE = material_burgers->GM * dsigdE*SolidMath::P_dev + 3.*material_burgers->KM*SolidMath::P_sph;
+
+	//Sort into Consistent Tangent matrix for global Newton iteration and into standard OGS arrays
+	Kelvin_to_Voigt_Stress(sig_j,stress_curr);
+	Kelvin_to_Voigt_Strain(eps_K_j,strain_K_curr);
+	Kelvin_to_Voigt_Strain(eps_M_j,strain_M_curr);
+	for (size_t i=0; i<3; i++)
+	{
+		for (size_t j=0; j<3; j++){
+			(*Consistent_Tangent)(i,j) = dsigdE(i,j);
+			(*Consistent_Tangent)(i,j+3) = dsigdE(i,j+3)/sqrt(2.);//from local to global shear components (Kelvin to Voigt)
+			(*Consistent_Tangent)(i+3,j) = dsigdE(i+3,j)/sqrt(2.);//from local to global shear components (Kelvin to Voigt)
+			(*Consistent_Tangent)(i+3,j+3) = dsigdE(i+3,j+3)/2.;//from local to global shear components (Kelvin to Voigt)
+		}
+	}
+}
+
+/**************************************************************************
+   FEMLib-Method: CSolidProperties::LocalNewtonMinkley()
+   Task: general local Newton routine to integrate inelastic material models
+   Programing:
+   06/2015 TN Implementation
+**************************************************************************/
+void CSolidProperties::LocalNewtonMinkley(const double dt, double* strain_curr, double* stress_curr, double* eps_K_curr,
+										  double* eps_M_curr, double* eps_pl_curr, double& e_pl_v, double& e_pl_eff,
+										  double& lam, Matrix* Consistent_Tangent,bool Output, double Temperature)
+{
+	//stress, strain, internal variable
+	KVec sig_j, eps_K_j, eps_M_j, eps_pl_j;
+	//deviatoric stress, strain
+	KVec sigd_j;
+	const double e_pl_v_t = e_pl_v, e_pl_eff_t = e_pl_eff;
+	//local residual vector and Jacobian
+	Eigen::Matrix<double,18,1> res_loc, inc_loc;
+	Eigen::Matrix<double,18,18> K_loc;
+	double sig_eff;
+	Eigen::Matrix<double,6,6> dsigdE;
+
+	//initialisation of Kelvin vectors
+	//Note: Can be done in one loop instead of 5 if done right here.
+	const KVec eps_i(Voigt_to_Kelvin_Strain(strain_curr));
+	const KVec eps_K_t(Voigt_to_Kelvin_Strain(eps_K_curr));
+	const KVec eps_M_t(Voigt_to_Kelvin_Strain(eps_M_curr));
+	const KVec eps_pl_t(Voigt_to_Kelvin_Strain(eps_pl_curr));
+	eps_M_j = eps_M_t;
+	eps_K_j = eps_K_t;
+	eps_pl_j = eps_pl_t;
+
+	//calculation of deviatoric and spherical parts
+	const double e_i = eps_i(0) + eps_i(1) + eps_i(2);
+	const KVec epsd_i(SolidMath::P_dev*eps_i);
+
+	//dimensionless stresses
+	sigd_j = 2.0 * (epsd_i - eps_M_j - eps_K_j - eps_pl_j); //initial guess as elastic predictor
+	sig_j = sigd_j + material_minkley->KM0/material_minkley->GM0 * (e_i - e_pl_v) * SolidMath::ivec;
+	//std::cout << "Stress guesstimate_zz " << sig_j(2)*material_minkley->GM0 << std::endl;
+
+	//Calculate effective stress and update material properties
+	sig_eff = SolidMath::CalEffectiveStress(sigd_j);
+
+	material_minkley->UpdateMinkleyProperties(sig_eff*material_minkley->GM0, e_pl_eff, Temperature);
+
+	//initial evaluation of residual and Jacobian
+	material_minkley->CalViscoelasticResidual(dt,epsd_i,e_i,e_pl_v,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,res_loc);
+	//initial evaluation of Jacobian
+	material_minkley->CalViscoelasticJacobian(dt,sig_j,sig_eff,K_loc);
+
+	//Loop variables
+	int counter = 0;
+	const int counter_max(20);
+	const double local_tolerance(1.e-16);
+
+	if (Output)
+	{
+		CRFProcess* m_pcs  = PCSGet("DEFORMATION");
+		ofstream Dum("local.txt", ios::app);
+		Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc.norm() << " initial" << std::endl;
+		Dum.close();
+	}
+
+	while (res_loc.norm() > local_tolerance && counter < counter_max)
+	{
+		counter++;
+		//Get Jacobian
+		material_minkley->CalViscoelasticJacobian(dt,sig_j,sig_eff,K_loc);
+		//Solve linear system
+		inc_loc = K_loc.fullPivHouseholderQr().solve(-res_loc);
+		//increment solution vectors
+		sig_j += inc_loc.block<6,1>(0,0);
+		eps_K_j += inc_loc.block<6,1>(6,0);
+		eps_M_j += inc_loc.block<6,1>(12,0);
+		//Calculate effective stress and update material properties
+		sig_eff = SolidMath::CalEffectiveStress(SolidMath::P_dev*sig_j);
+		material_minkley->UpdateMinkleyProperties(sig_eff*material_minkley->GM0, e_pl_eff, Temperature);
+		//evaluation of new residual
+		material_minkley->CalViscoelasticResidual(dt,epsd_i,e_i,e_pl_v,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,res_loc);
+		if (Output)
+		{
+			CRFProcess* m_pcs  = PCSGet("DEFORMATION");
+			ofstream Dum("local.txt", ios::app);
+			Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc.norm() <<  " visco" << std::endl;
+			Dum.close();
+		};
+	}
+	if (!(material_minkley->YieldMohrCoulomb(sig_j*material_minkley->GM0) < local_tolerance))
+	{
+		Eigen::Matrix<double,27,1> res_loc_p, inc_loc_p;
+		Eigen::Matrix<double,27,27> K_loc_p;
+
+		material_minkley->CalViscoplasticResidual(dt,epsd_i,e_i,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,eps_pl_t, \
+												  e_pl_v,e_pl_v_t,e_pl_eff,e_pl_eff_t,lam,res_loc_p);
+		material_minkley->CalViscoplasticJacobian(dt,sig_j,sig_eff,lam,K_loc_p);
+		while (res_loc_p.norm() > local_tolerance && counter < counter_max)
+		{
+			counter++;
+			//std::cout << "iter " << counter << std::endl;
+			//Get Jacobian
+			material_minkley->CalViscoplasticJacobian(dt,sig_j,sig_eff,lam,K_loc_p);
+			//Solve linear system
+			inc_loc_p = K_loc_p.fullPivHouseholderQr().solve(-res_loc_p);
+			//increment solution vectors
+			sig_j += inc_loc_p.block<6,1>(0,0);
+			eps_K_j += inc_loc_p.block<6,1>(6,0);
+			eps_M_j += inc_loc.block<6,1>(12,0);
+			eps_pl_j += inc_loc_p.block<6,1>(18,0);
+			e_pl_v += inc_loc_p.block<1,1>(24,0)(0);
+			e_pl_eff += inc_loc_p.block<1,1>(25,0)(0);
+			lam += inc_loc_p.block<1,1>(26,0)(0);
+			//Calculate effective stress and update material properties
+			sig_eff = SolidMath::CalEffectiveStress(SolidMath::P_dev*sig_j);
+			material_minkley->UpdateMinkleyProperties(sig_eff*material_minkley->GM0, e_pl_eff, Temperature);
+			//evaluation of new residual
+			material_minkley->CalViscoplasticResidual(dt,epsd_i,e_i,sig_j,eps_K_j,eps_K_t,eps_M_j,eps_M_t,eps_pl_j,eps_pl_t, \
+													  e_pl_v,e_pl_v_t,e_pl_eff,e_pl_eff_t,lam,res_loc_p);
+			if (Output)
+			{
+				CRFProcess* m_pcs  = PCSGet("DEFORMATION");
+				ofstream Dum("local.txt", ios::app);
+				Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter+1 << " " << res_loc_p.norm() <<  " plastic" << std::endl;
+				Dum.close();
+			}
+		}
+		//dGdE matrix and dsigdE matrix
+		Eigen::Matrix<double,27,6> dGdE;
+		Kelvin_to_Voigt_Strain(eps_pl_j,eps_pl_curr);
+		//Calculate dGdE for time step
+		material_minkley->CalEPdGdE(dGdE);
+		//get dsigdE matrix
+		ExtractConsistentTangent(K_loc_p,dGdE,true,dsigdE);
+	}
+	else
+	{
+		//dGdE matrix and dsigdE matrix
+		Eigen::Matrix<double,18,6> dGdE;
+		//Calculate dGdE for time step
+		material_minkley->CaldGdE(dGdE);
+		//get dsigdE matrix
+		ExtractConsistentTangent(K_loc,dGdE,true,dsigdE);
+	}
+	if (counter == counter_max)
+		std::cout << "WARNING: Maximum iteration number needed in LocalNewtonMinkley. Convergence not guaranteed." << std::endl;
+
+	//add hydrostatic part to stress and tangent
+	sig_j *= material_minkley->GM0;
+	dsigdE *= material_minkley->GM0;
+
+	//Sort into Consistent Tangent matrix for global Newton iteration and into standard OGS arrays
+	Kelvin_to_Voigt_Stress(sig_j,stress_curr);
+	Kelvin_to_Voigt_Strain(eps_K_j,eps_K_curr);
+	Kelvin_to_Voigt_Strain(eps_M_j,eps_M_curr);
+	//plastic strain dealt with further up
+	for (size_t i=0; i<3; i++)
+	{
+		for (size_t j=0; j<3; j++){
+			(*Consistent_Tangent)(i,j) = dsigdE(i,j);
+			(*Consistent_Tangent)(i,j+3) = dsigdE(i,j+3)/sqrt(2.);//from local to global shear components (Kelvin to Voigt)
+			(*Consistent_Tangent)(i+3,j) = dsigdE(i+3,j)/sqrt(2.);//from local to global shear components (Kelvin to Voigt)
+			(*Consistent_Tangent)(i+3,j+3) = dsigdE(i+3,j+3)/2.;//from local to global shear components (Kelvin to Voigt)
+		}
+	}
+}
+/*************************************************************************
    FEMLib-Method: CSolidProperties::Calculate_Lame_Constant()
    Task: Get density
    Programing:

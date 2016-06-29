@@ -3200,6 +3200,10 @@ void CRFProcess::VariableStaticProblem()
 	pcs_secondary_function_unit[pcs_number_of_secondary_nvals] = "-";
 	pcs_secondary_function_timelevel[pcs_number_of_secondary_nvals] = 1;
 	pcs_number_of_secondary_nvals++;
+	pcs_secondary_function_name[pcs_number_of_secondary_nvals] = "DILATANCY";
+	pcs_secondary_function_unit[pcs_number_of_secondary_nvals] = "-";
+	pcs_secondary_function_timelevel[pcs_number_of_secondary_nvals] = 1;
+	pcs_number_of_secondary_nvals++;
 	// NB new secondary variables for principle stresses; Principle stress directions might follow later
 	pcs_secondary_function_name[pcs_number_of_secondary_nvals] = "STRESS_1"; // i.e. Sigma_1
 	pcs_secondary_function_unit[pcs_number_of_secondary_nvals] = "Pa";
@@ -3371,7 +3375,11 @@ void CRFProcess::VariableDynamics()
 	pcs_secondary_function_name[pcs_number_of_secondary_nvals] = "STRAIN_PLS";
 	pcs_secondary_function_unit[pcs_number_of_secondary_nvals] = "-";
 	pcs_secondary_function_timelevel[pcs_number_of_secondary_nvals] = 1;
-
+    pcs_number_of_secondary_nvals++;
+    pcs_secondary_function_name[pcs_number_of_secondary_nvals] = "DILATANCY";
+    pcs_secondary_function_unit[pcs_number_of_secondary_nvals] = "-";
+    pcs_secondary_function_timelevel[pcs_number_of_secondary_nvals] = 1;
+	
 	// NB new secondary variables for principle stresses; Principle stress directions might follow later
 	pcs_number_of_secondary_nvals++;
 	pcs_secondary_function_name[pcs_number_of_secondary_nvals] = "STRESS_1"; // i.e. Sigma_1

@@ -347,6 +347,7 @@ public:
 	std::vector<bc_JFNK> BC_JFNK;
 #endif
 public:
+	int GetIteSteps() { return ite_steps; }
 	// BG, DL Calculate phase transition of CO2
 	void CO2_H2O_NaCl_VLE_isobaric(double T, double P, Phase_Properties& vapor, Phase_Properties& liquid,
 	                               Phase_Properties& solid, int f);
