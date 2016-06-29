@@ -9,28 +9,46 @@
 namespace SolidMath
 {
 
-void InitialiseProjectionTensors()
+namespace detail
 {
-	//set identity matrix here
-	ident.setIdentity();
+struct ConstBuilder
+{
+	Eigen::Matrix<double,6,6> P_dev; //deviatoric projection matrix
+	Eigen::Matrix<double,6,6> P_sph; //spherical projection matrix
+	Eigen::Matrix<double,6,6> ident; //identity matrix
+	Eigen::Matrix<double,6,1> ivec; //Kelvin mapping of 2nd order identity
 
-	//set identity vector (Kelvin mapping of 2nd order Identity)
-	for (size_t i=0; i<3; i++)
+	ConstBuilder()
 	{
-		ivec(i) = 1.;
-		ivec(i+3) = 0.;
-	}
+		//set identity matrix here
+		ident.setIdentity();
 
-	const double third(1./3.);
-	//deviatoric projection
-	P_dev.setIdentity();
-	P_sph.setZero(6,6);
-	for (size_t i=0; i<3; i++)
-		for (size_t j=0; j<3; j++){
-			P_dev(i,j) -= third;
-			P_sph(i,j) = third;
+		//set identity vector (Kelvin mapping of 2nd order Identity)
+		for (size_t i=0; i<3; i++)
+		{
+			ivec(i) = 1.;
+			ivec(i+3) = 0.;
 		}
+
+		const double third(1./3.);
+		//deviatoric projection
+		P_dev.setIdentity();
+		P_sph.setZero(6,6);
+		for (size_t i=0; i<3; i++)
+			for (size_t j=0; j<3; j++){
+				P_dev(i,j) -= third;
+				P_sph(i,j) = third;
+		}
+	}
+};
 }
+
+static const detail::ConstBuilder const_results;
+
+const Eigen::Matrix<double,6,6> ident(const_results.ident);
+const Eigen::Matrix<double,6,1> ivec(const_results.ivec);
+const Eigen::Matrix<double,6,6> P_dev(const_results.P_dev);
+const Eigen::Matrix<double,6,6> P_sph(const_results.P_sph);
 
 //Maps a 6D Kelvin vector back into 3D Tensor coordinates
 Eigen::Matrix<double,3,3>  KelvinVectorToTensor(const Eigen::Matrix<double,6,1> &vec)

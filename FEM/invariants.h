@@ -6,12 +6,10 @@
 namespace SolidMath
 {
 
-static Eigen::Matrix<double,6,6> P_dev; //deviatoric projection matrix
-static Eigen::Matrix<double,6,6> P_sph; //spherical projection matrix
-static Eigen::Matrix<double,6,6> ident; //identity matrix
-static Eigen::Matrix<double,6,1> ivec; //Kelvin mapping of 2nd order identity
-
-void InitialiseProjectionTensors();
+extern const Eigen::Matrix<double,6,6> P_dev; //deviatoric projection matrix
+extern const Eigen::Matrix<double,6,6> P_sph; //spherical projection matrix
+extern const Eigen::Matrix<double,6,6> ident; //identity matrix
+extern const Eigen::Matrix<double,6,1> ivec; //Kelvin mapping of 2nd order identity
 
 //Maps a 6D Kelvin vector back into 3D Tensor coordinates
 Eigen::Matrix<double,3,3>  KelvinVectorToTensor(const Eigen::Matrix<double,6,1> &vec);

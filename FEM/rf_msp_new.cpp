@@ -605,8 +605,6 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 				//Local Newton scheme for Burgers model. TN 06.06.2014
 				//initialised fully 3D
 				material_burgers = new Burgers::SolidBurgers(data_Creep);
-
-				SolidMath::InitialiseProjectionTensors();
 			}
 			if(line_string.find("MINKLEY") != string::npos)
 			{
@@ -637,7 +635,7 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 				//initialised fully 3D
 				material_minkley = new Minkley::SolidMinkley(data_Creep);
 
-				SolidMath::InitialiseProjectionTensors();
+				//SolidMath::InitialiseProjectionTensors();
 			}
 		}
 		// WX:10.2012, threshold dev. stress for Lubby2
