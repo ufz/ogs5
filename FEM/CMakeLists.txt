@@ -76,6 +76,7 @@ set( SOURCES
 	files0.cpp
 	GeoInfo.cpp
 	InitialCondition.cpp
+	invariants.cpp
 	LinearFunctionData.cpp
 	mathlib.cpp
 	matrix_class.cpp
