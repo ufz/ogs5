@@ -2164,6 +2164,9 @@ void CFiniteElementStd::CalCoefLaplace(bool Gravity, int ip)
 		default:
 			break;
 		case EPT_LIQUID_FLOW: // Liquid flow
+			k_rel = 1.0;
+			if (MediaProp->flowlinearity_model > 0)
+				k_rel = MediaProp->NonlinearFlowFunction(index, gp, pcs->m_num->ls_theta, this);
 			tensor = MediaProp->PermeabilityTensor(Index);
 			// AS:08.2012 permeability function eff stress
 			if (MediaProp->permeability_effstress_model > 0)
