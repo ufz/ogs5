@@ -2229,7 +2229,7 @@ void CFiniteElementStd::CalCoefLaplace(bool Gravity, int ip)
 					tensor[i * dim + i] *= w[i];
 			}
 			for (size_t i = 0; i < dim * dim; i++)
-				mat[i] = tensor[i] / mat_fac * perm_effstress; // AS:perm. dependent eff stress.
+				mat[i] = tensor[i] / mat_fac * perm_effstress * k_rel; // AS:perm. dependent eff stress.
 
 			break;
 		case EPT_GROUNDWATER_FLOW: // Groundwater flow
