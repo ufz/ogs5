@@ -2033,7 +2033,7 @@ int REACT::ReadReactionModel(FILE* File)
 					if (strstr(str, "# comp"))
 					{
 						StringReadStr(&sub, str, &p);
-						if (!strcmp(sub, "pH") == 0 && !strcmp(sub, "pe") == 0)
+						if (strcmp(sub, "pH")!=0 && strcmp(sub, "pe")!=0)
 							n_master_species += 1;
 					}
 					if (strstr(str, "# temp"))
