@@ -239,8 +239,7 @@ public:
 	double getTransformTensor(int idx);
 	void AllocateMeomoryforAngle()
 	{
-		if (!angle)
-			angle = new double[3];
+		angle.resize(3);
 	} // WW
 	double GetAngle(int i) const { return angle[i]; } // PCH
 	void SetAngle(int i, double value) { angle[i] = value; } // PCH
@@ -323,7 +322,7 @@ private:
 	// double angle[3];	// PCH, angle[0] rotation along y axis
 	//	    angle[1] rotation along x' axis
 	//		angle[2] translation along z'' axis.
-	double* angle; // Dymanic allocate memory.  WW
+	std::vector<double> angle;
 	// WW double MatT[9];
 
 	int excavated; // WX:01.2011 excavation state
