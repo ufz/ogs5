@@ -3347,7 +3347,7 @@ void CSourceTermGroup::SetSFC(CSourceTerm* m_st, const int ShiftInNodeVector)
 			DistributeVolumeFlux(m_st, sfc_nod_vector, sfc_nod_val_vector);
 
  #if defined(USE_PETSC) // || defined (other parallel linear solver lib). //WW. 06.2016
-		removeGhostElements(sfc_nod_vector, sfc_nod_val_vector);
+		removeGhostSourceTerms(sfc_nod_vector, sfc_nod_val_vector);
 #endif
 
 		m_st->st_node_ids.clear();
@@ -3884,22 +3884,19 @@ void CSourceTermGroup::SetSurfaceNodeValueVector(CSourceTerm* st, Surface* m_sfc
 }
 
 #if defined(USE_PETSC) // || defined (other parallel linear solver lib). //WW. 06.2016
-void CSourceTermGroup::removeGhostElements(std::vector<long>& node_ids,
+void CSourceTermGroup::removeGhostSourceTerms(std::vector<long>& node_ids,
                                         std::vector<double>& node_valus)
-{	const std::size_t id_act_l_max = static_cast<std::size_t>(m_msh->getNumNodesLocal());
-	const std::size_t id_max_l = m_msh->GetNodesNumber(false);
-	const std::size_t id_act_h_max = m_msh->getLargestActiveNodeID_Quadratic();
-
+{
+	const size_t id_act_l_max = static_cast<size_t>(m_msh->getNumNodesLocal());
+	const size_t id_l_max = m_msh->GetNodesNumber(false);
+	const size_t id_act_h_max = m_msh->getLargestActiveNodeID_Quadratic();
 	std::vector<std::size_t> ghost_ids;
 	for (std::size_t i=0; i<node_ids.size(); i++)
 	{
 		const std::size_t id = static_cast<std::size_t>(node_ids[i]);
-		// non ghost element
-		if (   (id < id_act_l_max)
-			|| (id >= id_max_l && id < id_act_h_max) )
-			continue;
-		// ghost element, removed
-		ghost_ids.push_back(i);
+		if (!m_msh->nod_vector[id]->isNonGhost(id_act_l_max, id_l_max, id_act_h_max))
+			// ghost entry, removed
+			ghost_ids.push_back(i);
 	}
 
 	for (int i=static_cast<int>(ghost_ids.size()) - 1; i>=0; i--)

@@ -398,7 +398,7 @@ private:
 	                          std::vector<double>& ply_nod_val_vector);
 
 #if defined(USE_PETSC) // || defined (other parallel linear solver lib). //WW. 06.2016
-	void removeGhostElements(std::vector<long>& node_ids, std::vector<double>& node_valus);
+	void removeGhostSourceTerms(std::vector<long>& node_ids, std::vector<double>& node_valus);
 #endif
 
 };
