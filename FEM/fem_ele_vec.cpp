@@ -1300,6 +1300,12 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 
 	petsc_group::PETScLinearSolver* eqs = pcs->eqs_new;
 
+	// Set row and column indices.
+	// For non-ghost element, all row and column indices are positive.
+	// For ghost elemnent, all column indices, saved in idxn, are positive,
+	// while, all row indices, saved in idxm, are negative. For the zero
+	// entry of idxm, an alias of it is indroduced to represent zero for the
+	// negative indexing.
 	const PetscInt zero_id_alias = -eqs->Size();
 	for (int i = 0; i < nnodesHQ; i++)
 	{
@@ -1314,13 +1320,18 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 		}
 	}
 
+	// If this is a ghost element, the non-ghost entries of idxm, which holds
+	// negative values, are reset to positive. The original zero entry,
+	// which represents by a special nagetive value, is reset to zero again.
 	if (non_ghost_flag == -1)
 	{
+		// Reset non-ghost entries of idxm to positive.
 		for (int i = 0; i < act_nodes_h; i++)
 		{
 			for (int k = 0; k < dof; k++)
 			{
 				const int ki = k * nnodesHQ + local_idx[i];
+				// Reset original zero entry to zero.
 				if (idxm[ki] == zero_id_alias)
 					idxm[ki] = 0;
 				else
