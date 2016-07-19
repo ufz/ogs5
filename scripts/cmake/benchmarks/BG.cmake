@@ -1,21 +1,23 @@
 include(test/Benchmark)
 
-Benchmark(AUTHOR BG
-	PATH ECLIPSE_DUMUX/1phase_radialflow_1phase_transport/1pf_1pt
-	CONFIG FEM
-	OUTPUT_FILES 1pf_1pt_domain_hex.tec
-	RUNTIME 16
-)
+# Deactivated because results are not confirmed
+#Benchmark(AUTHOR BG
+#	PATH ECLIPSE_DUMUX/1phase_radialflow_1phase_transport/1pf_1pt
+#	CONFIG FEM
+#	OUTPUT_FILES 1pf_1pt_domain_hex.tec
+#	RUNTIME 16
+#)
 
-Benchmark(AUTHOR BG
-	PATH ECLIPSE_DUMUX/2phase_flow_2phase_tracertransport/2pf_2pt
-	CONFIG FEM
-	OUTPUT_FILES
-		2pf_2pt_domain_hex.tec
-		2pf_2pt_time_POINT16.tec
-		2pf_2pt_time_POINT17.tec
-	RUNTIME 28
-)
+# Deactivated because results are not confirmed
+#Benchmark(AUTHOR BG
+#	PATH ECLIPSE_DUMUX/2phase_flow_2phase_tracertransport/2pf_2pt
+#	CONFIG FEM
+#	OUTPUT_FILES
+#		2pf_2pt_domain_hex.tec
+#		2pf_2pt_time_POINT16.tec
+#		2pf_2pt_time_POINT17.tec
+#	RUNTIME 28
+#)
 
 Benchmark(AUTHOR BG
 	PATH ECLIPSE_DUMUX/2phase_flow_radialmodel/2pf_radialmodel

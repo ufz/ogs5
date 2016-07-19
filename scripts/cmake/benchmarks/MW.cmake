@@ -18,22 +18,24 @@ Benchmark(AUTHOR MW
 		unconf_ply_bottom_t1.tec
 )
 
-Benchmark(AUTHOR MW
-	PATH DENSITY-DEPENDENT_FLOW/goswami-clement/constrBC_PressAsHead_tri/HM
-	CONFIG FEM
-	RUNTIME 361
-	OUTPUT_FILES
-		HM_47.vtu
-		HM_122.vtu
-		HM_161.vtu
-)
+# Deactivated because results are not confirmed
+#Benchmark(AUTHOR MW
+#	PATH DENSITY-DEPENDENT_FLOW/goswami-clement/constrBC_PressAsHead_tri/HM
+#	CONFIG FEM
+#	RUNTIME 361
+#	OUTPUT_FILES
+#		HM_47.vtu
+#		HM_122.vtu
+#		HM_161.vtu
+#)
 
-Benchmark(AUTHOR MW
-	PATH DENSITY-DEPENDENT_FLOW/goswami-clement/wholeBC_PressAsHead_tri/HM
-	CONFIG FEM
-	RUNTIME 373
-	OUTPUT_FILES
-		HM_42.vtu
-		HM_119.vtu
-		HM_159.vtu
-)
+# Deactivated because results are not confirmed
+#Benchmark(AUTHOR MW
+#	PATH DENSITY-DEPENDENT_FLOW/goswami-clement/wholeBC_PressAsHead_tri/HM
+#	CONFIG FEM
+#	RUNTIME 373
+#	OUTPUT_FILES
+#		HM_42.vtu
+#		HM_119.vtu
+#		HM_159.vtu
+#)
