@@ -1,6 +1,6 @@
 add_subdirectory(Brent)
 if(OGS_USE_CVODE)
-	set(EXAMPLES_ENABLE OFF)
+	set(EXAMPLES_ENABLE OFF CACHE BOOL "ld the SUNDIALS examples")
 	add_subdirectory(cvode)
 	set_target_properties(sundials_cvode_shared sundials_nvecserial_shared PROPERTIES MACOSX_RPATH ON)
 endif()
