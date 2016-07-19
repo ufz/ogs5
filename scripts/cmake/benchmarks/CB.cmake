@@ -134,20 +134,20 @@ Benchmark(AUTHOR CB
 
 Benchmark(AUTHOR CB
 	PATH C/Engesgaard/Kin/slow_kin_pqc/pds
-	CONFIG PQC
+	CONFIG FEM
 	RUNTIME 2
 	OUTPUT_FILES pds_ply_OUT_LINE_t1.tec
 )
 
-Benchmark(AUTHOR CB
-	PATH C/Engesgaard/Kin/slow_kin_pqc_krc/pds
-	CONFIG PQC
-	RUNTIME 430
-	OUTPUT_FILES
-		pds_ply_OUT_LINE_t1.tec
-		pds_Activities.dump
-		pds_EquilibriumConstants.dump
-)
+#Benchmark(AUTHOR CB
+#	PATH C/Engesgaard/Kin/slow_kin_pqc_krc/pds
+#	CONFIG FEM
+#	RUNTIME 430
+#	OUTPUT_FILES
+#		pds_ply_OUT_LINE_t1.tec
+#		pds_Activities.dump
+#		pds_EquilibriumConstants.dump
+#)
 
 # TODO ODE solver
 #Benchmark(AUTHOR CB

@@ -46,7 +46,6 @@ Benchmark(AUTHOR BG
 	PATH C/2d_Cl_transport_Clay/Nuklidtransport
 	CONFIG FEM
 	OUTPUT_FILES
-		Mass_Cl-36_nodes.csv
 		Nuklidtransport_domain_tri.tec
 		Nuklidtransport_POLYLINE_BC_up_TIM_MASS_TRANSPORT.tec
 		Nuklidtransport_POLYLINE_PLY_Source_TIM_MASS_TRANSPORT.tec
