@@ -24,23 +24,24 @@ Benchmark(AUTHOR BG
 	RUNTIME 6
 )
 
-Benchmark(AUTHOR BG
-	PATH ECLIPSE_DUMUX/kinetic_CO2phase_generation_E100/CO2phase_gen_E100
-	CONFIG FEM
-	OUTPUT_FILES
-		CO2phase_gen_E100_domain_ele.tec
-		CO2phase_gen_E100_domain_hex.tec
-	RUNTIME 10
-)
-
-Benchmark(AUTHOR BG
-	PATH ECLIPSE_DUMUX/kinetic_CO2phase_generation_E300/CO2phase_gen_E300
-	CONFIG FEM
-	OUTPUT_FILES
-		CO2phase_gen_E300_domain_ele.tec
-		CO2phase_gen_E300_domain_hex.tec
-	RUNTIME 10
-)
+# Deactivated becaues kinetic reaction is not supported yet in the open-source version
+#Benchmark(AUTHOR BG
+#	PATH ECLIPSE_DUMUX/kinetic_CO2phase_generation_E100/CO2phase_gen_E100
+#	CONFIG FEM
+#	OUTPUT_FILES
+#		CO2phase_gen_E100_domain_ele.tec
+#		CO2phase_gen_E100_domain_hex.tec
+#	RUNTIME 10
+#)
+#
+#Benchmark(AUTHOR BG
+#	PATH ECLIPSE_DUMUX/kinetic_CO2phase_generation_E300/CO2phase_gen_E300
+#	CONFIG FEM
+#	OUTPUT_FILES
+#		CO2phase_gen_E300_domain_ele.tec
+#		CO2phase_gen_E300_domain_hex.tec
+#	RUNTIME 10
+#)
 
 Benchmark(AUTHOR BG
 	PATH C/2d_Cl_transport_Clay/Nuklidtransport
