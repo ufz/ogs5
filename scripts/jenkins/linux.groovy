@@ -62,6 +62,7 @@ module load lapack/3.5.0-1_gcc_4.8.1
 module unload python
 module load openmpi/gcc/1.8.4-2
 module load petsc/3.5_maint_gcc_4.8.1-3_openmpi_gcc_1.8.2-1_gcc_4.8.1_CentOS6_envinf
+export PATH=\"\$PATH:/data/ogs/phreeqc/bin\"
 set -x
 nice -n 5 make benchmarks-short-normal-long"""
 				}
