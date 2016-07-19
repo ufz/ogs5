@@ -4381,7 +4381,6 @@ void CRFProcess::ConfigNODValues1(void)
 			}
 		pcs_nval++;
 	}
-	pcs_nval_data = pcs_nval_data;
 }
 
 /*************************************************************************

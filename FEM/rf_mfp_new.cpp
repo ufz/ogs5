@@ -2266,7 +2266,6 @@ double CFluidProperties::HeatConductivity(double* variables)
 		}
 		break;
 		case 1: // c = const
-			heat_conductivity = heat_conductivity;
 			break;
 		case 2:
 			heat_conductivity

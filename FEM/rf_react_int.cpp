@@ -1424,7 +1424,7 @@ void REACTINT::Heatpump_2DhTO2Dv_Mapping(bool forward)
 		for (i = 0; i < nnode; i++)
 		{
 			for (j = 0; j < long(Temp_GHP_xyz.size()); j++)
-				if ((XYZ[i][0] == Temp_GHP_xyz[j][0])) // x cordinate matches -> only regular mesh so far
+				if (XYZ[i][0] == Temp_GHP_xyz[j][0]) // x cordinate matches -> only regular mesh so far
 					Temp_GHP_mapidx.push_back(Temp_GHP_nod_idx[j]);
 		}
 	}

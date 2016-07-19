@@ -33,7 +33,7 @@ namespace MeshLib
 **************************************************************************/
 CElem::CElem(size_t Index)
     : CCore(Index), normal_vector(NULL), /*geo_type(t), */ owner(NULL), ele_dim(1), nnodes(0), nnodesHQ(0),
-      nodes(nnodes), nodes_index(nnodes), patch_index(0), transform_tensor(NULL), angle(NULL)
+      nodes(nnodes), nodes_index(nnodes), patch_index(0), transform_tensor(NULL)
 {
 	grid_adaptation = -1;
 	volume = 0.0;
@@ -70,7 +70,6 @@ CElem::CElem() : CCore(0), normal_vector(NULL)
 	owner = NULL;
 	nodes.resize(8); // Nodes of face
 	transform_tensor = NULL;
-	angle = NULL;
 	gravity_center[0] = gravity_center[1] = gravity_center[2] = 0.0;
 	area = 1.0; // WW area = 1.0
 	normal_vector = NULL;
@@ -97,7 +96,6 @@ CElem::CElem(size_t Index, CElem* onwer, int Face) : CCore(Index), normal_vector
 	face_index = Face;
 	gravity_center[0] = gravity_center[1] = gravity_center[2] = 0.0;
 	transform_tensor = NULL;
-	angle = NULL;
 	normal_vector = NULL;
 	excavated = -1; // WX
 	//
@@ -187,7 +185,6 @@ CElem::CElem(size_t Index, CElem* m_ele_parent) : CCore(Index), normal_vector(NU
 	//  static int edgeIndex_loc[10];
 	gravity_center[0] = gravity_center[1] = gravity_center[2] = 0.0;
 	transform_tensor = NULL;
-	angle = NULL;
 	this->setElementProperties(m_ele_parent->geo_type);
 
 	patch_index = m_ele_parent->patch_index;
@@ -223,7 +220,7 @@ CElem::CElem(CElem const& elem)
       nnodes(elem.nnodes), nnodesHQ(elem.nnodesHQ), nodes(elem.nodes), nedges(elem.nedges), edges(elem.edges),
       edges_orientation(elem.edges_orientation), nfaces(elem.nfaces), no_faces_on_surface(elem.no_faces_on_surface),
       face_index(elem.face_index), volume(elem.volume), grid_adaptation(elem.grid_adaptation),
-      patch_index(elem.patch_index), area(elem.area), angle(new double(*(elem.angle)))
+      patch_index(elem.patch_index), area(elem.area), angle(elem.angle)
 {
 	for (size_t k(0); k < 3; k++)
 	{
@@ -258,7 +255,7 @@ CElem::CElem(CElem const& elem)
 CElem::CElem(MshElemType::type t, size_t node0, size_t node1, size_t node2, int mat)
     : CCore(0), normal_vector(NULL), geo_type(t), owner(NULL), ele_dim(2), nnodes(3), nnodesHQ(6), nodes(nnodes),
       nodes_index(nnodes), nedges(3), edges(nedges), edges_orientation(nedges), nfaces(3), patch_index(mat),
-      transform_tensor(NULL), neighbors(nfaces), angle(NULL)
+      transform_tensor(NULL), neighbors(nfaces)
 {
 	nodes_index[0] = node0;
 	nodes_index[1] = node1;
@@ -281,7 +278,7 @@ CElem::CElem(MshElemType::type t, size_t node0, size_t node1, size_t node2, int 
 CElem::CElem(MshElemType::type t, size_t node0, size_t node1, size_t node2, size_t node3, int mat)
     : CCore(0), normal_vector(NULL), geo_type(t), owner(NULL), ele_dim(2), nnodes(4), nnodesHQ(9), nodes(nnodes),
       nodes_index(nnodes), nedges(4), edges(nedges), edges_orientation(nedges), nfaces(4), patch_index(mat),
-      transform_tensor(NULL), neighbors(nfaces), angle(NULL)
+      transform_tensor(NULL), neighbors(nfaces)
 {
 	nodes_index[0] = node0;
 	nodes_index[1] = node1;
@@ -321,14 +318,10 @@ CElem::~CElem()
 	if (transform_tensor)
 		delete transform_tensor;
 	transform_tensor = NULL;
-	if (angle)
-		delete[] angle;
-	angle = NULL;
 	transform_tensor = NULL;
 	if (normal_vector)
 		delete[] normal_vector;
 	normal_vector = NULL;
-	delete[] angle;
 
 #if defined(USE_PETSC) // || defined(using other parallel scheme). WW
 	if (g_index)
