@@ -848,26 +848,14 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 	Matrix* tmp_AuxMatrix2 = AuxMatrix2;
 	Matrix* tmp_Stiffness = Stiffness;
 
-	int act_r = 0;
-#if defined(USE_PETSC) // || defined(other parallel libs)//05.3013. WW
-	act_r = act_nodes_h;
-#else
-	act_r = nnodesHQ;
-#endif
-
-	for (i = 0; i < act_r; i++)
+	for (i = 0; i < nnodesHQ; i++)
 	{
-#if defined(USE_PETSC) // || defined(other parallel libs)//05.3013. WW
-		const int ia = local_idx[i];
-#else
-		const int ia = i;
-#endif
 		// NW      setTransB_Matrix(i);
-		tmp_B_matrix_T = this->vec_B_matrix_T[ia];
+		tmp_B_matrix_T = this->vec_B_matrix_T[i];
 		// Local assembly of A*u=int(B^t*sigma) for Newton-Raphson method
 		for (j = 0; j < ele_dim; j++)
 			for (k = 0; k < ns; k++)
-				(*RHS)[j * nnodesHQ + ia] += (*tmp_B_matrix_T)(j, k) * (dstress[k] - stress0[k]) * fkt;
+				(*RHS)[j * nnodesHQ + i] += (*tmp_B_matrix_T)(j, k) * (dstress[k] - stress0[k]) * fkt;
 		// TEST             (*B_matrix_T)(j,k)*dstress[k]*fkt;
 		if (PreLoad == 11)
 			continue;
@@ -894,7 +882,7 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 			// Local assembly of stiffness matrix
 			for (k = 0; k < ele_dim; k++)
 			{
-				const int kia = ia + k * nnodesHQ;
+				const int kia = i + k * nnodesHQ;
 				for (l = 0; l < ele_dim; l++)
 					(*tmp_Stiffness)(kia, j + l * nnodesHQ) += (*tmp_AuxMatrix)(k, l) * fkt;
 			}
@@ -929,47 +917,37 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 
 		if (axisymmetry)
 		{
-			for (k = 0; k < act_r; k++)
+			for (k = 0; k < nnodesHQ; k++)
 			{
-#if defined(USE_PETSC) // || defined(other parallel libs)//05.3013. WW
-				const int ka = local_idx[k];
-#else
-				const int ka = k;
-#endif
 				for (l = 0; l < nnodes; l++)
 					for (j = 0; j < ele_dim; j++)
 					{
-						dN_dx = dshapefctHQ[nnodesHQ * j + ka];
+						dN_dx = dshapefctHQ[nnodesHQ * j + k];
 						if (j == 0)
-							dN_dx += shapefctHQ[ka] / Radius;
+							dN_dx += shapefctHQ[k] / Radius;
 
 						f_buff = fac * dN_dx * shapefct[l];
-						(*PressureC)(nnodesHQ* j + ka, l) += f_buff;
+						(*PressureC)(nnodesHQ* j + k, l) += f_buff;
 						if (PressureC_S)
-							(*PressureC_S)(nnodesHQ* j + ka, l) += f_buff * fac1;
+							(*PressureC_S)(nnodesHQ* j + k, l) += f_buff * fac1;
 						if (PressureC_S_dp)
-							(*PressureC_S_dp)(nnodesHQ* j + ka, l) += f_buff * fac2;
+							(*PressureC_S_dp)(nnodesHQ* j + k, l) += f_buff * fac2;
 					}
 			}
 		}
 		else
 		{
-			for (k = 0; k < act_r; k++)
+			for (k = 0; k < nnodesHQ; k++)
 			{
-#if defined(USE_PETSC) // || defined(other parallel libs)//05.3013. WW
-				const int ka = local_idx[k];
-#else
-				const int ka = k;
-#endif
 				for (l = 0; l < nnodes; l++)
 					for (j = 0; j < ele_dim; j++)
 					{
-						f_buff = fac * dshapefctHQ[nnodesHQ * j + ka] * shapefct[l];
-						(*PressureC)(nnodesHQ* j + ka, l) += f_buff;
+						f_buff = fac * dshapefctHQ[nnodesHQ * j + k] * shapefct[l];
+						(*PressureC)(nnodesHQ* j + k, l) += f_buff;
 						if (PressureC_S)
-							(*PressureC_S)(nnodesHQ* j + ka, l) += f_buff * fac1;
+							(*PressureC_S)(nnodesHQ* j + k, l) += f_buff * fac1;
 						if (PressureC_S_dp)
-							(*PressureC_S_dp)(nnodesHQ* j + ka, l) += f_buff * fac2;
+							(*PressureC_S_dp)(nnodesHQ* j + k, l) += f_buff * fac2;
 					}
 			}
 		}
@@ -983,14 +961,9 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 		// 3D, in z-direction
 		i = (ele_dim - 1) * nnodesHQ;
 		const double coeff = LoadFactor * rho * smat->grav_const * fkt;
-		for (k = 0; k < act_r; k++)
+		for (k = 0; k < nnodesHQ; k++)
 		{
-#if defined(USE_PETSC) // || defined(other parallel libs)//05.3013. WW
-			const int ka = local_idx[k];
-#else
-			const int ka = k;
-#endif
-			(*RHS)[i + ka] += coeff * shapefctHQ[ka];
+			(*RHS)[i + k] += coeff * shapefctHQ[k];
 			//        (*RHS)(i+ka) += LoadFactor * rho * smat->grav_const * shapefctHQ[ka] * fkt;
 		}
 	}
@@ -1325,6 +1298,15 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 	if (act_nodes_h != nnodesHQ)
 		non_ghost_flag = -1;
 
+	petsc_group::PETScLinearSolver* eqs = pcs->eqs_new;
+
+	// Set row and column indices.
+	// For non-ghost element, all row and column indices are positive.
+	// For ghost elemnent, all column indices, saved in idxn, are positive,
+	// while, all row indices, saved in idxm, are negative. For the zero
+	// entry of idxm, an alias of it is indroduced to represent zero for the
+	// negative indexing.
+	const PetscInt zero_id_alias = -eqs->Size();
 	for (int i = 0; i < nnodesHQ; i++)
 	{
 		const int i_buff = MeshElement->nodes[i]->GetEquationIndex() * dof;
@@ -1333,32 +1315,34 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 			const int ki = k * nnodesHQ + i;
 			idxm[ki] = non_ghost_flag * (i_buff + k);
 			idxn[ki] = non_ghost_flag * idxm[ki]; // always positive
+			if (non_ghost_flag == -1 && idxm[ki] == 0)
+				idxm[ki] = zero_id_alias;
 		}
 	}
 
+	// If this is a ghost element, the non-ghost entries of idxm, which holds
+	// negative values, are reset to positive. The original zero entry,
+	// which represents by a special nagetive value, is reset to zero again.
 	if (non_ghost_flag == -1)
 	{
+		// Reset non-ghost entries of idxm to positive.
 		for (int i = 0; i < act_nodes_h; i++)
 		{
 			for (int k = 0; k < dof; k++)
 			{
 				const int ki = k * nnodesHQ + local_idx[i];
-				idxm[ki] *= -1;
-				if (idxm[ki] == 0)
-					idxm[ki] = -9999;
-				// If local size is used to build up matrix, idxn should
-				// be processed in the same way.
+				// Reset original zero entry to zero.
+				if (idxm[ki] == zero_id_alias)
+					idxm[ki] = 0;
+				else
+					idxm[ki] *= -1;
 			}
 		}
 	}
 
 	const double* local_matrix = Stiffness->getEntryArray();
+	(*RHS) *= -1;
 	double* local_vec = RHS->getEntryArray();
-	for (std::size_t i = 0; i < RHS->Size(); i++)
-		local_vec[i] *= -1.0;
-	// if (dynamic) // not available.
-
-	petsc_group::PETScLinearSolver* eqs = pcs->eqs_new;
 
 	eqs->addMatrixEntries(m_dim, idxm, n_dim, idxn, local_matrix);
 	eqs->setArrayValues(1, m_dim, idxm, local_vec);

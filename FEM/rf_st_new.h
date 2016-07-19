@@ -73,7 +73,7 @@ public:
 	                     std::vector<double>& node_value_vector) const;
 
 	void FaceIntegration(CRFProcess* pcs,
-	                     std::vector<long> const & nodes_on_sfc,
+	                     std::vector<long> const& nodes_on_sfc,
 	                     std::vector<double> & node_value_vector);
 	void DomainIntegration(CRFProcess* pcs,
 	                       const std::vector<long> & nodes_in_dom,
@@ -394,8 +394,13 @@ private:
 	                               std::vector<double>& sfc_nod_val_vector);
 	void AreaAssembly(const CSourceTerm* const st, const std::vector<long>& ply_nod_vector_cond,
 	                  std::vector<double>& ply_nod_val_vector) const;
-	void DistributeVolumeFlux(CSourceTerm* st, std::vector<long> const& ply_nod_vector, // 5.3.07
+	void DistributeVolumeFlux(CSourceTerm* st, std::vector<long>& ply_nod_vector, // 5.3.07
 	                          std::vector<double>& ply_nod_val_vector);
+
+#if defined(USE_PETSC) // || defined (other parallel linear solver lib). //WW. 06.2016
+	void removeGhostSourceTerms(std::vector<long>& node_ids, std::vector<double>& node_valus);
+#endif
+
 };
 
 extern CSourceTermGroup* STGetGroup(std::string pcs_type_name, std::string pcs_pv_name);
