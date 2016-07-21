@@ -1078,98 +1078,71 @@ double CTimeDiscretization::FirstTimeStepEstimate(void)
 			// should be greater zero..
 			case FiniteElement::MASS_TRANSPORT: // TF, if steady state, time step should be greater zero..
 				time_step_length = initial_time_step; // take min time step as conservative best guess for testing
-				if (time_control_type == TimeControlType::SELF_ADAPTIVE) // MW
-				{
-					// time step will be reduced in an exponential way until min_time_step.
-					time_step_length
-					    = pow(time_adapt_coe_vector[time_adapt_coe_vector.size() - 1], (double)rejected_step_count)
-					      * initial_step_size;
-
-					if (time_step_length < min_time_step)
-					{
-						std::cout << "-> ***ERROR*** Next time step size is less than the given minimum size. The "
-						             "simulation is aborted."
-						          << std::endl;
-						exit(1);
-					}
-				}
 				break;
 			//		case 'R': // Richards
 			case FiniteElement::RICHARDS_FLOW: // TF
 			{
-				idxS = m_pcs->GetNodeValueIndex("SATURATION1");
-				// WW no_time_steps = 1000000000;           //OK (int)(1.0e10);
-				time_step_length = 1.e10;
-				size_t mmp_vector_size = mmp_vector.size();
-				for (size_t m = 0; m < mmp_vector_size; m++)
-					m_mmp = mmp_vector[m];
-				const size_t size(m_pcs->m_msh->ele_vector.size());
-				for (size_t i = 0; i < size; i++)
-				{
-					elem = m_pcs->m_msh->ele_vector[i];
-					if (elem->GetMark()) // Element selected
-					{
-						// Activated Element
-						group = elem->GetPatchIndex();
-						m_mmp = mmp_vector[group];
-						m_mmp->m_pcs = m_pcs;
-						MshElemType::type EleType = elem->GetElementType();
-						// Triangle
-						if (EleType == MshElemType::TRIANGLE)
-						{
-							GP[0] = GP[1] = 0.1 / 0.3;
-							GP[2] = 0.0;
-						}
-						else if (EleType == MshElemType::TETRAHEDRON)
-							GP[0] = GP[1] = GP[2] = 0.25;
-						else
-							GP[0] = GP[1] = GP[2] = 0.0;
-					}
-					const int vertex_number(elem->GetVertexNumber());
-					for (int j = 0; j < vertex_number; j++)
-						Node_Sat[j] = m_pcs->GetNodeValue(elem->GetNodeIndex(j), idxS);
-					// JT: dSdP now returns actual sign (<0)
-					buffer = -m_mmp->PressureSaturationDependency(fem->interpolate(Node_Sat),
-					                                              true); // JT: now returns correct sign.
-					buffer *= 0.5 * elem->GetVolume() * elem->GetVolume();
-					buffer
-					    *= m_mmp->porosity_model_values[0] * mfp_vector[0]->Viscosity() / m_mmp->permeability_tensor[0];
-					buffer /= m_pcs->time_unit_factor;
-					time_step_length = MMin(time_step_length, buffer);
-				} // ele_vector
-
 				if (time_control_type == TimeControlType::SELF_ADAPTIVE) // MW
 				{
-					//				if (rejected_step_count==0)
-					//					time_step_length=ini_time_step;
-					//				else
-					//				{
-					time_step_length
-					    = pow(time_adapt_coe_vector[time_adapt_coe_vector.size() - 1], (double)rejected_step_count)
-					      * initial_step_size;
-
-					if (time_step_length <= min_time_step)
-					{
-						std::cout << "-> ***ERROR*** Next time step size is less than or equal to the given minimum "
-						             "size. The simulation is aborted."
-						          << std::endl;
-						exit(1);
-					}
-					//				}
+					time_step_length = initial_step_size;
 				}
-
-				if (time_step_length < MKleinsteZahl)
+				else 
 				{
-					std::cout << "Warning : Time Control Step Wrong, dt = 0.0 "
-					          << "\n";
-					time_step_length = 1.e-6;
+					idxS = m_pcs->GetNodeValueIndex("SATURATION1");
+					// WW no_time_steps = 1000000000;           //OK (int)(1.0e10);
+					time_step_length = 1.e10;
+					size_t mmp_vector_size = mmp_vector.size();
+					for (size_t m = 0; m < mmp_vector_size; m++)
+						m_mmp = mmp_vector[m];
+					const size_t size(m_pcs->m_msh->ele_vector.size());
+					for (size_t i = 0; i < size; i++)
+					{
+						elem = m_pcs->m_msh->ele_vector[i];
+						if (elem->GetMark()) // Element selected
+						{
+							// Activated Element
+							group = elem->GetPatchIndex();
+							m_mmp = mmp_vector[group];
+							m_mmp->m_pcs = m_pcs;
+							MshElemType::type EleType = elem->GetElementType();
+							// Triangle
+							if (EleType == MshElemType::TRIANGLE)
+							{
+								GP[0] = GP[1] = 0.1 / 0.3;
+								GP[2] = 0.0;
+							}
+							else if (EleType == MshElemType::TETRAHEDRON)
+								GP[0] = GP[1] = GP[2] = 0.25;
+							else
+								GP[0] = GP[1] = GP[2] = 0.0;
+						}
+						const int vertex_number(elem->GetVertexNumber());
+						for (int j = 0; j < vertex_number; j++)
+							Node_Sat[j] = m_pcs->GetNodeValue(elem->GetNodeIndex(j), idxS);
+						// JT: dSdP now returns actual sign (<0)
+						buffer = -m_mmp->PressureSaturationDependency(fem->interpolate(Node_Sat),
+																	true); // JT: now returns correct sign.
+						buffer *= 0.5 * elem->GetVolume() * elem->GetVolume();
+						buffer
+							*= m_mmp->porosity_model_values[0] * mfp_vector[0]->Viscosity() / m_mmp->permeability_tensor[0];
+						buffer /= m_pcs->time_unit_factor;
+						time_step_length = MMin(time_step_length, buffer);
+					} // ele_vector
+
+					if (time_step_length < MKleinsteZahl)
+					{
+						std::cout << "Warning : Time Control Step Wrong, dt = 0.0 "
+								<< "\n";
+						time_step_length = 1.e-6;
+					}
+					std::cout << "Neumann Time Step: " << time_step_length << "\n";
+					time_step_length_neumann = 1.e10;
+					time_step_length = MMin(time_step_length, max_time_step);
+					if (Write_tim_discrete)
+						*tim_discrete << aktueller_zeitschritt << "  " << aktuelle_zeit << "   " << time_step_length << "  "
+									<< m_pcs->iter_lin << "\n";
 				}
-				std::cout << "Neumann Time Step: " << time_step_length << "\n";
-				time_step_length_neumann = 1.e10;
-				time_step_length = MMin(time_step_length, max_time_step);
-				if (Write_tim_discrete)
-					*tim_discrete << aktueller_zeitschritt << "  " << aktuelle_zeit << "   " << time_step_length << "  "
-					              << m_pcs->iter_lin << "\n";
+
 				break;
 			}
 			default:
