@@ -34,6 +34,8 @@ matrix:
             - boost-latest
           packages:
             - libboost-thread1.55-dev
+            - libboost-filesystem1.55-dev
+            - libboost-regex1.55-dev
     - env: CASE=LIS CMAKE_ARGS="-DLIS_INCLUDE_DIR=$TRAVIS_BUILD_DIR/lis-cmake-master/include -DLIS_LIBRARIES=$TRAVIS_BUILD_DIR/lis-cmake-master/build/lib/liblis.a"
       addons:
         apt:
