@@ -772,19 +772,19 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 
 				Error = Norm / InitialNorm;
 				ErrorU = NormU / InitialNormU0;
-				if (Norm < Tolerance_global_Newton && Error > Norm)
-					Error = Norm;
-				//           if(Norm<TolNorm)  Error = 0.01*Tolerance_global_Newton;
-				if ((NormU / InitialNormU) <= Tolerance_global_Newton)
-					Error = NormU / InitialNormU;
+//				if (Norm < Tolerance_global_Newton && Error > Norm)
+//					Error = Norm;
+//				//           if(Norm<TolNorm)  Error = 0.01*Tolerance_global_Newton;
+//				if ((NormU / InitialNormU) <= Tolerance_global_Newton)
+//					Error = NormU / InitialNormU;
 
 				// Compute damping for Newton-Raphson step
 				damping = 1.0;
 				//           if(Error/Error1>1.0e-1) damping=0.5;
-				if (Error / Error1 > 1.0e-1 || ErrorU / ErrorU1 > 1.0e-1)
-					damping = 0.5;
-				if (ErrorU < Error)
-					Error = ErrorU;
+//				if (Error / Error1 > 1.0e-1 || ErrorU / ErrorU1 > 1.0e-1)
+//					damping = 0.5;
+//				if (ErrorU < Error)
+//					Error = ErrorU;
 #if defined(NEW_EQS) && defined(JFNK_H2M)
 				/// If JFNK, get w from the buffer
 				if (m_num->nls_method == 2)
@@ -833,8 +833,8 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 //					break;
 				//Test on absolute and relative norms with same tolerance
 				//TODO: Move to input file control
-				if((Error <= Tolerance_global_Newton && ErrorU <= Tolerance_global_Newton) || (Norm <= Tolerance_global_Newton && NormU <= Tolerance_global_Newton))
-				//if (NormU <= Tolerance_global_Newton) //This tests on displacement norm only
+				//if((Error <= Tolerance_global_Newton && ErrorU <= Tolerance_global_Newton) || (Norm <= Tolerance_global_Newton && NormU <= Tolerance_global_Newton))
+				if (NormU <= Tolerance_global_Newton) //This tests on displacement norm only
 				{
 					if (ite_steps == 1) // WX:05.2012
 					{
