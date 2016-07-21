@@ -79,7 +79,14 @@ private:
 	// Variables of single yield surface model
 	Matrix* xi; // Rotational hardening variables
 	Matrix* MatP; // Material parameters
-
+	Matrix* Strain_Kel; // TN - Burgers model dev. Kelvin strain
+	Matrix* Strain_Max; // TN - Burgers model dev. Maxwell strain
+	Matrix* Strain_pl; // TN - Minkley - deviatoric plastic strain
+	Matrix* Strain_t_ip; // TN - introduced to save previous strain in all integration points
+	Matrix* e_pl;
+	Matrix* ev_loc_nr_res;
+	Matrix* lambda_pl; // TN - Minkley - volumetric plastic strain, plastic arc length, plastic multiplier
+	Matrix* Strain; // NB - Strain tensor for reload-feature
 	// Discontinuity
 	double disp_j;
 	double tract_j;
