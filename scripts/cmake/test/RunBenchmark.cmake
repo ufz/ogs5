@@ -52,7 +52,6 @@ else ()
 				RESULT_VARIABLE EXIT_CODE)
 		endif()
 	else()
-		message(STATUS "run ${MPI_RUN_COMMAND} ${benchmarkStrippedName}")
 		execute_process (
 			COMMAND ${MPI_RUN_COMMAND} ${EXECUTABLE_OUTPUT_PATH}/ogs --output-directory ${BENCHMARK_OUTPUT_DIRECTORY} ${benchmarkStrippedName}
 			OUTPUT_FILE ${BENCHMARK_OUTPUT_DIRECTORY}/${benchmarkStrippedName}.log
