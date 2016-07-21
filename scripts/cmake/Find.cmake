@@ -50,7 +50,7 @@ endif()
 ######################
 ### Find libraries ###
 ######################
-if(OGS_LSOLVER STREQUAL PETSC OR OGS_NO_EXTERNAL_LIBS)
+if(OGS_NO_EXTERNAL_LIBS)
 	return()
 endif()
 
