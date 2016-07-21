@@ -14,8 +14,17 @@ if (WIN32)
 
 else ()
 
+	if(NUM_PROCESSES GREATER 1)
+		set (PARALLEL_USE_MPI ON)
+	endif()
+
 	if(PARALLEL_USE_MPI)
 		set(MPI_RUN_COMMAND "mpirun" "-np" "${NUM_PROCESSES}")
+		# mpirun from cmakte test is unstable on envinf1 and
+		# need the followings to ignore PSM and openib layer.
+		# ref) http://doc.escience-lab.org/elcid/elcid-Job-submission.html
+		set(ENV{OMPI_MCA_btl} "^openib")
+		set(ENV{OMPI_MCA_mtl} "^psm")
 	else()
 		set(MPI_RUN_COMMAND "")
 	endif()
