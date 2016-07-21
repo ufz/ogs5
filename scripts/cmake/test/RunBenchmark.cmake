@@ -20,6 +20,11 @@ else ()
 
 	if(PARALLEL_USE_MPI)
 		set(MPI_RUN_COMMAND "mpirun" "-np" "${NUM_PROCESSES}")
+		# mpirun from cmakte test is unstable on envinf1 and
+		# need the followings to ignore PSM and openib layer.
+		# ref) http://doc.escience-lab.org/elcid/elcid-Job-submission.html
+		set(ENV{OMPI_MCA_btl} "^openib")
+		set(ENV{OMPI_MCA_mtl} "^psm")
 	else()
 		set(MPI_RUN_COMMAND "")
 	endif()
@@ -47,6 +52,7 @@ else ()
 				RESULT_VARIABLE EXIT_CODE)
 		endif()
 	else()
+		message(STATUS "run ${MPI_RUN_COMMAND} ${benchmarkStrippedName}")
 		execute_process (
 			COMMAND ${MPI_RUN_COMMAND} ${EXECUTABLE_OUTPUT_PATH}/ogs --output-directory ${BENCHMARK_OUTPUT_DIRECTORY} ${benchmarkStrippedName}
 			OUTPUT_FILE ${BENCHMARK_OUTPUT_DIRECTORY}/${benchmarkStrippedName}.log
