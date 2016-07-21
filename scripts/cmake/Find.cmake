@@ -83,21 +83,19 @@ if ( CMAKE_USE_PTHREADS_INIT AND NOT HAVE_PTHREADS)
 	message (STATUS "pthread library found." )
 endif ()
 if(HAVE_PTHREADS)
-  add_definitions(-DHAVE_PTHREADS)
+	add_definitions(-DHAVE_PTHREADS)
 endif()
 mark_as_advanced(CMAKE_THREAD_PREFER_PTHREAD)
 
 ## boost (see FindBoost.cmake for more options) ##
-##kg44 this configuration works for boost and petsc on a cray
-option(Boost_USE_STATIC_LIBS "" ON)
-option(Boost_USE_MULTITHREADED "" ON)
-option(Boost_USE_STATIC_RUNTIME "" ON)
-mark_as_advanced(Boost_USE_STATIC_LIBS Boost_USE_MULTITHREADED Boost_USE_STATIC_RUNTIME)
-
 if(OGS_USE_BOOST)
-	find_package(Boost 1.50.0 COMPONENTS system thread REQUIRED)
-elseif(NOT OGS_DONT_USE_BOOST)
-	find_package( Boost 1.50.0 COMPONENTS filesystem system regex)
+	##kg44 this configuration works for boost and petsc on a cray
+	option(Boost_USE_STATIC_LIBS "" ON)
+	option(Boost_USE_MULTITHREADED "" ON)
+	option(Boost_USE_STATIC_RUNTIME "" ON)
+	mark_as_advanced(Boost_USE_STATIC_LIBS Boost_USE_MULTITHREADED Boost_USE_STATIC_RUNTIME)
+
+	find_package(Boost 1.50.0 COMPONENTS filesystem system thread regex REQUIRED)
 endif()
 
 # Find Math Kernel Library (MKL)
