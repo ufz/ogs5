@@ -71,6 +71,7 @@ set_property(CACHE OGS_CONFIG PROPERTY STRINGS
 	MKL  # SP + LIS + MKL
 	MPI  # SP(MPI)
 	PETSC # PETSC(MPI)
+	PETSC_GEMS # PETSC(MPI) + GEMS
 )
 
 # default setting for each configuration
