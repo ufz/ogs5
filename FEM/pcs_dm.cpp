@@ -822,16 +822,19 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 #if defined(USE_MPI) || defined(USE_PETSC)
 				}
 #endif
-				if (Error > 100.0 && ite_steps > 1)
-				{
-					printf("\n  Attention: Newton-Raphson step is diverged. Programme halt!\n");
-					exit(1);
-				}
-				if (InitialNorm < 10 * Tolerance_global_Newton)
-					break;
-				if (Norm < 0.001 * InitialNorm)
-					break;
-				if (Error <= Tolerance_global_Newton)
+//				if (Error > 100.0 && ite_steps > 1)
+//				{
+//					printf("\n  Attention: Newton-Raphson step is diverged. Programme halt!\n");
+//					exit(1);
+//				}
+//				if (InitialNorm < 10 * Tolerance_global_Newton)
+//					break;
+//				if (Norm < 0.001 * InitialNorm)
+//					break;
+				//Test on absolute and relative norms with same tolerance
+				//TODO: Move to input file control
+				if((Error <= Tolerance_global_Newton && ErrorU <= Tolerance_global_Newton) || (Norm <= Tolerance_global_Newton && NormU <= Tolerance_global_Newton))
+				//if (NormU <= Tolerance_global_Newton) //This tests on displacement norm only
 				{
 					if (ite_steps == 1) // WX:05.2012
 					{
