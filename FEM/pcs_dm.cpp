@@ -772,19 +772,21 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 
 				Error = Norm / InitialNorm;
 				ErrorU = NormU / InitialNormU0;
-				//				if (Norm < Tolerance_global_Newton && Error > Norm)
-				//					Error = Norm;
-				//				//           if(Norm<TolNorm)  Error = 0.01*Tolerance_global_Newton;
-				//				if ((NormU / InitialNormU) <= Tolerance_global_Newton)
-				//					Error = NormU / InitialNormU;
+				// Error = Norm / InitialNorm;
+				// ErrorU = NormU / InitialNormU0;
+				// if(Norm < Tolerance_global_Newton && Error > Norm)
+				//	Error = Norm;
+				//           if(Norm<TolNorm)  Error = 0.01*Tolerance_global_Newton;
+				// if((NormU / InitialNormU) <= Tolerance_global_Newton)
+				//	Error = NormU / InitialNormU;
 
 				// Compute damping for Newton-Raphson step
 				damping = 1.0;
 				//           if(Error/Error1>1.0e-1) damping=0.5;
-//				if (Error / Error1 > 1.0e-1 || ErrorU / ErrorU1 > 1.0e-1)
-//					damping = 0.5;
-//				if (ErrorU < Error)
-//					Error = ErrorU;
+// if(Error / Error1 > 1.0e-1 || ErrorU / ErrorU1 > 1.0e-1)
+// damping = 0.5;
+// if(ErrorU < Error)
+//	Error = ErrorU;
 #if defined(NEW_EQS) && defined(JFNK_H2M)
 				/// If JFNK, get w from the buffer
 				if (m_num->nls_method == 2)
@@ -811,31 +813,54 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 				if (myrank == 0)
 				{
 #endif
-				//Screan printing:
-				std::cout<<"      -->End of Newton-Raphson iteration: "<<ite_steps<<"/"<< MaxIteration <<"\n";
-				cout.width(8);
- 				cout.precision(2);
-				cout.setf(ios::scientific);
-				cout<<"         NR-Error"<<"  "<<"RHS Norm 0"<<"  "<<"RHS Norm  "<<"  "<<"Unknowns Norm"<<"  "<<"Damping"<<"\n";
-				cout<<"         "<<Error<<"  "<<InitialNorm<<"  "<<Norm<<"   "<<NormU<<"   "<<"   "<<damping<<"\n";
-				std::cout <<"      ------------------------------------------------"<<"\n";
+					// Screan printing:
+					std::cout << "      -->End of Newton-Raphson iteration: " << ite_steps << "/" << MaxIteration
+							  << "\n";
+					cout.width(8);
+					cout.precision(2);
+					cout.setf(ios::scientific);
+					std::cout << "         DeltaU/DeltaU0"
+							  << "  "
+							  << "DeltaU"
+							  << "  "
+							  << "DeltaF/DeltaF0  "
+							  << "  "
+							  << "DeltaF"
+							  << "  "
+							  << "Damping"
+							  << "\n";
+					std::cout << "         " << ErrorU << "  " << NormU << "  " << Error << "   " << Norm << "   "
+							  << "   " << damping << "\n";
+					std::cout << "      ------------------------------------------------"
+							  << "\n";
 #if defined(USE_MPI) || defined(USE_PETSC)
 				}
 #endif
-				//				if (Error > 100.0 && ite_steps > 1)
-				//				{
-				//					printf("\n  Attention: Newton-Raphson step is diverged. Programme halt!\n");
-				//					exit(1);
-				//				}
-				//				if (InitialNorm < 10 * Tolerance_global_Newton)
-				//					break;
-				//				if (Norm < 0.001 * InitialNorm)
-				//					break;
+				// if(Error > 100.0 && ite_steps > 1)
+				//{
+				//	printf (
+				//	        "\n  Attention: Newton-Raphson step is diverged. Programme halt!\n");
+				//	exit(1);
+				//}
+				// if(InitialNorm < 10 * Tolerance_global_Newton)
+				//	break;
+				// if(Norm < 0.001 * InitialNorm)
+				//	break;
+				// TN: Convergence test based on relative force and displacement residual
+				// TN: The additional condition on the absolute tolerance should eventually be input file controlled
+
+				//                bool absolute(false);
+				//                if (NormU <= Tolerance_global_Newton/100.) {
+				//                    absolute = true;
+				//                    std::cout << "Nonlinear iteration will be accepted because absolute norm of
+				//                    displacements "
+				//                              << "is below 0.01 of relative tolerance (set to " <<
+				//                              Tolerance_global_Newton << ")\n.";
+				//                }
 				// Test on absolute and relative norms with same tolerance
-				// TODO: Move to input file control
-				// if((Error <= Tolerance_global_Newton && ErrorU <= Tolerance_global_Newton) || (Norm <=
-				// Tolerance_global_Newton && NormU <= Tolerance_global_Newton))
-				if (NormU <= Tolerance_global_Newton) //This tests on displacement norm only
+				// if((Error <= Tolerance_global_Newton && ErrorU <= Tolerance_global_Newton) || Norm <=
+				// Tolerance_global_Newton && NormU <= Tolerance_global_Newton)
+				if (NormU <= Tolerance_global_Newton)
 				{
 					if (ite_steps == 1) // WX:05.2012
 					{
@@ -846,6 +871,7 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 						break;
 				}
 			}
+
 			// w = w+dw for Newton-Raphson
 			UpdateIterativeStep(damping, 0); // w = w+dw
 		} // Newton-Raphson iteration
