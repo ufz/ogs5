@@ -14,6 +14,10 @@ if (WIN32)
 
 else ()
 
+	if(NUM_PROCESSES GREATER 1)
+		set (PARALLEL_USE_MPI ON)
+	endif()
+
 	if(PARALLEL_USE_MPI)
 		set(MPI_RUN_COMMAND "mpirun" "-np" "${NUM_PROCESSES}")
 	else()
