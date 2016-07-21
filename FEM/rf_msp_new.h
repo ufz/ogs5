@@ -158,11 +158,11 @@ public:
 	// general local Newton routines to integrate inelastic material models
 	void LocalNewtonBurgers(const double dt, const std::vector<double>& strain_curr, std::vector<double>& stress_curr,
 							std::vector<double>& strain_K_curr, std::vector<double>& strain_M_curr,
-							Math_Group::Matrix& Consistent_Tangent, bool Output, double Temperature, double& local_res);
+							Math_Group::Matrix& Consistent_Tangent, double Temperature, double& local_res);
 	void LocalNewtonMinkley(const double dt, const std::vector<double>& strain_curr, std::vector<double>& stress_curr,
 							std::vector<double>& eps_K_curr, std::vector<double>& eps_M_curr,
 							std::vector<double>& eps_pl_curr, double& e_pl_v, double& e_pl_eff, double& lam,
-							Math_Group::Matrix& Consistent_Tangent, bool Output, double Temperature, double& local_res);
+							Math_Group::Matrix& Consistent_Tangent, double Temperature, double& local_res);
 private:
 	// CMCD
 	FiniteElement::CFiniteElementStd* Fem_Ele_Std;

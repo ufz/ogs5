@@ -1701,7 +1701,7 @@ void CSolidProperties::ExtractConsistentTangent(const Eigen::MatrixXd& Jac, cons
 void CSolidProperties::LocalNewtonBurgers(const double dt, const std::vector<double>& strain_curr,
 										  std::vector<double>& stress_curr, std::vector<double>& strain_K_curr,
 										  std::vector<double>& strain_M_curr, Math_Group::Matrix& Consistent_Tangent,
-										  bool Output, double Temperature, double& local_res)
+										  double Temperature, double& local_res)
 {
 	// stress, strain, internal variable
 	KVec sig_j, eps_K_j, eps_M_j;
@@ -1746,14 +1746,6 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, const std::vector<dou
 	int counter = 0;
 	const int counter_max(20);
 
-	if (Output) // Need not be performant;
-	{
-		CRFProcess* m_pcs = PCSGet("DEFORMATION");
-		ofstream Dum("local.txt", ios::app);
-		Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter + 1 << " " << res_loc.norm()
-			<< " initial" << std::endl;
-		Dum.close();
-	};
 	//    for (int counter(0); counter<counter_max && res_loc.norm() > local_tolerance; ++counter)
 	while (res_loc.norm() > Tolerance_Local_Newton && counter < counter_max)
 	{
@@ -1776,14 +1768,6 @@ void CSolidProperties::LocalNewtonBurgers(const double dt, const std::vector<dou
 		material_burgers->CalResidualBurgers(dt, epsd_i, sigd_j, eps_K_j, eps_K_t, eps_M_j, eps_M_t, res_loc);
 		// Get Jacobian
 		material_burgers->CalJacobianBurgers(dt, K_loc, sig_eff, sigd_j, eps_K_j); // for solution dependent Jacobians
-		if (Output)
-		{
-			CRFProcess* m_pcs = PCSGet("DEFORMATION");
-			ofstream Dum("local.txt", ios::app);
-			Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter + 1 << " " << res_loc.norm()
-				<< " visco" << std::endl;
-			Dum.close();
-		};
 	}
 	//	if (counter == counter_max)
 	//		std::cout << "WARNING: Maximum iteration number needed in LocalNewtonBurgers. Convergence not guaranteed."
@@ -1832,7 +1816,7 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, const std::vector<dou
 										  std::vector<double>& stress_curr, std::vector<double>& eps_K_curr,
 										  std::vector<double>& eps_M_curr, std::vector<double>& eps_pl_curr,
 										  double& e_pl_v, double& e_pl_eff, double& lam,
-										  Math_Group::Matrix& Consistent_Tangent, bool Output, double Temperature,
+										  Math_Group::Matrix& Consistent_Tangent, double Temperature,
 										  double& local_res)
 {
 	// stress, strain, internal variable
@@ -1881,15 +1865,6 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, const std::vector<dou
 	int counter = 0;
 	const int counter_max(20);
 
-	if (Output)
-	{
-		CRFProcess* m_pcs = PCSGet("DEFORMATION");
-		ofstream Dum("local.txt", ios::app);
-		Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter + 1 << " " << res_loc.norm()
-			<< " initial" << std::endl;
-		Dum.close();
-	}
-
 	while (res_loc.norm() > Tolerance_Local_Newton && counter < counter_max)
 	{
 		counter++;
@@ -1909,14 +1884,6 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, const std::vector<dou
 												  eps_pl_j, res_loc);
 		// Get Jacobian
 		material_minkley->CalViscoelasticJacobian(dt, sig_j, sig_eff, K_loc);
-		if (Output)
-		{
-			CRFProcess* m_pcs = PCSGet("DEFORMATION");
-			ofstream Dum("local.txt", ios::app);
-			Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter + 1 << " " << res_loc.norm()
-				<< " visco" << std::endl;
-			Dum.close();
-		};
 	}
 	if (!(material_minkley->YieldMohrCoulomb(sig_j * material_minkley->GM) < Tolerance_Local_Newton))
 	{
@@ -1948,14 +1915,6 @@ void CSolidProperties::LocalNewtonMinkley(const double dt, const std::vector<dou
 													  res_loc_p);
 			// Get Jacobian
 			material_minkley->CalViscoplasticJacobian(dt, sig_j, sig_eff, lam, e_pl_eff, K_loc_p);
-			if (Output)
-			{
-				CRFProcess* m_pcs = PCSGet("DEFORMATION");
-				ofstream Dum("local.txt", ios::app);
-				Dum << aktueller_zeitschritt << " " << m_pcs->GetIteSteps() << " " << counter + 1 << " "
-					<< res_loc_p.norm() << " plastic" << std::endl;
-				Dum.close();
-			}
 		}
 		// dGdE matrix and dsigdE matrix
 		Eigen::Matrix<double, 27, 6> dGdE;
