@@ -1,3 +1,5 @@
+include(test/Benchmark)
+
 Benchmark(AUTHOR PV_WW
 	PATH PETSc/hm1_1Dbeam/hm1_1Dbeam
 	CONFIG PETSC
