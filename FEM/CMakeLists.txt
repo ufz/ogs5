@@ -1,4 +1,15 @@
 set( HEADERS
+	BHEAbstract.h
+	BHE_1U.h
+	BHE_2U.h
+	BHE_CXA.h
+	BHE_CXC.h
+	BHE_Net.h
+	BHE_Net_ELE_Abstract.h
+	BHE_Net_ELE_Distributor.h
+	BHE_Net_ELE_HeatPump.h
+	BHE_Net_ELE_Pipe.h
+	BHE_Net_ELE_Pipe_Inner_1U.h
 	BoundaryCondition.h
 	PhysicalConstant.h
 	Constrained.h
@@ -53,6 +64,15 @@ set( HEADERS
 )
 
 set( SOURCES
+	BHE_1U.cpp
+	BHE_2U.cpp
+	BHE_CXA.cpp
+	BHE_CXC.cpp
+	BHE_Net.cpp
+	BHE_Net_ELE_Distributor.cpp
+	BHE_Net_ELE_HeatPump.cpp
+	BHE_Net_ELE_Pipe.cpp
+	BHE_Net_ELE_Pipe_Inner_1U.cpp
 	BoundaryCondition.cpp
 	CAP_IO.cpp
 	conversion_rate.cpp
