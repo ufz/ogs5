@@ -147,6 +147,7 @@ private:
 	inline double OverlandFlow();
 	inline double AirFlow();
 	inline double HeatTransport();
+      inline double HeatTransport_BHE(); 
 	inline double FluidMomentum();
 	inline double RandomWalker();
 	inline double MassTrasport();

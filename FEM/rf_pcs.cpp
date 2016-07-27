@@ -2763,7 +2763,7 @@ void CRFProcess::Config(void)
 	}
 	if (this->getProcessType() == FiniteElement::HEAT_TRANSPORT_BHE)
 	{
-		type = 3; 
+		type = 16; 
 		ConfigHeatTransport_BHE(); 
 	}
 	//	if (_pcs_type_name.compare("MASS_TRANSPORT") == 0) {
@@ -3245,7 +3245,7 @@ void CRFProcess::ConfigMassTransport()
 	// 1 NOD values
 	// 1.1 primary variables
 	pcs_number_of_primary_nvals = 1;
-	pcs_primary_function_name[0] = "";
+	pcs_primary_function_name[0] = new char[80];
 	//  sprintf(pcs_primary_function_name[0], "%s%li","CONCENTRATION",comp);
 	//----------------------------------------------------------------------
 	// Tests
@@ -3355,6 +3355,9 @@ void CRFProcess::ConfigHeatTransport()
 		pcs_primary_function_unit[1] = "K";
 		pcs_number_of_secondary_nvals = 0;
 	}
+	// 1 ELE values
+	pcs_number_of_evals = 1;
+	pcs_eval_name[0] = "PHI_I";
 }
 
 /**************************************************************************
@@ -5232,6 +5235,9 @@ double CRFProcess::Execute()
 	// Also allocate temporary memory for linear solver. WW
 	{
 		//_new 02/2010. WW
+        if (this->getProcessType() == FiniteElement::HEAT_TRANSPORT_BHE)
+            eqs_new->SetDOF(1);
+        else
 		eqs_new->SetDOF(pcs_number_of_primary_nvals);
 		eqs_new->ConfigNumerics(m_num);
 	}
@@ -6529,6 +6535,7 @@ void CRFProcess::CalIntegrationPointValue()
 		case FiniteElement::TNEQ: // HS, TN
 		case FiniteElement::TES: // HS, TN
 		case FiniteElement::HEAT_TRANSPORT: // JOD 2014-11-10
+        case FiniteElement::HEAT_TRANSPORT_BHE: // HS 2016-07-27
 		case FiniteElement::MASS_TRANSPORT: // JOD 2014-11-10
 			cal_integration_point_value = true;
 			break;

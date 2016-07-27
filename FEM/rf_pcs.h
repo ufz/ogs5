@@ -550,8 +550,8 @@ public:
 	int number_of_nvals;
 	int pcs_number_of_primary_nvals;
 	size_t GetPrimaryVNumber() const { return static_cast<size_t>(pcs_number_of_primary_nvals); }
-	const char* pcs_primary_function_unit[7];
-	const char* pcs_primary_function_name[7];
+	const char* pcs_primary_function_unit[10];
+	const char* pcs_primary_function_name[10];
 	const char* GetPrimaryVName(const int index) const { return pcs_primary_function_name[index]; }
 	std::string primary_variable_name; // OK
 	int pcs_number_of_secondary_nvals;
