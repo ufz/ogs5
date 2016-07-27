@@ -178,6 +178,24 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 		}
 		//....................................................................
 		// subkeyword found
+
+
+		//....................................................................
+		// subkeyword found
+		if (line_string.find("LATENT_HEAT") != string::npos)
+		{
+			in_sd.str(GetLineFromFile1(msp_file));
+			in_sd >> freezing_latent_heat; // TYZ: 2015.02.27. Latent heat for freezing J/kg	
+		}
+
+		//....................................................................
+		// subkeyword found
+		if (line_string.find("FREEZING_SIGMOID_COEFFICENT") != string::npos)
+		{
+			in_sd.str(GetLineFromFile1(msp_file));
+			in_sd >> freezing_sigmoid_coeff; // TYZ: 2015.02.27. sigmoid coefficient for freezing unitless
+		}
+
 		if (line_string.find("CAPACITY") != string::npos)
 		{
 			in_sd.str(GetLineFromFile1(msp_file));
@@ -1201,6 +1219,12 @@ double CSolidProperties::Density(double refence)
 		case 1:
 			val = (*data_Density)(0);
 			break;
+	case 6:
+		if (refence == 0.0)
+		    val = (*data_Density)(0);
+		else 
+	        val = (*data_Density)(1);
+		break;
 	}
 	return val;
 }
@@ -1430,7 +1454,15 @@ double CSolidProperties::Heat_Conductivity(double reference)
 		case 5: // DECOVALEX2015, TaskB2 JM
 			CalPrimaryVariable(capacity_pcs_name_vector);
 			val = GetMatrixValue(primary_variable[0] + T_0, primary_variable[1], name, &gueltig);
-			break;
+		break; 
+	case 7: //Freezing model - TYZ 
+		if (reference == 0.0)
+			val = (*data_Conductivity)(0); // soil thermal conductivity 0
+        else if (reference == 1.0)
+            val = (*data_Conductivity)(1); // ice thermal conductivity 1
+        else
+			val = (*data_Conductivity)(2); // water thermal conductivity 2
+		break;
 	}
 	return val;
 }

@@ -205,6 +205,8 @@ private:
 	    Crotm; // If this is needed by permaebility calculation, we keep it. Otherwise remove it. (To do, UJG/WW)
 	Math_Group::Matrix* D_tran;
 
+	double freezing_latent_heat; // TYZ: 2015.02.27. Latent heat for freezing J/kg
+	double freezing_sigmoid_coeff; // TYZ: 2015.02.27. sigmoid coefficient for freezing unitless
 	// Plasticity
 	// 1. Drucker-Prager
 	double Al;
@@ -315,6 +317,8 @@ private:
 
 	bool CheckTemperature_in_PhaseChange(const double T0, const double T1);
 	double Enthalpy(double temperature, const double latent_factor);
+         double getFreezingSigmoidCoeff() { return freezing_sigmoid_coeff;  };
+		 double getlatentheat() { return freezing_latent_heat; };
 
 #ifdef RFW_FRACTURE
 	double Youngs_Modulus(CElem* elem, double refence = 0.0);
