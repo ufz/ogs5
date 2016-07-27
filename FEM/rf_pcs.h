@@ -31,6 +31,7 @@
 #include "rf_num_new.h"
 #include "rf_tim_new.h"
 #include "conversion_rate.h" // HS, 10.2011
+#include "BHEAbstract.h"              // HS, 06.2014
 #include "SparseMatrixDOK.h"
 
 #include "Eigen/Eigen"
@@ -640,6 +641,8 @@ public:
 	void ConfigNonIsothermalFlowRichards();
 	void ConfigMassTransport();
 	void ConfigHeatTransport();
+	void ConfigHeatTransport_BHE(); 
+    void ConfigBHEs(); 
 	void ConfigDeformation();
 	void ConfigMultiphaseFlow();
 	void ConfigGasFlow();
@@ -790,6 +793,8 @@ public:
 	int temporary_num_dof_errors;
 	int cpl_num_dof_errors; // JT2012
 	bool first_coupling_iteration; // JT2012
+    std::size_t n_nodes_BHE;                    // HS2014: number of nodes for the borehole heat exchanger
+    std::size_t n_dofs_BHE;                     // HS2014: degree of freedoms for the borehole heat exchanger
 	//
 	// Specials
 	void PCSMoveNOD();
@@ -1093,6 +1098,11 @@ extern void CopyTimestepNODValuesSVTPhF(); // CB 13/08
 //#ifndef NEW_EQS                                   //WW. 07.11.2008
 extern void PCSCreateNew(); // OK
 #endif
+
+extern std::vector<BHE::BHEAbstract*> vec_BHEs;   //HS2014
+extern std::vector< std::vector<std::size_t> > vec_BHE_nodes;  // HS2014
+extern std::vector< std::vector<std::size_t> > vec_BHE_elems;  // HS2014
+
 extern bool PCSCheck(); // OK
 // New solvers WW
 // Create sparse graph for each mesh    //1.11.2007 WW

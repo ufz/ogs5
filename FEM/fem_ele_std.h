@@ -26,6 +26,8 @@
 #include "rf_mfp_new.h"
 //#include "rf_msp_new.h"
 #include "rf_out_new.h" //OK
+#include "BHEAbstract.h"  // HS
+#include "BHE_Net.h"
 
 #include "Eigen/Eigen"
 
@@ -51,6 +53,7 @@ enum EnumProcessType
 	EPT_TWOPHASE_FLOW,
 	EPT_COMPONENTAL_FLOW,
 	EPT_HEAT_TRANSPORT,
+    EPT_HEAT_TRANSPORT_BHE,
 	EPT_MASS_TRANSPORT,
 	EPT_OVERLAND_FLOW,
 	EPT_RICHARDS_FLOW,
@@ -111,6 +114,7 @@ public:
 	void CalcMassTNEQ(); // AKS/NB
 	void CalcMassTES(); // AKS/NB
 	void CalcMassPSGLOBAL(); // PCH
+    void CalcMass_BHE(BHE::BHEAbstract * m_BHE, Eigen::MatrixXd & mass_matrix);                  // HS
 	// 2. Lumped mass matrix
 	void CalcLumpedMass();
 	void CalcLumpedMass2();
@@ -120,6 +124,8 @@ public:
 	// 3. Laplace matrix
 	void CalcLaplace();
 	void CalcLaplaceMCF(); // AKS
+    void CalcLaplace_BHE(BHE::BHEAbstract * m_BHE, Eigen::MatrixXd & laplace_matrix);                  // HS
+    void CalcBoundaryHeatExchange_BHE(BHE::BHEAbstract * m_BHE, Eigen::MatrixXd & R_matrix, Eigen::MatrixXd & R_pi_s_matrix, Eigen::MatrixXd & R_s);  // HS
 	// 4. Gravity term
 	void CalcGravity();
 	// 5. Strain coupling matrix
@@ -130,6 +136,7 @@ public:
 	void CalcAdvection();
 	void CalcAdvectionMCF();
 	void CalcAdvectionTNEQ();
+    void CalcAdvection_BHE(BHE::BHEAbstract * m_BHE, Eigen::MatrixXd & advection_matrix);                  // HS
 	void CalcAdvectionTES();
 	// 8. Storage matrix
 	void CalcStorage();
@@ -291,6 +298,20 @@ private:
 	Matrix* StrainCoupling;
 	Vec* RHS;
 	DiagonalMatrix* FCT_MassL; // NW
+
+    // Borehole Heat Exchanger matrices
+    // HS 06.2014
+    Eigen::MatrixXd matBHE_P;             // BHE mass matrix, see Diersch (2013) FEFLOW book page 955 M.126
+    Eigen::MatrixXd matBHE_L;             // BHE stiffness matrix, see Diersch (2013) FEFLOW book page 955 M.127
+    Eigen::MatrixXd matBHE_W;             // BHE stiffness matrix, see Diersch (2013) FEFLOW book page 956 M.128
+    Eigen::MatrixXd matBHE_R_pi_s;        // BHE stiffness matrix, see Diersch (2013) FEFLOW book page 956 M.128
+    Eigen::MatrixXd matBHE_R_s; 
+
+    Eigen::MatrixXd matBHE_R;             // BHE boundary heat exchange matrix, see Diersch (2013) FEFLOW book page 955 M.126
+    Eigen::MatrixXd matBHE_loc_R;           
+    
+    Eigen::MatrixXd mat_local_LHS;        // BHE local left hand side matrix for one element
+    Eigen::VectorXd vec_local_RHS;        // BHE local right hand side vector for one element
 	//-------------------------------------------------------
 	void SetHighOrderNodes(); // 25.2.2007 WW
 	// Primary as water head
@@ -376,6 +397,8 @@ protected:
 	// Assembly of parabolic equation
 	void AssembleParabolicEquation(); // OK4104
 	void AssembleMixedHyperbolicParabolicEquation();
+    void AssembleMixedHyperbolicParabolicEquation_BHE();  // HS 06.2014
+    void Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net); // HS 08.2015
 	void AssembleParabolicEquationNewton();
 	// JOD
 	void AssembleParabolicEquationNewtonJacobian(double** jacob,

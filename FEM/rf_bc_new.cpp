@@ -417,6 +417,12 @@ std::ios::pos_type CBoundaryCondition::Read(std::ifstream* bc_file,
 			in.clear();
 		}
 
+		if (line_string.find("VERTICAL_DISTRIBUTION") != std::string::npos)
+		{
+			this->setProcessDistributionType(FiniteElement::VERTICAL_DISTRIBUTION);
+			in >> vertical_dist_curve_idx; //PH
+		}
+
 		// Time dependent function
 		//..Time dependent curve ............................................
 		if (line_string.find("$TIM_TYPE") != std::string::npos)
@@ -1155,6 +1161,53 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs, int ShiftInNodeVector, const
 				}
 				//-------
 				m_node_value = new CBoundaryConditionNode;
+
+                // HS: 06.2014: BHE node
+                if (bc->getProcessType() == FiniteElement::HEAT_TRANSPORT_BHE)
+                {
+                    long shift(0);
+                    std::size_t BHE_index(0);
+                    bool found(false);
+                    // get the number of nodes first
+                    shift = bc->getProcess()->m_msh->GetNodesNumber(false); // node number
+                    // identify which BHE does this node belong to. 
+                    for (size_t idx_BHE = 0; idx_BHE < vec_BHEs.size(); idx_BHE++)
+                    {
+                        for (std::size_t idx_node = 0; idx_node < vec_BHE_nodes[idx_BHE].size(); idx_node++)
+                        {
+                            if (node_idx == vec_BHE_nodes[idx_BHE][idx_node])
+                            {
+                                BHE_index = idx_BHE;
+                                found = true;
+                                break;
+                            }  // end of if node_idx
+                            if (!found)
+                                shift += vec_BHEs[idx_BHE]->get_n_unknowns();
+                        }  // end of for idx_BHE
+                    }  // end of for idx_BHE
+
+                    if (found)
+                    {
+                        int idx_pv = vec_BHEs[BHE_index]->get_loc_shift_by_pv(bc->getProcessPrimaryVariable());
+                        shift += idx_pv;
+                        m_node_value->bhe_node_shift = shift - node_idx;
+                        m_node_value->bhe_pv_index = (std::size_t)idx_pv; 
+                        m_node_value->bhe_index = BHE_index; 
+                        if (vec_BHEs[BHE_index]->get_type() == BHE::BHE_TYPE_2U)
+                        {
+                            if (idx_pv == 0 || idx_pv == 1)
+                                m_node_value->bhe_pipe_flag = 0; // inflow pipe
+                            else
+                                m_node_value->bhe_pipe_flag = 1; // outflow pipe
+                        }
+                        else if ( idx_pv == 0 )
+                            m_node_value->bhe_pipe_flag = 0;
+                        else 
+                            m_node_value->bhe_pipe_flag = 1;
+                    }
+                }
+
+
 				// Get MSH node number
 				if (bc->getProcessDistributionType() == FiniteElement::CONSTANT
 				    || bc->getProcessDistributionType() == FiniteElement::SWITCH)
