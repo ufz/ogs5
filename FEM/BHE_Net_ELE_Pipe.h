@@ -19,7 +19,7 @@ namespace BHE  // namespace of borehole heat exchanger
         /**
           * constructor
           */
-        BHE_Net_ELE_Pipe(std::string & name, BHE_NET_ELE::type type = BHE_NET_ELE::type::BHE_NET_PIPE);
+        BHE_Net_ELE_Pipe(std::string & name, BHE_NET_ELE::type type = BHE_NET_ELE::BHE_NET_PIPE);
 
         double get_RHS_value();
 
