@@ -745,8 +745,7 @@ double CFiniteElementStd::CalCoef_RHS_TNEQ(const int dof_index)
 			double H_vap = - SolidProp->reaction_enthalpy; //sign convention: defined negative for exothermic composition reaction but equ. written as: AB + \Delta H <--> A + B
 
 			//Correction for temperature-dependent enthalpy in case of variable cpS
-			if (SolidProp->getSolidReactiveSystem() == FiniteElement::CaOH2
-			    || SolidProp->getSolidReactiveSystem() == FiniteElement::Mn3O4)
+			if (SolidProp->Capacity_mode == 4 || SolidProp->Capacity_mode == 5)
 			{
 			const double rhoSR = gp_ele->rho_s_curr[gp];
 			const double dcp_drhoSR((((*SolidProp->data_Capacity)(1)*SolidProp->upper_solid_density_limit -
