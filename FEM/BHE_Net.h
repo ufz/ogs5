@@ -29,9 +29,9 @@ namespace BHE  // namespace of borehole heat exchanger
         void add_bhe_net_elem(BHE_Net_ELE_Abstract* element);
 
         void add_bhe_net_pipe(BHE_Net_ELE_Pipe* pipe,
-                              std::string & from,
+                              std::string const & from,
                               int from_ele_which_port,
-                              std::string & to,
+                              std::string const & to,
                               int to_ele_which_port);
 
         /**
