@@ -697,8 +697,8 @@ double CFiniteElementStd::CalCoef_RHS_TES(const int dof_index)
 
 				const double cpS = SolidProp->Heat_Capacity(rhoSR);
 				const double cpG = FluidProp->SpecificHeatCapacity(eos_arg);
-				H_vap -= (cpS - cpG + rhoSR * dcp_drhoSR)*(Tg - 573.15);//TODO: Move IC to input file
-
+				H_vap -= (cpS - cpG + rhoSR * dcp_drhoSR)
+				         * (Tg - SolidProp->T_ref_enthalpy_correction); // TODO: Move IC to input file
 			}
 			val += (1.0-poro) * q_r * H_vap;
 			val += gp_ele->rho_s_curr[gp] * (1.0-poro) * SolidProp->specific_heat_source;
