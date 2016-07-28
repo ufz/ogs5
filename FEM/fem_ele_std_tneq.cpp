@@ -747,16 +747,16 @@ double CFiniteElementStd::CalCoef_RHS_TNEQ(const int dof_index)
 			//Correction for temperature-dependent enthalpy in case of variable cpS
 			if (SolidProp->Capacity_mode == 4 || SolidProp->Capacity_mode == 5)
 			{
-			const double rhoSR = gp_ele->rho_s_curr[gp];
-			const double dcp_drhoSR((((*SolidProp->data_Capacity)(1)*SolidProp->upper_solid_density_limit -
-							(*SolidProp->data_Capacity)(0)*SolidProp->lower_solid_density_limit)/
-						(SolidProp->upper_solid_density_limit-SolidProp->lower_solid_density_limit) -
-						(*SolidProp->data_Capacity)(0)) * SolidProp->lower_solid_density_limit/(rhoSR*rhoSR));
+				const double rhoSR = gp_ele->rho_s_curr[gp];
+				const double dcp_drhoSR(
+				    (((*SolidProp->data_Capacity)(1) * SolidProp->upper_solid_density_limit
+				      - (*SolidProp->data_Capacity)(0) * SolidProp->lower_solid_density_limit)
+				         / (SolidProp->upper_solid_density_limit - SolidProp->lower_solid_density_limit)
+				     - (*SolidProp->data_Capacity)(0)) * SolidProp->lower_solid_density_limit / (rhoSR * rhoSR));
 
-			const double cpS = SolidProp->Heat_Capacity(rhoSR);
-			const double cpG = FluidProp->SpecificHeatCapacity(eos_arg);
-			H_vap -= (cpS - cpG + rhoSR * dcp_drhoSR)
-					 * (Ts - SolidProp->T_ref_enthalpy_correction);
+				const double cpS = SolidProp->Heat_Capacity(rhoSR);
+				const double cpG = FluidProp->SpecificHeatCapacity(eos_arg);
+				H_vap -= (cpS - cpG + rhoSR * dcp_drhoSR) * (Ts - SolidProp->T_ref_enthalpy_correction);
 			}
 
 			val = (1.0 - poro) * q_r * H_vap;
