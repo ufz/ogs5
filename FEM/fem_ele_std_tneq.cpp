@@ -757,7 +757,7 @@ double CFiniteElementStd::CalCoef_RHS_TNEQ(const int dof_index)
 			const double cpS = SolidProp->Heat_Capacity(rhoSR);
 			const double cpG = FluidProp->SpecificHeatCapacity(eos_arg);
 			H_vap -= (cpS - cpG + rhoSR * dcp_drhoSR)
-				     * (Ts - SolidProp->T_ref_enthalpy_correction); // TODO: Move IC to input file
+					 * (Ts - SolidProp->T_ref_enthalpy_correction);
 			}
 
 			val = (1.0 - poro) * q_r * H_vap;
