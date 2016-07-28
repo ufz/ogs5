@@ -9173,7 +9173,7 @@ void CFiniteElementStd::AssembleMixedHyperbolicParabolicEquation_BHE()
             else
                 pcs->eqs_new->b[shift_i] += vec_local_RHS(i);
         #else
-            pcs->eqs->b[shift_i] += vec_local_RHS(i);
+            (*RHS)[shift_i] += vec_local_RHS(i);
         #endif
         
         // B_pi assembly
