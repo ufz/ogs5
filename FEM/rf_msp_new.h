@@ -307,7 +307,7 @@ private:
 	double reaction_entropy;
 	double non_reactive_solid_volume_fraction;
 	double non_reactive_solid_density;
-
+	double T_ref_enthalpy_correction;
 	double specific_heat_source;
 
 	// CMCD

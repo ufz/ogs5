@@ -822,6 +822,12 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 			in_sd >> specific_heat_source;
 			in_sd.clear();
 		}
+		if (line_string.find("$ENTHALPY_CORRECTION_REFERENCE_TEMPERATURE") != string::npos)
+		{
+			in_sd.str(GetLineFromFile1(msp_file));
+			in_sd >> T_ref_enthalpy_correction;
+			in_sd.clear();
+		}
 
 		if (line_string.find("$MICRO_STRUCTURE_PLAS") != string::npos) // WX:09.2011 for anisotropic plasticity
 		{
@@ -892,6 +898,8 @@ void CSolidProperties::SetSolidReactiveSystemProperties() // Definition auch in 
 		reaction_enthalpy = -1.083e+05/PhysicalConstant::MolarMass::Water; //in J/kg (Molar heat of reaction divided by molar mass of water)
 		//negative for exothermic composition reaction
 		reaction_entropy = -143.5/PhysicalConstant::MolarMass::Water; //in J/kgK
+		std::cout << "Set enthalpy correction reference temperature with keyword "
+		             "$ENTHALPY_CORRECTION_REFERENCE_TEMPERATURE; usually to initial solid temperature." << std::endl;
 	}
 	else if (reaction_system.compare("Mn3O4") == 0)
 	{
@@ -900,6 +908,8 @@ void CSolidProperties::SetSolidReactiveSystemProperties() // Definition auch in 
 		reaction_enthalpy = -1.376e+05 / 0.032; // in J/kg (Molar heat of reaction divided by molar mass of oxygen)
 		// negative for exothermic composition reaction
 		reaction_entropy = -114.1 / 0.032; // in J/kgK
+		std::cout << "Set enthalpy correction reference temperature with keyword "
+		             "$ENTHALPY_CORRECTION_REFERENCE_TEMPERATURE; usuall to initial solid temperature." << std::endl;
 	}
 	else if (reaction_system.compare("Z13XBF") == 0)
 	{
@@ -1015,7 +1025,7 @@ CSolidProperties::CSolidProperties()
 	reaction_entropy = 0.0;
 	non_reactive_solid_volume_fraction = 0.0;
 	non_reactive_solid_density = 0.0;
-
+	T_ref_enthalpy_correction = 573.15;
 	specific_heat_source = 0.0;
 
 	bishop_model = -1; // 15.08.2011. WW
