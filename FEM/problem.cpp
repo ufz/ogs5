@@ -3291,7 +3291,7 @@ Modification:
 inline double Problem::HeatTransport_BHE()
 {
     double error = 1.0e+8;
-    CRFProcess* m_pcs = total_processes[15];
+    CRFProcess* m_pcs = total_processes[16];
     if (!m_pcs->selected)
         return error;             //12.12.2008 WW
     //CB This is a cheat to map a 2D horizontal heat pump distribution on a vertical model

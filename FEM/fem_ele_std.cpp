@@ -444,6 +444,7 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 		switch (pcs->getProcessType())
 		{
 			case HEAT_TRANSPORT:
+            case HEAT_TRANSPORT_BHE:
 			case MASS_TRANSPORT:
 			case AIR_FLOW:
 			case MULTI_COMPONENTIAL_FLOW:
@@ -2078,6 +2079,7 @@ double CFiniteElementStd::CalCoefStorage()
 		case EPT_COMPONENTAL_FLOW: // Componental flow
 			break;
 		case EPT_HEAT_TRANSPORT: // heat transport
+        case EPT_HEAT_TRANSPORT_BHE:
 			val = 0.0;
 			break;
 		case EPT_MASS_TRANSPORT: // Mass transport //SB4200
@@ -2145,6 +2147,7 @@ double CFiniteElementStd::CalCoefContent()
 		case EPT_COMPONENTAL_FLOW: // Componental flow
 			break;
 		case EPT_HEAT_TRANSPORT: // heat transport
+        case EPT_HEAT_TRANSPORT_BHE:
 			break;
 		case EPT_MASS_TRANSPORT: // Mass transport //SB4200
 		{
@@ -3561,6 +3564,7 @@ double CFiniteElementStd::CalCoefAdvection()
 		case EPT_COMPONENTAL_FLOW: // Componental flow
 			break;
 		case EPT_HEAT_TRANSPORT: // heat transport
+        case EPT_HEAT_TRANSPORT_BHE: 
 			if (FluidProp->density_model == 14 && MediaProp->heat_diffusion_model == 1 && cpl_pcs)
 			{
 				dens_arg[0] = interpolate(NodalValC1);
@@ -9900,7 +9904,24 @@ void CFiniteElementStd::Assembly()
 			break;
 		//....................................................................
         case EPT_HEAT_TRANSPORT_BHE: 
-            AssembleMixedHyperbolicParabolicEquation_BHE();
+            heat_phase_change = false; // ?2WW
+
+            if (this->pcs->getProcessType() == FiniteElement::HEAT_TRANSPORT_BHE && ele_dim == 1)
+            {
+                // this is a BHE element
+                AssembleMixedHyperbolicParabolicEquation_BHE();
+            }
+            else
+            {
+                //CMCD4213
+                AssembleMixedHyperbolicParabolicEquation();
+                if (FluidProp->density_model == 14 && MediaProp->heat_diffusion_model == 1 &&
+                    cpl_pcs)
+                    Assemble_RHS_HEAT_TRANSPORT();  // This include when need pressure terms n dp/dt + nv.Nabla p//AKS
+                if (MediaProp->evaporation == 647)
+                    Assemble_RHS_HEAT_TRANSPORT2();  //AKS
+            }
+
             break; 
 		case EPT_MASS_TRANSPORT: // Mass transport
 			// SB4200
