@@ -282,51 +282,53 @@ Problem::Problem (char* filename) :
 //--------------------------------------------------
 #ifdef GEM_REACT
 	m_vec_GEM = new REACT_GEM();
-	GEMRead(FileName, m_vec_GEM);
-
-	string path = ""; // to get the path of the file;
-	path = FileName; // first get full path and project name;
-	int pos, npos;
-	pos = 0;
-	npos = (int)path.size();
-
-// Get path
-#ifdef _WIN32
-	pos = (int)path.rfind("\\"); // HS keep this on windows
-#else
-	pos = (int)path.rfind("/"); // HS keep this on linux
-#endif // _WIN32
-	if (pos < npos)
-		path = path.substr(0, pos + 1);
-
-	// now start initialization of GEMS
-	if (m_vec_GEM->Init_Nodes(path) == 0)
+	if (GEMRead(FileName, m_vec_GEM))
 	{
-		if (m_vec_GEM->Init_RUN(path) == 0)
+		string path = ""; // to get the path of the file;
+		path = FileName; // first get full path and project name;
+		int pos, npos;
+		pos = 0;
+		npos = (int)path.size();
+
+		// Get path
+#ifdef _WIN32
+		pos = (int)path.rfind("\\"); // HS keep this on windows
+#else
+		pos = (int)path.rfind("/"); // HS keep this on linux
+#endif // _WIN32
+		if (pos < npos)
+			path = path.substr(0, pos + 1);
+
+		// now start initialization of GEMS
+		if (m_vec_GEM->Init_Nodes(path) == 0)
 		{
-			m_vec_GEM->initialized_flag = 1;
+			if (m_vec_GEM->Init_RUN(path) == 0)
+			{
+				m_vec_GEM->initialized_flag = 1;
+			}
+			else // something is wrong and we stop execution
+			{
+				cout << " GEMS: Error in Init_Nodes..check input "
+					 << "\n";
+#if defined(USE_MPI_GEMS) || defined(USE_PETSC)
+				MPI_Finalize(); // make sure MPI exits
+#endif
+
+				exit(1);
+			}
 		}
 		else // something is wrong and we stop execution
 		{
-			cout << " GEMS: Error in Init_Nodes..check input "
-			     << "\n";
-#if defined(USE_MPI_GEMS) || defined(USE_PETSC)
+			cout << " GEMS: Error in Init_RUN..check input "
+				 << "\n";
+	#if defined(USE_MPI_GEMS) || defined(USE_PETSC)
 			MPI_Finalize(); // make sure MPI exits
-#endif
+	#endif
 
 			exit(1);
 		}
 	}
-	else // something is wrong and we stop execution
-	{
-		cout << " GEMS: Error in Init_RUN..check input "
-		     << "\n";
-#if defined(USE_MPI_GEMS) || defined(USE_PETSC)
-		MPI_Finalize(); // make sure MPI exits
-#endif
 
-		exit(1);
-	}
 #else // GEM_REACT
 	//---------------------------------------------------
 	REACT* rc = NULL; // SB
