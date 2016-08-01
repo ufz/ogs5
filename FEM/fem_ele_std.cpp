@@ -8944,12 +8944,14 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
 
 				// obtain the original values in the global matrix
 				// and fill them into the local LHS matrix
-
+#if defined(NEW_EQS)
+                // TODO
+#else
 				mat_LHS_penalty_value(0, 0) = MXGet(global_i, global_i);  // position (0,0)
 				mat_LHS_penalty_value(0, 1) = MXGet(global_i, global_j);  // position (0,1)
 				mat_LHS_penalty_value(1, 0) = MXGet(global_j, global_i);  // position (1,0)
 				mat_LHS_penalty_value(1, 1) = MXGet(global_j, global_j);  // position (1,1)
-
+#endif
 
 																		  // now multiply with the penalty factor
 				p = iterator->second->get_penalty_factor(); // * mat_LHS_penalty_value.cwiseAbs().maxCoeff(); // this part may need a bit of double-check.
