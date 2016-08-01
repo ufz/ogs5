@@ -8880,13 +8880,19 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
             // obtain the original values in the global matrix
             // and fill them into the local LHS matrix
 		
-#ifdef NEW_EQS
+#if defined(USE_PETSC)
             // TODO
 #else
+            mat_LHS_penalty_value(0, 0) = (*A)(global_i, global_i);  // position (0,0)
+            mat_LHS_penalty_value(0, 1) = (*A)(global_i, global_j);  // position (0,1)
+            mat_LHS_penalty_value(1, 0) = (*A)(global_j, global_i);  // position (1,0)
+            mat_LHS_penalty_value(1, 1) = (*A)(global_j, global_j);  // position (1,1)
+#ifndef NEW_EQS 
             mat_LHS_penalty_value(0, 0) = MXGet(global_i, global_i);  // position (0,0)
             mat_LHS_penalty_value(0, 1) = MXGet(global_i, global_j);  // position (0,1)
             mat_LHS_penalty_value(1, 0) = MXGet(global_j, global_i);  // position (1,0)
             mat_LHS_penalty_value(1, 1) = MXGet(global_j, global_j);  // position (1,1)
+#endif
 #endif
 			
 
@@ -8948,13 +8954,19 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
 
 				// obtain the original values in the global matrix
 				// and fill them into the local LHS matrix
-#ifdef NEW_EQS
+#if defined(USE_PETSC)
                 // TODO
 #else
+                mat_LHS_penalty_value(0, 0) = (*A)(global_i, global_i);  // position (0,0)
+                mat_LHS_penalty_value(0, 1) = (*A)(global_i, global_j);  // position (0,1)
+                mat_LHS_penalty_value(1, 0) = (*A)(global_j, global_i);  // position (1,0)
+                mat_LHS_penalty_value(1, 1) = (*A)(global_j, global_j);  // position (1,1)
+#ifndef NEW_EQS
 				mat_LHS_penalty_value(0, 0) = MXGet(global_i, global_i);  // position (0,0)
 				mat_LHS_penalty_value(0, 1) = MXGet(global_i, global_j);  // position (0,1)
 				mat_LHS_penalty_value(1, 0) = MXGet(global_j, global_i);  // position (1,0)
 				mat_LHS_penalty_value(1, 1) = MXGet(global_j, global_j);  // position (1,1)
+#endif
 #endif
 
 																		  // now multiply with the penalty factor
@@ -8975,7 +8987,10 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
 #if defined(USE_PETSC)
                 // TODO
 #else
-                // TODO
+                (*A)(global_i, global_i) += mat_LHS_penalty_value(0, 0); // position (0,0)
+                (*A)(global_i, global_j) += mat_LHS_penalty_value(0, 1)); // position (0,0)
+                (*A)(global_j, global_i) += mat_LHS_penalty_value(1, 0)); // position (0,0)
+                (*A)(global_j, global_j) += mat_LHS_penalty_value(1, 1)); // position (0,0)
 #ifndef NEW_EQS 
 				MXInc(global_i, global_i, mat_LHS_penalty_value(0, 0)); // position (0,0)
 				MXInc(global_i, global_j, mat_LHS_penalty_value(0, 1)); // position (0,0)
