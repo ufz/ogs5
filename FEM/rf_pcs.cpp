@@ -7488,7 +7488,11 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
 										if (another_it->second->get_net_ele_type() == BHE::BHE_NET_ELE::BHE_NET_PIPE && another_it->second->get_outlet_connect()->get_ele_name() == hp_name)
 										{
 											idx_T_in = another_it->second->get_T_in_global_index();
-											T_in_val += eqs->x[idx_T_in];
+                                            #ifdef NEW_EQS
+											    T_in_val += eqs_new->x[idx_T_in];
+                                            #else
+                                                T_in_val += eqs->x[idx_T_in];
+                                            #endif
 											cnt_inputs++;
 #ifdef _DEBUG
 											// print to screen

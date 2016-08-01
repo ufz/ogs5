@@ -8880,7 +8880,7 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
             // obtain the original values in the global matrix
             // and fill them into the local LHS matrix
 		
-#if defined(NEW_EQS)
+#ifdef NEW_EQS
             // TODO
 #else
             mat_LHS_penalty_value(0, 0) = MXGet(global_i, global_i);  // position (0,0)
@@ -8903,7 +8903,7 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
             std::cout << "The local LHS penalty value matrix of the BHE network equation sytem is: \n";
             std::cout << mat_LHS_penalty_value << std::endl;
 #endif
-#if defined(NEW_EQS)
+#ifdef NEW_EQS
             // TODO
 #else
             // Assemble onto the global matrix
@@ -8944,7 +8944,7 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
 
 				// obtain the original values in the global matrix
 				// and fill them into the local LHS matrix
-#if defined(NEW_EQS)
+#ifdef NEW_EQS
                 // TODO
 #else
 				mat_LHS_penalty_value(0, 0) = MXGet(global_i, global_i);  // position (0,0)
@@ -8968,7 +8968,7 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
 #endif
 
 				// Assemble onto the global matrix
-#if defined(NEW_EQS)
+#ifdef NEW_EQS
                 // TODO
 #else
 				MXInc(global_i, global_i, mat_LHS_penalty_value(0, 0)); // position (0,0)
@@ -9198,7 +9198,7 @@ void CFiniteElementStd::AssembleMixedHyperbolicParabolicEquation_BHE()
         {
             // R_pi_s and R_s_pi assembly
             shift_j = nodes[j % nnodes]; 
-#if defined(NEW_EQS)
+#ifdef NEW_EQS
             (*A)(shift_i, shift_j) += matBHE_R_pi_s(i, j);
             (*A)(shift_j, shift_i) += matBHE_R_pi_s(i, j);
 #else
@@ -9217,7 +9217,7 @@ void CFiniteElementStd::AssembleMixedHyperbolicParabolicEquation_BHE()
         for (std::size_t j = 0; j < nnodes; j++)
         {
             shift_j = nodes_bhe_soil[j];
-#if defined (NEW_EQS)
+#ifdef NEW_EQS
             (*A)(shift_i, shift_j) += 1.0 * theta *G * matBHE_R_s(i, j);
 #else
             MXInc(shift_i, shift_j,  1.0 * theta * G * matBHE_R_s(i, j));
