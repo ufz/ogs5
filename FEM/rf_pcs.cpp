@@ -7429,11 +7429,13 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
 
                                 #if defined(USE_PETSC)
                                     // TODO
-                                #elifdef NEW_EQS
-									T_out = eqs_new->x[eqs_index];
+                                #else
+                                #ifndef NEW_EQS
+                                    T_out = eqs->x[eqs_index]; 
 								#else
-									T_out = eqs->x[eqs_index];
+                                    T_out = eqs_new->x[eqs_index];
 								#endif
+                                #endif
 								bc_value = T_out;
 								// set flowrate to zero
 								double Q_r_temp = 1e-12;
@@ -7454,10 +7456,12 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
                                 eqs_index = bc_msh_node + shift + 1;
                             #if defined(USE_PETSC)
                                 // TODO
-                            #elifdef NEW_EQS
-                                T_out = eqs_new->x[eqs_index];
                             #else
+                            #ifndef NEW_EQS
                                 T_out = eqs->x[eqs_index];
+                            #else
+                                T_out = eqs_new->x[eqs_index];
+                            #endif
                             #endif
                             // ---------------------------------------------------------------                         
 

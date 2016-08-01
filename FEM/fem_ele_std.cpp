@@ -8906,14 +8906,15 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
 
 #if defined(USE_PETSC)
             // TODO
-#elifdef NEW_EQS
-            // TODO
 #else
+            // TODO
+#ifndef NEW_EQS 
             // Assemble onto the global matrix
             MXInc(global_i, global_i, mat_LHS_penalty_value(0, 0)); // position (0,0)
             MXInc(global_i, global_j, mat_LHS_penalty_value(0, 1)); // position (0,0)
             MXInc(global_j, global_i, mat_LHS_penalty_value(1, 0)); // position (0,0)
             MXInc(global_j, global_j, mat_LHS_penalty_value(1, 1)); // position (0,0)
+#endif
 #endif
 
         } // end of if BHE_NET_PIPE_INNER_1U
@@ -8973,13 +8974,14 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
 				// Assemble onto the global matrix
 #if defined(USE_PETSC)
                 // TODO
-#elifdef NEW_EQS
-                // TODO
 #else
+                // TODO
+#ifndef NEW_EQS 
 				MXInc(global_i, global_i, mat_LHS_penalty_value(0, 0)); // position (0,0)
 				MXInc(global_i, global_j, mat_LHS_penalty_value(0, 1)); // position (0,0)
 				MXInc(global_j, global_i, mat_LHS_penalty_value(1, 0)); // position (0,0)
 				MXInc(global_j, global_j, mat_LHS_penalty_value(1, 1)); // position (0,0)
+#endif
 #endif
 			}
 		}
@@ -9175,10 +9177,12 @@ void CFiniteElementStd::AssembleMixedHyperbolicParabolicEquation_BHE()
             // A_pi assembly
 #if defined(USE_PETSC)
             // TODO
-#elifdef NEW_EQS
-            (*A)(shift_i, shift_j) += mat_local_LHS(i,j);
 #else
+#ifndef NEW_EQS
             MXInc(shift_i, shift_j, mat_local_LHS(i, j));
+#else
+            (*A)(shift_i, shift_j) += mat_local_LHS(i, j);
+#endif
 #endif
         }  // end of for j
     }  // end of for i
@@ -9208,12 +9212,14 @@ void CFiniteElementStd::AssembleMixedHyperbolicParabolicEquation_BHE()
 
 #if defined(USE_PETSC)
             // TODO
-#elifdef NEW_EQS
-            (*A)(shift_i, shift_j) += matBHE_R_pi_s(i, j);
-            (*A)(shift_j, shift_i) += matBHE_R_pi_s(i, j);
 #else
+#ifndef NEW_EQS
             MXInc(shift_i, shift_j, matBHE_R_pi_s(i, j));
             MXInc(shift_j, shift_i, matBHE_R_pi_s(i, j));
+#else
+            (*A)(shift_i, shift_j) += matBHE_R_pi_s(i, j);
+            (*A)(shift_j, shift_i) += matBHE_R_pi_s(i, j);
+#endif
 #endif
         }
     }
@@ -9230,10 +9236,12 @@ void CFiniteElementStd::AssembleMixedHyperbolicParabolicEquation_BHE()
 
 #if defined(USE_PETSC)
             // TODO
-#elifdef NEW_EQS
-            (*A)(shift_i, shift_j) += 1.0 * theta *G * matBHE_R_s(i, j);
 #else
-            MXInc(shift_i, shift_j,  1.0 * theta * G * matBHE_R_s(i, j));
+#ifndef NEW_EQS
+            MXInc(shift_i, shift_j, 1.0 * theta * G * matBHE_R_s(i, j));
+#else
+            (*A)(shift_i, shift_j) += 1.0 * theta *G * matBHE_R_s(i, j);
+#endif
 #endif
         }
     
