@@ -7497,10 +7497,14 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
 										if (another_it->second->get_net_ele_type() == BHE::BHE_NET_ELE::BHE_NET_PIPE && another_it->second->get_outlet_connect()->get_ele_name() == hp_name)
 										{
 											idx_T_in = another_it->second->get_T_in_global_index();
-                                            #ifdef NEW_EQS
-											    T_in_val += eqs_new->x[idx_T_in];
+                                            #if defined(USE_PETSC)
+                                                // TODO
                                             #else
-                                                T_in_val += eqs->x[idx_T_in];
+                                            #ifndef NEW_EQS
+											    T_in_val += eqs->x[idx_T_in];
+                                            #else
+                                                T_in_val += eqs_new->x[idx_T_in];
+                                            #endif
                                             #endif
 											cnt_inputs++;
 #ifdef _DEBUG
@@ -7533,33 +7537,45 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
                         {
                             // get TEMPERATURE_IN_1 value
                             eqs_index = bc_msh_node + shift - 1;
-                        #ifdef NEW_EQS
-                            temp_val = eqs_new->x[eqs_index];
-                        #else
-                            temp_val = eqs->x[eqs_index];
-                        #endif
+                            #if defined(USE_PETSC)
+                                // TODO
+                            #else
+                            #ifndef NEW_EQS
+                                temp_val = eqs->x[eqs_index];
+                            #else
+                                temp_val = eqs_new->x[eqs_index];
+                            #endif
+                            #endif
                             bc_value = time_fac * fac * temp_val;
                         }
                         else if (m_bc_node->bhe_pv_index == 2) // TEMPERATURE_OUT_1 in the 2U setting
                         {
                             // get TEMPERATURE_IN_1 value
                             eqs_index = bc_msh_node + shift - 2 ;
-                        #ifdef NEW_EQS
-                            temp_val = eqs_new->x[eqs_index];
-                        #else
-                            temp_val = eqs->x[eqs_index];
-                        #endif
+                            #if defined(USE_PETSC)
+                                // TODO
+                            #else
+                            #ifndef NEW_EQS
+                                temp_val = eqs->x[eqs_index];
+                            #else
+                                temp_val = eqs_new->x[eqs_index];
+                            #endif
+                            #endif
                             bc_value = time_fac * fac * temp_val;
                         }
                         else if ( m_bc_node->bhe_pv_index == 3) // TEMPERATURE_OUT_2
                         {
                             // get TEMPERATURE_IN_2 value
                             eqs_index = bc_msh_node + shift - 2;
-                        #ifdef NEW_EQS
-                            temp_val = eqs_new->x[eqs_index];
-                        #else
-                            temp_val = eqs->x[eqs_index];
-                        #endif
+                            #if defined(USE_PETSC)
+                                // TODO
+                            #else
+                            #ifndef NEW_EQS
+                                temp_val = eqs->x[eqs_index];
+                            #else
+                                temp_val = eqs_new->x[eqs_index];
+                            #endif
+                            #endif
                             bc_value = time_fac * fac * temp_val;
                         }
                     }
