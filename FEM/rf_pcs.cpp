@@ -7426,7 +7426,10 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
 							{
 								// set T_in equals T_out
 								eqs_index = bc_msh_node + shift + 1;
-								#ifdef NEW_EQS
+
+                                #if defined(USE_PETSC)
+                                    // TODO
+                                #elifdef NEW_EQS
 									T_out = eqs_new->x[eqs_index];
 								#else
 									T_out = eqs->x[eqs_index];
@@ -7449,7 +7452,9 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
                                 eqs_index = bc_msh_node + shift + 3;
                             else
                                 eqs_index = bc_msh_node + shift + 1;
-                            #ifdef NEW_EQS
+                            #if defined(USE_PETSC)
+                                // TODO
+                            #elifdef NEW_EQS
                                 T_out = eqs_new->x[eqs_index];
                             #else
                                 T_out = eqs->x[eqs_index];

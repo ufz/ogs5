@@ -8903,7 +8903,10 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
             std::cout << "The local LHS penalty value matrix of the BHE network equation sytem is: \n";
             std::cout << mat_LHS_penalty_value << std::endl;
 #endif
-#ifdef NEW_EQS
+
+#if defined(USE_PETSC)
+            // TODO
+#elifdef NEW_EQS
             // TODO
 #else
             // Assemble onto the global matrix
@@ -8968,7 +8971,9 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
 #endif
 
 				// Assemble onto the global matrix
-#ifdef NEW_EQS
+#if defined(USE_PETSC)
+                // TODO
+#elifdef NEW_EQS
                 // TODO
 #else
 				MXInc(global_i, global_i, mat_LHS_penalty_value(0, 0)); // position (0,0)
@@ -9168,7 +9173,9 @@ void CFiniteElementStd::AssembleMixedHyperbolicParabolicEquation_BHE()
             shift_j = shift_start + idx_node * m_bhe->get_n_unknowns() + idx_unknown;
 
             // A_pi assembly
-#ifdef NEW_EQS
+#if defined(USE_PETSC)
+            // TODO
+#elifdef NEW_EQS
             (*A)(shift_i, shift_j) += mat_local_LHS(i,j);
 #else
             MXInc(shift_i, shift_j, mat_local_LHS(i, j));
@@ -9198,7 +9205,10 @@ void CFiniteElementStd::AssembleMixedHyperbolicParabolicEquation_BHE()
         {
             // R_pi_s and R_s_pi assembly
             shift_j = nodes[j % nnodes]; 
-#ifdef NEW_EQS
+
+#if defined(USE_PETSC)
+            // TODO
+#elifdef NEW_EQS
             (*A)(shift_i, shift_j) += matBHE_R_pi_s(i, j);
             (*A)(shift_j, shift_i) += matBHE_R_pi_s(i, j);
 #else
@@ -9217,7 +9227,10 @@ void CFiniteElementStd::AssembleMixedHyperbolicParabolicEquation_BHE()
         for (std::size_t j = 0; j < nnodes; j++)
         {
             shift_j = nodes_bhe_soil[j];
-#ifdef NEW_EQS
+
+#if defined(USE_PETSC)
+            // TODO
+#elifdef NEW_EQS
             (*A)(shift_i, shift_j) += 1.0 * theta *G * matBHE_R_s(i, j);
 #else
             MXInc(shift_i, shift_j,  1.0 * theta * G * matBHE_R_s(i, j));
