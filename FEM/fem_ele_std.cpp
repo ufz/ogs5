@@ -8988,9 +8988,9 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
                 // TODO
 #else
                 (*A)(global_i, global_i) += mat_LHS_penalty_value(0, 0); // position (0,0)
-                (*A)(global_i, global_j) += mat_LHS_penalty_value(0, 1)); // position (0,0)
-                (*A)(global_j, global_i) += mat_LHS_penalty_value(1, 0)); // position (0,0)
-                (*A)(global_j, global_j) += mat_LHS_penalty_value(1, 1)); // position (0,0)
+                (*A)(global_i, global_j) += mat_LHS_penalty_value(0, 1); // position (0,0)
+                (*A)(global_j, global_i) += mat_LHS_penalty_value(1, 0); // position (0,0)
+                (*A)(global_j, global_j) += mat_LHS_penalty_value(1, 1); // position (0,0)
 #ifndef NEW_EQS 
 				MXInc(global_i, global_i, mat_LHS_penalty_value(0, 0)); // position (0,0)
 				MXInc(global_i, global_j, mat_LHS_penalty_value(0, 1)); // position (0,0)
