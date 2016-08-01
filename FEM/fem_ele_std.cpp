@@ -656,7 +656,10 @@ void CFiniteElementStd::SetMemory()
 		Mass = EleMat->GetMass();
 		Laplace = EleMat->GetLaplace();
 		// Advection, Storage, Content SB4200
-		if (PcsType == EPT_MASS_TRANSPORT || PcsType == EPT_HEAT_TRANSPORT || PcsType == EPT_MULTI_COMPONENTIAL_FLOW
+		if (PcsType == EPT_MASS_TRANSPORT 
+            || PcsType == EPT_HEAT_TRANSPORT 
+            || PcsType == EPT_HEAT_TRANSPORT_BHE
+            || PcsType == EPT_MULTI_COMPONENTIAL_FLOW
 		    || PcsType == EPT_THERMAL_NONEQUILIBRIUM
 		    || PcsType == EPT_TES)
 		{
@@ -2483,6 +2486,7 @@ void CFiniteElementStd::CalCoefLaplace(bool Gravity, int ip)
 		case EPT_COMPONENTAL_FLOW: // Componental flow
 			break;
 		case EPT_HEAT_TRANSPORT: // heat transport
+        case EPT_HEAT_TRANSPORT_BHE: 
 			if (SolidProp->GetConductModel() == 2) // Boiling model. DECOVALEX THM2
 			{
 				TG = interpolate(NodalVal1);
@@ -3917,7 +3921,7 @@ double CFiniteElementStd::CalcSUPGCoefficient(double* vel, int ip)
 	double ele_len = CalcSUPGEffectiveElemenetLength(vel);
 	// Diffusivity = (effective heat conductivity) / (fluid heat capacity)
 	double* dispersion_tensor = NULL;
-	if (PcsType == EPT_HEAT_TRANSPORT) // heat
+	if (PcsType == EPT_HEAT_TRANSPORT || PcsType == EPT_HEAT_TRANSPORT_BHE) // heat
 
 		dispersion_tensor = MediaProp->HeatConductivityTensor(MeshElement->GetIndex());
 	// mass
@@ -3953,7 +3957,7 @@ double CFiniteElementStd::CalcSUPGCoefficient(double* vel, int ip)
 			diff = max_diff;
 		}
 	}
-	if (PcsType == EPT_HEAT_TRANSPORT) // heat
+	if (PcsType == EPT_HEAT_TRANSPORT || PcsType == EPT_HEAT_TRANSPORT_BHE) // heat
 	{
 		diff /= (FluidProp->SpecificHeatCapacity() * FluidProp->Density());
 	}
@@ -5432,7 +5436,7 @@ void CFiniteElementStd::Assemble_DualTransfer()
 		{
 			for (int j = 0; j < nnodes; j++)
 			{
-#ifdef NEW_EQS
+#if defined(NEW_EQS)
 				(*A)(eqs_number[i], eqs_number[j] + cshift) += -fm * (*Advection)(i, j);
 				(*A)(eqs_number[i] + cshift, eqs_number[j]) += -ff * (*Advection)(i, j);
 #else
@@ -5506,7 +5510,7 @@ double CFiniteElementStd::CalcCoefDualTransfer()
 			break;
 		//---------------------------------------------------------
 		case EPT_HEAT_TRANSPORT:
-
+        case EPT_HEAT_TRANSPORT_BHE:
 			break;
 	}
 	return val;
@@ -8447,7 +8451,7 @@ void CFiniteElementStd::add2GlobalMatrixII(const int block_cols)
 					kk = i_sh + eqs_number[i]; // 02.2011. WW
 					for (j = 0; j < nnodes; j++)
 					{
-#ifdef NEW_EQS
+#if defined(NEW_EQS)
 						(*A)(kk, j_sh + eqs_number[j]) += (*StiffMatrix)(i + ii_sh, j + jj_sh);
 #else
 						MXInc(kk, j_sh + eqs_number[j], (*StiffMatrix)(i + ii_sh, j + jj_sh));
@@ -8465,7 +8469,7 @@ void CFiniteElementStd::add2GlobalMatrixII(const int block_cols)
 			kk = cshift + eqs_number[i]; // 02.2011. WW
 			for (j = 0; j < nnodes; j++)
 			{
-#ifdef NEW_EQS
+#if defined(NEW_EQS)
 				(*A)(kk, cshift + eqs_number[j]) += (*StiffMatrix)(i, j);
 #else
 				MXInc(kk, cshift + eqs_number[j], (*StiffMatrix)(i, j));
@@ -8565,7 +8569,7 @@ void CFiniteElementStd::CalcFEM_FCT()
 	{
 		for (int j = 0; j < nnodes; j++)
 		{
-#ifdef NEW_EQS
+#if defined(NEW_EQS)
 			(*A)(NodeShift[problem_dimension_dm] + eqs_number[i], NodeShift[problem_dimension_dm] + eqs_number[j])
 			    += (*AuxMatrix)(i, j);
 #else
@@ -8751,7 +8755,7 @@ void CFiniteElementStd::AssembleMixedHyperbolicParabolicEquation()
 		{
 			for (int j = 0; j < nnodes; j++)
 			{
-#ifdef NEW_EQS
+#if defined(NEW_EQS)
 				// WW
 				(*A)(NodeShift[problem_dimension_dm] + eqs_number[i], NodeShift[problem_dimension_dm] + eqs_number[j])
 				    += (*StiffMatrix)(i, j);
@@ -8875,11 +8879,15 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
 
             // obtain the original values in the global matrix
             // and fill them into the local LHS matrix
-			
+		
+#if defined(NEW_EQS)
+            // TODO
+#else
             mat_LHS_penalty_value(0, 0) = MXGet(global_i, global_i);  // position (0,0)
             mat_LHS_penalty_value(0, 1) = MXGet(global_i, global_j);  // position (0,1)
             mat_LHS_penalty_value(1, 0) = MXGet(global_j, global_i);  // position (1,0)
             mat_LHS_penalty_value(1, 1) = MXGet(global_j, global_j);  // position (1,1)
+#endif
 			
 
 			// now multiply with the penalty factor
@@ -8895,12 +8903,15 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
             std::cout << "The local LHS penalty value matrix of the BHE network equation sytem is: \n";
             std::cout << mat_LHS_penalty_value << std::endl;
 #endif
-
+#if defined(NEW_EQS)
+            // TODO
+#else
             // Assemble onto the global matrix
             MXInc(global_i, global_i, mat_LHS_penalty_value(0, 0)); // position (0,0)
             MXInc(global_i, global_j, mat_LHS_penalty_value(0, 1)); // position (0,0)
             MXInc(global_j, global_i, mat_LHS_penalty_value(1, 0)); // position (0,0)
             MXInc(global_j, global_j, mat_LHS_penalty_value(1, 1)); // position (0,0)
+#endif
 
         } // end of if BHE_NET_PIPE_INNER_1U
         else if (iterator->second->get_net_ele_type() == BHE::BHE_NET_ELE::BHE_NET_PIPE_INNER_2U)
@@ -8955,10 +8966,14 @@ void CFiniteElementStd::Assemble_LHS_BHE_Net(BHE::BHE_Net * bhe_net)
 #endif
 
 				// Assemble onto the global matrix
+#if defined(NEW_EQS)
+                // TODO
+#else
 				MXInc(global_i, global_i, mat_LHS_penalty_value(0, 0)); // position (0,0)
 				MXInc(global_i, global_j, mat_LHS_penalty_value(0, 1)); // position (0,0)
 				MXInc(global_j, global_i, mat_LHS_penalty_value(1, 0)); // position (0,0)
 				MXInc(global_j, global_j, mat_LHS_penalty_value(1, 1)); // position (0,0)
+#endif
 			}
 		}
     } // end of for loop over all network element
@@ -9181,7 +9196,7 @@ void CFiniteElementStd::AssembleMixedHyperbolicParabolicEquation_BHE()
         {
             // R_pi_s and R_s_pi assembly
             shift_j = nodes[j % nnodes]; 
-#ifdef NEW_EQS
+#if defined(NEW_EQS)
             (*A)(shift_i, shift_j) += matBHE_R_pi_s(i, j);
             (*A)(shift_j, shift_i) += matBHE_R_pi_s(i, j);
 #else
@@ -9200,7 +9215,7 @@ void CFiniteElementStd::AssembleMixedHyperbolicParabolicEquation_BHE()
         for (std::size_t j = 0; j < nnodes; j++)
         {
             shift_j = nodes_bhe_soil[j];
-#ifdef NEW_EQS
+#if defined (NEW_EQS)
             (*A)(shift_i, shift_j) += 1.0 * theta *G * matBHE_R_s(i, j);
 #else
             MXInc(shift_i, shift_j,  1.0 * theta * G * matBHE_R_s(i, j));

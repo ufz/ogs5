@@ -1004,6 +1004,7 @@ void CRFProcess::Create()
     {
         std::string tmp_name_str; 
         number_of_nvals = 2 * 1 + pcs_number_of_secondary_nvals;  // only counting T_soil
+        // number_of_nvals = 2 * 9 + pcs_number_of_secondary_nvals;
         // two times T_soil
         nod_val_name_vector.push_back(pcs_primary_function_name[0]);
         nod_val_name_vector.push_back(pcs_primary_function_name[0]);
