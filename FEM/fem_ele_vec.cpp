@@ -3811,6 +3811,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		ele_dim = ele->GetDimension();
 		sdp = msp_vector[ele->GetPatchIndex()];
 		Plastic = sdp->Plastictity();
+		Strain = NULL;
 		Strain_Kel = NULL;
 		Strain_Max = NULL;
 		Strain_pl = NULL;
