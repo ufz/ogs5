@@ -1709,34 +1709,34 @@ double COutput::NODWritePLYDataTEC(int number)
 	m_msh->getPointsForInterpolationAlongPolyline(ply, interpolation_points);
 	m_msh->setMinEdgeLength(tmp_min_edge_length);
 
-
-    if (m_pcs->getProcessType() == FiniteElement::HEAT_TRANSPORT_BHE)
-    {
-        for (std::size_t j(0); j < nodes_vector.size(); j++)
+    if (m_pcs)
+        if (m_pcs->getProcessType() == FiniteElement::HEAT_TRANSPORT_BHE)
         {
-            tec_file << interpolation_points[j] << " ";
-            for (std::size_t k = 0; k < no_variables; k++)
+            for (std::size_t j(0); j < nodes_vector.size(); j++)
             {
-                if (NodeIndex[k] < 2) // this is soil temperature Ts
+                tec_file << interpolation_points[j] << " ";
+                for (std::size_t k = 0; k < no_variables; k++)
                 {
-                    // get the global node index
-                    std::size_t global_idx(0), idx_bhe(0);
-                    for (idx_bhe = 0; idx_bhe < vec_BHEs.size(); idx_bhe++)
+                    if (NodeIndex[k] < 2) // this is soil temperature Ts
                     {
-                        if (vec_BHEs[idx_bhe]->get_name().find(geo_name) != std::string::npos )
-                            break;
+                        // get the global node index
+                        std::size_t global_idx(0), idx_bhe(0);
+                        for (idx_bhe = 0; idx_bhe < vec_BHEs.size(); idx_bhe++)
+                        {
+                            if (vec_BHEs[idx_bhe]->get_name().find(geo_name) != std::string::npos)
+                                break;
+                        }
+                        global_idx = vec_BHE_nodes[idx_bhe][j]; // TODO, this needs to be fixed. 
+                        val_n = m_pcs->GetNodeValue(global_idx, NodeIndex[k]);
                     }
-                    global_idx = vec_BHE_nodes[idx_bhe][j]; // TODO, this needs to be fixed. 
-                    val_n = m_pcs->GetNodeValue(global_idx, NodeIndex[k]);
-                }
-                else // not the soil temperature
-                    val_n = m_pcs->GetNodeValue(j, NodeIndex[k]);
+                    else // not the soil temperature
+                        val_n = m_pcs->GetNodeValue(j, NodeIndex[k]);
 
-                tec_file << val_n << " ";
-            }  // end of for k
-            tec_file << "\n";
-        }  // end of for j
-    }
+                    tec_file << val_n << " ";
+                }  // end of for k
+                tec_file << "\n";
+            }  // end of for j
+        }
     else
     {
 	// bool b_specified_pcs = (m_pcs != NULL); //NW m_pcs = PCSGet(pcs_type_name);
