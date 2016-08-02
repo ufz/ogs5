@@ -1737,8 +1737,7 @@ double COutput::NODWritePLYDataTEC(int number)
                 tec_file << "\n";
             }  // end of for j
         }
-    else
-    {
+
 	// bool b_specified_pcs = (m_pcs != NULL); //NW m_pcs = PCSGet(pcs_type_name);
 	for (size_t j(0); j < nodes_vector.size(); j++)
 	{
@@ -1809,7 +1808,7 @@ double COutput::NODWritePLYDataTEC(int number)
 
 		tec_file << "\n";
 	}
-    } // end of if HEAT_TRANSPORT_BHE
+
 	tec_file.close(); // kg44 close file
 	return flux_sum;
 }
