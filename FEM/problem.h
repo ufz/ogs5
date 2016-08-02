@@ -147,7 +147,7 @@ private:
 	inline double OverlandFlow();
 	inline double AirFlow();
 	inline double HeatTransport();
-      inline double HeatTransport_BHE(); 
+    inline double HeatTransport_BHE(); 
 	inline double FluidMomentum();
 	inline double RandomWalker();
 	inline double MassTrasport();
@@ -180,7 +180,7 @@ private:
 	/// processor number for MPI
 	int msize;
 
-	static const size_t max_processes = 16;
+	static const size_t max_processes = 23; // HS: 2016.08
 };
 
 extern bool MODCreate(); // OK
