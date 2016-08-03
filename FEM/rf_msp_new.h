@@ -136,9 +136,8 @@ public:
 	// Set value for solid reactive system - TN
 	void setSolidReactiveSystem(FiniteElement::SolidReactiveSystem reactive_system);
 
-    double getFreezingSigmoidCoeff() { return freezing_sigmoid_coeff; };
-    double getlatentheat() { return freezing_latent_heat; };
-
+	double getFreezingSigmoidCoeff() { return freezing_sigmoid_coeff; };
+	double getLatentHeat() { return freezing_latent_heat; };
 private:
 	// CMCD
 	FiniteElement::CFiniteElementStd* Fem_Ele_Std;
@@ -320,7 +319,6 @@ private:
 
 	bool CheckTemperature_in_PhaseChange(const double T0, const double T1);
 	double Enthalpy(double temperature, const double latent_factor);
-
 
 #ifdef RFW_FRACTURE
 	double Youngs_Modulus(CElem* elem, double refence = 0.0);

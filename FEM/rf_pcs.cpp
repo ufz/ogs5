@@ -142,7 +142,7 @@ REACT_BRNS* m_vec_BRNS;
 #include "BHE_CXC.h"
 #include "BHE_Net.h"
 
-#include "../GEO/geo_ply.h"
+#include "geo_ply.h"
 
 using namespace std;
 using namespace MeshLib;

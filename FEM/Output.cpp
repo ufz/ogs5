@@ -1710,6 +1710,7 @@ double COutput::NODWritePLYDataTEC(int number)
 	m_msh->setMinEdgeLength(tmp_min_edge_length);
 
     if (m_pcs)
+    {
         if (m_pcs->getProcessType() == FiniteElement::HEAT_TRANSPORT_BHE)
         {
             for (std::size_t j(0); j < nodes_vector.size(); j++)
@@ -1736,7 +1737,8 @@ double COutput::NODWritePLYDataTEC(int number)
                 }  // end of for k
                 tec_file << "\n";
             }  // end of for j
-        }
+        } // end of if
+    } // end of if
 
 	// bool b_specified_pcs = (m_pcs != NULL); //NW m_pcs = PCSGet(pcs_type_name);
 	for (size_t j(0); j < nodes_vector.size(); j++)

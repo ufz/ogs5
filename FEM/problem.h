@@ -180,7 +180,7 @@ private:
 	/// processor number for MPI
 	int msize;
 
-	static const size_t max_processes = 23; // HS: 2016.08
+	static const size_t max_processes = 23; 
 };
 
 extern bool MODCreate(); // OK

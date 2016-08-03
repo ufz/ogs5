@@ -44,14 +44,14 @@ extern double gravity_constant;
 #include "fem_ele_vec.h"
 // MSHLib
 //#include "msh_lib.h"
-#include "pcs_dm.h" //WX
-#include "readNonBlankLineFromInputStream.h"
 #include "BHE_1U.h"
 #include "BHE_2U.h"
-#include "BHE_CXC.h"
 #include "BHE_CXA.h"
+#include "BHE_CXC.h"
 #include "BHE_Net_ELE_Distributor.h"
 #include "BHE_Net_ELE_Pipe.h"
+#include "pcs_dm.h" //WX
+#include "readNonBlankLineFromInputStream.h"
 
 #include "PhysicalConstant.h"
 
@@ -154,15 +154,15 @@ CMediumProperties::CMediumProperties() : geo_dimension(0), _mesh(NULL), _geo_typ
 	storage_effstress_model = 0;
 	permeability_effstress_model = 0;
 
-    // BHE parameters
-    bhe_2u_discharge_type = BHE::BHE_DISCHARGE_TYPE_PARALLEL;
-    is_BHE = false; 
-    bhe_use_flowrate_curve = false; 
-    bhe_use_ext_therm_resis = false; 
+	// BHE parameters
+	bhe_2u_discharge_type = BHE::BHE_DISCHARGE_TYPE_PARALLEL;
+	is_BHE = false;
+	bhe_use_flowrate_curve = false;
+	bhe_use_ext_therm_resis = false;
 	bhe_user_defined_therm_resis = false;
-    bhe_power_in_watt_val = 0.0; 
-    bhe_delta_T_val = 0.0; 
-    bhe_power_in_watt_curve_idx = -1; 
+	bhe_power_in_watt_val = 0.0;
+	bhe_delta_T_val = 0.0;
+	bhe_power_in_watt_curve_idx = -1;
 	bhe_switch_off_threshold = 0.0;
 	bhe_heating_cop_curve_idx = -1;
 	bhe_cooling_cop_curve_idx = -1;
@@ -178,7 +178,6 @@ CMediumProperties::CMediumProperties() : geo_dimension(0), _mesh(NULL), _geo_typ
 	pipe_loss_coeff = 0.0;
 	pipe_from_port = 0;
 	pipe_to_port = 0;
-	
 }
 
 /**************************************************************************
@@ -804,7 +803,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 					pcs_name_vector.push_back("PRESSURE1");
 					break;
 				case 6: // Storativity is a function of normal effective stress defined by curve and distance from
-				        // borehole, set up for KTB.
+					// borehole, set up for KTB.
 					in >> storage_model_values[0]; // curve number
 					in >> storage_model_values[1]; // time collation
 					in >> storage_model_values[2]; // Default storage value for material groups > 0
@@ -1008,7 +1007,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 					in >> permeability_strain_model_value[1]; // d_fac/d_volStrain when vol. strain <= threshold
 					in >> permeability_strain_model_value[2]; // d_fac/d_volStrain when vol. strain > threshold
 					in >> permeability_strain_model_value[3]; // curve numer for dependenc between threshold and plas
-					                                          // strain
+					// strain
 					// if -1, threshold is constant
 					in >> permeability_strain_model_value[4]; // lower limit
 					in >> permeability_strain_model_value[5]; // uper limit
@@ -1063,7 +1062,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 					pcs_name_vector.push_back("PRESSURE1");
 					break;
 				case 6: // Normal effective stress calculated according to fracture orientation, related over a curve :
-				        // KTB site
+					// KTB site
 					in >> permeability_pressure_model_values[0];
 					in >> permeability_pressure_model_values[1];
 					in >> permeability_pressure_model_values[2];
@@ -1071,7 +1070,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 					pcs_name_vector.push_back("PRESSURE1");
 					break;
 				case 7: // Normal effective stress calculated according to fracture orientation, related over a curve :
-				        // KTB site, and distance to the borehole.
+					// KTB site, and distance to the borehole.
 					in >> permeability_pressure_model_values[0];
 					in >> permeability_pressure_model_values[1];
 					in >> permeability_pressure_model_values[2];
@@ -1174,7 +1173,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 						in >> residual_saturation[k]; // slr: residual saturation, this phase
 						in >> maximum_saturation[k]; // slm: maximum saturation, this phase
 						in >> saturation_exponent[k]; // exponent (always <= 1.0) --> (typical is 0.5) i.e. n = 1 / (1 -
-						                              // exponent) == 2.0
+						// exponent) == 2.0
 						in >> minimum_relative_permeability; // minimum relative permeability this phase
 						break;
 					//
@@ -1184,7 +1183,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 						in >> residual_saturation[k]; // sgr: residual saturation, this phase
 						in >> maximum_saturation[k]; // sgm: maximum saturation, this phase
 						in >> saturation_exponent[k]; // exponent (always <= 1.0) --> (typical is 0.5) i.e. n = 1 / (1 -
-						                              // exponent) == 2.0
+						// exponent) == 2.0
 						in >> minimum_relative_permeability; // minimum relative permeability this phase
 						break;
 					//
@@ -1588,7 +1587,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 					in >> capillary_pressure_values[1]; // Slr
 					in >> capillary_pressure_values[2]; // Slmax
 					in >> capillary_pressure_values[3]; // exponent (always <= 1.0) --> (typical is 0.5) i.e. n = 1 / (1
-					                                    // - exponent) == 2.0
+					// - exponent) == 2.0
 					in >> capillary_pressure_values[4]; // maximum Pc
 					in >> i; // alpha_switch (default = 0)
 					if (i > 0)
@@ -1958,230 +1957,230 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 			continue;
 		}
 
-	  if (line_string.find("$BHE_NET_HEAT_PUMP") != std::string::npos)
-	  {
-		  is_heat_pump = true;
-	  }
-	  if (line_string.find("HEAT_PUMP_NAME") != std::string::npos)
-	  {
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> heat_pump_name;
-		  in.clear();
-		  continue;
-	  }
-	  if (line_string.find("HEAT_PUMP_BOUNDARY_TYPE") != std::string::npos)
-	  {
-		  std::string str_tmp;
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> str_tmp;
-		  if (str_tmp.compare("HEAT_PUMP_BOUND_POWER_FIXED_FLOWRATE") == 0)
-			  heat_pump_boundary_type = BHE::HEAT_PUMP_BOUND_POWER_FIXED_FLOWRATE;
-		  else if (str_tmp.compare("HEAT_PUMP_BOUND_POWER_FIXED_DT") == 0)
-			  heat_pump_boundary_type = BHE::HEAT_PUMP_BOUND_POWER_FIXED_DT;
-		  in.clear();
-		  continue;
-	  }
-	  if (line_string.find("HEAT_PUMP_POWER_VALUE") != std::string::npos)
-	  {
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> heat_pump_power_val;
-		  in.clear();
-		  continue;
-	  }
-	  if (line_string.find("HEAT_PUMP_DELTA_T_VALUE") != std::string::npos)
-	  {
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> heat_pump_delta_T_val;
-		  in.clear();
-		  continue;
-	  }
-	  if (line_string.find("HEAT_PUMP_FLOWRATE") != std::string::npos)
-	  {
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> heat_pump_flowrate;
-		  in.clear();
-		  continue;
-	  }
-	  if (line_string.find("HEAT_PUMP_POWER_CURVE_IDX") != std::string::npos)
-	  {
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> heat_pump_power_curve_idx;
-		  in.clear();
-		  continue;
-	  }
-	  if (line_string.find("HEAT_PUMP_COP_CURVE_IDX") != std::string::npos)
-	  {
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> heat_pump_COP_curve_idx;
-		  in.clear();
-		  continue;
-	  }
-	  if (line_string.find("HEAT_PUMP_FLUID_IDX") != std::string::npos)
-	  {
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> heat_pump_fluid_idx;
-		  in.clear();
-		  // get fluid properties
-		  if (mfp_vector[heat_pump_fluid_idx])
-		  {
-			  heat_pump_refrigerant_density = mfp_vector[heat_pump_fluid_idx]->Density();
-			  heat_pump_refrigerant_heat_capacity = mfp_vector[heat_pump_fluid_idx]->getSpecificHeatCapacity();
-		  }
-		  continue;
-	  }
+		if (line_string.find("$BHE_NET_HEAT_PUMP") != std::string::npos)
+		{
+			is_heat_pump = true;
+		}
+		if (line_string.find("HEAT_PUMP_NAME") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> heat_pump_name;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("HEAT_PUMP_BOUNDARY_TYPE") != std::string::npos)
+		{
+			std::string str_tmp;
+			in.str(GetLineFromFile1(mmp_file));
+			in >> str_tmp;
+			if (str_tmp.compare("HEAT_PUMP_BOUND_POWER_FIXED_FLOWRATE") == 0)
+				heat_pump_boundary_type = BHE::HEAT_PUMP_BOUND_POWER_FIXED_FLOWRATE;
+			else if (str_tmp.compare("HEAT_PUMP_BOUND_POWER_FIXED_DT") == 0)
+				heat_pump_boundary_type = BHE::HEAT_PUMP_BOUND_POWER_FIXED_DT;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("HEAT_PUMP_POWER_VALUE") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> heat_pump_power_val;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("HEAT_PUMP_DELTA_T_VALUE") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> heat_pump_delta_T_val;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("HEAT_PUMP_FLOWRATE") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> heat_pump_flowrate;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("HEAT_PUMP_POWER_CURVE_IDX") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> heat_pump_power_curve_idx;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("HEAT_PUMP_COP_CURVE_IDX") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> heat_pump_COP_curve_idx;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("HEAT_PUMP_FLUID_IDX") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> heat_pump_fluid_idx;
+			in.clear();
+			// get fluid properties
+			if (mfp_vector[heat_pump_fluid_idx])
+			{
+				heat_pump_refrigerant_density = mfp_vector[heat_pump_fluid_idx]->Density();
+				heat_pump_refrigerant_heat_capacity = mfp_vector[heat_pump_fluid_idx]->getSpecificHeatCapacity();
+			}
+			continue;
+		}
 
-	  if (line_string.find("$BHE_NET_DISTRIBUTOR") != std::string::npos)
-	  {
-		  is_distributor = true;
-	  }
-	  if (line_string.find("DISTRIBUTOR_NAME") != std::string::npos)
-	  {
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> distributor_name;
-		  in.clear();
-		  continue;
-	  }
-	  if (line_string.find("DISTRIBUTOR_IN") != std::string::npos)
-	  {
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> distributor_n_in;
-		  distributor_in_ratios = Eigen::VectorXd::Zero(distributor_n_in);
-		  for (int i = 0; i < distributor_n_in; i++)
-		  {
-			  in >> distributor_in_ratios[i];
-		  }
-		  in.clear();
-		  continue;
-	  }
-	  if (line_string.find("DISTRIBUTOR_OUT") != std::string::npos)
-	  {
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> distributor_n_out;
-		  distributor_out_ratios = Eigen::VectorXd::Zero(distributor_n_out);
-		  for (int i = 0; i < distributor_n_out; i++)
-		  {
-			  in >> distributor_out_ratios[i];
-		  }
-		  in.clear();
-		  continue;
-	  }
+		if (line_string.find("$BHE_NET_DISTRIBUTOR") != std::string::npos)
+		{
+			is_distributor = true;
+		}
+		if (line_string.find("DISTRIBUTOR_NAME") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> distributor_name;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("DISTRIBUTOR_IN") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> distributor_n_in;
+			distributor_in_ratios = Eigen::VectorXd::Zero(distributor_n_in);
+			for (int i = 0; i < distributor_n_in; i++)
+			{
+				in >> distributor_in_ratios[i];
+			}
+			in.clear();
+			continue;
+		}
+		if (line_string.find("DISTRIBUTOR_OUT") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> distributor_n_out;
+			distributor_out_ratios = Eigen::VectorXd::Zero(distributor_n_out);
+			for (int i = 0; i < distributor_n_out; i++)
+			{
+				in >> distributor_out_ratios[i];
+			}
+			in.clear();
+			continue;
+		}
 
-	  if (line_string.find("$BHE_NET_PIPE") != std::string::npos)
-	  {
-		  is_pipe = true;
-	  }
-	  if (line_string.find("PIPE_NAME") != std::string::npos)
-	  {
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> pipe_name;
-		  in.clear();
-		  continue;
-	  }
-	  if (line_string.find("PIPE_FROM") != std::string::npos)
-	  {
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> pipe_from >> pipe_from_port;
-		  in.clear();
-		  continue;
-	  }
-	  if (line_string.find("PIPE_TO") != std::string::npos)
-	  {
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> pipe_to >> pipe_to_port;
-		  in.clear();
-		  continue;
-	  }
-	  if (line_string.find("PIPE_LOSS_COEFFICIENT") != std::string::npos)
-	  {
-		  in.str(GetLineFromFile1(mmp_file));
-		  in >> pipe_loss_coeff;
-		  in.clear();
-		  continue;
-	  }
+		if (line_string.find("$BHE_NET_PIPE") != std::string::npos)
+		{
+			is_pipe = true;
+		}
+		if (line_string.find("PIPE_NAME") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> pipe_name;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("PIPE_FROM") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> pipe_from >> pipe_from_port;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("PIPE_TO") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> pipe_to >> pipe_to_port;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("PIPE_LOSS_COEFFICIENT") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> pipe_loss_coeff;
+			in.clear();
+			continue;
+		}
 
-      if (line_string.find("$BOREHOLE_HEAT_EXCHANGER") != std::string::npos)
-      {
-          is_BHE = true;
-      }
-          
-      // get parameters of Borehole Heat exchanger
-        if (line_string.find("BHE_TYPE") != std::string::npos)
-        {
-            std::string str_tmp;
-            in.str(GetLineFromFile1(mmp_file));
-            in >> str_tmp;
-            if (str_tmp.compare("BHE_TYPE_1U") == 0)
-                bhe_type = BHE::BHE_TYPE_1U;
-            else if (str_tmp.compare("BHE_TYPE_2U") == 0)
-                bhe_type = BHE::BHE_TYPE_2U;
-            else if (str_tmp.compare("BHE_TYPE_CXC") == 0)
-                bhe_type = BHE::BHE_TYPE_CXC;
-            else if (str_tmp.compare("BHE_TYPE_CXA") == 0)
-                bhe_type = BHE::BHE_TYPE_CXA;
-            in.clear();
-            continue; 
-        }
+		if (line_string.find("$BOREHOLE_HEAT_EXCHANGER") != std::string::npos)
+		{
+			is_BHE = true;
+		}
 
-        if (line_string.find("BHE_BOUNDARY_TYPE") != std::string::npos)
-        {
-            std::string str_tmp;
-            in.str(GetLineFromFile1(mmp_file));
-            in >> str_tmp;
-            if (str_tmp.compare("FIXED_INFLOW_TEMP") == 0)
-                bhe_bound_type = BHE::BHE_BOUND_FIXED_INFLOW_TEMP;
-            else if (str_tmp.compare("FIXED_INFLOW_TEMP_CURVE") == 0)
-                bhe_bound_type = BHE::BHE_BOUND_FIXED_INFLOW_TEMP_CURVE;
-            else if (str_tmp.compare("POWER_IN_WATT") == 0)
-                bhe_bound_type = BHE::BHE_BOUND_POWER_IN_WATT;
-            else if (str_tmp.compare("POWER_IN_WATT_CURVE_FIXED_DT") == 0)
-                bhe_bound_type = BHE::BHE_BOUND_POWER_IN_WATT_CURVE_FIXED_DT;
-            else if (str_tmp.compare("BHE_BOUND_BUILDING_POWER_IN_WATT_CURVE_FIXED_DT") == 0)
-                bhe_bound_type = BHE::BHE_BOUND_BUILDING_POWER_IN_WATT_CURVE_FIXED_DT;
-            else if (str_tmp.compare("BHE_BOUND_BUILDING_POWER_IN_WATT_CURVE_FIXED_FLOW_RATE") == 0)
-                bhe_bound_type = BHE::BHE_BOUND_BUILDING_POWER_IN_WATT_CURVE_FIXED_FLOW_RATE;
-            else if (str_tmp.compare("POWER_IN_WATT_CURVE_FIXED_FLOW_RATE") == 0)
-                bhe_bound_type = BHE::BHE_BOUND_POWER_IN_WATT_CURVE_FIXED_FLOW_RATE;
-            else if (str_tmp.compare("FIXED_TEMP_DIFF") == 0)
-                bhe_bound_type = BHE::BHE_BOUND_FIXED_TEMP_DIFF;
-            in.clear();
-            continue;
-        }
+		// get parameters of Borehole Heat exchanger
+		if (line_string.find("BHE_TYPE") != std::string::npos)
+		{
+			std::string str_tmp;
+			in.str(GetLineFromFile1(mmp_file));
+			in >> str_tmp;
+			if (str_tmp.compare("BHE_TYPE_1U") == 0)
+				bhe_type = BHE::BHE_TYPE_1U;
+			else if (str_tmp.compare("BHE_TYPE_2U") == 0)
+				bhe_type = BHE::BHE_TYPE_2U;
+			else if (str_tmp.compare("BHE_TYPE_CXC") == 0)
+				bhe_type = BHE::BHE_TYPE_CXC;
+			else if (str_tmp.compare("BHE_TYPE_CXA") == 0)
+				bhe_type = BHE::BHE_TYPE_CXA;
+			in.clear();
+			continue;
+		}
 
-        if (line_string.find("BHE_POWER_IN_WATT_VALUE") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_power_in_watt_val;
-            in.clear();
-            continue;
-        }
-        if (line_string.find("BHE_POWER_IN_WATT_CURVE_IDX") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_power_in_watt_curve_idx;
-            in.clear();
-            continue;
-        }
-        if (line_string.find("BHE_HP_HEATING_COP_CURVE_IDX") != std::string::npos) // 
-        {
-            in.str(GetLineFromFile1(mmp_file));
+		if (line_string.find("BHE_BOUNDARY_TYPE") != std::string::npos)
+		{
+			std::string str_tmp;
+			in.str(GetLineFromFile1(mmp_file));
+			in >> str_tmp;
+			if (str_tmp.compare("FIXED_INFLOW_TEMP") == 0)
+				bhe_bound_type = BHE::BHE_BOUND_FIXED_INFLOW_TEMP;
+			else if (str_tmp.compare("FIXED_INFLOW_TEMP_CURVE") == 0)
+				bhe_bound_type = BHE::BHE_BOUND_FIXED_INFLOW_TEMP_CURVE;
+			else if (str_tmp.compare("POWER_IN_WATT") == 0)
+				bhe_bound_type = BHE::BHE_BOUND_POWER_IN_WATT;
+			else if (str_tmp.compare("POWER_IN_WATT_CURVE_FIXED_DT") == 0)
+				bhe_bound_type = BHE::BHE_BOUND_POWER_IN_WATT_CURVE_FIXED_DT;
+			else if (str_tmp.compare("BHE_BOUND_BUILDING_POWER_IN_WATT_CURVE_FIXED_DT") == 0)
+				bhe_bound_type = BHE::BHE_BOUND_BUILDING_POWER_IN_WATT_CURVE_FIXED_DT;
+			else if (str_tmp.compare("BHE_BOUND_BUILDING_POWER_IN_WATT_CURVE_FIXED_FLOW_RATE") == 0)
+				bhe_bound_type = BHE::BHE_BOUND_BUILDING_POWER_IN_WATT_CURVE_FIXED_FLOW_RATE;
+			else if (str_tmp.compare("POWER_IN_WATT_CURVE_FIXED_FLOW_RATE") == 0)
+				bhe_bound_type = BHE::BHE_BOUND_POWER_IN_WATT_CURVE_FIXED_FLOW_RATE;
+			else if (str_tmp.compare("FIXED_TEMP_DIFF") == 0)
+				bhe_bound_type = BHE::BHE_BOUND_FIXED_TEMP_DIFF;
+			in.clear();
+			continue;
+		}
+
+		if (line_string.find("BHE_POWER_IN_WATT_VALUE") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_power_in_watt_val;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("BHE_POWER_IN_WATT_CURVE_IDX") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_power_in_watt_curve_idx;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("BHE_HP_HEATING_COP_CURVE_IDX") != std::string::npos) //
+		{
+			in.str(GetLineFromFile1(mmp_file));
 			in >> bhe_heating_cop_curve_idx;
-            in.clear();
-            continue;
-        }
-		if (line_string.find("BHE_HP_COOLING_COP_CURVE_IDX") != std::string::npos) // 
+			in.clear();
+			continue;
+		}
+		if (line_string.find("BHE_HP_COOLING_COP_CURVE_IDX") != std::string::npos) //
 		{
 			in.str(GetLineFromFile1(mmp_file));
 			in >> bhe_cooling_cop_curve_idx;
 			in.clear();
 			continue;
 		}
-        if (line_string.find("BHE_DELTA_T_VALUE") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_delta_T_val;
-            in.clear();
-            continue;
-        }
+		if (line_string.find("BHE_DELTA_T_VALUE") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_delta_T_val;
+			in.clear();
+			continue;
+		}
 		if (line_string.find("BHE_SWITCH_OFF_THRESHOLD") != std::string::npos)
 		{
 			in.str(GetLineFromFile1(mmp_file));
@@ -2189,71 +2188,71 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 			in.clear();
 			continue;
 		}
-        if (line_string.find("BHE_LENGTH") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_length;
-            in.clear();
-            continue;
-        }
-        if (line_string.find("BHE_DIAMETER") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_diameter;
-            in.clear();
-            continue;
-        }
-        if (line_string.find("BHE_REFRIGERANT_FLOW_RATE") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_refrigerant_flow_rate;
-            in.clear();
-            continue;
-        }
-        if (line_string.find("BHE_INNER_RADIUS_PIPE") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_inner_radius_pipe;
-            in.clear();
-            continue;
-        }
-        if (line_string.find("BHE_OUTER_RADIUS_PIPE") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_outer_radius_pipe;
-            in.clear();
-            continue;
-        }
-        if (line_string.find("BHE_PIPE_IN_WALL_THICKNESS") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_pipe_in_wall_thickness;
-            in.clear();
-            continue;
-        }
-        if (line_string.find("BHE_PIPE_OUT_WALL_THICKNESS") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_pipe_out_wall_thickness;
-            in.clear();
-            continue;
-        }
-        if (line_string.find("BHE_FLUID_TYPE") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_fluid_type_idx;
-            in.clear();
-            // get fluid properties
-            if (mfp_vector[bhe_fluid_type_idx])
-            {
-                bhe_refrigerant_viscosity = mfp_vector[bhe_fluid_type_idx]->Viscosity();
-                bhe_refrigerant_density = mfp_vector[bhe_fluid_type_idx]->Density();
-                bhe_refrigerant_heat_capacity = mfp_vector[bhe_fluid_type_idx]->getSpecificHeatCapacity();
-                bhe_regrigerant_heat_conductivity = mfp_vector[bhe_fluid_type_idx]->HeatConductivity();
-            }
+		if (line_string.find("BHE_LENGTH") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_length;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("BHE_DIAMETER") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_diameter;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("BHE_REFRIGERANT_FLOW_RATE") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_refrigerant_flow_rate;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("BHE_INNER_RADIUS_PIPE") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_inner_radius_pipe;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("BHE_OUTER_RADIUS_PIPE") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_outer_radius_pipe;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("BHE_PIPE_IN_WALL_THICKNESS") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_pipe_in_wall_thickness;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("BHE_PIPE_OUT_WALL_THICKNESS") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_pipe_out_wall_thickness;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("BHE_FLUID_TYPE") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_fluid_type_idx;
+			in.clear();
+			// get fluid properties
+			if (mfp_vector[bhe_fluid_type_idx])
+			{
+				bhe_refrigerant_viscosity = mfp_vector[bhe_fluid_type_idx]->Viscosity();
+				bhe_refrigerant_density = mfp_vector[bhe_fluid_type_idx]->Density();
+				bhe_refrigerant_heat_capacity = mfp_vector[bhe_fluid_type_idx]->getSpecificHeatCapacity();
+				bhe_regrigerant_heat_conductivity = mfp_vector[bhe_fluid_type_idx]->HeatConductivity();
+			}
 
-            continue; 
-        }
+			continue;
+		}
 		if (line_string.find("BHE_FLUID_LONGITUDIAL_DISPERSION_LENGTH") != std::string::npos)
 		{
 			in.str(GetLineFromFile1(mmp_file));
@@ -2261,34 +2260,34 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 			in.clear();
 			continue;
 		}
-        if (line_string.find("BHE_THERMAL_CONDUCTIVITY_PIPE_WALL") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_therm_conductivity_pipe_wall;
-            in.clear();
-            continue;
-        }
-        if (line_string.find("BHE_THERMAL_CONDUCTIVITY_GROUT") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_therm_conductivity_grout;
-            in.clear();
-            continue;
-        }
-        if (line_string.find("BHE_PIPE_DISTANCE") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_pipe_distance;
-            in.clear();
-            continue;
-        }
-        if (line_string.find("BHE_GROUT_DENSITY") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_grout_density;
-            in.clear();
-            continue;
-        }
+		if (line_string.find("BHE_THERMAL_CONDUCTIVITY_PIPE_WALL") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_therm_conductivity_pipe_wall;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("BHE_THERMAL_CONDUCTIVITY_GROUT") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_therm_conductivity_grout;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("BHE_PIPE_DISTANCE") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_pipe_distance;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("BHE_GROUT_DENSITY") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_grout_density;
+			in.clear();
+			continue;
+		}
 		if (line_string.find("BHE_GROUT_POROSITY") != std::string::npos)
 		{
 			in.str(GetLineFromFile1(mmp_file));
@@ -2296,21 +2295,21 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 			in.clear();
 			continue;
 		}
-        if (line_string.find("BHE_GROUT_HEAT_CAPACITY") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            in >> bhe_grout_heat_capacity;
-            in.clear();
-            continue;
-        }
-        if (line_string.find("BHE_Ra_Rb") != std::string::npos)
-        {
-            in.str(GetLineFromFile1(mmp_file));
-            this->bhe_use_ext_therm_resis = true; 
-            in >> bhe_intern_resistance >> bhe_therm_resistance;
-            in.clear();
-            continue;
-        }
+		if (line_string.find("BHE_GROUT_HEAT_CAPACITY") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			in >> bhe_grout_heat_capacity;
+			in.clear();
+			continue;
+		}
+		if (line_string.find("BHE_Ra_Rb") != std::string::npos)
+		{
+			in.str(GetLineFromFile1(mmp_file));
+			this->bhe_use_ext_therm_resis = true;
+			in >> bhe_intern_resistance >> bhe_therm_resistance;
+			in.clear();
+			continue;
+		}
 		if (line_string.find("BHE_USER_DEFINED_THERM_RESIS") != std::string::npos)
 		{
 			in.str(GetLineFromFile1(mmp_file));
@@ -2327,18 +2326,18 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 			in.clear();
 			continue;
 		}
-        if (line_string.find("BHE_2U_DISCHARGE_TYPE") != std::string::npos)
-        {
-            std::string str_tmp;
-            in.str(GetLineFromFile1(mmp_file));
-            in >> str_tmp; 
-            if (str_tmp.compare("BHE_DISCHARGE_TYPE_PARALLEL") == 0)
-                bhe_2u_discharge_type = BHE::BHE_DISCHARGE_TYPE_PARALLEL;
-            else if (str_tmp.compare("BHE_DISCHARGE_TYPE_SERIAL") == 0)
-                bhe_2u_discharge_type = BHE::BHE_DISCHARGE_TYPE_SERIAL;
-            in.clear();
-            continue;
-        }
+		if (line_string.find("BHE_2U_DISCHARGE_TYPE") != std::string::npos)
+		{
+			std::string str_tmp;
+			in.str(GetLineFromFile1(mmp_file));
+			in >> str_tmp;
+			if (str_tmp.compare("BHE_DISCHARGE_TYPE_PARALLEL") == 0)
+				bhe_2u_discharge_type = BHE::BHE_DISCHARGE_TYPE_PARALLEL;
+			else if (str_tmp.compare("BHE_DISCHARGE_TYPE_SERIAL") == 0)
+				bhe_2u_discharge_type = BHE::BHE_DISCHARGE_TYPE_SERIAL;
+			in.clear();
+			continue;
+		}
 		if (line_string.find("$INTERPHASE_FRICTION") != std::string::npos)
 		{
 			in.str(GetLineFromFile1(mmp_file));
@@ -2955,8 +2954,8 @@ double CMediumProperties::HeatCapacity(long number, double theta, CFiniteElement
 	double porosity, Sat, PG;
 	int group;
 	double T0, T1 = 0.0;
-    double sigmoid_coeff; 
-    double phi_i;
+	double sigmoid_coeff;
+	double phi_i;
 	double sigmoid_derive;
 	double latent_heat;
 	//  double H0,H1;
@@ -2996,8 +2995,8 @@ double CMediumProperties::HeatCapacity(long number, double theta, CFiniteElement
 				heat_capacity_fluids = 0.0;
 				porosity = 0.0;
 			}
-			heat_capacity = porosity * heat_capacity_fluids
-			                + (1.0 - porosity) * specific_heat_capacity_solid * density_solid;
+			heat_capacity
+			    = porosity * heat_capacity_fluids + (1.0 - porosity) * specific_heat_capacity_solid * density_solid;
 			break;
 		case 2: // boiling model for YD
 			// YD/OK: n c rho = n S^g c^g rho^g + n S^l c^l rho^l + (1-n) c^s rho^s
@@ -3033,40 +3032,42 @@ double CMediumProperties::HeatCapacity(long number, double theta, CFiniteElement
 			break;
 		case 3: // D_THM1 - Richards model //WW
 			T1 = assem->TG;
-		heat_capacity = assem->SolidProp->Heat_Capacity(T1) * fabs(
-		        assem->SolidProp->Density()) + Porosity(assem)
-		                * MFPCalcFluidsHeatCapacity(assem);
-		break;
-	case 6: 
-		// TYZ, heat capacity for ice freezing model 
-        phi_i = 0.0; 
+			heat_capacity = assem->SolidProp->Heat_Capacity(T1) * fabs(assem->SolidProp->Density())
+			                + Porosity(assem) * MFPCalcFluidsHeatCapacity(assem);
+			break;
+		case 6:
+			// TYZ, heat capacity for ice freezing model
+			phi_i = 0.0;
 
-		group = m_pcs->m_msh->ele_vector[number]->GetPatchIndex();
-		m_msp = msp_vector[group];
-		// heat capacity 
-		specific_heat_capacity_solid = m_msp->Heat_Capacity(0.0); 
-		specific_heat_capacity_ice = m_msp->Heat_Capacity(1.0);
+			group = m_pcs->m_msh->ele_vector[number]->GetPatchIndex();
+			m_msp = msp_vector[group];
+			// heat capacity
+			specific_heat_capacity_solid = m_msp->Heat_Capacity(0.0);
+			specific_heat_capacity_ice = m_msp->Heat_Capacity(1.0);
 
-		density_solid = fabs(m_msp->Density(0.0));
-		density_ice = fabs(m_msp->Density(1.0));
+			density_solid = fabs(m_msp->Density(0.0));
+			density_ice = fabs(m_msp->Density(1.0));
 
-		porosity = assem->MediaProp->Porosity(number, theta);
-		heat_capacity_fluids = assem->FluidProp->getSpecificHeatCapacity() * assem->FluidProp->Density();
+			porosity = assem->MediaProp->Porosity(number, theta);
+			heat_capacity_fluids = assem->FluidProp->getSpecificHeatCapacity() * assem->FluidProp->Density();
 
-        // get the freezing model parameter
-        sigmoid_coeff = m_msp->getFreezingSigmoidCoeff();
-		// get the latent heat 
-		latent_heat = m_msp->getlatentheat();
-        // get interpolated current temperature
-        T1 = assem->interpolate(assem->NodalVal1);
-        // get the volume fraction of ice
-        phi_i = CalcIceVolFrac(T1, sigmoid_coeff, porosity);
-		// get the derivative of the sigmoid function
-		sigmoid_derive = Calcsigmoidderive(phi_i, sigmoid_coeff, porosity);
-        // Cp and latent heat based on the freezing model
-		heat_capacity = (porosity - phi_i) * heat_capacity_fluids + (1.0 - porosity) *specific_heat_capacity_solid* density_solid + phi_i * specific_heat_capacity_ice * density_ice - density_ice * sigmoid_derive * latent_heat ;
-		break;
-	//....................................................................
+			// get the freezing model parameter
+			sigmoid_coeff = m_msp->getFreezingSigmoidCoeff();
+			// get the latent heat
+			latent_heat = m_msp->getLatentHeat();
+			// get interpolated current temperature
+			T1 = assem->interpolate(assem->NodalVal1);
+			// get the volume fraction of ice
+			phi_i = CalcIceVolFrac(T1, sigmoid_coeff, porosity);
+			// get the derivative of the sigmoid function
+			sigmoid_derive = Calcsigmoidderive(phi_i, sigmoid_coeff, porosity);
+			// Cp and latent heat based on the freezing model
+			heat_capacity = (porosity - phi_i) * heat_capacity_fluids
+			                + (1.0 - porosity) * specific_heat_capacity_solid * density_solid
+			                + phi_i * specific_heat_capacity_ice * density_ice
+			                - density_ice * sigmoid_derive * latent_heat;
+			break;
+		//....................................................................
 		default:
 			std::cout << "Error in CMediumProperties::HeatCapacity: no valid material model"
 			          << "\n";
@@ -3076,7 +3077,6 @@ double CMediumProperties::HeatCapacity(long number, double theta, CFiniteElement
 	return heat_capacity;
 }
 
-
 /**************************************************************************
 FEMLib-Method:
 Task: calculate the volume fraction of ice based on temperatuer
@@ -3085,18 +3085,18 @@ Programing:
 **************************************************************************/
 double CMediumProperties::CalcIceVolFrac(double T_in_dC, double freezing_sigmoid_coeff, double porosity)
 {
-    double phi_i = 0.0; 
+	double phi_i = 0.0;
 
-    phi_i = porosity* (1.0 - 1.0 / (1.0 + std::exp(-1.0 * freezing_sigmoid_coeff * T_in_dC)));
-    
-    return phi_i; 
+	phi_i = porosity * (1.0 - 1.0 / (1.0 + std::exp(-1.0 * freezing_sigmoid_coeff * T_in_dC)));
+
+	return phi_i;
 }
 
 double CMediumProperties::Calcsigmoidderive(double phi_i, double freezing_sigmoid_coeff, double porosity)
 {
 	double sigmoid_derive = 0.0;
 
-	sigmoid_derive = -porosity* freezing_sigmoid_coeff * (1 - phi_i) * phi_i;
+	sigmoid_derive = -porosity * freezing_sigmoid_coeff * (1 - phi_i) * phi_i;
 
 	return sigmoid_derive;
 }
@@ -3322,8 +3322,8 @@ double* CMediumProperties::HeatDispersionTensorNew(int ip)
 		switch (Dim)
 		{
 			case 1: // line elements
-				heat_dispersion_tensor[0] = heat_conductivity_porous_medium[0]
-				                            + alpha_l * heat_capacity_fluids * fluid_density * vg;
+				heat_dispersion_tensor[0]
+				    = heat_conductivity_porous_medium[0] + alpha_l * heat_capacity_fluids * fluid_density * vg;
 				break;
 			case 2:
 				D[0] = (alpha_t * vg) + (alpha_l - alpha_t) * (velocity[0] * velocity[0]) / vg;
@@ -3331,8 +3331,8 @@ double* CMediumProperties::HeatDispersionTensorNew(int ip)
 				D[2] = ((alpha_l - alpha_t) * (velocity[1] * velocity[0])) / vg;
 				D[3] = (alpha_t * vg) + (alpha_l - alpha_t) * (velocity[1] * velocity[1]) / vg;
 				for (i = 0; i < 4; i++)
-					heat_dispersion_tensor[i] = heat_conductivity_porous_medium[i]
-					                            + (D[i] * heat_capacity_fluids * fluid_density);
+					heat_dispersion_tensor[i]
+					    = heat_conductivity_porous_medium[i] + (D[i] * heat_capacity_fluids * fluid_density);
 				break;
 			case 3:
 				D[0] = (alpha_t * vg) + (alpha_l - alpha_t) * (velocity[0] * velocity[0]) / vg;
@@ -3345,8 +3345,8 @@ double* CMediumProperties::HeatDispersionTensorNew(int ip)
 				D[7] = ((alpha_l - alpha_t) * (velocity[2] * velocity[1])) / vg;
 				D[8] = (alpha_t * vg) + (alpha_l - alpha_t) * (velocity[2] * velocity[2]) / vg;
 				for (i = 0; i < 9; i++)
-					heat_dispersion_tensor[i] = heat_conductivity_porous_medium[i]
-					                            + (D[i] * heat_capacity_fluids * fluid_density);
+					heat_dispersion_tensor[i]
+					    = heat_conductivity_porous_medium[i] + (D[i] * heat_capacity_fluids * fluid_density);
 				break;
 		}
 	}
@@ -3395,8 +3395,8 @@ double* CMediumProperties::MassDispersionTensorNew(int ip, int tr_phase) // SB +
 	Daq = m_cp->CalcDiffusionCoefficientCP(index, theta, m_pcs);
 	molecular_diffusion_value = Daq * TortuosityFunction(index, g, theta);
 
-	molecular_diffusion_value = m_cp->CalcDiffusionCoefficientCP(index, theta, m_pcs)
-	                            * TortuosityFunction(index, g, theta);
+	molecular_diffusion_value
+	    = m_cp->CalcDiffusionCoefficientCP(index, theta, m_pcs) * TortuosityFunction(index, g, theta);
 
 	molecular_diffusion_value *= Porosity(index, theta);
 	// CB, SB
@@ -3417,7 +3417,7 @@ double* CMediumProperties::MassDispersionTensorNew(int ip, int tr_phase) // SB +
 		{
 			//--------------------------------------------------------------------
 			case 1: // line elements
-				; // Do nothing
+			    ; // Do nothing
 				break;
 			//--------------------------------------------------------------------
 			case 2:
@@ -4248,20 +4248,20 @@ double CMediumProperties::Porosity(long number, double theta)
 		if (mode == 0) // Gauss point values
 		{
 			// assem->ComputeShapefct(1);
-			primary_variable[i] = (1. - theta) * assem->interpolate(nidx0, pcs_temp)
-			                      + theta * assem->interpolate(nidx1, pcs_temp);
+			primary_variable[i]
+			    = (1. - theta) * assem->interpolate(nidx0, pcs_temp) + theta * assem->interpolate(nidx1, pcs_temp);
 		} // Node values
 		else if (mode == 1)
-			primary_variable[i] = (1. - theta) * pcs_temp->GetNodeValue(number, nidx0)
-			                      + theta * pcs_temp->GetNodeValue(number, nidx1);
+			primary_variable[i]
+			    = (1. - theta) * pcs_temp->GetNodeValue(number, nidx0) + theta * pcs_temp->GetNodeValue(number, nidx1);
 		// Element average value
 		else if (mode == 2)
 			primary_variable[i] = (1. - theta) * assem->elemnt_average(nidx0, pcs_temp)
 			                      + theta * assem->elemnt_average(nidx1, pcs_temp);
 		else if (mode == 1) // Node values
 
-			primary_variable[i] = (1. - theta) * pcs_temp->GetNodeValue(number, nidx0)
-			                      + theta * pcs_temp->GetNodeValue(number, nidx1);
+			primary_variable[i]
+			    = (1. - theta) * pcs_temp->GetNodeValue(number, nidx0) + theta * pcs_temp->GetNodeValue(number, nidx1);
 		else if (mode == 2) // Element average value
 
 			primary_variable[i] = (1. - theta) * assem->elemnt_average(nidx0, pcs_temp)
@@ -4447,13 +4447,13 @@ double CMediumProperties::Porosity(CElement* assem)
 		if (mode == 0) // Gauss point values
 		{
 			// assem->ComputeShapefct(1);
-			primary_variable[i] = (1. - theta) * assem->interpolate(nidx0, pcs_temp)
-			                      + theta * assem->interpolate(nidx1, pcs_temp);
+			primary_variable[i]
+			    = (1. - theta) * assem->interpolate(nidx0, pcs_temp) + theta * assem->interpolate(nidx1, pcs_temp);
 		}
 		else if (mode == 1) // Node values
 
-			primary_variable[i] = (1. - theta) * pcs_temp->GetNodeValue(number, nidx0)
-			                      + theta * pcs_temp->GetNodeValue(number, nidx1);
+			primary_variable[i]
+			    = (1. - theta) * pcs_temp->GetNodeValue(number, nidx0) + theta * pcs_temp->GetNodeValue(number, nidx1);
 		else if (mode == 2) // Element average value
 
 			primary_variable[i] = (1. - theta) * assem->elemnt_average(nidx0, pcs_temp)
@@ -4477,8 +4477,8 @@ double CMediumProperties::Porosity(CElement* assem)
 			    = PorosityVolumetricFreeSwellingConstantIonicstrength(number, primary_variable[0], primary_variable[1]);
 			break;
 		case 4: // n = f(S), Constrained chemical swelling
-			porosity = PorosityEffectiveConstrainedSwellingConstantIonicStrength(
-			    number, primary_variable[0], primary_variable[1], &porosity_sw);
+			porosity = PorosityEffectiveConstrainedSwellingConstantIonicStrength(number, primary_variable[0],
+			                                                                     primary_variable[1], &porosity_sw);
 			break;
 		case 5: // n = f(S), Free chemical swelling, I const
 			porosity = PorosityVolumetricFreeSwelling(number, primary_variable[0], primary_variable[1]);
@@ -4518,7 +4518,7 @@ double CMediumProperties::Porosity(CElement* assem)
 				pcs_temp = pcs_vector[i];
 				//			if ((pcs_temp->pcs_type_name.compare("GROUNDWATER_FLOW") == 0) ||
 				//(pcs_temp->pcs_type_name.compare("RICHARDS_FLOW") ==
-				//0)||(pcs_temp->pcs_type_name.compare("MULTI_PHASE_FLOW") == 0))
+				// 0)||(pcs_temp->pcs_type_name.compare("MULTI_PHASE_FLOW") == 0))
 				if ((pcs_temp->getProcessType() == FiniteElement::GROUNDWATER_FLOW)
 				    || (pcs_temp->getProcessType() == FiniteElement::RICHARDS_FLOW)
 				    // TF
@@ -4917,7 +4917,8 @@ double* CMediumProperties::PermeabilityTensor(long index)
 				// then relative permeability change
 				k_rel = (pow((n_rel - permeability_porosity_model_values[0])
 				                 / (1 - permeability_porosity_model_values[0]),
-				             permeability_porosity_model_values[2]) + permeability_porosity_model_values[3])
+				             permeability_porosity_model_values[2])
+				         + permeability_porosity_model_values[3])
 				        / (1 + permeability_porosity_model_values[3]);
 				// finially permeability
 				k_new = k_rel * permeability_porosity_model_values[1];
@@ -5554,7 +5555,7 @@ double CMediumProperties::PressureSaturationDependency(const double wetting_satu
 		case 10: //  unconfined 3D GW  6/2012 JOD
 			return 0; // set phi/(rho * g) in storage
 		case 99: // The old iterative method. Should anyone need it (but it is somewhat inaccurate at low and high
-		         // saturations)
+			// saturations)
 			ds = 1.0e-2;
 			do
 			{
@@ -6014,8 +6015,8 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
 				m_ele_geo->mat_vector(j) = garage[j];
 			garage.clear();
 			// Set the VOL_MAT value from (1-POROSITY-VOL_BIO)
-			m_ele_geo->mat_vector(mat_vec_size) = 1 - m_ele_geo->mat_vector(por_index)
-			                                      - m_ele_geo->mat_vector(vol_bio_index);
+			m_ele_geo->mat_vector(mat_vec_size)
+			    = 1 - m_ele_geo->mat_vector(por_index) - m_ele_geo->mat_vector(vol_bio_index);
 		}
 	}
 	//----------------------------------------------------------------------
@@ -6215,10 +6216,14 @@ void CMediumProperties::WriteTecplotDistributedProperties()
 **************************************************************************/
 long GetNearestHetVal2(long EleIndex,
                        CFEMesh* m_msh,
-                       vector<double> xvals,
-                       vector<double> yvals,
-                       vector<double> zvals,
-                       vector<double> mmpvals)
+                       vector<double>
+                           xvals,
+                       vector<double>
+                           yvals,
+                       vector<double>
+                           zvals,
+                       vector<double>
+                           mmpvals)
 {
 	(void)mmpvals;
 	long i, nextele, no_values;
@@ -6268,10 +6273,14 @@ long GetNearestHetVal2(long EleIndex,
 **************************************************************************/
 double GetAverageHetVal2(long EleIndex,
                          CFEMesh* m_msh,
-                         vector<double> xvals,
-                         vector<double> yvals,
-                         vector<double> zvals,
-                         vector<double> mmpvals)
+                         vector<double>
+                             xvals,
+                         vector<double>
+                             yvals,
+                         vector<double>
+                             zvals,
+                         vector<double>
+                             mmpvals)
 {
 	long i, j, ihet;
 	double average;
@@ -6470,10 +6479,12 @@ void CMediumProperties::CalStressPermeabilityFactor3(double* kfac)
 			                   + c_coefficient[12 + i * 4] * xyz[2]
 			                   - max(pG, 0.0));
 	// am at 100
-	double am0_h = a01 - (c_coefficient[7] / (-Kn + c_coefficient[7] / c_coefficient[3]) + c_coefficient[4]
-	                      + c_coefficient[5] + c_coefficient[6]);
-	double am0_H = a01 - (c_coefficient[8] / (-Kn + c_coefficient[8] / c_coefficient[3]) + c_coefficient[4]
-	                      + c_coefficient[5] + c_coefficient[6]);
+	double am0_h
+	    = a01 - (c_coefficient[7] / (-Kn + c_coefficient[7] / c_coefficient[3]) + c_coefficient[4] + c_coefficient[5]
+	             + c_coefficient[6]);
+	double am0_H
+	    = a01 - (c_coefficient[8] / (-Kn + c_coefficient[8] / c_coefficient[3]) + c_coefficient[4] + c_coefficient[5]
+	             + c_coefficient[6]);
 	double ah0_h = am0_h * am0_h;
 	double ah0_H = am0_H * am0_H;
 	if (ah0_h > am0_h)
@@ -8190,9 +8201,9 @@ double CMediumProperties::PermeabilityPressureFunction(long index, double* gp, d
 			for (i = 0; i < nn; i++)
 				z[i] = GetNodeZ(element_nodes[i]);
 			/* Spannung = sigma(z0) + d_sigma/d_z*z */
-			sigma = permeability_pressure_model_values[2]
-			        + permeability_pressure_model_values[3]
-			              * InterpolValueVector(ElGetElementType(index), z, 0., 0., 0.);
+			sigma
+			    = permeability_pressure_model_values[2]
+			      + permeability_pressure_model_values[3] * InterpolValueVector(ElGetElementType(index), z, 0., 0., 0.);
 			/* Auf effektive Spannung umrechnen */
 			sigma -= p;
 			k_rel = exp(permeability_pressure_model_values[0] - permeability_pressure_model_values[1] * log(sigma));
@@ -8238,9 +8249,9 @@ double CMediumProperties::PermeabilityPressureFunction(long index, double* gp, d
 			for (i = 0; i < nn; i++)
 				z[i] = GetNodeZ(element_nodes[i]);
 			/* Spannung = sigma(z0) + d_sigma/d_z*z */
-			sigma = permeability_pressure_model_values[1]
-			        + permeability_pressure_model_values[2]
-			              * InterpolValueVector(ElGetElementType(index), z, 0., 0., 0.);
+			sigma
+			    = permeability_pressure_model_values[1]
+			      + permeability_pressure_model_values[2] * InterpolValueVector(ElGetElementType(index), z, 0., 0., 0.);
 			/* Auf effektive Spannung umrechnen */
 			sigma -= p;
 			k_rel = GetCurveValue((int)permeability_pressure_model_values[0], 0, sigma, &i);
