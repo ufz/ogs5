@@ -3790,7 +3790,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	   ----------------------
 	   -----------------------------------------------------------------*/
 	ElementValue_DM::ElementValue_DM(CElem * ele, const int NGP, bool HM_Staggered)
-	    : NodesOnPath(NULL), orientation(NULL)
+	    : NodesOnPath(NULL), orientation(NULL), Strain(NULL), Strain_t_ip(NULL)
 	{
 		int Plastic = 1;
 		const int LengthMat = 7; // Number of material parameter of SYS model.
@@ -3811,7 +3811,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		ele_dim = ele->GetDimension();
 		sdp = msp_vector[ele->GetPatchIndex()];
 		Plastic = sdp->Plastictity();
-		Strain = NULL;
 		Strain_Kel = NULL;
 		Strain_Max = NULL;
 		Strain_pl = NULL;
