@@ -860,7 +860,7 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 				// Test on absolute and relative norms with same tolerance
 				// if((Error <= Tolerance_global_Newton && ErrorU <= Tolerance_global_Newton) || Norm <=
 				// Tolerance_global_Newton && NormU <= Tolerance_global_Newton)
-				if (NormU <= Tolerance_global_Newton)
+				if (Error <= Tolerance_global_Newton)//testing only relative residual so far
 				{
 					if (ite_steps == 1) // WX:05.2012
 					{
