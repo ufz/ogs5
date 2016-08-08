@@ -572,7 +572,7 @@ void OUTData(double time_current, int time_step_number, bool force_output)
 						for (size_t j = 0; j < no_times; j++)
 							if (time_current >= m_out->time_vector[j])
 							{
-								vtk->WriteXMLUnstructuredGrid(pvd_vtk_file_name, m_out, time_step_number);
+								vtk->WriteXMLUnstructuredGrid(pvd_vtk_file_path, m_out, time_step_number);
 								m_out->time_vector.erase(m_out->time_vector.begin() + j);
 								VTK_Info dat;
 								dat.timestep = m_out->getTime();
