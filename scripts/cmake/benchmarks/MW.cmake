@@ -23,9 +23,9 @@ Benchmark(AUTHOR MW
 	CONFIG FEM
 	RUNTIME 361
 	OUTPUT_FILES
-		HM_47.vtu
-		HM_122.vtu
-		HM_161.vtu
+		HM0047.vtk
+		HM0122.vtk
+		HM0161.vtk
 )
 
 Benchmark(AUTHOR MW
@@ -33,7 +33,7 @@ Benchmark(AUTHOR MW
 	CONFIG FEM
 	RUNTIME 373
 	OUTPUT_FILES
-		HM_42.vtu
-		HM_119.vtu
-		HM_159.vtu
+		HM0042.vtk
+		HM0119.vtk
+		HM0159.vtk
 )
