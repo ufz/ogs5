@@ -782,11 +782,10 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 
 				// Compute damping for Newton-Raphson step
 				damping = 1.0;
-				//           if(Error/Error1>1.0e-1) damping=0.5;
-// if(Error / Error1 > 1.0e-1 || ErrorU / ErrorU1 > 1.0e-1)
-// damping = 0.5;
-// if(ErrorU < Error)
-//	Error = ErrorU;
+				if (Error / Error1 > m_num->newton_damping_tolerance
+				    || ErrorU / ErrorU1 > m_num->newton_damping_tolerance)
+					damping = m_num->newton_damping_factor;
+
 #if defined(NEW_EQS) && defined(JFNK_H2M)
 				/// If JFNK, get w from the buffer
 				if (m_num->nls_method == 2)

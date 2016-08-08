@@ -103,6 +103,8 @@ public:
 	double lag_min_weight;
 	int lag_use_matrix;
 	int lag_vel_method;
+	double newton_damping_factor;
+	double newton_damping_tolerance;
 	//
 	// Configure
 	void NumConfigure(bool overall_coupling_exists); // JT2012

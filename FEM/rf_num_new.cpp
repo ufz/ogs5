@@ -126,6 +126,8 @@ CNumerics::CNumerics(string name)
 	fct_method = -1; // NW
 	fct_prelimiter_type = 0; // NW
 	fct_const_alpha = -1.0; // NW
+	newton_damping_factor = 1.0;
+	newton_damping_tolerance = 1.e3;
 	//----------------------------------------------------------------------
 	// Deformation
 	GravityProfile = 0;
@@ -384,6 +386,8 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 		{
 			line.str(GetLineFromFile1(num_file));
 			line >> nls_plasticity_local_tolerance;
+			line.clear();
+			continue;
 		}
 		//....................................................................
 		// subkeyword found ($NON_LINEAR_ITERATION  -or-  $NON_LINEAR_ITERATIONS)
@@ -696,6 +700,17 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 			line.clear();
 			cout << "->FEM_FCT method is selected."
 			     << "\n";
+			continue;
+		}
+		// Automatic damping of Newton scheme
+		if (line_string.find("$NEWTON_DAMPING") != string::npos) // NW
+		{
+			line.str(GetLineFromFile1(num_file));
+			line >> newton_damping_tolerance; //if NR error decreases by less than this factor, the next step will be dampened
+			line >> newton_damping_factor; //dampened by this factor
+			line.clear();
+			std::cout << "NR step will be damped by " << newton_damping_factor
+			          << " if error norms decrease by less than " << newton_damping_tolerance << std::endl;
 			continue;
 		}
 
