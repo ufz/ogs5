@@ -160,8 +160,8 @@ mark_as_advanced(FORCE OGS_PYTHON OGS_CMAKE_DEBUG OGS_ONE_BIG_GTEST OGS_BUILD_IN
 ###########################################################################
 ### OGS version information is now obtained from Git tags. Adjust authors & date.
 ###########################################################################
-set (OGS_RELEASE_PERSONS "WH/WW/LB")
-set (OGS_DATE "07.07.2015")
+set (OGS_RELEASE_PERSONS "LB/NW/TN/WW")
+set (OGS_DATE "09.08.2016")
 
 ###################
 ### Fem configs ###
