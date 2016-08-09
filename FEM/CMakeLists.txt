@@ -1,5 +1,6 @@
 set( HEADERS
 	BoundaryCondition.h
+	burgers.h
 	PhysicalConstant.h
 	Constrained.h
 	conversion_rate.h
@@ -16,9 +17,11 @@ set( HEADERS
 	files0.h
 	GeoInfo.h
 	InitialCondition.h
+	invariants.h
 	LinearFunctionData.h
 	mathlib.h
 	matrix_class.h
+	minkley.h
 	Output.h
 	pcs_dm.h
 	problem.h
@@ -54,6 +57,7 @@ set( HEADERS
 
 set( SOURCES
 	BoundaryCondition.cpp
+	burgers.cpp
 	CAP_IO.cpp
 	conversion_rate.cpp
 	DistributionInfo.cpp
@@ -72,9 +76,11 @@ set( SOURCES
 	files0.cpp
 	GeoInfo.cpp
 	InitialCondition.cpp
+	invariants.cpp
 	LinearFunctionData.cpp
 	mathlib.cpp
 	matrix_class.cpp
+	minkley.cpp
 	Output.cpp
 	pcs_dm.cpp
 	problem.cpp

@@ -8,6 +8,7 @@ add_subdirectory( gtest )
 set ( SOURCES
 	testrunner.cpp
 	testBase.cpp
+	testSolidProps.cpp
 )
 
 # Add tests here if they need testdata

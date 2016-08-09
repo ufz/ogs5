@@ -772,19 +772,13 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 
 				Error = Norm / InitialNorm;
 				ErrorU = NormU / InitialNormU0;
-				if (Norm < Tolerance_global_Newton && Error > Norm)
-					Error = Norm;
-				//           if(Norm<TolNorm)  Error = 0.01*Tolerance_global_Newton;
-				if ((NormU / InitialNormU) <= Tolerance_global_Newton)
-					Error = NormU / InitialNormU;
 
 				// Compute damping for Newton-Raphson step
 				damping = 1.0;
-				//           if(Error/Error1>1.0e-1) damping=0.5;
-				if (Error / Error1 > 1.0e-1 || ErrorU / ErrorU1 > 1.0e-1)
-					damping = 0.5;
-				if (ErrorU < Error)
-					Error = ErrorU;
+				if (Error / Error1 > m_num->newton_damping_tolerance
+				    || ErrorU / ErrorU1 > m_num->newton_damping_tolerance)
+					damping = m_num->newton_damping_factor;
+
 #if defined(NEW_EQS) && defined(JFNK_H2M)
 				/// If JFNK, get w from the buffer
 				if (m_num->nls_method == 2)
@@ -811,27 +805,30 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 				if (myrank == 0)
 				{
 #endif
-				//Screan printing:
-				std::cout<<"      -->End of Newton-Raphson iteration: "<<ite_steps<<"/"<< MaxIteration <<"\n";
-				cout.width(8);
- 				cout.precision(2);
-				cout.setf(ios::scientific);
-				cout<<"         NR-Error"<<"  "<<"RHS Norm 0"<<"  "<<"RHS Norm  "<<"  "<<"Unknowns Norm"<<"  "<<"Damping"<<"\n";
-				cout<<"         "<<Error<<"  "<<InitialNorm<<"  "<<Norm<<"   "<<NormU<<"   "<<"   "<<damping<<"\n";
-				std::cout <<"      ------------------------------------------------"<<"\n";
+					// Screan printing:
+					std::cout << "      -->End of Newton-Raphson iteration: " << ite_steps << "/" << MaxIteration
+							  << "\n";
+					cout.width(8);
+					cout.precision(2);
+					cout.setf(ios::scientific);
+					std::cout << "         DeltaU/DeltaU0"
+							  << "  "
+							  << "DeltaU"
+							  << "  "
+							  << "DeltaF/DeltaF0  "
+							  << "  "
+							  << "DeltaF"
+							  << "  "
+							  << "Damping"
+							  << "\n";
+					std::cout << "         " << ErrorU << "  " << NormU << "  " << Error << "   " << Norm << "   "
+							  << "   " << damping << "\n";
+					std::cout << "      ------------------------------------------------"
+							  << "\n";
 #if defined(USE_MPI) || defined(USE_PETSC)
 				}
 #endif
-				if (Error > 100.0 && ite_steps > 1)
-				{
-					printf("\n  Attention: Newton-Raphson step is diverged. Programme halt!\n");
-					exit(1);
-				}
-				if (InitialNorm < 10 * Tolerance_global_Newton)
-					break;
-				if (Norm < 0.001 * InitialNorm)
-					break;
-				if (Error <= Tolerance_global_Newton)
+				if (Error <= Tolerance_global_Newton)//testing only relative residual so far
 				{
 					if (ite_steps == 1) // WX:05.2012
 					{
@@ -842,6 +839,7 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 						break;
 				}
 			}
+
 			// w = w+dw for Newton-Raphson
 			UpdateIterativeStep(damping, 0); // w = w+dw
 		} // Newton-Raphson iteration
