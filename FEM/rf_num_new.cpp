@@ -703,14 +703,15 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 			continue;
 		}
 		// Automatic damping of Newton scheme
-		if (line_string.find("$NEWTON_DAMPING") != string::npos) // NW
+		if (line_string.find("$NEWTON_DAMPING") != string::npos)
 		{
 			line.str(GetLineFromFile1(num_file));
 			line >> newton_damping_tolerance; //if NR error decreases by less than this factor, the next step will be dampened
 			line >> newton_damping_factor; //dampened by this factor
 			line.clear();
 			std::cout << "NR step will be damped by " << newton_damping_factor
-			          << " if error norms decrease by less than " << newton_damping_tolerance << std::endl;
+			          << " if relative residual or relative unknown increment decrease by less than "
+			          << newton_damping_tolerance << " from one iteration to the next." << std::endl;
 			continue;
 		}
 
