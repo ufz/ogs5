@@ -12,7 +12,7 @@ node('envinf1')
 
 def runLinux() {
 	def configs = [
-		[name:"FEM", cmakeOptions:"-DOGS_USE_CVODE=ON -DOGS_NO_EXTERNAL_LIBS=ON -DOGS_PACKAGING=ON -DCMAKE_BUILD_TYPE=Release", target:"package", artifacts:"*.tar.gz"],
+		[name:"FEM", cmakeOptions:"-DOGS_USE_CVODE=ON -DOGS_NO_EXTERNAL_LIBS=ON -DCMAKE_BUILD_TYPE=Release", target:"package", artifacts:"*.tar.gz"],
 		[name:"SP"],
 		[name:"GEMS"],
 		[name:"PQC"],

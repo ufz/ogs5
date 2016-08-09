@@ -10,7 +10,7 @@ warning \\[WARNING\]\
 error \[*]{3}Failed\
 
 # Clang
-warning /: warning:/
+#warning /: warning:/
 
 # Clang sanitizer
 error /: runtime error:/
