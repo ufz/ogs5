@@ -828,7 +828,9 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 #if defined(USE_MPI) || defined(USE_PETSC)
 				}
 #endif
-				if (Error <= Tolerance_global_Newton)//testing only relative residual so far
+				if (Error <= Tolerance_global_Newton && Norm <= m_num->nls_abs_residual_tolerance
+				    && NormU <= m_num->nls_abs_unknown_tolerance
+				    && ErrorU <= m_num->nls_rel_unknown_tolerance)
 				{
 					if (ite_steps == 1) // WX:05.2012
 					{

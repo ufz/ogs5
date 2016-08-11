@@ -128,6 +128,9 @@ CNumerics::CNumerics(string name)
 	fct_const_alpha = -1.0; // NW
 	newton_damping_factor = 1.0;
 	newton_damping_tolerance = 1.e3;
+	nls_abs_residual_tolerance = 1.e10;
+	nls_abs_unknown_tolerance = 1.e10;
+	nls_rel_unknown_tolerance = 1.e10;
 	//----------------------------------------------------------------------
 	// Deformation
 	GravityProfile = 0;
@@ -712,6 +715,22 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
 			std::cout << "NR step will be damped by " << newton_damping_factor
 			          << " if relative residual or relative unknown increment decrease by less than "
 			          << newton_damping_tolerance << " from one iteration to the next." << std::endl;
+			continue;
+		}
+		// Extended convergence test for Newton
+		if (line_string.find("$ADDITIONAL_NEWTON_TOLERANCES") != string::npos)
+		{
+			line.str(GetLineFromFile1(num_file));
+			line >> nls_abs_residual_tolerance;
+			line >> nls_abs_unknown_tolerance;
+			line >> nls_rel_unknown_tolerance;
+			line.clear();
+			std::cout << "Additional Newton tolerances have been set. Global NR will converge if: " << std::endl;
+			std::cout << "  DeltaF/DeltaF0 <= " << nls_error_tolerance << " (set using $NON_LINEAR_ITERATIONS)"
+			          << std::endl;
+			std::cout << "  && DeltaF <= " << nls_abs_residual_tolerance << std::endl;
+			std::cout << "  && DeltaU <= " << nls_abs_unknown_tolerance << std::endl;
+			std::cout << "  && DeltaU/DeltaU0 <= " << nls_rel_unknown_tolerance << std::endl;
 			continue;
 		}
 
