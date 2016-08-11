@@ -128,9 +128,9 @@ CNumerics::CNumerics(string name)
 	fct_const_alpha = -1.0; // NW
 	newton_damping_factor = 1.0;
 	newton_damping_tolerance = 1.e3;
-	nls_abs_residual_tolerance = 1.e10;
-	nls_abs_unknown_tolerance = 1.e10;
-	nls_rel_unknown_tolerance = 1.e10;
+	nls_abs_residual_tolerance = std::numeric_limits<double>::max();
+	nls_abs_unknown_tolerance = std::numeric_limits<double>::max();
+	nls_rel_unknown_tolerance = std::numeric_limits<double>::max();
 	//----------------------------------------------------------------------
 	// Deformation
 	GravityProfile = 0;
