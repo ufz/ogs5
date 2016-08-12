@@ -105,6 +105,9 @@ public:
 	int lag_vel_method;
 	double newton_damping_factor;
 	double newton_damping_tolerance;
+	double nls_abs_residual_tolerance;
+	double nls_abs_unknown_tolerance;
+	double nls_rel_unknown_tolerance;
 	//
 	// Configure
 	void NumConfigure(bool overall_coupling_exists); // JT2012
