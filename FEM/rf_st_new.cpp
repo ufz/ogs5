@@ -104,8 +104,8 @@ std::vector<NODE_HISTORY*> node_history_vector; // CMCD
  01/2004 OK Implementation
  **************************************************************************/
 CSourceTerm::CSourceTerm()
-    : ProcessInfo(), GeoInfo(), _coupled(false), _sub_dom_idx(-1), dis_linear_f(NULL), GIS_shape_head(NULL),
-      _distances(NULL)
+    : ProcessInfo(), GeoInfo(), _coupled(false), _sub_dom_idx(-1), dis_linear_f(NULL),
+      start_pos_in_st(-1), GIS_shape_head(NULL), _distances(NULL)
 // 07.06.2010, 03.2010. WW
 {
 	CurveIndex = -1;
