@@ -1,4 +1,4 @@
-add_subdirectory(SSE)
-add_subdirectory(AltiVec)
-add_subdirectory(NEON)
-add_subdirectory(Default)
+ADD_SUBDIRECTORY(SSE)
+ADD_SUBDIRECTORY(AltiVec)
+ADD_SUBDIRECTORY(NEON)
+ADD_SUBDIRECTORY(Default)

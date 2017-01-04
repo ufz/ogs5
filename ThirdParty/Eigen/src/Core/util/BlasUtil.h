@@ -3,30 +3,17 @@
 //
 // Copyright (C) 2009-2010 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_BLASUTIL_H
 #define EIGEN_BLASUTIL_H
 
 // This file contains many lightweight helper classes used to
 // implement and control fast level 2 and level 3 BLAS-like routines.
+
+namespace Eigen {
 
 namespace internal {
 
@@ -47,7 +34,7 @@ template<
   int ResStorageOrder>
 struct general_matrix_matrix_product;
 
-template<typename Index, typename LhsScalar, int LhsStorageOrder, bool ConjugateLhs, typename RhsScalar, bool ConjugateRhs>
+template<typename Index, typename LhsScalar, int LhsStorageOrder, bool ConjugateLhs, typename RhsScalar, bool ConjugateRhs, int Version=Specialized>
 struct general_matrix_vector_product;
 
 
@@ -55,12 +42,29 @@ template<bool Conjugate> struct conj_if;
 
 template<> struct conj_if<true> {
   template<typename T>
-  inline T operator()(const T& x) { return conj(x); }
+  inline T operator()(const T& x) const { return numext::conj(x); }
+  template<typename T>
+  inline T pconj(const T& x) const { return internal::pconj(x); }
 };
 
 template<> struct conj_if<false> {
   template<typename T>
-  inline const T& operator()(const T& x) { return x; }
+  inline const T& operator()(const T& x) const { return x; }
+  template<typename T>
+  inline const T& pconj(const T& x) const { return x; }
+};
+
+// Generic implementation for custom complex types.
+template<typename LhsScalar, typename RhsScalar, bool ConjLhs, bool ConjRhs>
+struct conj_helper
+{
+  typedef typename scalar_product_traits<LhsScalar,RhsScalar>::ReturnType Scalar;
+
+  EIGEN_STRONG_INLINE Scalar pmadd(const LhsScalar& x, const RhsScalar& y, const Scalar& c) const
+  { return padd(c, pmul(x,y)); }
+
+  EIGEN_STRONG_INLINE Scalar pmul(const LhsScalar& x, const RhsScalar& y) const
+  { return conj_if<ConjLhs>()(x) *  conj_if<ConjRhs>()(y); }
 };
 
 template<typename Scalar> struct conj_helper<Scalar,Scalar,false,false>
@@ -76,7 +80,7 @@ template<typename RealScalar> struct conj_helper<std::complex<RealScalar>, std::
   { return c + pmul(x,y); }
 
   EIGEN_STRONG_INLINE Scalar pmul(const Scalar& x, const Scalar& y) const
-  { return Scalar(real(x)*real(y) + imag(x)*imag(y), imag(x)*real(y) - real(x)*imag(y)); }
+  { return Scalar(numext::real(x)*numext::real(y) + numext::imag(x)*numext::imag(y), numext::imag(x)*numext::real(y) - numext::real(x)*numext::imag(y)); }
 };
 
 template<typename RealScalar> struct conj_helper<std::complex<RealScalar>, std::complex<RealScalar>, true,false>
@@ -86,7 +90,7 @@ template<typename RealScalar> struct conj_helper<std::complex<RealScalar>, std::
   { return c + pmul(x,y); }
 
   EIGEN_STRONG_INLINE Scalar pmul(const Scalar& x, const Scalar& y) const
-  { return Scalar(real(x)*real(y) + imag(x)*imag(y), real(x)*imag(y) - imag(x)*real(y)); }
+  { return Scalar(numext::real(x)*numext::real(y) + numext::imag(x)*numext::imag(y), numext::real(x)*numext::imag(y) - numext::imag(x)*numext::real(y)); }
 };
 
 template<typename RealScalar> struct conj_helper<std::complex<RealScalar>, std::complex<RealScalar>, true,true>
@@ -96,7 +100,7 @@ template<typename RealScalar> struct conj_helper<std::complex<RealScalar>, std::
   { return c + pmul(x,y); }
 
   EIGEN_STRONG_INLINE Scalar pmul(const Scalar& x, const Scalar& y) const
-  { return Scalar(real(x)*real(y) - imag(x)*imag(y), - real(x)*imag(y) - imag(x)*real(y)); }
+  { return Scalar(numext::real(x)*numext::real(y) - numext::imag(x)*numext::imag(y), - numext::real(x)*numext::imag(y) - numext::imag(x)*numext::real(y)); }
 };
 
 template<typename RealScalar,bool Conj> struct conj_helper<std::complex<RealScalar>, RealScalar, Conj,false>
@@ -118,11 +122,11 @@ template<typename RealScalar,bool Conj> struct conj_helper<RealScalar, std::comp
 };
 
 template<typename From,typename To> struct get_factor {
-  EIGEN_STRONG_INLINE static To run(const From& x) { return x; }
+  static EIGEN_STRONG_INLINE To run(const From& x) { return x; }
 };
 
 template<typename Scalar> struct get_factor<Scalar,typename NumTraits<Scalar>::Real> {
-  EIGEN_STRONG_INLINE static typename NumTraits<Scalar>::Real run(const Scalar& x) { return real(x); }
+  static EIGEN_STRONG_INLINE typename NumTraits<Scalar>::Real run(const Scalar& x) { return numext::real(x); }
 };
 
 // Lightweight helper class to access matrix coefficients.
@@ -175,61 +179,65 @@ template<typename XprType> struct blas_traits
     ExtractType,
     typename _ExtractType::PlainObject
     >::type DirectLinearAccessType;
-  static inline const ExtractType extract(const XprType& x) { return x; }
+  static inline ExtractType extract(const XprType& x) { return x; }
   static inline const Scalar extractScalarFactor(const XprType&) { return Scalar(1); }
 };
 
 // pop conjugate
-template<typename Scalar, typename NestedXpr>
-struct blas_traits<CwiseUnaryOp<scalar_conjugate_op<Scalar>, NestedXpr> >
- : blas_traits<NestedXpr>
+template<typename Scalar, typename Xpr>
+struct blas_traits<CwiseUnaryOp<scalar_conjugate_op<Scalar>, Xpr> >
+ : blas_traits<typename internal::remove_all<typename Xpr::Nested>::type>
 {
+  typedef typename internal::remove_all<typename Xpr::Nested>::type NestedXpr;
   typedef blas_traits<NestedXpr> Base;
-  typedef CwiseUnaryOp<scalar_conjugate_op<Scalar>, NestedXpr> XprType;
+  typedef CwiseUnaryOp<scalar_conjugate_op<Scalar>, Xpr> XprType;
   typedef typename Base::ExtractType ExtractType;
 
   enum {
     IsComplex = NumTraits<Scalar>::IsComplex,
     NeedToConjugate = Base::NeedToConjugate ? 0 : IsComplex
   };
-  static inline const ExtractType extract(const XprType& x) { return Base::extract(x.nestedExpression()); }
+  static inline ExtractType extract(const XprType& x) { return Base::extract(x.nestedExpression()); }
   static inline Scalar extractScalarFactor(const XprType& x) { return conj(Base::extractScalarFactor(x.nestedExpression())); }
 };
 
 // pop scalar multiple
-template<typename Scalar, typename NestedXpr>
-struct blas_traits<CwiseUnaryOp<scalar_multiple_op<Scalar>, NestedXpr> >
- : blas_traits<NestedXpr>
+template<typename Scalar, typename Xpr>
+struct blas_traits<CwiseUnaryOp<scalar_multiple_op<Scalar>, Xpr> >
+ : blas_traits<typename internal::remove_all<typename Xpr::Nested>::type>
 {
+  typedef typename internal::remove_all<typename Xpr::Nested>::type NestedXpr;
   typedef blas_traits<NestedXpr> Base;
-  typedef CwiseUnaryOp<scalar_multiple_op<Scalar>, NestedXpr> XprType;
+  typedef CwiseUnaryOp<scalar_multiple_op<Scalar>, Xpr> XprType;
   typedef typename Base::ExtractType ExtractType;
-  static inline const ExtractType extract(const XprType& x) { return Base::extract(x.nestedExpression()); }
+  static inline ExtractType extract(const XprType& x) { return Base::extract(x.nestedExpression()); }
   static inline Scalar extractScalarFactor(const XprType& x)
   { return x.functor().m_other * Base::extractScalarFactor(x.nestedExpression()); }
 };
 
 // pop opposite
-template<typename Scalar, typename NestedXpr>
-struct blas_traits<CwiseUnaryOp<scalar_opposite_op<Scalar>, NestedXpr> >
- : blas_traits<NestedXpr>
+template<typename Scalar, typename Xpr>
+struct blas_traits<CwiseUnaryOp<scalar_opposite_op<Scalar>, Xpr> >
+ : blas_traits<typename internal::remove_all<typename Xpr::Nested>::type>
 {
+  typedef typename internal::remove_all<typename Xpr::Nested>::type NestedXpr;
   typedef blas_traits<NestedXpr> Base;
-  typedef CwiseUnaryOp<scalar_opposite_op<Scalar>, NestedXpr> XprType;
+  typedef CwiseUnaryOp<scalar_opposite_op<Scalar>, Xpr> XprType;
   typedef typename Base::ExtractType ExtractType;
-  static inline const ExtractType extract(const XprType& x) { return Base::extract(x.nestedExpression()); }
+  static inline ExtractType extract(const XprType& x) { return Base::extract(x.nestedExpression()); }
   static inline Scalar extractScalarFactor(const XprType& x)
   { return - Base::extractScalarFactor(x.nestedExpression()); }
 };
 
 // pop/push transpose
-template<typename NestedXpr>
-struct blas_traits<Transpose<NestedXpr> >
- : blas_traits<NestedXpr>
+template<typename Xpr>
+struct blas_traits<Transpose<Xpr> >
+ : blas_traits<typename internal::remove_all<typename Xpr::Nested>::type>
 {
+  typedef typename internal::remove_all<typename Xpr::Nested>::type NestedXpr;
   typedef typename NestedXpr::Scalar Scalar;
   typedef blas_traits<NestedXpr> Base;
-  typedef Transpose<NestedXpr> XprType;
+  typedef Transpose<Xpr> XprType;
   typedef Transpose<const typename Base::_ExtractType>  ExtractType; // const to get rid of a compile error; anyway blas traits are only used on the RHS
   typedef Transpose<const typename Base::_ExtractType> _ExtractType;
   typedef typename conditional<bool(Base::HasUsableDirectAccess),
@@ -239,7 +247,7 @@ struct blas_traits<Transpose<NestedXpr> >
   enum {
     IsTransposed = Base::IsTransposed ? 0 : 1
   };
-  static inline const ExtractType extract(const XprType& x) { return Base::extract(x.nestedExpression()); }
+  static inline ExtractType extract(const XprType& x) { return Base::extract(x.nestedExpression()); }
   static inline Scalar extractScalarFactor(const XprType& x) { return Base::extractScalarFactor(x.nestedExpression()); }
 };
 
@@ -252,7 +260,7 @@ template<typename T, bool HasUsableDirectAccess=blas_traits<T>::HasUsableDirectA
 struct extract_data_selector {
   static const typename T::Scalar* run(const T& m)
   {
-    return const_cast<typename T::Scalar*>(&blas_traits<T>::extract(m).coeffRef(0,0)); // FIXME this should be .data()
+    return blas_traits<T>::extract(m).data();
   }
 };
 
@@ -267,5 +275,7 @@ template<typename T> const typename T::Scalar* extract_data(const T& m)
 }
 
 } // end namespace internal
+
+} // end namespace Eigen
 
 #endif // EIGEN_BLASUTIL_H

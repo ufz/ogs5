@@ -3,27 +3,14 @@
 //
 // Copyright (C) 2008-2009 Gael Guennebaud <gael.guennebaud@inria.fr>
 //
-// Eigen is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 3 of the License, or (at your option) any later version.
-//
-// Alternatively, you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// Eigen is distributed in the hope that it will be useful, but WITHOUT ANY
-// WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License or the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License and a copy of the GNU General Public License along with
-// Eigen. If not, see <http://www.gnu.org/licenses/>.
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #ifndef EIGEN_PACKET_MATH_SSE_H
 #define EIGEN_PACKET_MATH_SSE_H
+
+namespace Eigen {
 
 namespace internal {
 
@@ -61,6 +48,9 @@ template<> struct is_arithmetic<__m128d> { enum { value = true }; };
 #define _EIGEN_DECLARE_CONST_Packet4f(NAME,X) \
   const Packet4f p4f_##NAME = pset1<Packet4f>(X)
 
+#define _EIGEN_DECLARE_CONST_Packet2d(NAME,X) \
+  const Packet2d p2d_##NAME = pset1<Packet2d>(X)
+
 #define _EIGEN_DECLARE_CONST_Packet4f_FROM_INT(NAME,X) \
   const Packet4f p4f_##NAME = _mm_castsi128_ps(pset1<Packet4i>(X))
 
@@ -76,7 +66,7 @@ template<> struct packet_traits<float>  : default_packet_traits
     AlignedOnScalar = 1,
     size=4,
 
-    HasDiv    = 1,
+    HasDiv  = 1,
     HasSin  = EIGEN_FAST_MATH,
     HasCos  = EIGEN_FAST_MATH,
     HasLog  = 1,
@@ -92,7 +82,9 @@ template<> struct packet_traits<double> : default_packet_traits
     AlignedOnScalar = 1,
     size=2,
 
-    HasDiv    = 1
+    HasDiv  = 1,
+    HasExp  = 1,
+    HasSqrt = 1
   };
 };
 template<> struct packet_traits<int>    : default_packet_traits
@@ -110,9 +102,18 @@ template<> struct unpacket_traits<Packet4f> { typedef float  type; enum {size=4}
 template<> struct unpacket_traits<Packet2d> { typedef double type; enum {size=2}; };
 template<> struct unpacket_traits<Packet4i> { typedef int    type; enum {size=4}; };
 
+#if defined(_MSC_VER) && (_MSC_VER==1500)
+// Workaround MSVC 9 internal compiler error.
+// TODO: It has been detected with win64 builds (amd64), so let's check whether it also happens in 32bits+SSE mode
+// TODO: let's check whether there does not exist a better fix, like adding a pset0() function. (it crashed on pset1(0)).
+template<> EIGEN_STRONG_INLINE Packet4f pset1<Packet4f>(const float&  from) { return _mm_set_ps(from,from,from,from); }
+template<> EIGEN_STRONG_INLINE Packet2d pset1<Packet2d>(const double& from) { return _mm_set_pd(from,from); }
+template<> EIGEN_STRONG_INLINE Packet4i pset1<Packet4i>(const int&    from) { return _mm_set_epi32(from,from,from,from); }
+#else
 template<> EIGEN_STRONG_INLINE Packet4f pset1<Packet4f>(const float&  from) { return _mm_set1_ps(from); }
 template<> EIGEN_STRONG_INLINE Packet2d pset1<Packet2d>(const double& from) { return _mm_set1_pd(from); }
 template<> EIGEN_STRONG_INLINE Packet4i pset1<Packet4i>(const int&    from) { return _mm_set1_epi32(from); }
+#endif
 
 template<> EIGEN_STRONG_INLINE Packet4f plset<float>(const float& a) { return _mm_add_ps(pset1<Packet4f>(a), _mm_set_ps(3,2,1,0)); }
 template<> EIGEN_STRONG_INLINE Packet2d plset<double>(const double& a) { return _mm_add_pd(pset1<Packet2d>(a),_mm_set_pd(1,0)); }
@@ -140,6 +141,10 @@ template<> EIGEN_STRONG_INLINE Packet4i pnegate(const Packet4i& a)
 {
   return psub(_mm_setr_epi32(0,0,0,0), a);
 }
+
+template<> EIGEN_STRONG_INLINE Packet4f pconj(const Packet4f& a) { return a; }
+template<> EIGEN_STRONG_INLINE Packet2d pconj(const Packet2d& a) { return a; }
+template<> EIGEN_STRONG_INLINE Packet4i pconj(const Packet4i& a) { return a; }
 
 template<> EIGEN_STRONG_INLINE Packet4f pmul<Packet4f>(const Packet4f& a, const Packet4f& b) { return _mm_mul_ps(a,b); }
 template<> EIGEN_STRONG_INLINE Packet2d pmul<Packet2d>(const Packet2d& a, const Packet2d& b) { return _mm_mul_pd(a,b); }
@@ -173,18 +178,26 @@ template<> EIGEN_STRONG_INLINE Packet4f pmin<Packet4f>(const Packet4f& a, const 
 template<> EIGEN_STRONG_INLINE Packet2d pmin<Packet2d>(const Packet2d& a, const Packet2d& b) { return _mm_min_pd(a,b); }
 template<> EIGEN_STRONG_INLINE Packet4i pmin<Packet4i>(const Packet4i& a, const Packet4i& b)
 {
+#ifdef EIGEN_VECTORIZE_SSE4_1
+  return _mm_min_epi32(a,b);
+#else
   // after some bench, this version *is* faster than a scalar implementation
   Packet4i mask = _mm_cmplt_epi32(a,b);
   return _mm_or_si128(_mm_and_si128(mask,a),_mm_andnot_si128(mask,b));
+#endif
 }
 
 template<> EIGEN_STRONG_INLINE Packet4f pmax<Packet4f>(const Packet4f& a, const Packet4f& b) { return _mm_max_ps(a,b); }
 template<> EIGEN_STRONG_INLINE Packet2d pmax<Packet2d>(const Packet2d& a, const Packet2d& b) { return _mm_max_pd(a,b); }
 template<> EIGEN_STRONG_INLINE Packet4i pmax<Packet4i>(const Packet4i& a, const Packet4i& b)
 {
+#ifdef EIGEN_VECTORIZE_SSE4_1
+  return _mm_max_epi32(a,b);
+#else
   // after some bench, this version *is* faster than a scalar implementation
   Packet4i mask = _mm_cmpgt_epi32(a,b);
   return _mm_or_si128(_mm_and_si128(mask,a),_mm_andnot_si128(mask,b));
+#endif
 }
 
 template<> EIGEN_STRONG_INLINE Packet4f pand<Packet4f>(const Packet4f& a, const Packet4f& b) { return _mm_and_ps(a,b); }
@@ -222,67 +235,31 @@ template<> EIGEN_STRONG_INLINE Packet4i pload<Packet4i>(const int*     from) { E
     return _mm_loadu_ps(from);
     #endif
   }
-  template<> EIGEN_STRONG_INLINE Packet2d ploadu<Packet2d>(const double* from) { EIGEN_DEBUG_UNALIGNED_LOAD return _mm_loadu_pd(from); }
-  template<> EIGEN_STRONG_INLINE Packet4i ploadu<Packet4i>(const int*    from) { EIGEN_DEBUG_UNALIGNED_LOAD return _mm_loadu_si128(reinterpret_cast<const Packet4i*>(from)); }
 #else
-// Fast unaligned loads. Note that here we cannot directly use intrinsics: this would
-// require pointer casting to incompatible pointer types and leads to invalid code
-// because of the strict aliasing rule. The "dummy" stuff are required to enforce
-// a correct instruction dependency.
-// TODO: do the same for MSVC (ICC is compatible)
 // NOTE: with the code below, MSVC's compiler crashes!
-
-#if defined(__GNUC__) && defined(__i386__)
-  // bug 195: gcc/i386 emits weird x87 fldl/fstpl instructions for _mm_load_sd
-  #define EIGEN_AVOID_CUSTOM_UNALIGNED_LOADS 1
-#elif defined(__clang__)
-  // bug 201: Segfaults in __mm_loadh_pd with clang 2.8
-  #define EIGEN_AVOID_CUSTOM_UNALIGNED_LOADS 1
-#else
-  #define EIGEN_AVOID_CUSTOM_UNALIGNED_LOADS 0
-#endif
 
 template<> EIGEN_STRONG_INLINE Packet4f ploadu<Packet4f>(const float* from)
 {
   EIGEN_DEBUG_UNALIGNED_LOAD
-#if EIGEN_AVOID_CUSTOM_UNALIGNED_LOADS
   return _mm_loadu_ps(from);
-#else
-  __m128d res;
-  res =  _mm_load_sd((const double*)(from)) ;
-  res =  _mm_loadh_pd(res, (const double*)(from+2)) ;
-  return _mm_castpd_ps(res);
-#endif
 }
+#endif
+
 template<> EIGEN_STRONG_INLINE Packet2d ploadu<Packet2d>(const double* from)
 {
   EIGEN_DEBUG_UNALIGNED_LOAD
-#if EIGEN_AVOID_CUSTOM_UNALIGNED_LOADS
   return _mm_loadu_pd(from);
-#else
-  __m128d res;
-  res = _mm_load_sd(from) ;
-  res = _mm_loadh_pd(res,from+1);
-  return res;
-#endif
 }
 template<> EIGEN_STRONG_INLINE Packet4i ploadu<Packet4i>(const int* from)
 {
   EIGEN_DEBUG_UNALIGNED_LOAD
-#if EIGEN_AVOID_CUSTOM_UNALIGNED_LOADS
-  return _mm_loadu_si128(reinterpret_cast<const Packet4i*>(from));
-#else
-  __m128d res;
-  res =  _mm_load_sd((const double*)(from)) ;
-  res =  _mm_loadh_pd(res, (const double*)(from+2)) ;
-  return _mm_castpd_si128(res);
-#endif
+  return _mm_loadu_si128(reinterpret_cast<const __m128i*>(from));
 }
-#endif
+
 
 template<> EIGEN_STRONG_INLINE Packet4f ploaddup<Packet4f>(const float*   from)
 {
-  return vec4f_swizzle1(_mm_castpd_ps(_mm_load_sd((const double*)from)), 0, 0, 1, 1);
+  return vec4f_swizzle1(_mm_castpd_ps(_mm_load_sd(reinterpret_cast<const double*>(from))), 0, 0, 1, 1);
 }
 template<> EIGEN_STRONG_INLINE Packet2d ploaddup<Packet2d>(const double*  from)
 { return pset1<Packet2d>(from[0]); }
@@ -302,8 +279,8 @@ template<> EIGEN_STRONG_INLINE void pstoreu<double>(double* to, const Packet2d& 
   _mm_storel_pd((to), from);
   _mm_storeh_pd((to+1), from);
 }
-template<> EIGEN_STRONG_INLINE void pstoreu<float>(float*  to, const Packet4f& from) { EIGEN_DEBUG_UNALIGNED_STORE pstoreu((double*)to, _mm_castps_pd(from)); }
-template<> EIGEN_STRONG_INLINE void pstoreu<int>(int*      to, const Packet4i& from) { EIGEN_DEBUG_UNALIGNED_STORE pstoreu((double*)to, _mm_castsi128_pd(from)); }
+template<> EIGEN_STRONG_INLINE void pstoreu<float>(float*  to, const Packet4f& from) { EIGEN_DEBUG_UNALIGNED_STORE pstoreu(reinterpret_cast<double*>(to), _mm_castps_pd(from)); }
+template<> EIGEN_STRONG_INLINE void pstoreu<int>(int*      to, const Packet4i& from) { EIGEN_DEBUG_UNALIGNED_STORE pstoreu(reinterpret_cast<double*>(to), _mm_castsi128_pd(from)); }
 
 // some compilers might be tempted to perform multiple moves instead of using a vector path.
 template<> EIGEN_STRONG_INLINE void pstore1<Packet4f>(float* to, const float& a)
@@ -495,8 +472,8 @@ template<> EIGEN_STRONG_INLINE int predux_min<Packet4i>(const Packet4i& a)
   // for GCC (eg., it does not like using std::min after the pstore !!)
   EIGEN_ALIGN16 int aux[4];
   pstore(aux, a);
-  register int aux0 = aux[0]<aux[1] ? aux[0] : aux[1];
-  register int aux2 = aux[2]<aux[3] ? aux[2] : aux[3];
+  int aux0 = aux[0]<aux[1] ? aux[0] : aux[1];
+  int aux2 = aux[2]<aux[3] ? aux[2] : aux[3];
   return aux0<aux2 ? aux0 : aux2;
 }
 
@@ -516,8 +493,8 @@ template<> EIGEN_STRONG_INLINE int predux_max<Packet4i>(const Packet4i& a)
   // for GCC (eg., it does not like using std::min after the pstore !!)
   EIGEN_ALIGN16 int aux[4];
   pstore(aux, a);
-  register int aux0 = aux[0]>aux[1] ? aux[0] : aux[1];
-  register int aux2 = aux[2]>aux[3] ? aux[2] : aux[3];
+  int aux0 = aux[0]>aux[1] ? aux[0] : aux[1];
+  int aux2 = aux[2]>aux[3] ? aux[2] : aux[3];
   return aux0>aux2 ? aux0 : aux2;
 }
 
@@ -541,7 +518,7 @@ template<> EIGEN_STRONG_INLINE int predux_max<Packet4i>(const Packet4i& a)
 template<int Offset>
 struct palign_impl<Offset,Packet4f>
 {
-  EIGEN_STRONG_INLINE static void run(Packet4f& first, const Packet4f& second)
+  static EIGEN_STRONG_INLINE void run(Packet4f& first, const Packet4f& second)
   {
     if (Offset!=0)
       first = _mm_castsi128_ps(_mm_alignr_epi8(_mm_castps_si128(second), _mm_castps_si128(first), Offset*4));
@@ -551,7 +528,7 @@ struct palign_impl<Offset,Packet4f>
 template<int Offset>
 struct palign_impl<Offset,Packet4i>
 {
-  EIGEN_STRONG_INLINE static void run(Packet4i& first, const Packet4i& second)
+  static EIGEN_STRONG_INLINE void run(Packet4i& first, const Packet4i& second)
   {
     if (Offset!=0)
       first = _mm_alignr_epi8(second,first, Offset*4);
@@ -561,7 +538,7 @@ struct palign_impl<Offset,Packet4i>
 template<int Offset>
 struct palign_impl<Offset,Packet2d>
 {
-  EIGEN_STRONG_INLINE static void run(Packet2d& first, const Packet2d& second)
+  static EIGEN_STRONG_INLINE void run(Packet2d& first, const Packet2d& second)
   {
     if (Offset==1)
       first = _mm_castsi128_pd(_mm_alignr_epi8(_mm_castpd_si128(second), _mm_castpd_si128(first), 8));
@@ -572,7 +549,7 @@ struct palign_impl<Offset,Packet2d>
 template<int Offset>
 struct palign_impl<Offset,Packet4f>
 {
-  EIGEN_STRONG_INLINE static void run(Packet4f& first, const Packet4f& second)
+  static EIGEN_STRONG_INLINE void run(Packet4f& first, const Packet4f& second)
   {
     if (Offset==1)
     {
@@ -595,7 +572,7 @@ struct palign_impl<Offset,Packet4f>
 template<int Offset>
 struct palign_impl<Offset,Packet4i>
 {
-  EIGEN_STRONG_INLINE static void run(Packet4i& first, const Packet4i& second)
+  static EIGEN_STRONG_INLINE void run(Packet4i& first, const Packet4i& second)
   {
     if (Offset==1)
     {
@@ -618,7 +595,7 @@ struct palign_impl<Offset,Packet4i>
 template<int Offset>
 struct palign_impl<Offset,Packet2d>
 {
-  EIGEN_STRONG_INLINE static void run(Packet2d& first, const Packet2d& second)
+  static EIGEN_STRONG_INLINE void run(Packet2d& first, const Packet2d& second)
   {
     if (Offset==1)
     {
@@ -630,5 +607,7 @@ struct palign_impl<Offset,Packet2d>
 #endif
 
 } // end namespace internal
+
+} // end namespace Eigen
 
 #endif // EIGEN_PACKET_MATH_SSE_H

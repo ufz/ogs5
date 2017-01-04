@@ -1,6 +1,6 @@
-file(GLOB Eigen_Jacobi_SRCS "*.h")
+FILE(GLOB Eigen_Jacobi_SRCS "*.h")
 
-install(FILES
+INSTALL(FILES
   ${Eigen_Jacobi_SRCS}
   DESTINATION ${INCLUDE_INSTALL_DIR}/Eigen/src/Jacobi COMPONENT Devel
   )

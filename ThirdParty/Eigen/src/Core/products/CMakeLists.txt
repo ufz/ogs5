@@ -1,6 +1,6 @@
-file(GLOB Eigen_Core_Product_SRCS "*.h")
+FILE(GLOB Eigen_Core_Product_SRCS "*.h")
 
-install(FILES
+INSTALL(FILES
   ${Eigen_Core_Product_SRCS}
   DESTINATION ${INCLUDE_INSTALL_DIR}/Eigen/src/Core/products COMPONENT Devel
   )
