@@ -185,8 +185,8 @@ void BHE_CXA::calc_Nu()
 	{
 		gamma = (_Re_i1 - 2300) / (10000 - 2300);
 
-		Nu_in = (1.0 - gamma) * (3.66 + (4.0 - 0.102 / (d_o1 / d_i1 + 0.02))) * pow(d_o1 / d_i1, 0.04);
-		Nu_in += gamma * ((0.0308 / 8.0 * 1.0e4 * _Pr) / (1.0 + 12.7 * std::sqrt(0.0308 / 8.0) * (std::pow(_Pr, 2.0 / 3.0) - 1.0)) * (1.0 + std::pow(d_h / L, 2.0 / 3.0)) * ((0.86 * std::pow(d_o1 / d_i1, 0.84) + 1.0 - 0.14*std::pow(d_o1 / d_i1, 0.6)) / (1.0 + d_o1 / d_i1)));
+		Nu_in = (1.0 - gamma) * (3.66 + (4.0 - 0.102 / (d_i1 / d_o1 + 0.02))) * pow(d_i1 / d_o1, 0.04);
+		Nu_in += gamma * ((0.0308 / 8.0 * 1.0e4 * _Pr) / (1.0 + 12.7 * std::sqrt(0.0308 / 8.0) * (std::pow(_Pr, 2.0 / 3.0) - 1.0)) * (1.0 + std::pow(d_h / L, 2.0 / 3.0)) * ((0.86 * std::pow(d_i1 / d_o1, 0.84) + 1.0 - 0.14*std::pow(d_i1 / d_o1, 0.6)) / (1.0 + d_i1 / d_o1)));
 
 	}
 	else if (_Re_i1 > 10000.0)
@@ -318,7 +318,7 @@ void BHE_CXA::get_advection_vector(std::size_t idx_unknown, Eigen::VectorXd & ve
 		break;
 	case 1:
 		// pipe o1, Eq. 24
-        advection_coeff = rho_r * heat_cap_r * _u(0) * CSA_o;
+        advection_coeff = rho_r * heat_cap_r * _u(1) * CSA_o;
         // z direction 
         vec_advection(2) = advection_coeff;
 		break;

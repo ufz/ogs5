@@ -316,7 +316,7 @@ void BHE_CXC::get_advection_vector(std::size_t idx_unknown, Eigen::VectorXd & ve
 		break;
 	case 1:
 		// pipe o1, Eq. 27
-        advection_coeff = rho_r * heat_cap_r * _u(0) * CSA_o;
+        advection_coeff = rho_r * heat_cap_r * _u(1) * CSA_o;
         // z direction 
         vec_advection(2) = advection_coeff;
 		break;

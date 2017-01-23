@@ -110,8 +110,8 @@ namespace BHE  // namespace of borehole heat exchanger
 			S_gs = PI * D;
 
             // cross section area calculation
-			CSA_i = PI * r_inner * r_inner;
-			CSA_o = PI * (r_outer * r_outer - (r_inner + b_in) * (r_inner + b_in));
+			CSA_i = PI * (r_outer * r_outer - (r_inner + b_in) * (r_inner + b_in));
+			CSA_o = PI * r_inner * r_inner;
 			CSA_g = PI * (0.25 * D * D - (r_outer + b_out) * (r_outer + b_out));
 
 			// initialization calculation
