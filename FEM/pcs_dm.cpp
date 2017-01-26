@@ -94,6 +94,9 @@ CRFProcessDeformation::CRFProcessDeformation()
 CRFProcessDeformation::~CRFProcessDeformation()
 {
 	const bool last_step = true;
+#ifdef USE_MPI
+    if (myrank == 0)
+#endif
 	WriteGaussPointStress(last_step);
 	if (type == 41 && (idata_type == write_all_binary || idata_type == read_write))
 	{
@@ -3050,7 +3053,7 @@ void CRFProcessDeformation::WriteGaussPointStress(const bool last_step)
 	if ((aktueller_zeitschritt % nwrite_restart) > 0 && (!last_step))
 		return;
 
-#if defined(USE_PETSC) || defined(USE_MPI) //|| defined(other parallel libs)//03.3012. WW
+#if defined(USE_PETSC) //|| defined(other parallel libs)//03.3012. WW
 	const std::string StressFileName = FileName + "_" + number2str(myrank) + ".sts";
 #else
 	const std::string StressFileName = FileName + ".sts";
@@ -3101,7 +3104,7 @@ void CRFProcessDeformation::WriteGaussPointStress(const bool last_step)
 **************************************************************************/
 void CRFProcessDeformation::ReadGaussPointStress()
 {
-#if defined(USE_PETSC) || defined(USE_MPI) //|| defined(other parallel libs)//03.3012. WW
+#if defined(USE_PETSC) //|| defined(other parallel libs)//03.3012. WW
 	const std::string StressFileName = FileName + "_" + number2str(myrank) + ".sts";
 #else
 	const std::string StressFileName = FileName + ".sts";
