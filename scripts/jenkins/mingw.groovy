@@ -1,9 +1,6 @@
 defaultCMakeOptions = '-DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE'
 
 node('docker') {
-    step([$class: 'GitHubSetCommitStatusBuilder', statusMessage: [content: 'Started Jenkins ' +
-        'mingw build']])
-
     stage('Checkout') {
         dir('ogs') { checkout scm }
     }
@@ -31,10 +28,6 @@ node('docker') {
                 profileName: 'S3 UFZ', userMetadata: []])
         }
     }
-
-
-    step([$class: 'GitHubCommitNotifier', resultOnFailure: 'FAILURE', statusMessage:
-        [content: 'Finished Jenkins mingw build']])
 }
 
 def configure(buildDir, cmakeOptions) {
@@ -45,6 +38,3 @@ def configure(buildDir, cmakeOptions) {
 def build(buildDir, target) {
     sh "cd ${buildDir} && make -j \$(nproc) ${target}"
 }
-
-properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator',
-    artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '25']]])
