@@ -1,6 +1,6 @@
 node('envinf1') {
     stage('Checkout') {
-        dir('ogs') { checkout scm }
+        dir('ogs') { checkoutWithTags('https://github.com/ufz/ogs5.git') }
         checkout 'https://github.com/ufz/ogs5-benchmarks.git', 'master', 'benchmarks'
         checkout 'https://github.com/ufz/ogs5-benchmarks_ref.git', 'master', 'benchmarks_ref'
     }

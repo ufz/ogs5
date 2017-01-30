@@ -1,3 +1,6 @@
+#!/usr/bin/env groovy
+@Library('jenkins-pipeline@1.0.2') _
+
 node('master') {
     checkout scm
 

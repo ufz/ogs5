@@ -2,7 +2,7 @@ defaultCMakeOptions = '-DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$CMAKE_
 
 node('docker') {
     stage('Checkout') {
-        dir('ogs') { checkout scm }
+        dir('ogs') { checkoutWithTags('https://github.com/ufz/ogs5.git') }
     }
 
     docker.image('ogs6/mingw-base').inside() {
