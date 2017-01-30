@@ -1,10 +1,9 @@
 node('envinf1') {
-    dir('ogs') {
-        checkout scm
+    stage('Checkout') {
+        dir('ogs') { checkout scm }
+        checkout 'https://github.com/ufz/ogs5-benchmarks.git', 'master', 'benchmarks'
+        checkout 'https://github.com/ufz/ogs5-benchmarks_ref.git', 'master', 'benchmarks_ref'
     }
-
-    checkout 'https://github.com/ufz/ogs5-benchmarks.git', 'master', 'benchmarks'
-    checkout 'https://github.com/ufz/ogs5-benchmarks_ref.git', 'master', 'benchmarks_ref'
 
     this.runLinux()
 }
@@ -25,32 +24,33 @@ def runLinux() {
         [name: "PETSC_GEMS"]
     ]
 
-    stage 'Building'
-    def buildTasks = [:]
-    for (i = 0; i < configs.size(); i++) {
-        def configName = configs[i].name
-        def cmakeOptions = configs[i].cmakeOptions ? configs[i].cmakeOptions : ''
-        cmakeOptions += ' -DNUMDIFF_TOOL_PATH=/usr/local/numdiff/5.8.1-1/bin/numdiff'
-        def target = configs[i].target ? configs[i].target : ''
-        def artifacts = configs[i].artifacts
-        def buildDir = 'build_' + configName
-        buildTasks[configName] = {
-            build buildDir, '-DOGS_CONFIG=' + configName + ' ' + cmakeOptions, target
-            if (artifacts && env.BRANCH_NAME == 'master')
-                archive buildDir + '/' + artifacts
+    stage('Building') {
+        def buildTasks = [:]
+        for (i = 0; i < configs.size(); i++) {
+            def configName = configs[i].name
+            def cmakeOptions = configs[i].cmakeOptions ? configs[i].cmakeOptions : ''
+            cmakeOptions += ' -DNUMDIFF_TOOL_PATH=/usr/local/numdiff/5.8.1-1/bin/numdiff'
+            def target = configs[i].target ? configs[i].target : ''
+            def artifacts = configs[i].artifacts
+            def buildDir = 'build_' + configName
+            buildTasks[configName] = {
+                build buildDir, '-DOGS_CONFIG=' + configName + ' ' + cmakeOptions, target
+                if (artifacts && env.BRANCH_NAME == 'master')
+                    archive buildDir + '/' + artifacts
+            }
         }
+        parallel buildTasks
     }
-    parallel buildTasks
 
-    stage 'Benchmarking'
-    def benchmarkTasks = [:]
-    for (i = 0; i < configs.size(); i++) {
-        def configName = configs[i].name
-        def buildDir = 'build_' + configName
-        benchmarkTasks[configName] = {
-            dir(buildDir) {
-                catchError {
-                    sh """module () { eval `/usr/local/modules/3.2.10-1/Modules/3.2
+    stage('Benchmarking') {
+        def benchmarkTasks = [:]
+        for (i = 0; i < configs.size(); i++) {
+            def configName = configs[i].name
+            def buildDir = 'build_' + configName
+            benchmarkTasks[configName] = {
+                dir(buildDir) {
+                    catchError {
+                        sh """module () { eval `/usr/local/modules/3.2.10-1/Modules/3.2
 .10/bin/modulecmd sh \$*`; }
 
 set +x
@@ -65,16 +65,19 @@ module load openmpi/gcc/1.8.4-2
 module load petsc/3.5_maint_gcc_4.8.1-3_openmpi_gcc_1.8.2-1_gcc_4.8.1_CentOS6_envinf
 export PATH=\"\$PATH:/data/ogs/phreeqc/bin\"
 set -x
-nice -n 5 make benchmarks-short-normal-long"""
+make benchmarks-short-normal-long"""
+                    }
+                    archive '**/*.numdiff'
                 }
-                archive '**/*.numdiff'
             }
         }
+        parallel benchmarkTasks
     }
-    parallel benchmarkTasks
 
-    step([$class: 'LogParserPublisher', failBuildOnError: true, unstableOnWarning: true,
-        projectRulePath: 'ogs/scripts/jenkins/log-parser.rules', useProjectRule: true])
+    stage('Post') {
+        step([$class: 'LogParserPublisher', failBuildOnError: true, unstableOnWarning: true,
+            projectRulePath: 'ogs/scripts/jenkins/log-parser.rules', useProjectRule: true])
+    }
 }
 
 // Builds target with cmakeOptions in buildDir
@@ -97,13 +100,12 @@ set -x
 ln -s /opt/ogs/ogs5-libs Libs || :
 rm -rf ${buildDir} && mkdir ${buildDir} && cd ${buildDir}
 cmake ../ogs ${cmakeOptions} -DCMAKE_BUILD_TYPE=Release
-nice -n 5 make -j 2 ${target}"""
+make -j 2 ${target}"""
     }
 }
 
 // Check out branch from url into directory
 def checkout(url, branch, directory) {
-    stage 'Checkout'
     checkout([$class: 'GitSCM',
         branches: [[name: "*/${branch}"]],
         doGenerateSubmoduleConfigurations: false,

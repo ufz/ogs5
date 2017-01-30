@@ -4,28 +4,33 @@ node('docker') {
     step([$class: 'GitHubSetCommitStatusBuilder', statusMessage: [content: 'Started Jenkins ' +
         'mingw build']])
 
-    stage 'Checkout'
-    dir('ogs') { checkout scm }
+    stage('Checkout') {
+        dir('ogs') { checkout scm }
+    }
 
-    docker.image('ogs6/mingw-base').inside()
-        {
-            stage 'Configure'
+    docker.image('ogs6/mingw-base').inside() {
+        stage('Configure') {
             configure 'build', ''
+        }
 
-            stage 'Build'
+        stage('Build') {
             build 'build', ''
             if (env.BRANCH_NAME == 'master')
                 build 'build', 'package'
         }
+    }
 
-    stage 'Post'
-    archive 'build*/*.zip'
-    step([$class: 'S3BucketPublisher', dontWaitForConcurrentBuildCompletion: false, entries:
-        [[bucket: 'opengeosys/ogs5-binaries/head', excludedFile: '', flatten: true,
-            gzipFiles: false, managedArtifacts: true, noUploadOnFailure: true,
-            selectedRegion: 'eu-central-1', sourceFile: 'build*/*.zip', storageClass:
-            'STANDARD', uploadFromSlave: false, useServerSideEncryption: false]],
-        profileName: 'S3 UFZ', userMetadata: []])
+    stage('Post') {
+        archive 'build*/*.zip'
+        if (env.BRANCH_NAME == 'master') {
+            step([$class: 'S3BucketPublisher', dontWaitForConcurrentBuildCompletion: false, entries:
+                [[bucket: 'opengeosys/ogs5-binaries/head', excludedFile: '', flatten: true,
+                    gzipFiles: false, managedArtifacts: true, noUploadOnFailure: true,
+                    selectedRegion: 'eu-central-1', sourceFile: 'build*/*.zip', storageClass:
+                    'STANDARD', uploadFromSlave: false, useServerSideEncryption: false]],
+                profileName: 'S3 UFZ', userMetadata: []])
+        }
+    }
 
 
     step([$class: 'GitHubCommitNotifier', resultOnFailure: 'FAILURE', statusMessage:
