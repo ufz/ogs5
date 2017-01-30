@@ -50,8 +50,8 @@ def runLinux() {
             benchmarkTasks[configName] = {
                 dir(buildDir) {
                     catchError {
-                        sh """module () { eval `/usr/local/modules/3.2.10-1/Modules/3.2
-.10/bin/modulecmd sh \$*`; }
+                        sh """
+module () { eval `/usr/local/modules/3.2.10-1/Modules/3.2.10/bin/modulecmd sh \$*`; }
 
 set +x
 export MODULEPATH=\"/global/apps/modulefiles:\$MODULEPATH\"
@@ -83,7 +83,8 @@ make benchmarks-short-normal-long"""
 // Builds target with cmakeOptions in buildDir
 def build(buildDir, cmakeOptions, target) {
     catchError {
-        sh """module () { eval `/usr/local/modules/3.2.10-1/Modules/3.2.10/bin/modulecmd sh \$*`; }
+        sh """
+module () { eval `/usr/local/modules/3.2.10-1/Modules/3.2.10/bin/modulecmd sh \$*`; }
 
 set +x
 export MODULEPATH=\"/global/apps/modulefiles:\$MODULEPATH\"
