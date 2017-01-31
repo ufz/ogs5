@@ -19,14 +19,6 @@ node('docker') {
 
     stage('Post') {
         archive 'build*/*.zip'
-        if (env.BRANCH_NAME == 'master') {
-            step([$class: 'S3BucketPublisher', dontWaitForConcurrentBuildCompletion: false, entries:
-                [[bucket: 'opengeosys/ogs5-binaries/head', excludedFile: '', flatten: true,
-                    gzipFiles: false, managedArtifacts: true, noUploadOnFailure: true,
-                    selectedRegion: 'eu-central-1', sourceFile: 'build*/*.zip', storageClass:
-                    'STANDARD', uploadFromSlave: false, useServerSideEncryption: false]],
-                profileName: 'S3 UFZ', userMetadata: []])
-        }
     }
 }
 
