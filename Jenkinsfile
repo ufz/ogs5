@@ -1,12 +1,25 @@
 #!/usr/bin/env groovy
 @Library('jenkins-pipeline@1.0.2') _
 
-node('master') {
-    checkout scm
+def builders = [:]
 
-    parallel linux: { load 'scripts/jenkins/linux.groovy' },
-    mingw: { load 'scripts/jenkins/mingw.groovy' }
+builders['linux'] = {
+    node('envinf1') {
+        dir('ogs') { checkoutWithTags() }
+        load 'ogs/scripts/jenkins/linux.groovy'
+    }
+}
 
+builders['mingw'] = {
+    node('docker') {
+        dir('ogs') { checkoutWithTags() }
+        load 'ogs/scripts/jenkins/mingw.groovy'
+    }
+}
+
+parallel builders
+
+node {
     step([$class: 'GitHubCommitStatusSetter', reposSource:
         [$class: 'ManuallyEnteredRepositorySource',
         url: 'https://github.com/ufz/ogs5.git']])
