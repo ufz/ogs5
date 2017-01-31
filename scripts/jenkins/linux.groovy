@@ -42,6 +42,7 @@ node('envinf1') {
                     env: 'envinf1/cli.sh',
                     script: this)
                 build.linux(
+                    cmd: 'make -j 4',
                     dir: 'build_' + config.name,
                     env: 'envinf1/cli.sh',
                     script: this,
@@ -61,6 +62,7 @@ node('envinf1') {
             benchmarkTasks[config.name] = {
                 catchError {
                     build.linux(
+                        cmd: 'make -j 4',
                         dir: 'build_' + config.name,
                         env: 'envinf1/cli.sh',
                         script: this,
