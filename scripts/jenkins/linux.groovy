@@ -10,14 +10,14 @@ node('envinf1') {
     }
 
     def configs = [
-        [name: "FEM", cmakeOptions: "-DOGS_USE_CVODE=ON -DOGS_NO_EXTERNAL_LIBS=ON ",
+        [name: "FEM", cmakeOptions: " -DOGS_USE_CVODE=ON -DOGS_NO_EXTERNAL_LIBS=ON ",
             target: "package", artifacts: "*.tar.gz"],
         [name: "SP"],
         [name: "GEMS"],
         [name: "PQC"],
         [name: "IPQC"],
         [name: "BRNS"],
-        [name: "MKL", cmakeOptions: "-DMKL_DIR=/opt/intel/mkl "],
+        [name: "MKL", cmakeOptions: " -DMKL_DIR=/opt/intel/mkl "],
         [name: "LIS"],
         [name: "MPI"],
         [name: "PETSC"],
@@ -31,7 +31,7 @@ node('envinf1') {
             def defaultCMakeOptions =
                 ' -DOGS_CONFIG=' + config.name +
                 ' -DCMAKE_BUILD_TYPE=Release' +
-                ' -DNUMDIFF_TOOL_PATH=/usr/local/numdiff/5.8.1-1/bin/numdiff'
+                ' -DNUMDIFF_TOOL_PATH=/usr/local/numdiff/5.8.1-1/bin/numdiff '
             def cmakeOptions = defaultCMakeOptions +
                 (config.cmakeOptions ? config.cmakeOptions : '')
 
