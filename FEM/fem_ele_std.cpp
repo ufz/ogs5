@@ -1615,7 +1615,7 @@ double CFiniteElementStd::CalCoefMass()
 				val *= storage_effstress;
 			}
 
-			val /= time_unit_factor;
+			//val /= time_unit_factor;
 			break;
 		case EPT_UNCONFINED_FLOW: // Unconfined flow
 			break;
@@ -2233,7 +2233,7 @@ void CFiniteElementStd::CalCoefLaplace(bool Gravity, int ip)
 					tensor[i * dim + i] *= w[i];
 			}
 			for (size_t i = 0; i < dim * dim; i++)
-				mat[i] = tensor[i] / mat_fac * perm_effstress * k_rel; // AS:perm. dependent eff stress.
+				mat[i] = time_unit_factor * tensor[i] / mat_fac * perm_effstress * k_rel; // AS:perm. dependent eff stress.
 
 			break;
 		case EPT_GROUNDWATER_FLOW: // Groundwater flow
@@ -10569,7 +10569,7 @@ void CFiniteElementStd::Assemble_RHS_LIQUIDFLOW()
 		//---------------------------------------------------------
 		//  Compute RHS+=int{N^T alpha_T dT/dt}
 		//---------------------------------------------------------
-		const double fac = eff_thermal_expansion * dT / dt / time_unit_factor; // WX:bug fixed
+		const double fac = eff_thermal_expansion * dT / dt; // WX:bug fixed
 #if defined(USE_PETSC) //|| defined (other parallel solver) //WW 04.2014
 		for (int ia = 0; ia < act_nodes; ia++)
 		{
