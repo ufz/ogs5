@@ -255,3 +255,15 @@ Benchmark(AUTHOR WW
 		urach_domain_tet_0.tec
 		urach_ply_OUT_t1_HEAT_TRANSPORT.tec
 )
+
+Benchmark(AUTHOR WW
+	PATH MPI/THM/thm_decov
+	CONFIG MPI
+	NUM_PROCESSORS 3
+	RUNTIME 209
+	OUTPUT_FILES
+		thm_decov_time_POINT1.tec
+		thm_decov_time_POINT2.tec
+		thm_decov_time_POINT9.tec
+		thm_decov_time_POINT18.tec
+)
