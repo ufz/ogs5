@@ -53,6 +53,8 @@ set( HEADERS
 	vtk.h
 	OutputTools.h
 	ShapeFunctionPool.h
+	Material/Fluid/GibbsFreeEnergy/DimensionLessGibbsFreeEnergyRegion1.h
+	Material/Fluid/Density/WaterDensityIAPWSIF97Region1.h
 )
 
 set( SOURCES
@@ -110,6 +112,7 @@ set( SOURCES
 	tools.cpp
 	vtk.cpp
 	ShapeFunctionPool.cpp
+	Material/Fluid/GibbsFreeEnergy/DimensionLessGibbsFreeEnergyRegion1.cpp
 )
 
 if(NOT OGS_LSOLVER STREQUAL PETSC)

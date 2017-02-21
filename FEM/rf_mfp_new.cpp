@@ -39,6 +39,8 @@ extern double GetCurveValue(int, int, double, int*);
 #endif
 
 #include "PhysicalConstant.h"
+#include "Material/Fluid/Density/WaterDensityIAPWSIF97Region1.h"
+
 
 /* Umrechnungen SI - Amerikanisches System */
 // WW #include "steam67.h"
@@ -65,7 +67,8 @@ double TemperatureUnitOffset()
    08/2004 OK Implementation
 **************************************************************************/
 CFluidProperties::CFluidProperties() : name("WATER"),
-	_reference_temperature(PhysicalConstant::CelsiusZeroInKelvin + 20.0)
+	_reference_temperature(PhysicalConstant::CelsiusZeroInKelvin + 20.0),
+	densityIAPWS(NULL)
 {
 	phase = 0;
 	// Density
@@ -130,6 +133,9 @@ CFluidProperties::~CFluidProperties(void)
 	if (scatter_data) // WW
 		delete scatter_data;
 #endif
+	if (densityIAPWS)
+		delete densityIAPWS;
+	densityIAPWS = NULL;
 }
 
 /**************************************************************************
@@ -359,8 +365,10 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 			}
 			if (density_model == 8) // rho(p,T,C)
 			{
-				in >> C_0;
-				density_pcs_name_vector.push_back("PRESSURE1");
+				densityIAPWS = new MaterialLib::Fluid::WaterDensityIAPWSIF97Region1();
+				compressibility_model_temperature = 8;
+				compressibility_model_pressure = 8;
+                                density_pcs_name_vector.push_back("PRESSURE1");
 				density_pcs_name_vector.push_back("TEMPERATURE1");
 			}
 			if (density_model == 9) // WW
@@ -494,8 +502,32 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 			}
 			if (viscosity_model == 9) // my(rho,T)
 			{
-				std::string arg1, arg2;
-				in >> arg1 >> arg2; // get up to three arguments for density model
+				std::string fluid_type, arg1, arg2;
+				in >>  fluid_type >> arg1 >> arg2; // get up to three arguments for density model
+				switch (fluid_type[0])
+				{
+					case 'C': // CARBON DIOXIDE
+						fluid_id = 0;
+						break;
+					case 'W': // WATER
+						fluid_id = 1;
+						break;
+					case 'M': // METHANE
+						fluid_id = 2;
+						break;
+					case 'N': // Nitrogen
+						fluid_id = 3;
+						break;
+					case 'H': // Hydrogen; BG, 03/2012
+						fluid_id = 4;
+						break;
+					case 'O': // Oxygen
+						fluid_id = 5;
+						break;
+					default:
+						cout << "Error in eos.cpp: no fluid name specified!\n";
+						break;
+				}
 
 				if (arg1.length() == 0) // if no arguments are given use standard
 				{
@@ -1033,7 +1065,12 @@ double CFluidProperties::Density(double* variables)
 				density = variables[0] * molar_mass / (PhysicalConstant::IdealGasConstant * variables[1]);
 				break;
 			case 8: // M14 von JdJ // 25.1.12 Added by CB for density output AB-model
-				density = MATCalcFluidDensityMethod8(variables[0], variables[1], variables[2]);
+				{
+					const double T = variables[1];
+					density = densityIAPWS->getValue(variables[0], T);
+					// // M14 von JdJ // 25.1.12 Added by CB for density output AB-model, 
+					//MATCalcFluidDensityMethod8(variables[0], variables[1], variables[2]);
+				}
 				break;
 			case 10: // Get density from temperature-pressure values from fct-file	NB 4.8.01
 				density = GetMatrixValue(variables[1], variables[0], fluid_name, &gueltig);
@@ -1182,7 +1219,12 @@ double CFluidProperties::Density(double* variables)
 				*/
 				break;
 			case 8: // M14 von JdJ
-				density = MATCalcFluidDensityMethod8(primary_variable[0], primary_variable[1], primary_variable[2]);
+				{
+					const double T = primary_variable[1];
+					density = densityIAPWS->getValue(primary_variable[0], T);
+					// // M14 von JdJ // 25.1.12 Added by CB for density output AB-model, 
+					//MATCalcFluidDensityMethod8(primary_variable[0], primary_variable[1], primary_variable[2]);
+				}
 				break;
 			case 10: // Get density from temperature-pressure values from fct-file NB
 				density = GetMatrixValue(primary_variable[1], primary_variable[0], fluid_name, &gueltig);
@@ -3239,9 +3281,13 @@ double CFluidProperties::drhodP(double* variables)
 			break;
 		case 8:
 			{
+				const double T = variables[1];
+				drhodP = densityIAPWS->getdValuedp(variables[0], T);
+				/*
 				const double perturbation = 1.e-4;
 				drhodP = (MATCalcFluidDensityMethod8(p+perturbation, T, 0.0)
 					      -MATCalcFluidDensityMethod8(p, T, 0.0)) / perturbation;
+				*/
 				break;
 			}
 
@@ -3372,9 +3418,12 @@ double CFluidProperties::drhodT(double* variables)
 			break;
 		case 8:
 			{
+				const double T = variables[1];
+				drhodT = densityIAPWS->getdValuedT(variables[0], T);
+				/*
 				const double perturbation = 1.e-4;
 				drhodT = (MATCalcFluidDensityMethod8(p, T+perturbation, 0.0)
-					      -MATCalcFluidDensityMethod8(p, T, 0.0)) / perturbation;
+					      -MATCalcFluidDensityMethod8(p, T, 0.0)) / perturbation;*/
 				break;
 			}
 		case 15: // volume translated Peng-Robinson
