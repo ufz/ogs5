@@ -35,7 +35,7 @@ else()
 	message(STATUS "Benchmark reference files not found (Specify non-default location with BENCHMARK_REF_DIR). No file comparison!")
 endif()
 
-set(BENCHMARK_TIMEOUT 1800 CACHE INTERNAL "") # in s, 30 minutes timeout on normal benchmarks
+set(BENCHMARK_TIMEOUT 3600 CACHE INTERNAL "") # in s, 60 minutes timeout on normal benchmarks
 set(EXCEEDING_BENCHMARK_TIMEOUT 86400 CACHE INTERNAL "") # 1 day timeout on exceeding benchmarks
 file(GLOB BENCHMARK_CONFIGS ${PROJECT_SOURCE_DIR}/scripts/cmake/benchmarks/*.cmake)
 foreach(BENCHMARK_CONFIG ${BENCHMARK_CONFIGS})
