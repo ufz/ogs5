@@ -3,6 +3,8 @@
 
 def builders = [:]
 
+timestamps {
+
 builders['linux'] = {
     node('envinf1') {
         dir('ogs') { checkoutWithTags() }
@@ -19,11 +21,4 @@ builders['mingw'] = {
 
 parallel builders
 
-node {
-    step([$class: 'GitHubCommitStatusSetter', reposSource:
-        [$class: 'ManuallyEnteredRepositorySource',
-        url: 'https://github.com/ufz/ogs5.git']])
-}
-
-properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator',
-    artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '25']]])
+} // end timestamps
