@@ -244,6 +244,18 @@ bool CPRead(std::string file_base_name)
 					std::cout << "Warning: Component name unknown to TNEQ/TES.\n";
 			}
 	}
+
+	else
+    {
+        std::map <int, CompProperties*>::iterator cp_iter = cp_vec.begin();
+        for ( i = 0; i < pcs_vector.size(); i++ ){
+            if ( pcs_vector[i]->getProcessType() == FiniteElement::MASS_TRANSPORT )
+            {
+                cp_iter->second->setProcess( pcs_vector[i] );
+                ++cp_iter;
+            }
+        }
+    } 
 	return true;
 }
 
