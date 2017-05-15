@@ -5980,8 +5980,9 @@ void DATWriteParticleFile(int current_time_step)
 	sprintf(now, "%i", current_time_step);
 	string nowstr = now;
 
-	string vtk_file_name =  pathJoin(defaultOutputPath, FileName);
-	vtk_file_name += "_RWPT_" + nowstr + ".particles.vtk";
+	string vtk_file_name = FileName + "_RWPT_";
+	vtk_file_name += nowstr;
+	vtk_file_name += ".particles.vtk";
 	fstream vtk_file (vtk_file_name.data(),ios::out);
 	vtk_file.setf(ios::scientific,ios::floatfield);
 	vtk_file.precision(12);
@@ -5990,21 +5991,19 @@ void DATWriteParticleFile(int current_time_step)
 	vtk_file.seekg(0L, ios::beg);
 
 	// Write Header
-	vtk_file << "# vtk DataFile Version 3.6.2"
-	         << "\n";
-	vtk_file << "Particle file: OpenGeoSys->Paraview. Current time (s) = " << RW->CurrentTime << "\n";
-	vtk_file << "ASCII"
-	         << "\n";
+	vtk_file << "# vtk DataFile Version 3.6.2" << "\n";
+	vtk_file << "Particle file: OpenGeoSys->Paraview. Current time (s) = " <<
+	RW->CurrentTime  << "\n";
+	vtk_file << "ASCII"  << "\n";
 	vtk_file << "\n";
-	vtk_file << "DATASET POLYDATA"
-	         << "\n"; // KR vtk_file << "DATASET PARTICLES"  << "\n";
-	vtk_file << "POINTS " << RW->numOfParticles << " double"
-	         << "\n";
+	vtk_file << "DATASET POLYDATA"  << "\n"; //KR vtk_file << "DATASET PARTICLES"  << "\n";
+	vtk_file << "POINTS " << RW->numOfParticles << " double" << "\n";
 
 	// Write particle locations
 	for (int i = 0; i < np; ++i)
-		vtk_file << RW->X[i].Now.x << " " << RW->X[i].Now.y << " " << RW->X[i].Now.z << "\n";
-
+	{
+		vtk_file << RW->X[i].Now.x << " " << RW->X[i].Now.y << " " << RW->X[i].Now.z <<	endl;
+	}
 	// KR add "vertices" block to create a correct VTK file
 	vtk_file << "VERTICES " << np << " " << (2 * np) << "\n";
 	for (int i = 0; i < np; ++i)
@@ -6013,23 +6012,21 @@ void DATWriteParticleFile(int current_time_step)
 	// Write particle identities
 	vtk_file << "\n";
 	vtk_file << "POINT_DATA " << RW->numOfParticles << "\n";
-	vtk_file << "SCALARS identity float 1"
-	         << "\n";
-	vtk_file << "LOOKUP_TABLE default"
-	         << "\n";
+	vtk_file << "SCALARS identity int 1" << "\n";
+	vtk_file << "LOOKUP_TABLE default" << "\n";
 	for (int i = 0; i < np; ++i)
 		vtk_file << RW->X[i].Now.identity << "\n";
 
 	// Write particle on_boundary or not
 	vtk_file << endl;
-	vtk_file << "SCALARS on_boundary float 1" << endl;
+    vtk_file << "SCALARS on_boundary int 1" << endl;
 	vtk_file << "LOOKUP_TABLE default" << endl;
 	for (int i = 0; i < np; ++i)
 		vtk_file << RW->X[i].Now.on_boundary << endl;
 
 	// Write particle vectors
 	vtk_file << endl;
-	vtk_file << "VECTORS velocity float" << endl;
+	vtk_file << "VECTORS velocity double" << endl;
 	for (int i = 0; i < np; ++i)
 		vtk_file << RW->X[i].Now.Vx << " " << RW->X[i].Now.Vy << " " << RW->X[i].Now.Vz << endl;
 

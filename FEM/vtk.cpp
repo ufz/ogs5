@@ -23,8 +23,9 @@
 #include "fem_ele_std.h" // for element velocity
 #include "makros.h"
 #include "rf_mmp_new.h"
-#include "FileTools.h"
 #include "OutputTools.h"
+#include "FileTools.h"
+#include "rf_random_walk.h"
 
 using namespace std;
 
@@ -1303,7 +1304,7 @@ bool CVTK::WriteElementValue(std::fstream& fin, bool output_data, COutput* out, 
 			WriteDataArrayFooter(fin);
 	}
 
-	// MMP
+	//MMP VALUES OUTPUT
 	if (out->mmp_value_vector.size() > 0)
 	{
 		for (size_t i_mmp = 0; i_mmp < out->mmp_value_vector.size(); i_mmp++)
@@ -1329,13 +1330,7 @@ bool CVTK::WriteElementValue(std::fstream& fin, bool output_data, COutput* out, 
 					for (long i_e = 0; i_e < (long)msh->ele_vector.size(); i_e++)
 					{
 						ele = msh->ele_vector[i_e];
-						ele->SetOrder(false);
-						CFiniteElementStd* fem = m_pcs->GetAssember();
-						fem->ConfigElement(ele, false);
-						fem->Config();
-						fem->getShapeFunctionCentroid();
-						CMediumProperties* mmp = mmp_vector[ele->GetPatchIndex()];
-						double mat_value = ELEMENT_MMP_VALUES::getValue(mmp, mmp_id, i_e, 0, 1.0);
+                        double mat_value = getElementMMP(mmp_id, ele, m_pcs);
 						fin << mat_value << " ";
 					}
 					fin << "\n";
@@ -1365,8 +1360,10 @@ bool CVTK::WriteElementValue(std::fstream& fin, bool output_data, COutput* out, 
 	// MFP
 	if (out->mfp_value_vector.size() > 0)
 	{
-		for (size_t i_mfp = 0; i_mfp < out->mfp_value_vector.size(); i_mfp++)
-		{
+  		  static double dbuff0[20];
+
+
+        for (size_t i_mfp=0; i_mfp<out->mfp_value_vector.size(); i_mfp++) {
 			const std::string& mfp_name = out->mfp_value_vector[i_mfp];
 			int mfp_id = ELEMENT_MFP_VALUES::getMFPIndex(mfp_name);
 			if (mfp_id < 0)
@@ -1385,6 +1382,7 @@ bool CVTK::WriteElementValue(std::fstream& fin, bool output_data, COutput* out, 
 				if (!this->useBinary)
 				{
 					fin << "          ";
+                    int gp_r, gp_s, gp_t;
 					for (long i_e = 0; i_e < (long)msh->ele_vector.size(); i_e++)
 					{
 						ele = msh->ele_vector[i_e];
@@ -1392,9 +1390,10 @@ bool CVTK::WriteElementValue(std::fstream& fin, bool output_data, COutput* out, 
 						CFiniteElementStd* fem = m_pcs->GetAssember();
 						fem->ConfigElement(ele, false);
 						fem->Config();
-						fem->getShapeFunctionCentroid();
+                        fem->SetGaussPoint(0, gp_r, gp_s, gp_t);
+                        fem->ComputeShapefct(1, dbuff0);
 						CFluidProperties* mfp = mfp_vector[0];
-						mfp->SetFemEleStd(fem);
+                        mfp->Fem_Ele_Std = fem;
 						double mat_value = ELEMENT_MFP_VALUES::getValue(mfp, mfp_id);
 						fin << mat_value << " ";
 					}

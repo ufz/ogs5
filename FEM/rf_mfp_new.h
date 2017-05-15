@@ -120,13 +120,13 @@ public:
 	double phi_0_tt(double T) const;
 	double EffectiveDiffusionCoef(int CIndex, double* variables = NULL); // AKS
 	void SetFemEleStd(FiniteElement::CFiniteElementStd* fem) { Fem_Ele_Std = fem; }
+	FiniteElement::CFiniteElementStd* Fem_Ele_Std;
 private:
 	int fluid_id; // specification of substance (NB JUN 09)
 	std::string name;
 	std::string cmpNm1, cmpNm2, cmpNm3, cmpNm4; // component name
 	int cmpN; // components number
 	// FEM
-	FiniteElement::CFiniteElementStd* Fem_Ele_Std;
 	long node; // OK4704
 	// Density
 	int density_model;
