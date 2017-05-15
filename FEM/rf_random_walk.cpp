@@ -6036,3 +6036,156 @@ void DATWriteParticleFile(int current_time_step)
 	// Let's close it, now
 	vtk_file.close();
 }
+
+/**************************************************************************
+   OpenGeoSys- Function: DATWriteFile
+   Task: Write control plane file
+**************************************************************************/
+void DATWriteParticleControlPlaneFile(int current_time_step, string control_plane_name, double normal_value)
+{
+	CFEMesh* m_msh = NULL;
+	RandomWalk* RW = NULL;
+
+	// Gather the momentum mesh
+	size_t pcs_vector_size (pcs_vector.size());
+	for(size_t i = 0; i < pcs_vector_size; ++i)
+	{
+		//		m_pcs = pcs_vector[i];
+		const FiniteElement::ProcessType pcs_type(pcs_vector[i]->getProcessType());
+		//		if( m_pcs->pcs_type_name.find("RICHARDS_FLOW")!=string::npos){
+		if( pcs_type == FiniteElement::RICHARDS_FLOW)
+		{
+			m_msh = FEMGet("RICHARDS_FLOW");
+			break;
+		}
+		//		else if( m_pcs->pcs_type_name.find("LIQUID_FLOW")!=string::npos){
+		else if( pcs_type == FiniteElement::LIQUID_FLOW)
+		{
+			m_msh = FEMGet("LIQUID_FLOW");
+			break;
+		}
+		else if( pcs_type == FiniteElement::GROUNDWATER_FLOW)
+		{
+			m_msh = FEMGet("GROUNDWATER_FLOW");
+			break;
+		}
+	}
+
+	RW = m_msh->PT;
+	int np = RW->numOfParticles;
+
+	// file naming
+	char now[10];
+	sprintf(now,"%i",current_time_step);
+	string nowstr = now;
+
+	string vtk_file_name = FileName + "_RWPT_";
+	vtk_file_name += control_plane_name;
+	vtk_file_name += "_";
+	std::ostringstream strs;
+	strs << normal_value;
+	std::string str = strs.str();
+	vtk_file_name += str;
+	vtk_file_name += ".csv";
+	fstream vtk_file;
+	if (current_time_step==1)
+	vtk_file.open(vtk_file_name.data(),ios::out);
+	else
+	vtk_file.open(vtk_file_name.data(),ios::app);
+	
+	vtk_file.setf(ios::scientific,ios::floatfield);
+	vtk_file.precision(12);
+	if(!vtk_file.good())
+		return;
+	int pos = -1;
+	vtk_file.seekg(0, vtk_file.end); 
+	pos = vtk_file.tellg();
+
+
+	// Write Header
+	if (pos==0)
+	vtk_file << "id, starting_time,  arrival_time_step_time, arrival-time-cp , start_coor_x, start_coor_y, start_coor_z, control_plane_x, control_plane_y, control_plane_z, time_correction_factor, x_back_shift " << endl;
+
+	int id = 0;
+	double starting_time = 0.0;
+	double time_correction = 0.0;
+	double arrival_time_step_time = 0.0;
+	double arrival_time_control_plane  = 0.0;
+	double back_shift = 0.0;
+	double start_coor[3];
+
+	// Write particle locations on plane
+	for(int i = 0; i < np; ++i)
+	{
+		starting_time = RW->X[i].Now.StartingTime;
+		arrival_time_step_time = RW->X[i].Now.t;
+		start_coor[0] = RW->X[i].Now.x_start;
+		start_coor[1] = RW->X[i].Now.y_start;
+		start_coor[2] = RW->X[i].Now.z_start;
+
+		//Cross X-Normal-Plane
+		if (control_plane_name.compare("CONTROL_PLANE_NORMAL_X")==0)
+		{
+		if ((RW->X[i].Past.x < normal_value && RW->X[i].Now.x > normal_value) || (RW->X[i].Past.x > normal_value && RW->X[i].Now.x < normal_value))
+		{			
+			back_shift = RW->X[i].Now.x - normal_value;
+  			if(RW->X[i].Now.Vx > 0.0) time_correction = back_shift/(RW->X[i].Now.Vx);
+			else time_correction = 0.0;
+			arrival_time_control_plane = arrival_time_step_time - time_correction; 
+			vtk_file << i << ", "<< starting_time << ", " << arrival_time_step_time << ", " << arrival_time_control_plane << ", " 
+				     << start_coor[0] << ", " << start_coor[1] << ", " << start_coor[1] << ", " 
+					 << normal_value << ", " << RW->X[i].Now.y << ", " << RW->X[i].Now.z <<", " 
+					 << time_correction << ", " << back_shift <<"\n";
+		}
+		}
+		if (control_plane_name.compare("CONTROL_PLANE_NORMAL_Y")==0)
+		{
+		if ((RW->X[i].Past.y < normal_value && RW->X[i].Now.y > normal_value) || (RW->X[i].Past.y > normal_value && RW->X[i].Now.y < normal_value))
+		{			
+			back_shift = RW->X[i].Now.y - normal_value;
+  			if(RW->X[i].Now.Vy > 0.0) time_correction = back_shift/(RW->X[i].Now.Vy);
+			else time_correction = 0.0;
+			arrival_time_control_plane = arrival_time_step_time - time_correction; 
+			vtk_file << i << ", "<< starting_time << ", " << arrival_time_step_time << ", " << arrival_time_control_plane << ", " 
+				     << start_coor[0] << ", " << start_coor[1] << ", " << start_coor[1] << ", " 
+					 << RW->X[i].Now.x << ", " << normal_value << ", " << RW->X[i].Now.z <<", " 
+					 << time_correction << ", " << back_shift <<"\n";
+		}
+		}
+		if (control_plane_name.compare("CONTROL_PLANE_NORMAL_Z")==0)
+		{
+		if ((RW->X[i].Past.z < normal_value && RW->X[i].Now.z > normal_value) || (RW->X[i].Past.z > normal_value && RW->X[i].Now.z < normal_value))
+		{			
+			back_shift = RW->X[i].Now.z - normal_value;
+  			if(RW->X[i].Now.Vz > 0.0) time_correction = back_shift/(RW->X[i].Now.Vz);
+			else time_correction = 0.0;
+			arrival_time_control_plane = arrival_time_step_time - time_correction; 
+			vtk_file << i << ", "<< starting_time << ", " << arrival_time_step_time << ", " << arrival_time_control_plane << ", " 
+				     << start_coor[0] << ", " << start_coor[1] << ", " << start_coor[1] << ", " 
+					 << RW->X[i].Now.x << ", " << normal_value << ", " << RW->X[i].Now.z <<", " 
+					 << time_correction << ", " << back_shift <<"\n";
+		}
+		}
+
+
+	}
+
+	
+
+	// TEST: Pressure-Head value at a particle 
+    //vtk_file << endl;
+    //vtk_file << "SCALARS pressure-head float 1" << endl;
+    //vtk_file << "LOOKUP_TABLE default" << endl;
+    //for(int i=0; i<np; ++i)
+	//	vtk_file << RW->X[i].Now.pressure_head_value << endl;
+	
+	// Write particle vectors
+	//vtk_file << endl;
+	//vtk_file << "VECTORS velocity float" << endl;
+	//for(int i=0; i<np; ++i)
+	//   vtk_file << RW->X[i].Now.Vx << " " << RW->X[i].Now.Vy << " " << RW->X[i].Now.Vz << endl;
+
+	// Let's close it, now
+	vtk_file.close();
+}
+

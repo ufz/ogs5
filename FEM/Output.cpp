@@ -204,6 +204,7 @@ ios::pos_type COutput::Read(std::ifstream& in_str, const GEOLIB::GEOObjects& geo
 	std::stringstream in;
 	string name;
 	ios::pos_type position_subkeyword;
+	double control_plane_normal_position = 0.0;
 
 	// Schleife ueber alle Phasen bzw. Komponenten
 	while (!new_keyword)
@@ -317,6 +318,22 @@ ios::pos_type COutput::Read(std::ifstream& in_str, const GEOLIB::GEOObjects& geo
 				in.str(line_string);
 				in >> name;
 				_rwpt_value_vector.push_back(name);
+					if (name.compare("CONTROL_PLANE_NORMAL_X")==0)
+					{
+						in >> control_plane_normal_position;
+						_control_plane_x_normal_vector.push_back(control_plane_normal_position);
+					}
+					if (name.compare("CONTROL_PLANE_NORMAL_Y")==0)
+					{
+						in >> control_plane_normal_position;
+						_control_plane_y_normal_vector.push_back(control_plane_normal_position);
+					}
+					if (name.compare("CONTROL_PLANE_NORMAL_Z")==0)
+					{
+						in >> control_plane_normal_position;
+						_control_plane_z_normal_vector.push_back(control_plane_normal_position);
+					}
+					
 				in.clear();
 			}
 			continue;
@@ -509,38 +526,31 @@ void COutput::Write(fstream* out_file)
 {
 	//--------------------------------------------------------------------
 	// KEYWORD
-	*out_file << "#OUTPUT"
-	          << "\n";
+	*out_file << "#OUTPUT" << "\n";
 	//--------------------------------------------------------------------
 	// PCS_TYPE
-	*out_file << " $PCS_TYPE"
-	          << "\n"
-	          << "  ";
+	*out_file << " $PCS_TYPE" << "\n" << "  ";
 	*out_file << convertProcessTypeToString(getProcessType()) << "\n";
 	//--------------------------------------------------------------------
 	// NOD_VALUES
-	*out_file << " $NOD_VALUES"
-	          << "\n";
+	*out_file << " $NOD_VALUES" << "\n";
 	size_t nod_value_vector_size(_nod_value_vector.size());
 	for (size_t i = 0; i < nod_value_vector_size; i++)
 		*out_file << "  " << _nod_value_vector[i] << "\n";
 	//--------------------------------------------------------------------
 	// ELE_VALUES
-	*out_file << " $ELE_VALUES"
-	          << "\n";
+	*out_file << " $ELE_VALUES" << "\n";
 	size_t ele_value_vector_size(_ele_value_vector.size());
 	for (size_t i = 0; i < ele_value_vector_size; i++)
 		*out_file << "  " << _ele_value_vector[i] << "\n";
 	//--------------------------------------------------------------------
 	// GEO_TYPE
-	*out_file << " $GEO_TYPE"
-	          << "\n";
+	*out_file << " $GEO_TYPE" << "\n";
 	*out_file << "  ";
 	*out_file << getGeoTypeAsString() << " " << geo_name << "\n";
 	//--------------------------------------------------------------------
 	// TIM_TYPE
-	*out_file << " $TIM_TYPE"
-	          << "\n";
+	*out_file << " $TIM_TYPE" << "\n";
 	if (tim_type_name == "STEPS")
 		*out_file << "  " << tim_type_name << " " << nSteps << "\n";
 	else
@@ -558,8 +568,7 @@ void COutput::Write(fstream* out_file)
 	//	}
 	if (getProcessDistributionType() != FiniteElement::INVALID_DIS_TYPE)
 	{
-		*out_file << " $DIS_TYPE"
-		          << "\n";
+		*out_file << " $DIS_TYPE" << "\n";
 		*out_file << "  ";
 		*out_file << convertDisTypeToString(getProcessDistributionType()) << "\n";
 	}
@@ -567,15 +576,13 @@ void COutput::Write(fstream* out_file)
 	// MSH_TYPE
 	if (msh_type_name.size() > 0)
 	{
-		*out_file << " $MSH_TYPE"
-		          << "\n";
+		*out_file << " $MSH_TYPE" << "\n";
 		*out_file << "  ";
 		*out_file << msh_type_name << "\n";
 	}
 	//--------------------------------------------------------------------
 	// DAT_TYPE
-	*out_file << " $DAT_TYPE"
-	          << "\n";
+	*out_file << " $DAT_TYPE" << "\n";
 	*out_file << "  ";
 	*out_file << dat_type_name << "\n";
 	//--------------------------------------------------------------------
@@ -598,8 +605,7 @@ void COutput::NODWriteDOMDataTEC()
 	string tec_file_name;
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL)
 	char tf_name[10];
-	std::cout << "Process " << myrank << " in WriteDOMDataTEC"
-	          << "\n";
+	std::cout << "Process " << myrank << " in WriteDOMDataTEC" << "\n";
 #endif
 	//----------------------------------------------------------------------
 	// Tests
@@ -612,8 +618,7 @@ void COutput::NODWriteDOMDataTEC()
 	//  m_msh = GetMSH();
 	if (!m_msh)
 	{
-		cout << "Warning in COutput::NODWriteDOMDataTEC() - no MSH data"
-		     << "\n";
+		cout << "Warning in COutput::NODWriteDOMDataTEC() - no MSH data" << "\n";
 		return;
 	}
 	//======================================================================

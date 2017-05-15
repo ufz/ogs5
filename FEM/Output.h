@@ -247,6 +247,12 @@ private:
 	/// Tecplot share zone
 	bool tecplot_zone_share; // 10.2012. WW
 
+public:
+	std::vector<double> _control_plane_x_normal_vector;
+	std::vector<double> _control_plane_y_normal_vector;
+	std::vector<double> _control_plane_z_normal_vector;
+
+
 #if defined(USE_PETSC) || defined(USE_MPI) //|| defined(other parallel libs)//03.3012. WW
 	int mrank;
 	int msize;

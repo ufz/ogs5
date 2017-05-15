@@ -25,17 +25,21 @@ class Particle
 {
 public:
 	// Position Vector
+	double x_start;
+	double y_start;
+	double z_start;
+	// Position Vector
 	double x;
 	double y;
 	double z;
 	int on_boundary; // YS
-
+	int outside;
 	// Velocity Vector
 	double Vx;
 	double Vy;
 	double Vz;
 
-	// Konductivity
+	// Conductivity
 	double K;
 
 	// Dispersion coefficient tensor
@@ -258,4 +262,5 @@ private:
 
 extern void PCTRead(std::string);
 extern void DATWriteParticleFile(int);
+extern void DATWriteParticleControlPlaneFile(int,string,double);
 #endif // OK
