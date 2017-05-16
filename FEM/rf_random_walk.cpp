@@ -101,7 +101,7 @@ Particle::Particle(void)
 {
 	// Position Vector
 	x = y = z = 0.0;
-
+	x_start = y_start = z_start = 0.0;
 	// Velocity Vector
 	Vx = Vy = Vz = 0.0;
 	K = 0.0;
@@ -2846,8 +2846,54 @@ void RandomWalk::RandomWalkOutput(double dbl_time, int current_time_step)
 			outputornot = true;
 
 		if (outputornot)
+		{
+			for (size_t j = 0; j < out->_rwpt_string_vector.size(); j++)
+			{
+				if (out->_rwpt_string_vector[j].compare("PARTICLES") == 0)
+				{
+					DATWriteParticleFile(current_time_step);
+				}
+				if (out->_rwpt_string_vector[j].compare("CONTROL_PLANE_NORMAL_X") == 0)
+				{
+					for (size_t k = 0; k < out->_control_plane_x_normal_vector.size(); k++)
+					{
+						DATWriteParticleControlPlaneFile(current_time_step, "CONTROL_PLANE_NORMAL_X", out->_control_plane_x_normal_vector[k]);
+					}
+				}
+				if (out->_rwpt_string_vector[j].compare("CONTROL_PLANE_NORMAL_Y") == 0)
+				{
+					for (size_t k = 0; k < out->_control_plane_y_normal_vector.size(); k++)
+					{
+						DATWriteParticleControlPlaneFile(current_time_step, "CONTROL_PLANE_NORMAL_Y", out->_control_plane_y_normal_vector[k]);
+					}
+				}
+				if (out->_rwpt_string_vector[j].compare("CONTROL_PLANE_NORMAL_Z") == 0)
+				{
+					for (size_t k = 0; k < out->_control_plane_z_normal_vector.size(); k++)
+					{
+						DATWriteParticleControlPlaneFile(current_time_step, "CONTROL_PLANE_NORMAL_Z", out->_control_plane_z_normal_vector[k]);
+					}
+				}
+			}
+			for (size_t j = 0; j < no_times; j++)
+				if (CurrentTime >= out->getRWPTTimeVector()[j])
+				{
+					if (current_name.compare("PARTICLES") == 0)
+						DATWriteParticleFile(current_time_step);
+
+					// else if(current_name.compare("PARTICLE_CONCENTRATION")==0)
+					// DATWriteParticleConcFile(current_time_step); // routine not yet configured (see commented text
+					// below)
+
+					out->getRWPTTimeVector().erase(out->getRWPTTimeVector().begin() + j);
+					break;
+				}
+		}
+/*
+		if (outputornot)
 			if (current_name.compare("PARTICLES") == 0)
 				DATWriteParticleFile(current_time_step);
+		   
 		// else if(current_name.compare("PARTICLE_CONCENTRATION")==0)
 		// DATWriteParticleConcFile(current_time_step); // routine not yet configured
 		{
@@ -2864,7 +2910,7 @@ void RandomWalk::RandomWalkOutput(double dbl_time, int current_time_step)
 					out->getRWPTTimeVector().erase(out->getRWPTTimeVector().begin() + j);
 					break;
 				}
-		}
+		}*/
 	}
 
 	//  OUTPUT PARTICLES AS ELEMENTAL CONCENTRATION

@@ -75,7 +75,7 @@ public:
 	 *
 	 * @return
 	 */
-	const std::vector<std::string>& getRandomWalkParticleTracingValueVector() const { return _rwpt_value_vector; }
+	const std::vector<std::string>& getRandomWalkParticleTracingValueVector() const { return _rwpt_string_vector; }
 	/**
 	 * ToDo remove after transition to new GEOLIB - REMOVE CANDIDATE
 	 * getGeoName returns a string used as id for geometric entity
@@ -238,9 +238,6 @@ private:
 	// ELE value
 	std::vector<std::string> _ele_value_vector;
 
-	// RWPT values
-	std::vector<std::string> _rwpt_value_vector;
-
 	// PCON values
 	std::vector<std::string> _pcon_value_vector;
 
@@ -248,6 +245,8 @@ private:
 	bool tecplot_zone_share; // 10.2012. WW
 
 public:
+	// RWPT values
+	std::vector<std::string> _rwpt_string_vector;
 	std::vector<double> _control_plane_x_normal_vector;
 	std::vector<double> _control_plane_y_normal_vector;
 	std::vector<double> _control_plane_z_normal_vector;

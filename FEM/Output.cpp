@@ -317,7 +317,7 @@ ios::pos_type COutput::Read(std::ifstream& in_str, const GEOLIB::GEOObjects& geo
 					break; // SB: empty line
 				in.str(line_string);
 				in >> name;
-				_rwpt_value_vector.push_back(name);
+				_rwpt_string_vector.push_back(name);
 					if (name.compare("CONTROL_PLANE_NORMAL_X")==0)
 					{
 						in >> control_plane_normal_position;
