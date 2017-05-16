@@ -194,6 +194,12 @@ public:
 	bool VARIABLESHARING; // Coordinates of each node as well as connection list is stored only for the first time step;
 	// BG: 05/2011
 
+	// RWPT values
+	std::vector<std::string> _rwpt_string_vector;
+	std::vector<double> _control_plane_x_normal_vector;
+	std::vector<double> _control_plane_y_normal_vector;
+	std::vector<double> _control_plane_z_normal_vector;
+
 private:
 	friend void OUTData(double, int step, bool force_output);
 
@@ -243,13 +249,6 @@ private:
 
 	/// Tecplot share zone
 	bool tecplot_zone_share; // 10.2012. WW
-
-public:
-	// RWPT values
-	std::vector<std::string> _rwpt_string_vector;
-	std::vector<double> _control_plane_x_normal_vector;
-	std::vector<double> _control_plane_y_normal_vector;
-	std::vector<double> _control_plane_z_normal_vector;
 
 
 #if defined(USE_PETSC) || defined(USE_MPI) //|| defined(other parallel libs)//03.3012. WW
