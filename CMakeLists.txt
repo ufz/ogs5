@@ -238,6 +238,16 @@ elseif(OGS_LSOLVER STREQUAL SP)
 	set(SOLVER_PKG_NAME "Alternative linear solver package (NEW_EQS)")
 
 elseif(OGS_LSOLVER STREQUAL PETSC)
+	message(STATUS "Configuring for PETSc")
+
+	option(FORCE_PETSC_EXECUTABLE_RUNS "Force CMake to accept a given PETSc configuration" ON)
+
+	##Force CMake to accept a given PETSc configuration in case the failure of MPI tests
+	##This may cause the compilation broken.
+	if(FORCE_PETSC_EXECUTABLE_RUNS)
+		set(PETSC_EXECUTABLE_RUNS YES)
+	endif()
+
 	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/scripts/cmake/cmake/findPETSC)
 
 	find_package(PETSc REQUIRED QUIET)
