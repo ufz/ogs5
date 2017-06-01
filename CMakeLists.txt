@@ -128,6 +128,8 @@ elseif (OGS_CONFIG STREQUAL MPI)
 	set(PARALLEL_USE_MPI ON)
 elseif (OGS_CONFIG STREQUAL PETSC)
 	set(PARALLEL_USE_MPI ON)
+elseif (OGS_CONFIG STREQUAL PETSC_GEMS)
+	set(PARALLEL_USE_MPI ON)
 endif()
 
 #########################
