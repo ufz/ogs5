@@ -32,7 +32,7 @@
 
 #include "StringTools.h"
 
-#ifdef USEPETSC34
+#if (PETSC_VERSION_NUMBER > 3030)
 #include "petsctime.h"
 #endif
 
@@ -53,7 +53,7 @@ void FEMRead(const string& file_base_name, vector<MeshLib::CFEMesh*>& mesh_vec, 
 	PetscLogDouble v1, v2;
 // #define PETSC34
 // kg44 quick fix to compile PETSC with version PETSCV3.4
-#ifdef USEPETSC34
+#if (PETSC_VERSION_NUMBER > 3030)
 	PetscTime(&v1);
 #else
 	PetscGetTime(&v1);
@@ -89,7 +89,7 @@ void FEMRead(const string& file_base_name, vector<MeshLib::CFEMesh*>& mesh_vec, 
 
 // #define PETSC34
 // kg44 quick fix to compile PETSC with version PETSCV3.4
-#ifdef USEPETSC34
+#if (PETSC_VERSION_NUMBER > 3030)
 	PetscTime(&v2);
 #else
 	PetscGetTime(&v2);

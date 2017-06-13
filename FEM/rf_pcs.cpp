@@ -5501,7 +5501,7 @@ void CRFProcess::GlobalAssembly()
 {
 #ifdef USE_PETSC
 	PetscLogDouble v1, v2;
-#ifdef USEPETSC34
+#if (PETSC_VERSION_NUMBER > 3030)
 	PetscTime(&v1);
 #else
 	PetscGetTime(&v1);
@@ -5693,8 +5693,8 @@ else
 }
 
 #ifdef USE_PETSC
-#ifdef USEPETSC34
-PetscTime(&v2);
+#if (PETSC_VERSION_NUMBER > 3030)
+		PetscTime(&v2);
 #else
 		PetscGetTime(&v2);
 #endif

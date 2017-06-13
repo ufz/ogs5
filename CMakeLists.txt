@@ -128,6 +128,8 @@ elseif (OGS_CONFIG STREQUAL MPI)
 	set(PARALLEL_USE_MPI ON)
 elseif (OGS_CONFIG STREQUAL PETSC)
 	set(PARALLEL_USE_MPI ON)
+elseif (OGS_CONFIG STREQUAL PETSC_GEMS)
+	set(PARALLEL_USE_MPI ON)
 endif()
 
 #########################
@@ -238,16 +240,23 @@ elseif(OGS_LSOLVER STREQUAL SP)
 	set(SOLVER_PKG_NAME "Alternative linear solver package (NEW_EQS)")
 
 elseif(OGS_LSOLVER STREQUAL PETSC)
+	message(STATUS "Configuring for PETSc")
+
+	option(FORCE_PETSC_EXECUTABLE_RUNS "Force CMake to accept a given PETSc configuration" ON)
+
+	##Force CMake to accept a given PETSc configuration in case the failure of MPI tests
+	##This may cause the compilation broken.
+	if(FORCE_PETSC_EXECUTABLE_RUNS)
+		set(PETSC_EXECUTABLE_RUNS YES)
+	endif()
+
 	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/scripts/cmake/cmake/findPETSC)
 
 	find_package(PETSc REQUIRED QUIET)
-	if(PETSC_VERSION VERSION_GREATER 3.3)
-		add_definitions(-DUSEPETSC34 -DUSE_PETSC)
-		message(STATUS "found version greater 3.3, version is ${PETSC_VERSION}")
-	else()
-		add_definitions(-DUSE_PETSC)
-	endif()
+	message(STATUS "PETSc version is ${PETSC_VERSION}")
 	include_directories( ${PETSC_INCLUDES} )
+	add_definitions(-DUSE_PETSC)
+	add_definitions(-DPETSC_VERSION_NUMBER=PETSC_VERSION_MAJOR*1000+PETSC_VERSION_MINOR*10)
 	set(SOLVER_PKG_NAME "PETSc linear solver package")
 endif()
 

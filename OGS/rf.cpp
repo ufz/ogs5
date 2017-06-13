@@ -74,7 +74,7 @@ double elapsed_time_mpi;
 // Use PETSc. WW
 #ifdef USE_PETSC
 #include "petscksp.h"
-#ifdef USEPETSC34
+#if (PETSC_VERSION_NUMBER > 3030)
 #include "petsctime.h"
 #endif
 #endif
@@ -233,7 +233,7 @@ int main(int argc, char* argv[])
 	// PetscInitialize(argc, argv, help);
 	PetscInitialize(&argc, &argv, (char*)0, help);
 // kg44 quick fix to compile PETSC with version PETSCV3.4
-#ifdef USEPETSC34
+#if (PETSC_VERSION_NUMBER > 3030)
 	PetscTime(&v1);
 #else
 	PetscGetTime(&v1);
@@ -382,7 +382,7 @@ int main(int argc, char* argv[])
 
 #ifdef USE_PETSC
 // kg44 quick fix to compile PETSC with version PETSCV3.4
-#ifdef USEPETSC34
+#if (PETSC_VERSION_NUMBER > 3030)
 	PetscTime(&v2);
 #else
 	PetscGetTime(&v2);
