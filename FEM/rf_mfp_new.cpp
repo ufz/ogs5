@@ -105,6 +105,8 @@ CFluidProperties::CFluidProperties() : name("WATER")
 	beta_T = 0.0;
 	cmpN = 0;
 
+	fluid_id = 1; // Water
+
 #ifdef MFP_TEST // WW
 	scatter_data = NULL;
 #endif
@@ -170,6 +172,21 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 		{
 			in.str(GetLineFromFile1(mfp_file));
 			in >> name; // sub_line
+			switch (name[0])
+			{
+				case 'C': fluid_id = 0; break; // CARBON DIOXIDE
+				case 'W': fluid_id = 1; break; // WATER
+				case 'M': fluid_id = 2; break; // METHANE
+				case 'N': fluid_id = 3; break; // NITROGEN
+				case 'H': fluid_id = 4; break; // HYDROGEN
+				case 'O': fluid_id = 5; break; // OXYGEN
+				default:
+				{
+					std::cout << "Fluid type of " << name << " is not valid. Take the default type of WATER" << std::endl;
+					fluid_id = 1;
+				}
+			}
+
 			in.clear();
 			continue;
 		}
