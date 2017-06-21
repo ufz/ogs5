@@ -76,6 +76,8 @@ stage('Post') {
     step([$class: 'LogParserPublisher', failBuildOnError: true, unstableOnWarning: true,
         projectRulePath: 'ogs/scripts/jenkins/log-parser.rules', useProjectRule: true])
     for (i = 0; i < configs.size(); i++) {
-        post.cleanup('build_' + configs[i].name)
+        sh("""shopt -s extglob
+              rm -rf build_${configs[i].name}/!(benchmarks)
+        """.stripIndent())
     }
 }
