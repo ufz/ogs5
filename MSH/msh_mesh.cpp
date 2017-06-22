@@ -1506,7 +1506,7 @@ void CFEMesh::GetNODOnPLY(const GEOLIB::Polyline* const ply,
 	}
 
 	// compute nodes (and supporting points) along polyline
-	double search_radius(this->getMinEdgeLength()); // getSearchLength());
+	double search_radius(this->getMinEdgeLength() / 2); // getSearchLength());
 	if (!automatic)
 		search_radius = eps;
 	_mesh_nodes_along_polylines.push_back(MeshNodesAlongPolyline(ply, this, search_radius));
