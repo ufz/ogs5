@@ -1303,7 +1303,7 @@ bool CVTK::WriteElementValue(std::fstream& fin, bool output_data, COutput* out, 
 			WriteDataArrayFooter(fin);
 	}
 
-	// MMP
+	//MMP
 	if (out->mmp_value_vector.size() > 0)
 	{
 		for (size_t i_mmp = 0; i_mmp < out->mmp_value_vector.size(); i_mmp++)
