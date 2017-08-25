@@ -1190,7 +1190,6 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs, int ShiftInNodeVector, const
 				m_polyline = GEOGetPLYByName(bc->geo_name);
 				// 08/2010 TF get the polyline data structure
 				GEOLIB::Polyline const* ply(static_cast<const GEOLIB::Polyline*>(bc->getGeoObj()));
-
 				if (m_polyline)
 				{
 					if (bc->getProcessDistributionType() == FiniteElement::CONSTANT
@@ -1198,6 +1197,7 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs, int ShiftInNodeVector, const
 					{
 						// 08/2010 TF
 						double msh_min_edge_length = m_msh->getMinEdgeLength();
+						if (m_polyline->epsilon == 0.0) m_polyline->epsilon = msh_min_edge_length;
 						m_msh->setMinEdgeLength(m_polyline->epsilon);
 						std::vector<size_t> my_nodes_vector;
 						m_msh->GetNODOnPLY(ply, my_nodes_vector);
@@ -1241,6 +1241,7 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs, int ShiftInNodeVector, const
 					{
 						// 08/2010 TF
 						double msh_min_edge_length = m_msh->getMinEdgeLength();
+						if (m_polyline->epsilon == 0.0) m_polyline->epsilon = msh_min_edge_length;
 						m_msh->setMinEdgeLength(m_polyline->epsilon);
 						std::vector<size_t> my_nodes_vector;
 						m_msh->GetNODOnPLY(ply, my_nodes_vector);
@@ -1298,6 +1299,7 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs, int ShiftInNodeVector, const
 					if (bc->getProcessDistributionType() == FiniteElement::LINEAR)
 					{
 						double msh_min_edge_length = m_msh->getMinEdgeLength();
+						if (m_polyline->epsilon == 0.0) m_polyline->epsilon = msh_min_edge_length;
 						m_msh->setMinEdgeLength(m_polyline->epsilon);
 						std::vector<size_t> my_nodes_vector;
 						m_msh->GetNODOnPLY(ply, my_nodes_vector);
@@ -1610,6 +1612,7 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs, int ShiftInNodeVector, const
 					{
 						// TF
 						double msh_min_edge_length = m_msh->getMinEdgeLength();
+						if (m_polyline->epsilon == 0.0) m_polyline->epsilon = msh_min_edge_length;
 						m_msh->setMinEdgeLength(m_polyline->epsilon);
 						std::vector<size_t> my_nodes_vector;
 						GEOLIB::Polyline const* ply(static_cast<GEOLIB::Polyline const*>(bc->getGeoObj()));

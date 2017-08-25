@@ -30,7 +30,7 @@ std::vector<CSoilProfile*> profile_vector; // YD
 
 /*----------------------------------------------------------------------*/
 // constructor
-CGLPolyline::CGLPolyline(void) : _set_eps(false), epsilon(0.01)
+CGLPolyline::CGLPolyline(void) : _set_eps(false), epsilon(0.0)
 {
 	name = "POLYLINE";
 	//	closed = false;
