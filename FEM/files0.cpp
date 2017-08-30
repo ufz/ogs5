@@ -257,7 +257,11 @@ int ReadData(char* dateiname, GEOLIB::GEOObjects& geo_obj, std::string& unique_n
 		fem_msh_vector.insert(fem_msh_vector.end(), mesh_vec.begin(), mesh_vec.end()); // re-inserted by KR
 		CompleteMesh(); // WW
 	}
-
+	for (std::size_t i = 0; i<polyline_vector.size(); i++)
+	{
+		if (std::fabs(polyline_vector[i]->epsilon) < DBL_MIN)
+			polyline_vector[i]->epsilon = mesh_vec[0]->getMinEdgeLength();
+	}
 	// SBOK4209 MSHWrite(dateiname);
 	// PCTRead is bounded by msh
 	PCTRead(dateiname); // PCH
