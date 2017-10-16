@@ -4919,7 +4919,7 @@ void CSolidProperties::CalPrinStrDir(double* stress, double* prin_str, double* p
 	{
 		a[2] = stress[4];
 		a[6] = a[2];
-		a[5] = stress[5];
+		a[5] = stress[6];
 		a[7] = a[5];
 	}
 
