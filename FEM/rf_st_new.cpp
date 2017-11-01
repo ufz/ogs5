@@ -1168,6 +1168,9 @@ void CSourceTermGroup::Set(CRFProcess* m_pcs, const int ShiftInNodeVector, std::
 			{
 				set = false;
 				source_term->setProcess(m_pcs); // HS: 01.09.2009
+
+				m_pcs->CheckMarkedElement();
+
 				if (source_term->getGeoType() == GEOLIB::POINT)
 					SetPNT(m_pcs, source_term, ShiftInNodeVector);
 				if (source_term->getGeoType() == GEOLIB::POLYLINE)
@@ -1822,6 +1825,7 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& node
 	// Notice: node-elements relation has to be constructed beforehand
 	// CB THMBM
 	// this->getProcess()->CheckMarkedElement(); // CB added to remove bug with deactivated Subdomains
+	// Already added to Set(..)
 	std::vector<long> vec_possible_elements;
 	for (i = 0; i < this_number_of_nodes; i++)
 	{
