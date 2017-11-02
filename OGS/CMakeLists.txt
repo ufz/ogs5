@@ -70,6 +70,11 @@ if(MKL)
 	endif()
 endif()
 
+if (OGS_USE_FREESTEAM)
+	target_link_libraries( ogs ${FREESTEAM_LIBRARIES} )
+endif ()
+
+
 ####################
 ### Installation ###
 ####################

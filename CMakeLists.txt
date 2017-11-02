@@ -43,6 +43,7 @@ option(OGS_USE_JFNK "Use Jacobain free method for solving H2M" OFF)
 option(OGS_USE_LIS "Use Lis solver" OFF)
 option(OGS_USE_MKL "Use PARDISO in MKL" OFF)
 option(OGS_USE_CVODE "Use sundials cvode for TNEQ/TES" OFF)
+option(OGS_USE_FREESTEAM "Use freesteam library (IAPWS steam water properties)" OFF)
 set(OGS_CPU_ARCHITECTURE "native" CACHE STRING "Processor architecture, defaults to native.")
 option(OGS_PYTHON "Enable python scripting interface" OFF)
 option(OGS_BUILD_UTILITIES "Build additional utility programs?" OFF)
@@ -306,7 +307,6 @@ if (OGS_CONFIG STREQUAL CAP)
 endif ()
 add_subdirectory( FileIO )
 add_subdirectory( OGS )
-
 
 # Create Configure.h
 configure_file (Base/BuildInfo.cpp.in ${PROJECT_BINARY_DIR}/Base/BuildInfo.cpp)
