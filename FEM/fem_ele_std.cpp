@@ -1586,7 +1586,12 @@ double CFiniteElementStd::CalCoefMass()
 			// Is this really needed?
 			val = MediaProp->StorageFunction(Index, unit, pcs->m_num->ls_theta);
 
+			// get drho/dp/rho from material model or direct input
+#ifdef USE_FREESTEAM
+			if (FluidProp->compressibility_model_pressure > 0 || FluidProp->density_model == 8)
+#else
 			if (FluidProp->compressibility_model_pressure > 0)
+#endif
 			{
 				rho_val = FluidProp->Density();
 				arg[0] = interpolate(NodalVal1); //   p
@@ -10715,7 +10720,7 @@ void CFiniteElementStd::Assemble_RHS_M()
 		for (std::size_t k=0; k< ele_dim; k++)
 		{
 			double const* const dot_u_k = dot_u[k];
-            const int offset = nnodesHQ * k;
+			const int offset = nnodesHQ * k;
 			for (int i = 0; i < nnodesHQ; i++)
 			{
 				grad_du += dshapefctHQ[i + offset] * dot_u_k[i];

@@ -43,6 +43,13 @@ extern double GetCurveValue(int, int, double, int*);
 
 #include "PhysicalConstant.h"
 
+#ifdef USE_FREESTEAM
+extern "C"
+{
+#include <freesteam/steam_pT.h>
+}
+#endif
+
 /* Umrechnungen SI - Amerikanisches System */
 // WW #include "steam67.h"
 #define PSI2PA 6895.
@@ -1004,7 +1011,15 @@ double CFluidProperties::Density(double* variables)
 				density = variables[0] * molar_mass / (PhysicalConstant::IdealGasConstant * variables[1]);
 				break;
 			case 8: // M14 von JdJ // 25.1.12 Added by CB for density output AB-model
+#ifdef USE_FREESTEAM
+				{
+					// set a steam state of p (Pa), T (K)
+					const SteamState S = freesteam_set_pT(variables[0], variables[1]);
+					density = freesteam_rho(S);
+				}
+#else
 				density = MATCalcFluidDensityMethod8(variables[0], variables[1], variables[2]);
+#endif
 				break;
 			case 10: // Get density from temperature-pressure values from fct-file	NB 4.8.01
 				if (!T_Process)
@@ -1165,7 +1180,15 @@ double CFluidProperties::Density(double* variables)
 				*/
 				break;
 			case 8: // M14 von JdJ
+#ifdef USE_FREESTEAM
+				{
+					// set a steam state of p (Pa), T (K)
+					const SteamState S = freesteam_set_pT(primary_variable[0], primary_variable[1]);
+					density = freesteam_rho(S);
+				}
+#else
 				density = MATCalcFluidDensityMethod8(primary_variable[0], primary_variable[1], primary_variable[2]);
+#endif
 				break;
 			case 10: // Get density from temperature-pressure values from fct-file NB
 				if (!T_Process)
@@ -1622,7 +1645,15 @@ double CFluidProperties::Viscosity(double* variables)
 			viscosity = LiquidViscosity_NN(primary_variable[0], primary_variable[1]);
 			break;
 		case 8: // my(p,C,T),
+#ifdef USE_FREESTEAM
+			{
+				// set a steam state of p (Pa), T (K)
+				const SteamState S = freesteam_set_pT(primary_variable[0], primary_variable[1]);
+				viscosity = freesteam_mu(S);
+			}
+#else
 			viscosity = LiquidViscosity_CMCD(primary_variable[0], primary_variable[1], primary_variable[2]);
+#endif
 			break;
 		case 9: // viscosity as function of density and temperature, NB
 		{
@@ -1989,6 +2020,14 @@ double CFluidProperties::SpecificHeatCapacity(double* variables)
 		case 5:
 			specific_heat_capacity = GetCurveValue(heat_phase_change_curve, 0, temperature_buffer, &gueltig);
 			break;
+#ifdef USE_FREESTEAM
+		case 8:
+			{
+				// set a steam state of p (Pa), T (K)
+				const SteamState S = freesteam_set_pT(pressure, temperature);
+				return freesteam_cp(S);
+			}
+#endif
 		case 9:
 			specific_heat_capacity = isobaric_heat_capacity(Density(primary_variable), primary_variable[1], fluid_id);
 			break;
@@ -2224,6 +2263,14 @@ double CFluidProperties::HeatConductivity(double* variables)
 			heat_conductivity = Fluid_Heat_Conductivity(Density(), primary_variable[1], fluid_id);
 			// if (heat_conductivity<0.03) // not sure about this
 			break;
+#ifdef USE_FREESTEAM
+		case 8:
+			{
+				// set a steam state of p (Pa), T (K)
+				const SteamState S = freesteam_set_pT(primary_variable[0], primary_variable[1]);
+				return freesteam_k(S);
+			}
+#endif
 		case 9:
 			heat_conductivity = Fluid_Heat_Conductivity(Density(primary_variable), primary_variable[1], fluid_id);
 			break;
@@ -3208,6 +3255,22 @@ double CFluidProperties::drhodP(double* variables)
 {
 	const double p = variables[0];
 	const double T = variables[1];
+#ifdef USE_FREESTEAM
+	if(density_model == 8)
+	{
+		// set a steam state of p (Pa), T (K)
+		const SteamState S = freesteam_set_pT(primary_variable[0],
+											  primary_variable[1]);
+		const double rho = freesteam_rho(S);
+		const double p_pert = 0.1;
+		const SteamState S1 = freesteam_set_pT(
+			primary_variable[0]  + p_pert, primary_variable[1]);
+		const double rho1 = freesteam_rho(S1);
+		return (rho1 -rho) / p_pert;
+		
+	}
+#endif
+
 
 	double arguments[2];
 	double rho1, rho2, drhodP = 0.0;
@@ -3340,6 +3403,22 @@ double CFluidProperties::drhodT(double* variables)
 		if (p < 0)
 			return 0;
 	}
+
+#ifdef USE_FREESTEAM
+	if(density_model == 8)
+	{
+		// set a steam state of p (Pa), T (K)
+		const SteamState S = freesteam_set_pT(primary_variable[0],
+											  primary_variable[1]);
+		const double rho = freesteam_rho(S);
+		const double T_pert = 0.01;
+		const SteamState S1 = freesteam_set_pT(
+			primary_variable[0], primary_variable[1] + T_pert);
+		const double rho1 = freesteam_rho(S1);
+		return (rho1 -rho) / T_pert;
+		
+	}
+#endif
 
 	switch (compressibility_model_temperature)
 	{
