@@ -487,6 +487,11 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 				viscosity_pcs_name_vector.push_back("PRESSURE1");
 				viscosity_pcs_name_vector.push_back("TEMPERATURE1");
 			}
+			if (viscosity_model == 8) // IAPWS
+			{
+				viscosity_pcs_name_vector.push_back("PRESSURE1");
+				viscosity_pcs_name_vector.push_back("TEMPERATURE1");
+			}
 			if (viscosity_model == 9) // my(rho,T)
 			{
 				std::string arg1, arg2;
@@ -585,6 +590,12 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 				enthalpy_pcs_name_vector.push_back("TEMPERATURE1");
 			}
 
+			if (heat_capacity_model == 8) // IAPWS
+			{
+				specific_heat_capacity_pcs_name_vector.push_back("PRESSURE1");
+				specific_heat_capacity_pcs_name_vector.push_back("TEMPERATURE1");
+			}
+
 			// AKS
 			if (density_model == 15) // components constant density
 			{
@@ -640,6 +651,11 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 
 				heat_conductivity_pcs_name_vector.push_back(arg1);
 				heat_conductivity_pcs_name_vector.push_back(arg2);
+			}
+			if (heat_conductivity_model == 8) // IAPWS
+			{
+				heat_conductivity_pcs_name_vector.push_back("PRESSURE1");
+				heat_conductivity_pcs_name_vector.push_back("TEMPERATURE1");
 			}
 			// AKS
 			if (density_model == 15) // components constant density
