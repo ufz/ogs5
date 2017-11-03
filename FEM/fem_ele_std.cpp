@@ -1778,7 +1778,7 @@ double CFiniteElementStd::CalCoefMass()
 			if (MediaProp->heat_diffusion_model == 1)
 			{
 				//           PG = fabs(interpolate(NodalVal1));
-				TG = interpolate(NodalValC) + PhysicalConstant::CelsiusZeroInKelvin;
+				TG = interpolate(NodalValC);
 				humi = exp(PG / (SpecificGasConstant::WaterVapour * TG * rhow));
 				rhov = humi * FluidProp->vaporDensity(TG);
 				//
@@ -1830,7 +1830,7 @@ double CFiniteElementStd::CalCoefMass2(int dof_index)
 			dens_arg[0] = PG; // Should be P_w in some cases
 			if (diffusion)
 			{
-				TG = interpolate(NodalValC1) + PhysicalConstant::CelsiusZeroInKelvin;
+				TG = interpolate(NodalValC1);
 				dens_arg[1] = TG;
 			}
 			Sw = MediaProp->SaturationCapillaryPressureFunction(PG);
@@ -2268,7 +2268,7 @@ void CFiniteElementStd::CalCoefLaplace(bool Gravity, int ip)
 			if (MediaProp->permeability_stress_mode > 1)
 			{
 				if (cpl_pcs)
-					TG = interpolate(NodalValC1) + PhysicalConstant::CelsiusZeroInKelvin;
+					TG = interpolate(NodalValC1);
 				else
 					TG = 296.0;
 				MediaProp->CalStressPermeabilityFactor(w, TG);
@@ -2577,10 +2577,7 @@ void CFiniteElementStd::CalCoefLaplace(bool Gravity, int ip)
 			// Modified LBNL model WW
 			if (MediaProp->permeability_stress_mode > 1)
 			{
-				if (cpl_pcs)
-					TG = interpolate(NodalValC1) + PhysicalConstant::CelsiusZeroInKelvin;
-				else
-					TG = 296.0;
+				TG = (cpl_pcs) ? interpolate(NodalValC1) : 296.0;
 				MediaProp->CalStressPermeabilityFactor(w, TG);
 				for (size_t i = 0; i < dim; i++)
 					tensor[i * dim + i] *= w[i];
@@ -2593,7 +2590,7 @@ void CFiniteElementStd::CalCoefLaplace(bool Gravity, int ip)
 			{
 				rhow = FluidProp->Density();
 				// PG = fabs(interpolate(NodalVal1));
-				TG = interpolate(NodalValC) + PhysicalConstant::CelsiusZeroInKelvin;
+				TG = interpolate(NodalValC);
 				poro = MediaProp->Porosity(Index, pcs->m_num->ls_theta);
 				tort = MediaProp->TortuosityFunction(Index, unit, pcs->m_num->ls_theta);
 				humi = exp(PG / (SpecificGasConstant::WaterVapour * TG * rhow));
@@ -2609,7 +2606,7 @@ void CFiniteElementStd::CalCoefLaplace(bool Gravity, int ip)
 		//------------------------------------------------------------------
 		case EPT_GAS_FLOW: // Air flow
 			dens_arg[0] = interpolate(NodalVal1);
-			dens_arg[1] = interpolate(NodalValC1) + PhysicalConstant::CelsiusZeroInKelvin;
+			dens_arg[1] = interpolate(NodalValC1);
 			dens_arg[2] = Index;
 			double vis = FluidProp->Viscosity(dens_arg);
 			mat_fac = vis;
@@ -2768,7 +2765,7 @@ void CFiniteElementStd::CalCoefLaplace2(bool Gravity, int dof_index)
 				dens_arg[0] = PG; // Shdould be Pw in some cases
 				if (diffusion)
 				{
-					TG = interpolate(NodalValC1) + PhysicalConstant::CelsiusZeroInKelvin;
+					TG = interpolate(NodalValC1);
 					dens_arg[1] = TG;
 				}
 				//
@@ -2812,7 +2809,7 @@ void CFiniteElementStd::CalCoefLaplace2(bool Gravity, int dof_index)
 				dens_arg[0] = PG; // Shdould be Pw in some cases
 				if (diffusion)
 				{
-					TG = interpolate(NodalValC1) + PhysicalConstant::CelsiusZeroInKelvin;
+					TG = interpolate(NodalValC1);
 					dens_arg[1] = TG;
 				}
 				// Liquid density
@@ -3519,7 +3516,7 @@ double CFiniteElementStd::CalCoefAdvection()
 			if (FluidProp->density_model == 14 && MediaProp->heat_diffusion_model == 1 && cpl_pcs)
 			{
 				dens_arg[0] = interpolate(NodalValC1);
-				dens_arg[1] = interpolate(NodalVal1) + PhysicalConstant::CelsiusZeroInKelvin;
+				dens_arg[1] = interpolate(NodalVal1);
 				dens_arg[2] = Index;
 				val = FluidProp->SpecificHeatCapacity(dens_arg) * FluidProp->Density(dens_arg);
 			}
@@ -5225,7 +5222,7 @@ void CFiniteElementStd::CalcAdvection()
 		if (multiphase) // 02/2007 WW
 		{
 			dens_aug[0] = interpolate(NodalVal_p2);
-			dens_aug[1] = interpolate(NodalVal1) + PhysicalConstant::CelsiusZeroInKelvin;
+			dens_aug[1] = interpolate(NodalVal1);
 			rho_gw = 0.0;
 			if (MediaProp->heat_diffusion_model == 1)
 			{
@@ -5443,7 +5440,7 @@ void CFiniteElementStd::CalcRHS_by_ThermalDiffusion()
 		getShapefunctValues(gp, 1);
 		double rhow = FluidProp->Density();
 		PG = interpolate(NodalVal1);
-		TG = interpolate(NodalValC) + PhysicalConstant::CelsiusZeroInKelvin;
+		TG = interpolate(NodalValC);
 		// WW
 		Sw = MediaProp->SaturationCapillaryPressureFunction(-PG);
 		poro = MediaProp->Porosity(Index, pcs->m_num->ls_theta);
@@ -5484,7 +5481,7 @@ void CFiniteElementStd::CalcRHS_by_ThermalDiffusion()
 	{
 		for (j = 0; j < nnodes; j++)
 		{
-			(*RHS)[i] -= (*Laplace)(i, j) * (NodalValC[j] + PhysicalConstant::CelsiusZeroInKelvin);
+			(*RHS)[i] -= (*Laplace)(i, j) * (NodalValC[j]);
 			(*RHS)[i] += (*Mass)(i, j) * (NodalValC1[j] - NodalValC[j]) / dt;
 		}
 		eqs_rhs[cshift + eqs_number[i]] += (*RHS)[i];
@@ -9801,10 +9798,7 @@ void CFiniteElementStd::CalcNodeMatParatemer(MeshLib::CElem& elem)
 			// Modified LBNL model
 			if (MediaProp->permeability_stress_mode == 2 || MediaProp->permeability_stress_mode == 3)
 			{
-				if (cpl_pcs)
-					TG = interpolate(NodalValC1) + PhysicalConstant::CelsiusZeroInKelvin;
-				else
-					TG = 293.15;
+				TG = (cpl_pcs) ? interpolate(NodalValC1) : 293.15;
 				MediaProp->CalStressPermeabilityFactor(w, TG);
 				for (size_t j = 0; j < dim; j++)
 					tensor[j * dim + j] *= w[j];
@@ -10090,8 +10084,8 @@ double CFiniteElementStd::CalCoef_RHS_T_MPhase(int dof_index)
 		case 0:
 			PG = interpolate(NodalVal1);
 			Sw = MediaProp->SaturationCapillaryPressureFunction(PG);
-			TG = interpolate(NodalValC1) + PhysicalConstant::CelsiusZeroInKelvin;
-			TG0 = interpolate(NodalValC) + PhysicalConstant::CelsiusZeroInKelvin;
+			TG = interpolate(NodalValC1);
+			TG0 = interpolate(NodalValC);
 			PG2 = interpolate(NodalVal_p2);
 			rhow = FluidProp->Density();
 			poro = MediaProp->Porosity(Index, pcs->m_num->ls_theta);
@@ -10278,8 +10272,8 @@ double CFiniteElementStd::CalCoef_RHS_AIR_FLOW(int dof_index)
 	double val = 0.0;
 	int Index = MeshElement->GetIndex();
 	PG = interpolate(NodalVal1);
-	TG = interpolate(NodalValC1) + PhysicalConstant::CelsiusZeroInKelvin;
-	TG0 = interpolate(NodalValC) + PhysicalConstant::CelsiusZeroInKelvin;
+	TG = interpolate(NodalValC1);
+	TG0 = interpolate(NodalValC);
 	switch (dof_index)
 	{
 		case 0:
@@ -10307,7 +10301,7 @@ double CFiniteElementStd::CalCoef_RHS_HEAT_TRANSPORT(int dof_index)
 	int Index = MeshElement->GetIndex();
 	double dens_arg[3];
 	dens_arg[0] = interpolate(NodalValC1);
-	dens_arg[1] = interpolate(NodalVal1) + PhysicalConstant::CelsiusZeroInKelvin;
+	dens_arg[1] = interpolate(NodalVal1);
 	dens_arg[2] = Index;
 	rho_g = FluidProp->Density(dens_arg);
 	dens_arg[0] = 4.0e6;
@@ -10390,7 +10384,7 @@ void CFiniteElementStd::Assemble_RHS_T_MPhaseFlow()
 				for (j = 0; j < nnodes; j++)
 					for (size_t k = 0; k < dim; k++)
 						NodalVal[i + ii * nnodes] += fac * dshapefct[k * nnodes + i] * dshapefct[k * nnodes + j]
-						                             * (NodalValC1[j] + PhysicalConstant::CelsiusZeroInKelvin);
+						                             * (NodalValC1[j]);
 			}
 		}
 	}
@@ -10841,14 +10835,14 @@ void CFiniteElementStd::Assemble_RHS_AIR_FLOW()
 				for (j = 0; j < nnodes; j++)
 					for (size_t k = 0; k < dim; k++)
 						NodalVal[i + ii * nnodes] += fkt * shapefct[i] * vel[k] * dshapefct[k * nnodes + j]
-						                             * (NodalValC1[j] + PhysicalConstant::CelsiusZeroInKelvin);
+						                             * (NodalValC1[j]);
 		}
 
 		// Body force term
 		if (GravityOn)
 		{
 			dens_arg[0] = interpolate(NodalVal1);
-			dens_arg[1] = interpolate(NodalValC1) + PhysicalConstant::CelsiusZeroInKelvin;
+			dens_arg[1] = interpolate(NodalValC1);
 			dens_arg[2] = Index;
 			fluid_density = FluidProp->Density(dens_arg);
 			mat_fac = FluidProp->Viscosity(dens_arg);
@@ -10969,7 +10963,7 @@ double CFiniteElementStd::CalCoef_RHS_HEAT_TRANSPORT2(int dof_index)
 	double H_vap = 0.0, dens_arg[3];
 	PG = interpolate(NodalValC1);
 	PG2 = interpolate(NodalVal_p2);
-	TG = interpolate(NodalVal1) + PhysicalConstant::CelsiusZeroInKelvin;
+	TG = interpolate(NodalVal1);
 	PG0 = interpolate(NodalValC);
 	PG20 = interpolate(NodalVal_p20);
 	dens_arg[1] = TG;
@@ -11056,7 +11050,7 @@ void CFiniteElementStd::Assemble_RHS_HEAT_TRANSPORT2()
 		// If no gravity, then set GravityOn to be zero.
 		if ((coordinate_system) % 10 != 2 && (!axisymmetry))
 			GravityOn = 0;
-		TG = interpolate(NodalVal1) + PhysicalConstant::CelsiusZeroInKelvin;
+		TG = interpolate(NodalVal1);
 		PG = interpolate(NodalValC1);
 		PG2 = interpolate(NodalVal_p2);
 		dens_arg[1] = TG;
@@ -11146,7 +11140,7 @@ double CFiniteElementStd::CalCoef_RHS_M_MPhase(int dof_index)
 			Sw = MediaProp->SaturationCapillaryPressureFunction(PG);
 			if (diffusion)
 			{
-				TG = interpolate(NodalValC1) + PhysicalConstant::CelsiusZeroInKelvin;
+				TG = interpolate(NodalValC1);
 				dens_aug[1] = TG;
 			}
 			//

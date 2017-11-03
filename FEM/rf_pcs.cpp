@@ -130,6 +130,8 @@ REACT_BRNS* m_vec_BRNS;
 
 #include "fct_mpi.h"
 
+#include "PhysicalConstant.h"
+
 #ifndef USE_PETSC
 #include "par_ddc.h"
 #endif
@@ -888,6 +890,19 @@ void CRFProcess::Create()
 		// Bypassing IC
 		cout << "RELOAD is set to be " << reload << ". So, bypassing IC's"
 		     << "\n";
+
+	// Take the temperature unit
+	const int temerature_var_id = GetNodeValueIndex("TEMPERATURE1");
+	if (_temp_unit == FiniteElement::CELSIUS && temerature_var_id >= 0)
+	{
+		double* T0 = nod_val_vector[temerature_var_id];
+		double* T1 = nod_val_vector[temerature_var_id+1];
+		for (long i = 0; i < m_msh->GetNodesNumber(false); i++)
+		{
+			T0[i] += PhysicalConstant::CelsiusZeroInKelvin;
+			T1[i] += PhysicalConstant::CelsiusZeroInKelvin;
+		}
+	}
 
 	if (pcs_type_name_vector.size() && pcs_type_name_vector[0].find("DYNAMIC") != string::npos) // WW
 		setIC_danymic_problems();
@@ -1724,6 +1739,8 @@ CRFProcess* CRFProcess::CopyPCStoDM_PCS()
 	dm_pcs->isPCSDeformation = true;
 	dm_pcs->isPCSFlow = this->isPCSFlow; // JT
 	dm_pcs->isPCSMultiFlow = this->isPCSMultiFlow; // JT
+	dm_pcs->_temp_unit = this->_temp_unit;
+
 	// WW
 	dm_pcs->write_boundary_condition = write_boundary_condition;
 	if (!dm_pcs->Deactivated_SubDomain)
@@ -1905,6 +1922,16 @@ std::ios::pos_type CRFProcess::Read(std::ifstream* pcs_file)
 		{
 			*pcs_file >> num_type_name;
 			pcs_file->ignore(MAX_ZEILE, '\n');
+			continue;
+		}
+
+		if (line_string.find("$TEMPERATURE_UNIT") != string::npos)
+		{
+			std::string T_unit_name;
+			*pcs_file >> T_unit_name;
+			pcs_file->ignore(MAX_ZEILE, '\n');
+			_temp_unit = (T_unit_name.find("CELSIUS") != std::string::npos ) ?
+						FiniteElement::CELSIUS : FiniteElement::KELVIN;
 			continue;
 		}
 		//....................................................................
@@ -6591,7 +6618,12 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
 					if (checkConstrainedBC(*m_bc, *m_bc_node, bc_value))
 						continue;
 				}
-//////////////////////////////////
+
+				if (_temp_unit == FiniteElement::CELSIUS &&
+					m_bc_node->pcs_pv_name.find("TEMPERATURE") != string::npos)
+				{
+					bc_value += PhysicalConstant::CelsiusZeroInKelvin;
+				}
 
 #if defined(USE_PETSC) // || defined(other parallel libs)//03~04.3012. WW
 				bc_eqs_id.push_back(

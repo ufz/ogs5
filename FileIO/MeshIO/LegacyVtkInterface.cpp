@@ -33,6 +33,8 @@
 #include "FileTools.h"
 #include "Output.h"
 
+#include "PhysicalConstant.h"
+
 using namespace std;
 
 LegacyVtkInterface::LegacyVtkInterface(MeshLib::CFEMesh* mesh,
@@ -1188,8 +1190,19 @@ void LegacyVtkInterface::printScalarArray(string arrayName, std::fstream& vtk_fi
 	vtk_file << "LOOKUP_TABLE default"
 	         << "\n";
 
-	for (long j = 0l; j < numNodes; j++)
-		vtk_file << pcs->GetNodeValue(_mesh->nod_vector[j]->GetIndex(), indexDataArray) << "\n";
+	if (arrayName.find("TEMPERATURE1") == 0)
+	{
+		const double T_ref =
+			(pcs->getTemperatureUnit() == FiniteElement::CELSIUS) ?
+				-PhysicalConstant::CelsiusZeroInKelvin : 0.;
+		for (long j = 0l; j < numNodes; j++)
+			vtk_file << pcs->GetNodeValue(_mesh->nod_vector[j]->GetIndex(), indexDataArray) + T_ref << "\n";
+	}
+	else
+	{
+		for (long j = 0l; j < numNodes; j++)
+			vtk_file << pcs->GetNodeValue(_mesh->nod_vector[j]->GetIndex(), indexDataArray) << "\n";
+	}
 }
 
 // round very small and very large numbers in order to avoid read error in paraview

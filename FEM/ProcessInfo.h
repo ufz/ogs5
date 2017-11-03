@@ -79,6 +79,12 @@ public:
 	 */
 	int getProcessCompVecIndex() const;
 
+	/// Get the temperature unit.
+	FiniteElement::TemperatureUnit getTemperatureUnit() const
+	{
+		return _temp_unit;
+	}
+
 	/**
    * Get a pointer to an object of type CRFProcess.
    * @return a pointer to an object of type CRFProcess
@@ -101,5 +107,8 @@ protected:
 	 * pointer to the object of class CRFProcess
 	 */
 	CRFProcess* _pcs;
+
+	//// Temperature unit
+	FiniteElement::TemperatureUnit _temp_unit;
 };
 #endif /* PROCESSINFO_H_ */

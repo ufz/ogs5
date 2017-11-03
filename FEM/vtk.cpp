@@ -26,6 +26,8 @@
 #include "FileTools.h"
 #include "OutputTools.h"
 
+#include "PhysicalConstant.h"
+
 using namespace std;
 
 const std::string INDEX_STR = "  ";
@@ -643,6 +645,10 @@ bool CVTK::WriteNodalValue(std::fstream& fin, bool output_data, COutput* out, CF
 		if (!useBinary || !output_data)
 			WriteDataArrayHeader(fin, type_Double, external_val_name, 0, str_format, offset);
 
+		const double T_ref =
+			( (internal_val_name.find("TEMPERATURE") != string::npos)
+				&& m_pcs->getTemperatureUnit() == FiniteElement::CELSIUS) ?
+					-PhysicalConstant::CelsiusZeroInKelvin : 0.;
 		if (output_data)
 		{
 			/* JT: Just get the latest index. No need for all this extra looping.
@@ -662,7 +668,7 @@ bool CVTK::WriteNodalValue(std::fstream& fin, bool output_data, COutput* out, CF
 			}
 			for (size_t j = 0; j < msh->GetNodesNumber(false); j++)
 			{
-				double v = m_pcs->GetNodeValue(msh->nod_vector[j]->GetIndex(), NodeIndex[i]);
+				const double v = m_pcs->GetNodeValue(msh->nod_vector[j]->GetIndex(), NodeIndex[i]) + T_ref;
 				if (!useBinary)
 				{
 					fin << v << " ";

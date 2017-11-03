@@ -47,6 +47,8 @@
 #include "tools.h"
 #include "FileTools.h"
 
+#include "PhysicalConstant.h"
+
 extern size_t max_dim; // OK411 todo
 
 #ifdef CHEMAPP
@@ -1181,15 +1183,22 @@ void COutput::WriteTECNodeData(fstream& tec_file)
 			for (size_t k = 0; k < nName; k++)
 			{
 				m_pcs = GetPCS(_nod_value_vector[k]);
+
 				if (m_pcs != NULL)
 				{ // WW
-
 					if (NodeIndex[k] > -1)
 					{
 						if (_nod_value_vector[k].find("DELTA") == 0) // JOD 2014-11-10
 							val_n = m_pcs->GetNodeValue(n_id, 1) - m_pcs->GetNodeValue(n_id, NodeIndex[k]);
+						else if (_nod_value_vector[k].find("TEMPERATURE1") == 0
+							     && m_pcs->getTemperatureUnit() == FiniteElement::CELSIUS)
+						{
+							val_n = m_pcs->GetNodeValue(n_id, NodeIndex[k])
+									- PhysicalConstant::CelsiusZeroInKelvin;
+						}
 						else
 							val_n = m_pcs->GetNodeValue(n_id, NodeIndex[k]); // WW
+
 						tec_file << val_n << " ";
 						if ((m_pcs->type == 1212 || m_pcs->type == 42)
 						    && _nod_value_vector[k].find("SATURATION") != string::npos) // WW
@@ -1756,6 +1765,12 @@ double COutput::NODWritePLYDataTEC(int number)
 			//			double old_val_n = m_pcs->GetNodeValue(old_gnode, NodeIndex[k]);
 			if (_nod_value_vector[k].find("DELTA") == 0) // JOD 2014-11-10
 				val_n = m_pcs->GetNodeValue(gnode, 1) - m_pcs->GetNodeValue(gnode, NodeIndex[k]);
+			else if (_nod_value_vector[k].find("TEMPERATURE1") == 0 &&
+						m_pcs->getTemperatureUnit() == FiniteElement::CELSIUS)
+			{
+				val_n = m_pcs->GetNodeValue(gnode, NodeIndex[k])
+						- PhysicalConstant::CelsiusZeroInKelvin;
+			}
 			else
 				val_n = m_pcs->GetNodeValue(gnode, NodeIndex[k]);
 			//			tec_file << old_val_n << " ";
@@ -2028,6 +2043,11 @@ void COutput::NODWritePNTDataTEC(double time_current, int time_step_number)
 				         << "\n";
 				return;
 			}
+
+			const double T_ref =
+				(m_pcs->getTemperatureUnit() == FiniteElement::CELSIUS) ?
+					-PhysicalConstant::CelsiusZeroInKelvin : 0.;
+
 			//..................................................................
 			// PCS
 			if (!(_nod_value_vector[i].compare("FLUX") == 0)
@@ -2040,6 +2060,10 @@ void COutput::NODWritePNTDataTEC(double time_current, int time_step_number)
 				if (_nod_value_vector[i].find("DELTA") == 0) // JOD 2014-11-10
 					val_n
 					    = m_pcs->GetNodeValue(msh_node_number, 1) - m_pcs->GetNodeValue(msh_node_number, NodeIndex[i]);
+				else if(_nod_value_vector[i].find("TEMPERATURE1") == 0)
+				{
+					val_n = m_pcs->GetNodeValue(msh_node_number, NodeIndex[i]) + T_ref;
+				}
 				else
 					val_n = m_pcs->GetNodeValue(msh_node_number, NodeIndex[i]);
 				tec_file << val_n << " ";
