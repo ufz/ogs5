@@ -200,6 +200,10 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 						in_sd.clear();
 					}
 					break;
+			    // case 8 is for the case that the heat capacity properties (in constant) are input
+				//	from msp file only as the porous heat capacity  media properties.
+			    //
+				case 8: //  = const
 				case 1: //  = const
 					data_Capacity = new Matrix(1);
 					in_sd >> (*data_Capacity)(0);
@@ -229,7 +233,7 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 						in_sd >> (*data_Capacity)(i);
 					in_sd.clear();
 					break;
-				// TES
+				// TES (5, 6, 7):
 				case 5: // Capacity depending on solid conversion
 					// 0. Capacity at lower_density_limit (reactive system property)
 					// 1. Capacity at upper_density_limit (reactive system property)
@@ -7834,19 +7838,19 @@ void CSolidProperties::AddStain_by_Creep(const int ns, double* stress_n, double*
 		case 2:
 			// gas constant = R = 8.314472(15) J ?K-1 ?mol-1
 			// ec= A*exp(-G/RT)s^n
-			fac = 1.5 * dt * (*data_Creep)(0) * exp(-(*data_Creep)(2) / (8.314472 * (temperature + 273.15)))
+			fac = 1.5 * dt * (*data_Creep)(0) * exp(-(*data_Creep)(2) / (8.314472 * (temperature)))
 			      * pow(norn_S, (*data_Creep)(1));
 			break;
 		// TN: BGRb
 		case 3:
-			fac = 1.5 * dt * ((*data_Creep)(0) * exp(-(*data_Creep)(2) / (8.314472 * (temperature + 273.15)))
+			fac = 1.5 * dt * ((*data_Creep)(0) * exp(-(*data_Creep)(2) / (8.314472 * (temperature)))
 			                      * pow(norn_S, (*data_Creep)(1))
-			                  + (*data_Creep)(3) * exp(-(*data_Creep)(5) / (8.314472 * (temperature + 273.15)))
+			                  + (*data_Creep)(3) * exp(-(*data_Creep)(5) / (8.314472 * (temperature)))
 			                        * pow(norn_S, (*data_Creep)(4)));
 			break;
 		// TN: BGRsf
 		case 4:
-			fac = 1.5 * dt * ((*data_Creep)(0) * exp(-(*data_Creep)(2) / (8.314472 * (temperature + 273.15)))
+			fac = 1.5 * dt * ((*data_Creep)(0) * exp(-(*data_Creep)(2) / (8.314472 * (temperature)))
 			                      * pow(norn_S, (*data_Creep)(1))
 			                  + (*data_Creep)(4) * pow(norn_S, 2));
 			break;

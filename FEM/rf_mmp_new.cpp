@@ -2617,6 +2617,8 @@ double CMediumProperties::HeatCapacity(long number, double theta, CFiniteElement
 			heat_capacity = assem->SolidProp->Heat_Capacity(T1) * fabs(assem->SolidProp->Density())
 			                + Porosity(assem) * MFPCalcFluidsHeatCapacity(assem);
 			break;
+		case 8:
+			return assem->SolidProp->Heat_Capacity() *  fabs(assem->SolidProp->Density());
 		//....................................................................
 		default:
 			std::cout << "Error in CMediumProperties::HeatCapacity: no valid material model"
@@ -2698,7 +2700,7 @@ double* CMediumProperties::HeatConductivityTensor(int number)
 			    && Fem_Ele_Std->cpl_pcs)
 			{
 				dens_arg[0] = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalValC1); // Pressure
-				dens_arg[1] = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalVal1) + 273.15; // Temperature
+				dens_arg[1] = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalVal1); // Temperature
 				dens_arg[2] = Fem_Ele_Std->Index; // ELE index
 				heat_conductivity_fluids = Fem_Ele_Std->FluidProp->HeatConductivity(dens_arg);
 			}
@@ -2750,7 +2752,7 @@ double* CMediumProperties::HeatConductivityTensor(int number)
 		// Capillary pressure
 		double PG = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalValC1);
 		// Temperature
-		double TG = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalVal1) + 273.15;
+		double TG = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalVal1);
 		double Sw = Fem_Ele_Std->MediaProp->SaturationCapillaryPressureFunction(PG);
 		heat_conductivity_fluids = 0.0;
 		H_vap = 2257000; // pow((Tc - TG),0.38)*2.65E+5;
@@ -3803,7 +3805,7 @@ double CMediumProperties::Porosity(long number, double theta)
 	   int i;
 	   double w[3], TG = 0.0;
 	   if(assem->cpl_pcs)
-	      TG = assem->interpolate(assem->NodalValC1)+273.15;
+	      TG = assem->interpolate(assem->NodalValC1);
 	   else
 	      TG = 296.0;
 	   CalStressPermeabilityFactor(w, TG);
