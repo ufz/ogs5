@@ -22,11 +22,24 @@ elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
 endif() # CMAKE_CXX_COMPILER_ID
 
 if (WIN32)
-	if (COMPILER_IS_MSVC)
+	if (MSVC)
+		# enable parallel compilation
+		# specify Exception Handling Model in msvc
+		# disable unknown pragma warning (4068)
+		# disable unsafe function warning (4996)
+		# disable decorated name length exceeded, name was truncated (4503)
+		# disable conversion from 'size_t' to 'type', possible loss of data (4267)
+		# disable qualifier applied to function type has no meaning; ignored (4180)
+		# disable C++ exception specification ignored except to indicate a function is not __declspec(nothrow) (4290)
+		# disable conversion from 'type1' to 'type2', possible loss of data (4244)
+		# disable forcing value to bool 'true' or 'false' (performance warning) (4800)
+		# define miniupnp static library
+		add_compile_options(/MP /EHsc /wd4068 /wd4996 /wd4503 /wd4267 /wd4180 /wd4290 /wd4244 /wd4800)
+
 		add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS
 			-D_CRT_XNONSTDC_NO_WARNINGS)
 		# Sets warning level 3 and ignores some warnings
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3 /wd4290 /wd4267")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
 		set(GCC OFF)
 
 		DisableCompilerFlag(DEBUG /RTC1)
