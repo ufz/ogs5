@@ -1525,6 +1525,14 @@ double COutput::NODWritePLYDataTEC(int number)
 		tec_file_name += "_" + convertProcessTypeToString(getProcessType());
 	if (msh_type_name.size() > 0)
 		tec_file_name += "_" + msh_type_name;
+
+	//JM
+#if defined(USE_PETSC)
+	tec_file_name += "_" + mrank_str;
+	std::cout << "Tecplot filename: " << tec_file_name << "\n";
+#endif
+	//JM
+
 	if (is_TECPLOT || is_GNUPLOT)
 		tec_file_name += TEC_FILE_EXTENSION;
 	if (is_CSV)
