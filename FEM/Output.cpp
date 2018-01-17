@@ -1648,6 +1648,9 @@ double COutput::NODWritePLYDataTEC(int number)
 		if (is_CSV)
 			tec_file << "\"TIME\" ";
 		tec_file << "\"DIST\" ";
+#if defined(USE_PETSC)
+		tec_file << "\"X\", \"Y\", \"Z\" ";  //JM
+#endif
 		for (size_t k = 0; k < no_variables; k++)
 		{
 			tec_file << "\"" << _nod_value_vector[k] << "\" ";
@@ -1734,6 +1737,15 @@ double COutput::NODWritePLYDataTEC(int number)
 		// WW
 		//		long old_gnode = nodes_vector[m_ply->getOrderedPoints()[j]];
 		gnode = nodes_vector[j];
+
+#if defined(USE_PETSC)
+		//JM start
+		// XYZ
+		const double *x = m_msh->nod_vector[gnode]->getData();
+		for (size_t i = 0; i < 3; i++)
+			tec_file << x[i] << " ";
+		//JM end
+#endif
 		for (size_t k = 0; k < no_variables; k++)
 		{
 			// if(!(_nod_value_vector[k].compare("FLUX")==0))  // removed JOD, does not work for multiple flow processes
