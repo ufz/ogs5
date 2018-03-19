@@ -335,9 +335,9 @@ CElem::~CElem()
    Programing:
    06/2005 WW Implementation
 **************************************************************************/
-void CElem::FillTransformMatrix()
+void CElem::FillTransformMatrix(const bool reuse_matrix_cache)
 {
-	if (transform_tensor)
+	if (transform_tensor && reuse_matrix_cache == false)
 		return;
 
 	double xx[3];

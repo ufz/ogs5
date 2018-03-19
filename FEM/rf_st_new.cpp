@@ -1805,38 +1805,10 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& node
 		G2L[k] = i;
 	}
 
-	//----------------------------------------------------------------------
-	// NW 15.01.2010
-	// 1) search element faces on the surface
-	// 2) face integration
-
-	// init
-	for (i = 0; i < (long)msh->ele_vector.size(); i++)
-	{
-		msh->ele_vector[i]->selected = 0; // TODO can use a new variable
-	}
 	std::set<long> set_nodes_on_sfc; // unique set of node id on the surface
 	for (i = 0; i < (long)nodes_on_sfc.size(); i++)
 	{
 		set_nodes_on_sfc.insert(nodes_on_sfc[i]);
-	}
-
-	// filtering elements: elements should have nodes on the surface
-	// Notice: node-elements relation has to be constructed beforehand
-	// CB THMBM
-	// this->getProcess()->CheckMarkedElement(); // CB added to remove bug with deactivated Subdomains
-	// Already added to Set(..)
-	std::vector<long> vec_possible_elements;
-	for (i = 0; i < this_number_of_nodes; i++)
-	{
-		k = nodes_on_sfc[i];
-		for (j = 0; j < (long)msh->nod_vector[k]->getConnectedElementIDs().size(); j++)
-		{
-			l = msh->nod_vector[k]->getConnectedElementIDs()[j];
-			if (msh->ele_vector[l]->selected == 0)
-				vec_possible_elements.push_back(l);
-			msh->ele_vector[l]->selected += 1; // remember how many nodes of an element are on the surface
-		}
 	}
 
 	CElement* fem_assembler_quad = NULL;
@@ -1858,26 +1830,20 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& node
 	int count;
 	double fac = 1.0;
 	CElem* face = new CElem(1);
-	// face->SetFace();
-	for (i = 0; i < (long)vec_possible_elements.size(); i++)
+	for (i = 0; i < (long)msh->ele_vector.size(); i++)
 	{
-		elem = msh->ele_vector[vec_possible_elements[i]];
-		if (!elem->GetMark())
-			continue;
+		elem = msh->ele_vector[i];
 		nfaces = elem->GetFacesNumber();
 		elem->SetOrder(msh->getOrder());
 		for (j = 0; j < nfaces; j++)
 		{
 			e_nei = elem->GetNeighbor(j);
 			const int nfn = elem->GetElementFaceNodes(j, nodesFace);
-			// 1st check
-			if (elem->selected < nfn)
-				continue;
 
 			if (elem->GetDimension() != 3)
 				continue;
 
-			// 2nd check: if all nodes of the face are on the surface
+			// Check: if all nodes of the face are on the surface
 			count = 0;
 			for (k = 0; k < nfn; k++)
 			{
@@ -1901,7 +1867,8 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& node
 				fac = 0.5;
 			face->SetFace(elem, j);
 			face->SetOrder(msh->getOrder());
-			face->FillTransformMatrix();
+			const bool reuse_matrix_cache = true;
+			face->FillTransformMatrix(reuse_matrix_cache);
 			fem_assembler->setOrder(msh->getOrder() ? 2 : 1);
 			fem_assembler->ConfigElement(face);
 			fem_assembler->FaceIntegration(nodesFVal);
@@ -1913,57 +1880,6 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& node
 			}
 		}
 	}
-
-	/*
-	 //----------------------------------------------------------------------
-	 int count;
-	 double fac=1.0;
-	 for (i = 0; i < (long)msh->ele_vector.size(); i++)
-	 {
-	 elem = msh->ele_vector[i];
-	 if(!elem->GetMark()) continue;
-	 nfaces = elem->GetFacesNumber();
-	 elem->SetOrder(msh->getOrder());
-	 for(j=0; j<nfaces; j++)
-	{
-	e_nei =  elem->GetNeighbor(j);
-	nfn = elem->GetElementFaceNodes(j, nodesFace);
-	count=0;
-	for(k=0; k<nfn; k++)
-	{
-	e_node = elem->GetNode(nodesFace[k]);
-	for (l = 0; l <this_number_of_nodes; l++)
-	{
-	if(*e_node==*msh->nod_vector[nodes_on_sfc[l]])
-	{
-	count++;
-	break;
-	}
-	}
-	}
-	if(count!=nfn) continue;
-	for(k=0; k<nfn; k++)
-	{
-	e_node = elem->GetNode(nodesFace[k]);
-	nodesFVal[k] = node_value_vector[G2L[e_node->GetIndex()]];
-	}
-	fac = 1.0;
-	if(elem->GetDimension()==e_nei->GetDimension()) // Not a surface face
-	fac = 0.5;
-	face->SetFace(elem, j);
-	face->SetOrder(msh->getOrder());
-	face->ComputeVolume();
-	fem->setOrder(msh->getOrder()+1);
-	fem->ConfigElement(face, true);
-	fem->FaceIntegration(nodesFVal);
-	for(k=0; k<nfn; k++)
-	{
-	e_node = elem->GetNode(nodesFace[k]);
-	NVal[G2L[e_node->GetIndex()]] += fac*nodesFVal[k];
-	}
-	}
-	}
-	*/
 
 	for (i = 0; i < this_number_of_nodes; i++)
 		node_value_vector[i] = NVal[i];

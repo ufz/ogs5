@@ -234,7 +234,7 @@ public:
 	CElem* GetNeighbor(int index) { return neighbors[index]; }
 	//------------------------------------------------------------------
 	// Coordinates transform
-	void FillTransformMatrix();
+	void FillTransformMatrix(const bool reuse_matrix_cache = false);
 	void FillTransformMatrix(int noneed);
 	double getTransformTensor(int idx);
 	void AllocateMeomoryforAngle()
