@@ -1805,10 +1805,37 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& node
 		G2L[k] = i;
 	}
 
+	//----------------------------------------------------------------------
+	// NW 15.01.2010
+	// 1) search element faces on the surface
+	// 2) face integration
+
+	// init
+	for (i = 0; i < (long)msh->ele_vector.size(); i++)
+	{
+		msh->ele_vector[i]->selected = 0; // TODO can use a new variable
+		// Activate all element in case that surface is defined inside the domain.
+		msh->ele_vector[i]->MarkingAll(true);
+	}
+	msh->ConnectedElements2Node(msh->getOrder());
+
 	std::set<long> set_nodes_on_sfc; // unique set of node id on the surface
 	for (i = 0; i < (long)nodes_on_sfc.size(); i++)
 	{
 		set_nodes_on_sfc.insert(nodes_on_sfc[i]);
+	}
+
+	std::vector<long> vec_possible_elements;
+	for (i = 0; i < this_number_of_nodes; i++)
+	{
+		k = nodes_on_sfc[i];
+		for (j = 0; j < (long)msh->nod_vector[k]->getConnectedElementIDs().size(); j++)
+		{
+			l = msh->nod_vector[k]->getConnectedElementIDs()[j];
+			if (msh->ele_vector[l]->selected == 0)
+				vec_possible_elements.push_back(l);
+			msh->ele_vector[l]->selected += 1; // remember how many nodes of an element are on the surface
+		}
 	}
 
 	CElement* fem_assembler_quad = NULL;
@@ -1830,9 +1857,9 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& node
 	int count;
 	double fac = 1.0;
 	CElem* face = new CElem(1);
-	for (i = 0; i < (long)msh->ele_vector.size(); i++)
+	for (i = 0; i < (long)vec_possible_elements.size(); i++)
 	{
-		elem = msh->ele_vector[i];
+		elem = msh->ele_vector[vec_possible_elements[i]];
 		nfaces = elem->GetFacesNumber();
 		elem->SetOrder(msh->getOrder());
 		for (j = 0; j < nfaces; j++)
@@ -1840,10 +1867,14 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& node
 			e_nei = elem->GetNeighbor(j);
 			const int nfn = elem->GetElementFaceNodes(j, nodesFace);
 
+			// 1st check
+			if (elem->selected < nfn)
+				continue;
+
 			if (elem->GetDimension() != 3)
 				continue;
 
-			// Check: if all nodes of the face are on the surface
+			// 2nd check: if all nodes of the face are on the surface
 			count = 0;
 			for (k = 0; k < nfn; k++)
 			{
