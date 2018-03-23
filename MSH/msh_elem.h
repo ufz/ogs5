@@ -233,8 +233,15 @@ public:
 	}
 	CElem* GetNeighbor(int index) { return neighbors[index]; }
 	//------------------------------------------------------------------
-	// Coordinates transform
-	void FillTransformMatrix();
+	/// Coordinates transform
+	///  \param recompute_matrix, an indicator to determine whether the transform matrix
+	///                           can be recomputed. For face integration calulation in
+	///                           CSourceTerm::FaceIntegration(...), only one instance of this
+	///                           class is created for all found face elements,
+	///                           therefore recompute_matrix must be set to true. If each geometry
+	///                           element gets an intance of this class, recompute_matrix
+	///                           has to be set to false.
+	void FillTransformMatrix(const bool recompute_matrix = false);
 	void FillTransformMatrix(int noneed);
 	double getTransformTensor(int idx);
 	void AllocateMeomoryforAngle()
