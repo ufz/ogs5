@@ -1898,8 +1898,8 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs, std::vector<long> const& node
 				fac = 0.5;
 			face->SetFace(elem, j);
 			face->SetOrder(msh->getOrder());
-			const bool reuse_matrix_cache = true;
-			face->FillTransformMatrix(reuse_matrix_cache);
+			const bool recompute_matrix = true;
+			face->FillTransformMatrix(recompute_matrix);
 			fem_assembler->setOrder(msh->getOrder() ? 2 : 1);
 			fem_assembler->ConfigElement(face);
 			fem_assembler->FaceIntegration(nodesFVal);
