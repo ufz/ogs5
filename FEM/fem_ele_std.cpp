@@ -10645,6 +10645,8 @@ void CFiniteElementStd::Assemble_RHS_M()
 		}
 	//======================================================================
 	SetHighOrderNodes();
+	ComputeGradShapefctInElement(false);
+
 	//
 	// Loop over Gauss points
 	for (gp = 0; gp < nGaussPoints; gp++)
