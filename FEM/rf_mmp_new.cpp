@@ -1145,8 +1145,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 						break;
 					//
 					case 44: // 2-phase Van Genuchten/Mualem Model NON-WETTING
-						// krg = pow(1.0-se,1.0/3.0) * pow(1.0-pow(se,1.0/m),2.0*m)
-						// Se  = (sl - slr) / (slm - slr) --> slr = 1 - sgm --> slm = 1 - sgr
+						// Water Resour. Res. VOL. 23, pp2197-2206 1987. Air
 						in >> residual_saturation[k]; // sgr: residual saturation, this phase
 						in >> maximum_saturation[k]; // sgm: maximum saturation, this phase
 						in >> saturation_exponent[k]; // exponent (always <= 1.0) --> (typical is 0.5) i.e. n = 1 / (1 -
@@ -1198,7 +1197,10 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 						break;
 					//
 					default:
-						ScreenMessage("Error in MMPRead: no valid permeability saturation model.\n");
+						{
+							ScreenMessage("Error in MMPRead: no valid permeability saturation model.\n");
+							abort();
+						}
 						break;
 				}
 				in.clear();
@@ -2408,6 +2410,7 @@ double CMediumProperties::PermeabilitySaturationFunction(const double wetting_sa
 			break;
 		//
 		case 44: // 2-phase VAN GENUCHTEN/MUALEM --> NON-WETTING
+			// Water Resour. Res. VOL. 23, pp2197-2206 1987. Air
 			slr = 1.0 - maximum_saturation[phase]; // slr = 1.0 - sgm
 			slm = 1.0 - residual_saturation[phase]; // slm = 1.0 - sgr
 			m = saturation_exponent[phase]; // always <= 1.0.  Input is exponent = 1 / (1-lambda)
