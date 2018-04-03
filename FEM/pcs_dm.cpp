@@ -795,13 +795,16 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 				{
 					pcs_absolute_error[0] = NormU;
 					pcs_relative_error[0] = pcs_absolute_error[0] / Tolerance_global_Newton;
-					cpl_max_relative_error = pcs_relative_error[0];
+					// To be improved by overloading CRFProcess::CalcIterationNODError
+					cpl_max_relative_error = pcs_absolute_error[0]; //pcs_relative_error[0];
 					cpl_num_dof_errors = 1;
 				}
 				else
 				{
 					pcs_absolute_error[0] = Error;
 					pcs_relative_error[0] = Error / Tolerance_global_Newton;
+					// To be improved by overloading CRFProcess::CalcIterationNODError
+					// to calculate cpl_max_relative_error and cpl_num_dof_errors;
 				}
 //
 #if defined(USE_MPI) || defined(USE_PETSC)
