@@ -1355,8 +1355,7 @@ bool Problem::CouplingLoop()
 	bool run_flag[max_processes];
 	int outer_index, inner_index, inner_max; //, inner_min;
 	//
-	CRFProcess* a_pcs = NULL;
-	CRFProcess* b_pcs = NULL;
+
 	CTimeDiscretization* m_tim = NULL;
 	//
 	print_result = false;
@@ -1448,8 +1447,8 @@ bool Problem::CouplingLoop()
 			// ---------------------------------------
 			if (cpl_index >= 0 && run_flag[cpl_index])
 			{
-				a_pcs = total_processes[index];
-				b_pcs = total_processes[cpl_index];
+				CRFProcess* a_pcs = total_processes[index];
+				CRFProcess* b_pcs = total_processes[cpl_index];
 				//
 				inner_max = a_pcs->m_num->cpl_max_iterations;
 				//				inner_min = a_pcs->m_num->cpl_min_iterations; // variable set but never used
@@ -1516,7 +1515,7 @@ bool Problem::CouplingLoop()
 			{
 				// PERFORM AN OUTER COUPLING
 				// ---------------------------------------
-				a_pcs = total_processes[index];
+				CRFProcess* a_pcs = total_processes[index];
 				a_pcs->iter_outer_cpl = outer_index;
 				a_pcs->iter_inner_cpl = 0;
 				//
