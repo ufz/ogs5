@@ -482,21 +482,23 @@ ios::pos_type COutput::Read(std::ifstream& in_str, const GEOLIB::GEOObjects& geo
 		// OK
 		if (line_string.find("$MFP_VALUES") != string::npos)
 		{
-			ok = true;
-			while (ok)
+			while ((!new_keyword) && (!new_subkeyword))
 			{
-				position_line = in_str.tellg();
+				position_subkeyword = in_str.tellg();
 				line_string = GetLineFromFile1(&in_str);
-				if (SubKeyword(line_string))
-				{
-					in_str.seekg(position_line, ios::beg);
-					ok = false;
-					continue;
-				}
-				if (Keyword(line_string))
+				if (line_string.find("#") != string::npos)
 					return position;
-				std::remove_if(line_string.begin(), line_string.end(), ::isspace);
-				mfp_value_vector.push_back(line_string);
+				if (line_string.find("$") != string::npos)
+				{
+					new_subkeyword = true;
+					break;
+				}
+				if (line_string.size() == 0)
+					break;
+				in.str(line_string);
+				in >> name;
+				mfp_value_vector.push_back(name);
+				in.clear();
 			}
 
 			continue;
@@ -1198,7 +1200,7 @@ void COutput::WriteTECNodeData(fstream& tec_file)
 			// OK4704
 			for (size_t k = 0; k < mfp_value_vector.size(); k++)
 				// tec_file << MFPGetNodeValue(m_msh->nod_vector[j]->GetIndex(),mfp_value_vector[k]) << " "; //NB
-				tec_file << MFPGetNodeValue(n_id, mfp_value_vector[k],
+				tec_file << " " << MFPGetNodeValue(n_id, mfp_value_vector[k],
 				                            atoi(&mfp_value_vector[k][mfp_value_vector[k].size() - 1]) - 1)
 				         << " "; // NB: MFP output for all phases
 		}
@@ -1789,7 +1791,7 @@ double COutput::NODWritePLYDataTEC(int number)
 		// OK4704
 		for (size_t k = 0; k < mfp_value_vector.size(); k++)
 			//     tec_file << MFPGetNodeValue(gnode,mfp_value_vector[k],0) << " "; //NB
-			tec_file << MFPGetNodeValue(gnode, mfp_value_vector[k],
+			tec_file << " " << MFPGetNodeValue(gnode, mfp_value_vector[k],
 			                            atoi(&mfp_value_vector[k][mfp_value_vector[k].size() - 1]) - 1)
 			         << " "; // NB: MFP output for all phases
 
@@ -2078,7 +2080,7 @@ void COutput::NODWritePNTDataTEC(double time_current, int time_step_number)
 		}
 		// OK411
 		for (size_t k = 0; k < mfp_value_vector.size(); k++)
-			tec_file << MFPGetNodeValue(msh_node_number, mfp_value_vector[k],
+			tec_file << " " << MFPGetNodeValue(msh_node_number, mfp_value_vector[k],
 			                            atoi(&mfp_value_vector[k][mfp_value_vector[k].size() - 1]) - 1)
 			         << " "; // NB
 	}
