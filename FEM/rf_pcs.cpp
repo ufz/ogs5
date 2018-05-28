@@ -12615,10 +12615,11 @@ void CRFProcess::AssembleParabolicEquationRHSVector(CNode* m_nod)
 						 */
 					}
 				}
-				if (m_edg->GetMark())
-					break;
 			//----------------------------------------------------------------
 			// ToDo
+				//if (m_edg->GetMark())
+				//	break;
+                                break;
 			default:
 				cout << "Warning in CRFProcess::AssembleParabolicEquationRHSVector - not implemented for this element "
 				        "type"

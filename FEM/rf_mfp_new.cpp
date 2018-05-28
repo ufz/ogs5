@@ -1211,6 +1211,7 @@ double CFluidProperties::Density(double* variables)
 				std::cout << " Error - Density Model 18 not implemented, usind dummy density of 1000."
 				          << "\n";
 				density = 1000; // Achtung - dummy
+                                break;
 
 			case 19: // KG44 get the density from GEMS calculations
 				// seems complicated, as we probably have to call GEMS.....or take values from last GEMS calculation

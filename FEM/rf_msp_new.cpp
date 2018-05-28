@@ -8168,6 +8168,7 @@ double CSolidProperties::E_Function(int dim, const ElementValue_DM* ele_val, int
 			}
 			CalPrinStrDir(stress, prin_str, prin_dir, size);
 			return_value = GetCurveValue((int)E_Function_Model_Value[0], 0, prin_str[0], &valid);
+                        break;
 		}
 		default:
 			return_value = 1.;

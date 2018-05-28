@@ -978,6 +978,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 					// if -1, threshold is constant
 					in >> permeability_strain_model_value[4]; // lower limit
 					in >> permeability_strain_model_value[5]; // uper limit
+                                        break;
 				default:
 					cout << "Error in MMPRead: no valid permeability strain model"
 					     << "\n";

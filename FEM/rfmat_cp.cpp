@@ -1261,6 +1261,7 @@ int CompProperties::GetNumberDiffusionValuesCompProperties(int diffusion_model)
 			break; /* Keine Diffusion */
 		case 0: /* curve */
 			n = 1;
+                        break;
 		case 1:
 			n = 1;
 			break; /* Konstanter Diffusionswert */
@@ -1379,6 +1380,7 @@ int CompProperties::GetNumberIsothermValuesCompProperties(int isotherm)
 	{
 		case -1:
 			n = 0; /* no isotherm */
+                        break;
 		case 0:
 			n = 1;
 			break; /* get KD from curve derivative */
