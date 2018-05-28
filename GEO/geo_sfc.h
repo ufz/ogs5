@@ -120,9 +120,7 @@ extern void GEOSurfaceTopology(void);
 extern void GEOUnselectSFC(); // OK
 // TIN
 #define TIN_FILE_EXTENSION ".tin"
-extern void GEOWriteSurfaceTINs(const std::string&); // TIN
-extern void GEOCreateLayerSurfaceTINs(int, double); // TIN
-extern void GEOWriteSurfaceTINsTecplot(const std::string&);
+
 extern int sfc_ID_max;
 // MSH
 void MSHUnselectSFC(); // OK
