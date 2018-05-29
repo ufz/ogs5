@@ -427,12 +427,12 @@ void REACT::ExecutePQCString(void)
 	ii = 0;
 	int idx, idy;
 	bool firstinput;
-	char string[4]; //, string1[4], string2[4];
+//	char string[4]; //, string1[4], string2[4];
 	for (std::size_t j = 0; j < rankrankliststore[myrank].size(); j++)
 	{
 		firstinput = true;
 		idy = rankrankliststore[myrank][j];
-		sprintf(string, "%li", static_cast<long>(idy));
+		//sprintf(string, "%li", static_cast<long>(idy));
 		for (std::size_t i = 0; i < ranknodeliststore[idy].size(); i++)
 		{
 			idx = ranknodeliststore[idy][i];

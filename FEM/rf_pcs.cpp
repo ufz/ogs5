@@ -8647,21 +8647,14 @@ void CRFProcess::CalcSecondaryVariables(bool initial)
 		case FiniteElement::TWO_PHASE_FLOW:
 			break;
 		case FiniteElement::RICHARDS_FLOW: // Richards flow
-			// WW
+		case FiniteElement::MULTI_PHASE_FLOW:
+		case FiniteElement::DEFORMATION_H2: // H2M
 			CalcSecondaryVariablesUnsaturatedFlow(initial);
-			break;
-		case FiniteElement::DEFORMATION || FiniteElement::DEFORMATION_FLOW || FiniteElement::DEFORMATION_DYNAMIC:
-			if (type == 42) // H2M                                                  //WW
-				CalcSecondaryVariablesUnsaturatedFlow(initial);
-
 			break;
 		case FiniteElement::PS_GLOBAL:
 			CalcSecondaryVariablesPSGLOBAL(); // WW
 			break;
 		default:
-			if (type == 1212)
-				// WW
-				CalcSecondaryVariablesUnsaturatedFlow(initial);
 			break;
 	}
 }
@@ -11834,7 +11827,7 @@ void CRFProcess::CalcELEFluxes(const GEOLIB::Polyline* const ply, double* result
 				for (int k = 0; k < int(vec_nodes_edge.size()); k++)
 				{
 					Point_on_Geo = false;
-					for (int l = 0; l < int(nod_vector_at_geo.size()); l++)
+					for (std::size_t l = 0; l < nod_vector_at_geo.size(); l++)
 					{
 						if (vec_nodes_edge[k]->GetIndex() == nod_vector_at_geo[l])
 						{
@@ -12123,7 +12116,7 @@ void CRFProcess::CalcELEMassFluxes(const GEOLIB::Polyline* const ply, std::strin
 					for (int k = 0; k < int(vec_nodes_edge.size()); k++)
 					{
 						Point_on_Geo = false;
-						for (int l = 0; l < int(nod_vector_at_geo.size()); l++)
+						for (std::size_t l = 0; l < nod_vector_at_geo.size(); l++)
 						{
 							if (vec_nodes_edge[k]->GetIndex() == nod_vector_at_geo[l])
 							{
