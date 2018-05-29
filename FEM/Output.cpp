@@ -1460,17 +1460,6 @@ void COutput::WriteELEValuesTECData(fstream& tec_file)
 				tec_file << m_pcs_2->GetElementValue(i, ele_value_index_vector[j]) << " ";
 			}
 		}
-		/*
-		   int j;
-		   int eidx;
-		   char ele_value_char[20];
-		   int no_ele_values = (int)ele_value_vector.size();
-		   for(j=0;j<no_ele_values;j++){
-		   sprintf(ele_value_char,"%s",ele_value_vector[j].data());
-		   eidx = PCSGetELEValueIndex(ele_value_char);
-		   tec_file << ElGetElementVal(i,eidx) << " ";
-		   }
-		 */
 		tec_file << "\n";
 	}
 

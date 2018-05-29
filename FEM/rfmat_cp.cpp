@@ -878,39 +878,6 @@ double CompProperties::CalcDiffusionCoefficientCP(long index, double theta, CRFP
 		case 5:
 		case 6:
 		case 7:
-/*OK411
-        {
-        count_nodes = ElNumberOfNodes[ElGetElementType(index) - 1];
-        element_nodes = ElGetElementNodes(index);
-      p_ind = 1;
-      sprintf(name_pres,"PRESSURE%ld",transport_phase+1);
-   // SB:GS4 todo               p_idx = m_pcs->PCSGetNODValueIndexNew(name_pres,1);
-        if (p_ind) {
-            pressure_average = 0.0;
-            for (i = 0; i < count_nodes; i++)
-                pressure_average += GetNodeVal(element_nodes[i], p_idx);
-   pressure_average /= count_nodes;
-   }
-   t_ind = 1;
-   if (! GetRFProcessHeatReactModel()){
-   DisplayMsgLn("No heat transport active, no temperature available for determination of diffusion coefficient ");
-   break;
-   };
-
-   sprintf(name_heat,"TEMPERATURE%ld",transport_phase+1);
-   // SB:GS4 todo		m_pcs->PCSGetNODValueIndexNew(name_heat,1);
-   if (t_ind) {
-   temperature_average = 0.0;
-   for (i = 0; i < count_nodes; i++)
-   temperature_average += GetNodeVal(element_nodes[i], t_idx);
-   temperature_average /= count_nodes;
-   }
-   eta = mfp_vector[transport_phase]->Viscosity(); //GetFluidViscosity(transport_phase, index, 0., 0., 0., theta);
-   diffusion_coefficient = CalcDiffusionCoefficientCP_Method1(index, temperature_average, pressure_average, eta);
-   element_nodes = NULL;
-   break;
-   }
- */
 #ifdef GEM_REACT
 		case 8: /* Archies law De = Dp * tau * tau_zero* poros   with tau = poros^m/poros0^m   ....tortuosity = tau_zero
 		           * tau depends on porosity and tau_zero is multiplicated  (like porosity) outside this function  */

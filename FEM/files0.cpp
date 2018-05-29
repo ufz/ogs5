@@ -698,35 +698,6 @@ int StrReadDouble(double* x, char* s, FILE* f, int* pos)
 	}
 }
 
-/**************************************************************************/
-/* ROCKFLOW - Funktion: ReadString
- */
-/* Aufgabe:
-   Liest Zeichenkette von Standardeingabe
- */
-/* Formalparameter: (E: Eingabe; R: Rueckgabe; X: Beides)
-   - void -
- */
-/* Ergebnis:
-   gelesene Zeichenkette
- */
-/* Programmaenderungen:
-   03/1994     MSR        Erste Version
- */
-/**************************************************************************/
-char* ReadString(void)
-{
-	char* s = (char*)malloc(256);
-	// char *s = new char[256];//CC
-        int unused __attribute__((unused));
-	unused = scanf(" %s%*[^\n]%*c", s);
-	//  int a = (int)strlen(s);
-	//  delete[] s;
-	// s = new char[a+1];//CC
-	s = (char*)realloc(s, ((int)strlen(s) + 1));
-	return s;
-}
-
 /**************************************************************************
    STRLib-Method: SubKeyword
    Task:

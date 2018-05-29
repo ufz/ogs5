@@ -103,7 +103,6 @@ extern int StringReadStr(char** x, char* s, int* pos);
 // extern int TFDoubleNew (char *s, FILE *f );
 extern int TFString(char* x, FILE* f);
 
-extern char* ReadString(void);
 /* Liest Zeichenkette von Standardeingabe */
 extern char* StrUp(const char* s);
 /* wandelt s in Grossbuchstaben um */

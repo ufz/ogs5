@@ -594,8 +594,10 @@ Problem::~Problem()
 	exe_flag = NULL;
 	//
 	PCSDestroyAllProcesses();
-	//
-	if (GetRFProcessProcessingAndActivation("MT") && GetRFProcessNumComponents() > 0)
+	// The body of GetRFProcessProcessingAndActivation just returns 0.
+        // Therefore, the following destruction never happens under
+	// if (GetRFProcessProcessingAndActivation("MT") && GetRFProcessNumComponents() > 0)
+	if (GetRFProcessNumComponents() > 0)
 	{
 		DestroyREACT(); // SB
 		cp_vec.clear(); // Destroy component properties vector
@@ -4434,22 +4436,6 @@ void Problem::createShapeFunctionPool()
 			fem_assem->setShapeFunctionPool(_linear_shapefunction_pool, _quadr_shapefunction_pool);
 		}
 	}
-}
-
-/**************************************************************************
-   FEMLib-Method:
-   06/2009 OK Implementation
-**************************************************************************/
-bool MODCreate()
-{
-	PCSConfig(); // OK
-	if (!PCSCheck()) // OK
-	{
-		std::cout << "Not enough data for MOD creation.\n";
-		return false;
-	}
-	else
-		return true;
 }
 
 #ifdef BRNS
