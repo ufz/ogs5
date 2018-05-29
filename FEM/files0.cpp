@@ -174,7 +174,7 @@ static bool checkFormatOfInputFiles(const std::string& basename)
    last modified: OK 16.10.2002
  */
 /**************************************************************************/
-int ReadData(char* dateiname, GEOLIB::GEOObjects& geo_obj, std::string& unique_name)
+int ReadData(const char* dateiname, GEOLIB::GEOObjects& geo_obj, std::string& unique_name)
 {
 #if defined(USE_MPI) // WW
 	if (myrank == 0)

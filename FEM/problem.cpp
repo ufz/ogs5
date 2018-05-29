@@ -44,7 +44,7 @@
 /*------------------------------------------------------------------------*/
 // Data file
 // OK411
-extern int ReadData(char*, GEOLIB::GEOObjects& geo_obj, std::string& unique_name);
+extern int ReadData(const char*, GEOLIB::GEOObjects& geo_obj, std::string& unique_name);
 /* PCS */
 #include "pcs_dm.h"
 #include "rf_pcs.h"
@@ -112,7 +112,7 @@ using process::CRFProcessDeformation;
             PreTimeloop
    Modification:
  ***************************************************************************/
-Problem::Problem (char* filename) :
+Problem::Problem (const char* filename) :
 	dt0(0.), print_result(true),
 	_linear_shapefunction_pool(NULL), _quadr_shapefunction_pool(NULL),
 	_geo_obj (new GEOLIB::GEOObjects), _geo_name (filename),
