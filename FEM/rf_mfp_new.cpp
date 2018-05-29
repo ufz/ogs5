@@ -1318,7 +1318,7 @@ double CFluidProperties::GetElementValueFromNodes(long ElementIndex, int GPIndex
 			     << "\n";
 			cout << "The run is terminated now ..."
 			     << "\n";
-			system("Pause");
+			//system("Pause");
 			exit(0);
 		}
 

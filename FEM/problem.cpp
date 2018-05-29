@@ -1982,7 +1982,7 @@ inline double Problem::MultiPhaseFlow()
 		{
 			std::cout << "Error running Eclipse!"
 			          << "\n";
-			system("Pause");
+			//system("Pause");
 			exit(0);
 		}
 	}
@@ -2016,7 +2016,7 @@ inline double Problem::MultiPhaseFlow()
 				    << "\n";
 				std::cout << "The run is terminated now ..."
 				          << "\n";
-				system("Pause");
+				//system("Pause");
 				exit(0);
 			}
 			FluidProp = MFPGet("GAS");
@@ -2027,7 +2027,7 @@ inline double Problem::MultiPhaseFlow()
 				    << "\n";
 				std::cout << "The run is terminated now ..."
 				          << "\n";
-				system("Pause");
+				//system("Pause");
 				exit(0);
 			}
 		}

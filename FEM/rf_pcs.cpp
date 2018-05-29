@@ -15270,7 +15270,7 @@ void CRFProcess::CalculateFluidDensitiesAndViscositiesAtNodes(CRFProcess* m_pcs)
 			{
 				cout << "Density calculation of water was not possible"
 				     << "\n";
-				system("Pause");
+				//system("Pause");
 				exit(0);
 			}
 			// calculate new moles of H2O
@@ -15353,7 +15353,7 @@ void CRFProcess::CalculateFluidDensitiesAndViscositiesAtNodes(CRFProcess* m_pcs)
 			{
 				cout << "Density calculation of gas was not possible"
 				     << "\n";
-				system("Pause");
+				//system("Pause");
 				exit(0);
 			}
 			// set new density to nodes
@@ -15695,7 +15695,7 @@ void CRFProcess::Phase_Transition_CO2(CRFProcess* m_pcs, int Step)
 			cout << "The volume is not equal before and after the calculation of CO2 phase transition! "
 			     << "\n";
 			cout << "Before: " << Volume_eff << " After: " << gas.volume + liquid.volume << "\n";
-			system("Pause");
+			//system("Pause");
 			exit(0);
 		}
 

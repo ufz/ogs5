@@ -718,7 +718,8 @@ char* ReadString(void)
 {
 	char* s = (char*)malloc(256);
 	// char *s = new char[256];//CC
-	scanf(" %s%*[^\n]%*c", s);
+        int unused __attribute__((unused));
+	unused = scanf(" %s%*[^\n]%*c", s);
 	//  int a = (int)strlen(s);
 	//  delete[] s;
 	// s = new char[a+1];//CC
