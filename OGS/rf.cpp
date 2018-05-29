@@ -264,34 +264,6 @@ int main(int argc, char* argv[])
 #endif
 
 			DisplayStartMsg();
-	/* Speicherverwaltung initialisieren */
-	if (!InitMemoryTest())
-	{
-		DisplayErrorMsg("Fehler: Speicherprotokoll kann nicht erstellt werden!");
-		DisplayErrorMsg("        Programm vorzeitig beendet!");
-		return 1; // LB changed from 0 to 1 because 0 is indicating success
-	}
-	if (argc == 1) // interactive mode
-
-		dateiname = ReadString();
-	else // non-interactive mode
-	{
-		if (argc == 2) // a model root was supplied
-		{
-			dateiname = (char*)Malloc((int)strlen(argv[1]) + 1);
-			dateiname = strcpy(dateiname, argv[1]);
-		}
-		else // several args supplied
-		    if (modelRoot != "")
-		{
-			dateiname = (char*)Malloc((int)modelRoot.size() + 1);
-			dateiname = strcpy(dateiname, modelRoot.c_str());
-		}
-		DisplayMsgLn(dateiname);
-	}
-	// WW  DisplayMsgLn("");
-	// WW  DisplayMsgLn("");
-	// ----------23.02.2009. WW-----------------
 
 	// LB Check if file exists
 	std::string tmpFilename = dateiname;
