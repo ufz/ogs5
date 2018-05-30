@@ -4033,7 +4033,7 @@ void CFEMesh::MarkInterface_mHM_Hydro_3D()
    06/2010  WW
 
  */
-void CFEMesh::mHM2NeumannBC()
+void CFEMesh::mHM2NeumannBC(const std::string output_path)
 {
 	double ratio, step;
 

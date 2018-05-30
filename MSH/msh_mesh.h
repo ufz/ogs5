@@ -486,8 +486,8 @@ public:
 
 #endif
 	void MarkInterface_mHM_Hydro_3D(); // 07.06.2010. WW
-	void mHM2NeumannBC();
-	/// Comptute int {f} a dA on top surface.
+	void mHM2NeumannBC(const std::string output_path);
+	/// Compute int {f} a dA on top surface.
 	void TopSurfaceIntegration();
 
 #ifndef NDEBUG

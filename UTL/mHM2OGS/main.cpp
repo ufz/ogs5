@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	a_mesh->mHM2NeumannBC();
+	a_mesh->mHM2NeumannBC(o_path);
 	if (a_mesh)
 	{
 		delete a_mesh;
