@@ -324,7 +324,7 @@ include(scripts/cmake/packaging/Pack.cmake)
 
 if (OGS_BUILD_UTILITIES)
 	add_subdirectory (UTL/MSHGEOTOOLS/)
-	add_subdirectory (UTL/GIS2FEM/)
+	add_subdirectory (UTL/mHM2OGS/)
 endif ()
 
 ## Documentation ##
