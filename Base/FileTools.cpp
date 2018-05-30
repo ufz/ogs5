@@ -155,9 +155,7 @@ std::string getCwd()
 #ifdef WIN32
 	_getcwd(cwd, FILENAME_MAX);
 #else
-	char* unused __attribute__((unused));
-	unused = getcwd(cwd, FILENAME_MAX);
+	getcwd(cwd, FILENAME_MAX);
 #endif
-
 	return cwd;
 }
