@@ -227,16 +227,6 @@ int main(int argc, char* argv[])
 			std::cout << BuildInfo::OGS_VERSION << "\n";
 			exit(0);
 		}
-		if (anArg == "--model-root" || anArg == "-m")
-		{
-			if (i + 1 >= arg_strings.size())
-			{
-				std::cerr << "Error: Parameter " << anArg << " needs an additional argument" << std::endl;
-				std::exit(EXIT_FAILURE);
-			}
-//			modelRoot = std::string(arg_strings[++i]);
-			continue;
-		}
 		if (anArg == "--output-directory")
 		{
 			if (i + 1 >= arg_strings.size())
