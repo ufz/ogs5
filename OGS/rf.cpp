@@ -276,16 +276,9 @@ int main(int argc, char* argv[])
 	TStartTimer(0);
 #endif
 
-	size_t indexChWin, indexChLinux;
-	indexChWin = indexChLinux = 0;
-	indexChWin = FileName.find_last_of('\\');
-	indexChLinux = FileName.find_last_of('/');
-	//
-	if (indexChWin != std::string::npos)
-		FilePath = FileName.substr(0, indexChWin) + "\\";
-	else if (indexChLinux != std::string::npos)
-		FilePath = FileName.substr(0, indexChLinux) + "/";
-	// If no option is given, output files are placed in the same directory as the input files
+	FilePath = pathDirname(FileName);
+
+        // If no option is given, output files are placed in the same directory as the input files
 	if (defaultOutputPath.empty())
 		defaultOutputPath = FilePath;
 

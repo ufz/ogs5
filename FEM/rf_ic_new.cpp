@@ -861,27 +861,7 @@ void CInitialCondition::SetDomain(int nidx)
 				return;
 			}
 			std::ifstream rfr_file;
-			std::string restart_file_name;
-			restart_file_name = rfr_file_name;
-			basic_string<char>::size_type indexChWin, indexChLinux;
-			indexChWin = indexChLinux = 0;
-			indexChWin = FileName.find_last_of('\\');
-			indexChLinux = FileName.find_last_of('/');
-			//
-			string funfname;
-			if (indexChWin == string::npos && indexChLinux == string::npos)
-				funfname = rfr_file_name;
-			else if (indexChWin != string::npos)
-			{
-				funfname = FileName.substr(0, indexChWin);
-				funfname = funfname + "\\" + rfr_file_name;
-			}
-			else if (indexChLinux != string::npos)
-			{
-				funfname = FileName.substr(0, indexChLinux);
-				funfname = funfname + "/" + rfr_file_name;
-			}
-			restart_file_name = funfname;
+			std::string restart_file_name = FilePath + rfr_file_name;
 			//-------------------------------------------------------------------
 			rfr_file.open(restart_file_name.c_str(), ios::in);
 			if (!rfr_file.good())
