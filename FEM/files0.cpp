@@ -174,7 +174,7 @@ static bool checkFormatOfInputFiles(const std::string& basename)
    last modified: OK 16.10.2002
  */
 /**************************************************************************/
-int ReadData(char* dateiname, GEOLIB::GEOObjects& geo_obj, std::string& unique_name)
+int ReadData(const char* dateiname, GEOLIB::GEOObjects& geo_obj, std::string& unique_name)
 {
 #if defined(USE_MPI) // WW
 	if (myrank == 0)
@@ -696,34 +696,6 @@ int StrReadDouble(double* x, char* s, FILE* f, int* pos)
 
 		return 1;
 	}
-}
-
-/**************************************************************************/
-/* ROCKFLOW - Funktion: ReadString
- */
-/* Aufgabe:
-   Liest Zeichenkette von Standardeingabe
- */
-/* Formalparameter: (E: Eingabe; R: Rueckgabe; X: Beides)
-   - void -
- */
-/* Ergebnis:
-   gelesene Zeichenkette
- */
-/* Programmaenderungen:
-   03/1994     MSR        Erste Version
- */
-/**************************************************************************/
-char* ReadString(void)
-{
-	char* s = (char*)malloc(256);
-	// char *s = new char[256];//CC
-	scanf(" %s%*[^\n]%*c", s);
-	//  int a = (int)strlen(s);
-	//  delete[] s;
-	// s = new char[a+1];//CC
-	s = (char*)realloc(s, ((int)strlen(s) + 1));
-	return s;
 }
 
 /**************************************************************************

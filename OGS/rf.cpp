@@ -28,6 +28,8 @@
  * */
 #include "BuildInfo.h"
 
+#include <iostream>
+
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS) \
     || defined(USE_MPI_KRC)
 #include "par_ddc.h"
@@ -104,91 +106,10 @@ double elapsed_time_mpi;
 /**************************************************************************/
 int main(int argc, char* argv[])
 {
-	/* parse command line arguments */
-	std::string anArg;
-	std::string modelRoot;
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS) \
     || defined(USE_MPI_KRC)
 	int nb_ddc = 0; // number of cores for DDC related processes
 #endif
-
-	for (int i = 1; i < argc; i++)
-	{
-		anArg = std::string(argv[i]);
-		if (anArg == "--help" || anArg == "-h")
-		{
-			std::cout << "Usage: ogs [MODEL_ROOT] [OPTIONS]\n"
-			          << "Where OPTIONS are:\n"
-			          << "  -h [--help]               print this message and exit\n"
-			          << "  -b [--build-info]         print build info and exit\n"
-			          << "  --output-directory DIR    put output files into DIR\n"
-			          << "  --version                 print ogs version and exit"
-			          << "\n";
-			continue;
-		}
-		if (anArg == "--build-info" || anArg == "-b")
-		{
-			std::cout << "ogs version: " << BuildInfo::OGS_VERSION << "\n"
-			          << "ogs date: " << BuildInfo::OGS_DATE << "\n";
-			std::cout << "git commit info: " << BuildInfo::GIT_COMMIT_INFO << "\n";
-			std::cout << "build timestamp: " << BuildInfo::BUILD_TIMESTAMP << "\n";
-			continue;
-		}
-		if (anArg == "--version")
-		{
-			std::cout << BuildInfo::OGS_VERSION << "\n";
-			continue;
-		}
-		if (anArg == "--model-root" || anArg == "-m")
-		{
-			if (i + 1 >= argc)
-			{
-				std::cerr << "Error: Parameter " << anArg << " needs an additional argument" << std::endl;
-				std::exit(EXIT_FAILURE);
-			}
-			modelRoot = std::string(argv[++i]);
-			continue;
-		}
-		if (anArg == "--output-directory")
-		{
-			if (i + 1 >= argc)
-			{
-				std::cerr << "Error: Parameter " << anArg << " needs an additional argument" << std::endl;
-				std::exit(EXIT_FAILURE);
-			}
-			std::string path = argv[++i];
-
-			if (!path.empty())
-				defaultOutputPath = path;
-			continue;
-		}
-#if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS) \
-    || defined(USE_MPI_KRC)
-		std::string decompositions;
-		if (anArg == "--domain-decomposition" || anArg == "-ddc")
-		{
-			decompositions = std::string(argv[++i]);
-			nb_ddc = atoi(decompositions.c_str());
-			continue;
-		}
-#endif
-		// anything left over must be the model root, unless already found
-		if (modelRoot == "")
-			modelRoot = std::string(argv[i]);
-	} // end of parse argc loop
-
-	if (argc > 1 && modelRoot == "") // non-interactive mode and no model given
-		exit(0); // e.g. just wanted the build info
-
-	std::string solver_pkg_name = BuildInfo::SOLVER_PACKAGE_NAME;
-	// No default linear solver package is in use.
-	if (solver_pkg_name.find("Default") == std::string::npos)
-	{
-		std::cout << "\nWarning: " << solver_pkg_name << " other than the OGS default one is in use." << std::endl;
-		std::cout << "         The solver setting may need to be adjusted for the solution accuracy!" << std::endl;
-	}
-
-	char* dateiname(NULL);
 #ifdef SUPERCOMPUTER
 	// *********************************************************************
 	// buffered output ... important for performance on cray
@@ -249,64 +170,112 @@ int main(int argc, char* argv[])
 	// Initialization of the lis solver.
 	lis_initialize(&argc, &argv);
 #endif
-/*========================================================================*/
-/* Kommunikation mit Betriebssystem */
-/* Timer fuer Gesamtzeit starten */
-#ifdef TESTTIME
-	TStartTimer(0);
-#endif
-/* Intro ausgeben */
+
+	std::vector<std::string> arg_strings;
+	if (argc > 1)
+	{
+		for (int i = 1; i < argc; i++)
+		{
+			arg_strings.push_back(std::string(argv[i]));
+		}
+	}
+	else
+	{
 #if defined(USE_MPI) // WW
-	if (myrank == 0)
+		if (myrank == 0)
 #endif
 #ifdef USE_PETSC
 		if (rank == 0)
 #endif
+		DisplayStartMsg();
 
-			DisplayStartMsg();
-	/* Speicherverwaltung initialisieren */
-	if (!InitMemoryTest())
-	{
-		DisplayErrorMsg("Fehler: Speicherprotokoll kann nicht erstellt werden!");
-		DisplayErrorMsg("        Programm vorzeitig beendet!");
-		return 1; // LB changed from 0 to 1 because 0 is indicating success
-	}
-	if (argc == 1) // interactive mode
-
-		dateiname = ReadString();
-	else // non-interactive mode
-	{
-		if (argc == 2) // a model root was supplied
+		std::string s_buff;
+		std::stringstream ss;
+		getline(std::cin, s_buff);
+		ss.str(s_buff);
+		while (!ss.eof())
 		{
-			dateiname = (char*)Malloc((int)strlen(argv[1]) + 1);
-			dateiname = strcpy(dateiname, argv[1]);
+			ss >> s_buff;
+			arg_strings.push_back(s_buff);
 		}
-		else // several args supplied
-		    if (modelRoot != "")
-		{
-			dateiname = (char*)Malloc((int)modelRoot.size() + 1);
-			dateiname = strcpy(dateiname, modelRoot.c_str());
-		}
-		DisplayMsgLn(dateiname);
 	}
-	// WW  DisplayMsgLn("");
-	// WW  DisplayMsgLn("");
-	// ----------23.02.2009. WW-----------------
 
-	// LB Check if file exists
-	std::string tmpFilename = dateiname;
-	tmpFilename.append(".pcs");
-	if (!IsFileExisting(tmpFilename))
+	for (std::size_t i = 0; i < arg_strings.size(); i++)
 	{
-		std::cout << " Error: Cannot find file " << dateiname << "\n";
-		return 1;
-	}
+                const std::string anArg = arg_strings[i];
+		if (anArg == "--help" || anArg == "-h")
+		{
+			std::cout << "Usage: ogs [MODEL_ROOT] [OPTIONS]\n"
+			          << "Where OPTIONS are:\n"
+			          << "  -h [--help]               print this message and exit\n"
+			          << "  -b [--build-info]         print build info and exit\n"
+			          << "  --output-directory DIR    put output files into DIR\n"
+			          << "  --version                 print ogs version and exit"
+			          << "\n";
+			exit(0);
+		}
+		if (anArg == "--build-info" || anArg == "-b")
+		{
+			std::cout << "ogs version: " << BuildInfo::OGS_VERSION << "\n"
+			          << "ogs date: " << BuildInfo::OGS_DATE << "\n";
+			std::cout << "git commit info: " << BuildInfo::GIT_COMMIT_INFO << "\n";
+			std::cout << "build timestamp: " << BuildInfo::BUILD_TIMESTAMP << "\n";
+			exit(0);
+		}
+		if (anArg == "--version")
+		{
+			std::cout << BuildInfo::OGS_VERSION << "\n";
+			exit(0);
+		}
+		if (anArg == "--output-directory")
+		{
+			if (i + 1 >= arg_strings.size())
+			{
+				std::cerr << "Error: Parameter " << anArg << " needs an additional argument" << std::endl;
+				std::exit(EXIT_FAILURE);
+			}
+			std::string path = arg_strings[++i];
 
-	// If no option is given, output files are placed in the same directory as the input files
-	if (defaultOutputPath.empty())
-		defaultOutputPath = pathDirname(std::string(dateiname));
+			if (!path.empty())
+				defaultOutputPath = path;
+			continue;
+		}
+#if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS) \
+    || defined(USE_MPI_KRC)
+		std::string decompositions;
+		if (anArg == "--domain-decomposition" || anArg == "-ddc")
+		{
+			if (i + 1 >= arg_strings.size())
+			{
+				std::cerr << "Error: Parameter " << anArg << " needs an additional argument" << std::endl;
+				std::exit(EXIT_FAILURE);
+			}
+			decompositions = std::string(arg_strings[++i]);
+			nb_ddc = atoi(decompositions.c_str());
+			continue;
+		}
+#endif
+                else
+                {
+                    FileName = arg_strings[i];
+                }
+	} // end of parse argc loop
 
-	FileName = dateiname;
+	if (argc > 1)
+	{
+#if defined(USE_MPI) // WW
+		if (myrank == 0)
+#endif
+#ifdef USE_PETSC
+		if (rank == 0)
+#endif
+		DisplayStartMsg();
+        }
+
+#ifdef TESTTIME
+	TStartTimer(0);
+#endif
+
 	size_t indexChWin, indexChLinux;
 	indexChWin = indexChLinux = 0;
 	indexChWin = FileName.find_last_of('\\');
@@ -316,8 +285,29 @@ int main(int argc, char* argv[])
 		FilePath = FileName.substr(0, indexChWin) + "\\";
 	else if (indexChLinux != std::string::npos)
 		FilePath = FileName.substr(0, indexChLinux) + "/";
+	// If no option is given, output files are placed in the same directory as the input files
+	if (defaultOutputPath.empty())
+		defaultOutputPath = FilePath;
+
+	std::string solver_pkg_name = BuildInfo::SOLVER_PACKAGE_NAME;
+	// No default linear solver package is in use.
+	if (solver_pkg_name.find("Default") == std::string::npos)
+	{
+		std::cout << "\nWarning: " << solver_pkg_name << " other than the OGS default one is in use." << std::endl;
+		std::cout << "         The solver setting may need to be adjusted for the solution accuracy!" << std::endl;
+	}
+    
+	// LB Check if file exists
+	std::string tmpFilename = FileName;
+	tmpFilename.append(".pcs");
+	if (!IsFileExisting(tmpFilename))
+	{
+		std::cout << " Error: Cannot find file " << FileName << "\n";
+		return 1;
+	}
+
 	// ---------------------------WW
-	Problem* aproblem = new Problem(dateiname);
+	Problem* aproblem = new Problem(FileName.data());
 #ifdef USE_PETSC
 	aproblem->setRankandSize(rank, r_size);
 #endif
@@ -377,8 +367,6 @@ int main(int argc, char* argv[])
 	lis_finalize();
 #endif
 	/*--------- LIS Finalize ------------------*/
-
-	free(dateiname);
 
 #ifdef USE_PETSC
 // kg44 quick fix to compile PETSC with version PETSCV3.4

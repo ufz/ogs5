@@ -6778,7 +6778,7 @@ string CFiniteElementStd::Cal_GP_Velocity_DuMux(int* i_ind, CRFProcess* m_pcs, i
 					{
 						cout << "The program is canceled because there is a phase used which is not considered yet!"
 						     << "\n";
-						system("Pause");
+						//system("Pause");
 						exit(0);
 					}
 				}

@@ -39,7 +39,7 @@ typedef double (Problem::*ProblemMemFn)(void);
 class Problem
 {
 public:
-	Problem(char* filename = NULL);
+	Problem(const char* filename = NULL);
 	~Problem();
 	void Euler_TimeDiscretize();
 	void RosenBrock_TimeDiscretize(){};
@@ -181,6 +181,4 @@ private:
 
 	static const size_t max_processes = 16;
 };
-
-extern bool MODCreate(); // OK
 #endif

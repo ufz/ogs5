@@ -1460,17 +1460,6 @@ void COutput::WriteELEValuesTECData(fstream& tec_file)
 				tec_file << m_pcs_2->GetElementValue(i, ele_value_index_vector[j]) << " ";
 			}
 		}
-		/*
-		   int j;
-		   int eidx;
-		   char ele_value_char[20];
-		   int no_ele_values = (int)ele_value_vector.size();
-		   for(j=0;j<no_ele_values;j++){
-		   sprintf(ele_value_char,"%s",ele_value_vector[j].data());
-		   eidx = PCSGetELEValueIndex(ele_value_char);
-		   tec_file << ElGetElementVal(i,eidx) << " ";
-		   }
-		 */
 		tec_file << "\n";
 	}
 
@@ -3477,7 +3466,6 @@ void COutput::PCONWriteDOMDataTEC()
 void COutput::WriteTECNodePCONData(fstream& tec_file)
 {
 	const size_t nName(_pcon_value_vector.size());
-	int nidx_dm[3];
 	std::vector<int> PconIndex(nName);
 
 //  m_msh = GetMSH();
@@ -3509,14 +3497,6 @@ void COutput::WriteTECNodePCONData(fstream& tec_file)
 		// XYZ
 		double x[3] = {m_msh->nod_vector[j]->getData()[0], m_msh->nod_vector[j]->getData()[1],
 		               m_msh->nod_vector[j]->getData()[2]};
-		//      x[0] = m_msh->nod_vector[j]->X();
-		//      x[1] = m_msh->nod_vector[j]->Y();
-		//      x[2] = m_msh->nod_vector[j]->Z();
-		// Amplifying DISPLACEMENTs
-		if (M_Process || MH_Process) // WW
-
-			for (size_t k = 0; k < max_dim + 1; k++)
-				x[k] += out_amplifier * m_pcs->GetNodeValue(m_msh->nod_vector[j]->GetIndex(), nidx_dm[k]);
 		for (size_t i = 0; i < 3; i++)
 			tec_file << x[i] << " ";
 // NOD values

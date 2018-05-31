@@ -164,9 +164,6 @@ int anz_nval0 = 0; // WW
 //
 int size_eval = 0; // WW
 
-NvalInfo* nval_data = NULL;
-int anz_eval = 0;
-EvalInfo* eval_data = NULL;
 string project_title("New project"); // OK41
 
 bool hasAnyProcessDeactivatedSubdomains = false; // NW
@@ -4271,234 +4268,6 @@ void CRFProcess::ConfigTES()
 	                                        react_syst);
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Configuration NOD
-//////////////////////////////////////////////////////////////////////////
-#if !defined(USE_PETSC) && !defined(NEW_EQS) // && defined(other parallel libs)//03~04.3012. WW
-//#ifndef NEW_EQS                                   //WW. 07.11.2008
-/*************************************************************************
-   ROCKFLOW - Function:
-   Task: Config node values
-   Programming: 02/2003 OK Implementation
-   04/2004   WW   Modification for 3D problems
-   last modified:
- **************************************************************************/
-void CRFProcess::ConfigNODValues1(void)
-{
-	int i;
-	int pcs_nval = 0;
-	const int DOF = GetPrimaryVNumber();
-	anz_nval0 = anz_nval;
-	number_of_nvals = 2 * DOF + pcs_number_of_secondary_nvals;
-	// NVAL
-	pcs_nval_data = (PCS_NVAL_DATA*)Malloc(number_of_nvals * sizeof(PCS_NVAL_DATA));
-	/*----------------------------------------------------------------*/
-	for (i = 0; i < DOF; i++)
-	{
-		/* Primary variable - old time */
-		// NVAL pcs_nval_data[pcs_nval] = (PCS_NVAL_DATA *) Malloc(sizeof(PCS_NVAL_DATA));
-		strcpy(pcs_nval_data[pcs_nval].name, pcs_primary_function_name[pcs_nval - i]);
-		// Change name for the previous time level
-		/*
-		   char *ch = strchr(pcs_nval_data[pcs_nval].name, '1');
-		   if( ch != NULL )
-		   {
-		   int pos = ch-pcs_nval_data[pcs_nval].name;
-		   pcs_nval_data[pcs_nval].name[pos]='0';
-		   }
-		   else
-		   strcat(pcs_nval_data[pcs_nval].name, "0");   */
-		//-------------------------------------------------------------------------------
-		strcpy(pcs_nval_data[pcs_nval].einheit, pcs_primary_function_unit[pcs_nval - i]);
-		pcs_nval_data[pcs_nval].timelevel = 0;
-		pcs_nval_data[pcs_nval].speichern = 0; // WW
-		pcs_nval_data[pcs_nval].laden = 0;
-		pcs_nval_data[pcs_nval].restart = 1;
-		pcs_nval_data[pcs_nval].adapt_interpol = 1;
-		pcs_nval_data[pcs_nval].vorgabe = 0.0;
-#ifdef PCS_NOD
-		pcs_nval_data[pcs_nval].nval_index = pcs_nval;
-#else
-		pcs_nval_data[pcs_nval].nval_index = anz_nval + pcs_nval;
-#endif
-		pcs_nval++;
-		/* Primary variable - new time */
-		// NVAL pcs_nval_data[pcs_nval] = (PCS_NVAL_DATA *) Malloc(sizeof(PCS_NVAL_DATA));
-		strcpy(pcs_nval_data[pcs_nval].name, pcs_primary_function_name[pcs_nval - i - 1]);
-		strcpy(pcs_nval_data[pcs_nval].einheit, pcs_primary_function_unit[pcs_nval - i - 1]);
-		pcs_nval_data[pcs_nval].timelevel = 1;
-		pcs_nval_data[pcs_nval].speichern = 1;
-
-		pcs_nval_data[pcs_nval].laden = 0;
-		pcs_nval_data[pcs_nval].restart = 1;
-		pcs_nval_data[pcs_nval].adapt_interpol = 1;
-		pcs_nval_data[pcs_nval].vorgabe = 0.0;
-#ifdef PCS_NOD
-		pcs_nval_data[pcs_nval].nval_index = pcs_nval;
-#else
-		pcs_nval_data[pcs_nval].nval_index = anz_nval + pcs_nval;
-#endif
-		pcs_nval++;
-	}
-
-	/*----------------------------------------------------------------*/
-	/* Secondary variables */
-	for (i = 0; i < pcs_number_of_secondary_nvals; i++)
-	{
-		// NVAL pcs_nval_data[pcs_nval] = (PCS_NVAL_DATA *) Malloc(sizeof(PCS_NVAL_DATA));
-		strcpy(pcs_nval_data[pcs_nval].name, pcs_secondary_function_name[i]);
-		strcpy(pcs_nval_data[pcs_nval].einheit, pcs_secondary_function_unit[i]);
-		//  pcs_nval_data[i+2]->timelevel = 1; // always at new time level
-		pcs_nval_data[pcs_nval].timelevel = pcs_secondary_function_timelevel[i];
-		if (pcs_nval_data[pcs_nval].timelevel == 1)
-			pcs_nval_data[pcs_nval].speichern = 1;
-		else
-			pcs_nval_data[pcs_nval].speichern = 0;
-		pcs_nval_data[pcs_nval].laden = 0;
-		pcs_nval_data[pcs_nval].restart = 1;
-		pcs_nval_data[pcs_nval].adapt_interpol = 1;
-		pcs_nval_data[pcs_nval].vorgabe = 0.0;
-#ifdef PCS_NOD
-		pcs_nval_data[pcs_nval].nval_index = pcs_nval;
-#else
-		pcs_nval_data[pcs_nval].nval_index = anz_nval + pcs_nval;
-#endif
-		if (type == 4 || type == 41)
-			if (dm_number_of_primary_nvals == 2 || (dm_number_of_primary_nvals == 3 && this->type == 41))
-			{
-				// Block:
-				// STRESS_ZX, STRESS_YZ, STRAIN_ZX, STRAIN_ZY and LUMPED_STRESS
-				if (i == 3 || i == 4 || i == 9 || i == 10 || i == 13)
-					pcs_nval_data[pcs_nval].speichern = 0;
-				if (!problem_2d_plane_dm)
-					//  Block STRESS_ZZ and STRAIN_ZZ
-					if (i == 5 || i == 11)
-						pcs_nval_data[pcs_nval].speichern = 0;
-				// if(!pcs_plasticity)
-				// {
-				//   if(i==12) pcs_nval_data[pcs_nval].speichern = 0;  //STRAIN_PLS
-				// }
-			}
-		pcs_nval++;
-	}
-}
-
-/*************************************************************************
-   ROCKFLOW - Function: CRFProcess::PCSConfigNODValues
-   Task: Config node values
-   Programming: 02/2003 OK Implementation
-   last modified:
- **************************************************************************/
-void CRFProcess::ConfigNODValues2(void)
-{
-	int i;
-
-	number_of_nvals = 2 * GetPrimaryVNumber() + pcs_number_of_secondary_nvals;
-	for (i = 0; i < number_of_nvals; i++)
-		ModelsAddNodeValInfoStructure(pcs_nval_data[i].name, pcs_nval_data[i].einheit, pcs_nval_data[i].speichern,
-		                              pcs_nval_data[i].laden, pcs_nval_data[i].restart, pcs_nval_data[i].adapt_interpol,
-		                              pcs_nval_data[i].vorgabe);
-}
-#endif //#ifndef NEW_EQS //WW. 07.11.2008
-/**************************************************************************
-   FEMLib-Method:
-   Task:
-   Programing:
-   07/2004 OK Implementation
-**************************************************************************/
-int PCSGetNODValueIndex(const string& name, int timelevel)
-{
-	// PCS primary variables
-	int pcs_vector_size = (int)pcs_vector.size();
-	int i, j;
-	CRFProcess* m_pcs = NULL;
-	if (pcs_vector_size > 0)
-		for (i = 0; i < pcs_vector_size; i++)
-		{
-			m_pcs = pcs_vector[i];
-			for (j = 0; j < m_pcs->number_of_nvals; j++)
-				if ((name.compare(m_pcs->pcs_nval_data[j].name) == 0)
-				    && (m_pcs->pcs_nval_data[j].timelevel == timelevel))
-					return m_pcs->pcs_nval_data[j].nval_index;
-		}
-	cout << "Error in PCSGetNODValueIndex: " << name << "\n";
-	return -1;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Configuration ELE
-//////////////////////////////////////////////////////////////////////////
-
-/*************************************************************************
-   ROCKFLOW - Function:
-   Task: Config element values
-   Programming: 02/2003 OK Implementation
-   last modified:
-   06/2004  WW
- **************************************************************************/
-void CRFProcess::ConfigELEValues1(void)
-{
-	int i;
-	if (pcs_number_of_evals)
-		pcs_eval_data = (PCS_EVAL_DATA*)Malloc(pcs_number_of_evals * sizeof(PCS_EVAL_DATA));
-	for (i = 0; i < pcs_number_of_evals; i++)
-	{
-		// pcs_eval_data[i] = (PCS_EVAL_DATA *) Malloc(sizeof(PCS_EVAL_DATA));
-		strcpy(pcs_eval_data[i].name, pcs_eval_name[i]);
-		strcpy(pcs_eval_data[i].einheit, pcs_eval_unit[i]);
-		pcs_eval_data[i].speichern = 1;
-		pcs_eval_data[i].laden = 0;
-		pcs_eval_data[i].restart = 1;
-		pcs_eval_data[i].adapt_interpol = 1;
-		pcs_eval_data[i].vorgabe = 0.0;
-		pcs_eval_data[i].index = anz_eval + i;
-		pcs_eval_data[i].eval_index = anz_eval + i; // SB
-	}
-}
-
-/*************************************************************************
-   ROCKFLOW - Function:
-   Task: Config element values
-   Programming: 04/2003 OK Implementation
-   last modified:
- **************************************************************************/
-void CRFProcess::ConfigELEValues2(void)
-{
-	int i;
-	for (i = 0; i < pcs_number_of_evals; i++)
-		ModelsAddElementValInfoStructure(pcs_eval_data[i].name, pcs_eval_data[i].einheit, pcs_eval_data[i].speichern,
-		                                 pcs_eval_data[i].laden, pcs_eval_data[i].restart,
-		                                 pcs_eval_data[i].adapt_interpol, pcs_eval_data[i].vorgabe);
-}
-
-/*************************************************************************
-   ROCKFLOW - Function: CRFProcess::PCSGetELEValueIndex
-   Task: Provide index for element values
-   Programming: 08/2003 SB Implementation
-   last modified:
- **************************************************************************/
-int PCSGetELEValueIndex(char* name)
-{
-	int i;
-	CRFProcess* m_process = NULL;
-	int j;
-	int no_processes = (int)pcs_vector.size();
-	for (j = 0; j < no_processes; j++)
-	{
-		m_process = pcs_vector[j];
-		for (i = 0; i < m_process->pcs_number_of_evals; i++)
-			if (strcmp(m_process->pcs_eval_data[i].name, name) == 0)
-				return m_process->pcs_eval_data[i].eval_index;
-	}
-	printf("PCSGetELEValueIndex Alert\n");
-	printf("%s \n", name);
-	return -1;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Configuration ELE matrices
-//////////////////////////////////////////////////////////////////////////
-
 /**************************************************************************
    FEMLib-Method:
    Task:  Activate or deactivate elements specified in .pcs file
@@ -8279,49 +8048,6 @@ int CRFProcess::GetNODValueIndex(const string& name, int timelevel)
 	return -1;
 }
 
-///////////////////////////////////////////////////////////////////////////
-// Specials
-///////////////////////////////////////////////////////////////////////////
-
-/*-------------------------------------------------------------------------
-   ROCKFLOW - Function: PCSRestart
-   Task: Insert process to list
-   Programming:
-   06/2003 OK Implementation
-   11/2004 OK file_name_base
-   last modified:
-   -------------------------------------------------------------------------*/
-void PCSRestart()
-{
-	/*OK411
-	   int j;
-	   CRFProcess *m_pcs = NULL;
-	   int nidx0,nidx1;
-	   int i;
-	   int no_processes =(int)pcs_vector.size();
-	   if(no_processes==0)
-	    return; //OK41
-	   int ok = 0;
-	   //----------------------------------------------------------------------
-	   string file_name_base = pcs_vector[0]->file_name_base;
-	   //OK  ok = ReadRFRRestartData(file_name_base);
-	   if(ok==0){
-	   cout << "RFR: no restart data" << "\n";
-	   return;
-	   }
-	   //----------------------------------------------------------------------
-	   for(i=0;i<no_processes;i++){
-	   m_pcs = pcs_vector[i];
-	   for(j=0;j<m_pcs->GetPrimaryVNumber();j++) {
-	   // timelevel=0;
-	   nidx0 = m_pcs->GetNodeValueIndex(m_pcs->GetPrimaryVName(j));
-	   // timelevel= 1;
-	   nidx1 = nidx0+1;
-	   CopyNodeVals(nidx1,nidx0);
-	   }
-	   }
-	 */
-}
 
 /**************************************************************************
    FEMLib-Method:
@@ -8371,226 +8097,6 @@ void CRFProcess::PCSMoveNOD(void)
 			abort();
 	}
 }
-
-/**************************************************************************
-   FEMLib-Method:
-   Task:
-   Programing:
-   09/2004 OK Implementation
-   10/2004 OK 2nd version
-**************************************************************************/
-std::string PCSProblemType()
-{
-	std::string pcs_problem_type;
-	size_t no_processes(pcs_vector.size());
-
-	for (size_t i = 0; i < no_processes; i++)
-	{
-		switch (pcs_vector[i]->getProcessType())
-		{
-			case FiniteElement::LIQUID_FLOW:
-				pcs_problem_type = "LIQUID_FLOW";
-				break;
-			case FiniteElement::OVERLAND_FLOW:
-				pcs_problem_type = "OVERLAND_FLOW";
-				break;
-			case FiniteElement::GROUNDWATER_FLOW:
-				pcs_problem_type = "GROUNDWATER_FLOW";
-				break;
-			case FiniteElement::TWO_PHASE_FLOW:
-				pcs_problem_type = "TWO_PHASE_FLOW";
-				break;
-			case FiniteElement::RICHARDS_FLOW: // MX test 04.2005
-				pcs_problem_type = "RICHARDS_FLOW";
-				break;
-			case FiniteElement::DEFORMATION:
-				if (pcs_problem_type.empty())
-					pcs_problem_type = "DEFORMATION";
-				else
-					pcs_problem_type += "+DEFORMATION";
-				break;
-			case FiniteElement::DEFORMATION_FLOW:
-				if (pcs_problem_type.empty())
-					pcs_problem_type = "DEFORMATION";
-				else
-					pcs_problem_type += "+DEFORMATION";
-				break;
-			case FiniteElement::HEAT_TRANSPORT:
-				if (pcs_problem_type.empty())
-					pcs_problem_type = "HEAT_TRANSPORT";
-				else
-					pcs_problem_type += "+HEAT_TRANSPORT";
-				break;
-			case FiniteElement::MASS_TRANSPORT:
-				if (pcs_problem_type.empty())
-					pcs_problem_type = "MASS_TRANSPORT";
-				else
-					pcs_problem_type += "+MASS_TRANSPORT";
-				break;
-			case FiniteElement::FLUID_MOMENTUM:
-				if (pcs_problem_type.empty())
-					pcs_problem_type = "FLUID_MOMENTUM";
-				else
-					pcs_problem_type += "+FLUID_MOMENTUM";
-				break;
-			case FiniteElement::RANDOM_WALK:
-				if (pcs_problem_type.empty())
-					pcs_problem_type = "RANDOM_WALK";
-				else
-					pcs_problem_type += "+RANDOM_WALK";
-				break;
-			default:
-				pcs_problem_type = "";
-		}
-	}
-
-	//	//----------------------------------------------------------------------
-	//	CRFProcess* m_pcs = NULL;
-	//	// H process
-	//	for (i = 0; i < no_processes; i++) {
-	//		m_pcs = pcs_vector[i];
-	//		switch (m_pcs->pcs_type_name[0]) {
-	//		case 'L':
-	//			pcs_problem_type = "LIQUID_FLOW";
-	//			break;
-	//			// case 'U':
-	//			//  pcs_problem_type = "UNCONFINED_FLOW";
-	//			//  break;
-	//		case 'O':
-	//			pcs_problem_type = "OVERLAND_FLOW";
-	//			break;
-	//		case 'G':
-	//			pcs_problem_type = "GROUNDWATER_FLOW";
-	//			break;
-	//		case 'T':
-	//			pcs_problem_type = "TWO_PHASE_FLOW";
-	//			break;
-	//		case 'C':
-	//			pcs_problem_type = "COMPONENTAL_FLOW";
-	//			break;
-	//		case 'R': //MX test 04.2005
-	//			pcs_problem_type = "RICHARDS_FLOW";
-	//			break;
-	//		}
-	//	}
-	//	//----------------------------------------------------------------------
-	//	// M process
-	//	for (i = 0; i < no_processes; i++) {
-	//		m_pcs = pcs_vector[i];
-	//		switch (m_pcs->pcs_type_name[0]) {
-	//		case 'D':
-	//			if (pcs_problem_type.empty())
-	//				pcs_problem_type = "DEFORMATION";
-	//			else
-	//				pcs_problem_type += "+DEFORMATION";
-	//			break;
-	//		}
-	//	}
-	//	//----------------------------------------------------------------------
-	//	// T process
-	//	for (i = 0; i < no_processes; i++) {
-	//		m_pcs = pcs_vector[i];
-	//		switch (m_pcs->pcs_type_name[0]) {
-	//		case 'H':
-	//			if (pcs_problem_type.empty())
-	//				pcs_problem_type = "HEAT_TRANSPORT";
-	//			else
-	//				pcs_problem_type += "+HEAT_TRANSPORT";
-	//			break;
-	//		}
-	//	}
-	//	//----------------------------------------------------------------------
-	//	// CB process
-	//	for (i = 0; i < no_processes; i++) {
-	//		m_pcs = pcs_vector[i];
-	//		switch (m_pcs->pcs_type_name[0]) {
-	//		case 'M':
-	//			if (pcs_problem_type.empty())
-	//				pcs_problem_type = "MASS_TRANSPORT";
-	//			else
-	//				pcs_problem_type += "+MASS_TRANSPORT";
-	//			break;
-	//		}
-	//	}
-	//	//----------------------------------------------------------------------
-	//	//----------------------------------------------------------------------
-	//	// FM process
-	//	for (i = 0; i < no_processes; i++) {
-	//		m_pcs = pcs_vector[i];
-	//		switch (m_pcs->pcs_type_name[0]) {
-	//		case 'F':
-	//			if (pcs_problem_type.empty())
-	//				pcs_problem_type = "FLUID_MOMENTUM";
-	//			else
-	//				pcs_problem_type += "+FLUID_MOMENTUM";
-	//			break;
-	//		}
-	//	}
-	//	//----------------------------------------------------------------------
-	//	for (i = 0; i < no_processes; i++) {
-	//		m_pcs = pcs_vector[i];
-	//		switch (m_pcs->pcs_type_name[7]) { // _pcs_type_name[7] should be 'W' because 'R' is reserved for Richard
-	//Flow.
-	//		case 'W':
-	//			if (pcs_problem_type.empty())
-	//				pcs_problem_type = "RANDOM_WALK";
-	//			else
-	//				pcs_problem_type += "+RANDOM_WALK";
-	//			break;
-	//		}
-	//	}
-
-	return pcs_problem_type;
-}
-
-/**************************************************************************
-   FEMLib-Method:
-   Task:
-   Programing:
-   11/2004 OK Implementation
-**************************************************************************/
-// void CRFProcess::CalcELEMassFluxes(void)
-//{
-/*OK411
-   int i;
-   double e_value = -1.0;
-   string e_value_name;
-   double geo_factor, density;
-   double velocity = 0.0;
-   int e_idx;
-   int phase = 0;
-   long e;
-   CMediumProperties* m_mmp = NULL;
-   CFluidProperties* m_mfp = NULL;
-   m_mfp = mfp_vector[phase]; //OK ToDo
-   //======================================================================
-   for(e=0;e<ElementListLength;e++){
-   m_mmp = mmp_vector[ElGetElementGroupNumber(e)];
-   geo_factor = m_mmp->geo_area;
-   density = m_mfp->Density();
-   for(i=0;i<pcs_number_of_evals;i++){
-   e_value_name = pcs_eval_data[i].name;
-   e_idx = PCSGetELEValueIndex(pcs_eval_data[i].name);
-   if(e_value_name.find("MASS_FLUX1_X")!=string::npos){
-   velocity = ElGetElementVal(e,PCSGetELEValueIndex("VELOCITY1_X"));
-   e_value = geo_factor * density * velocity;
-   ElSetElementVal(e,e_idx,e_value);
-   }
-   if(e_value_name.find("MASS_FLUX1_Y")!=string::npos){
-   velocity = ElGetElementVal(e,PCSGetELEValueIndex("VELOCITY1_Y"));
-   e_value = geo_factor * density * velocity;
-   ElSetElementVal(e,e_idx,e_value);
-   }
-   if(e_value_name.find("MASS_FLUX1_Z")!=string::npos){
-   velocity = ElGetElementVal(e,PCSGetELEValueIndex("VELOCITY1_Z"));
-   e_value = geo_factor * density * velocity;
-   ElSetElementVal(e,e_idx,e_value);
-   }
-   }
-   }
-   //======================================================================
- */
-//}
 
 /**************************************************************************
    FEMLib-Method:
@@ -8647,21 +8153,14 @@ void CRFProcess::CalcSecondaryVariables(bool initial)
 		case FiniteElement::TWO_PHASE_FLOW:
 			break;
 		case FiniteElement::RICHARDS_FLOW: // Richards flow
-			// WW
+		case FiniteElement::MULTI_PHASE_FLOW:
+		case FiniteElement::DEFORMATION_H2: // H2M
 			CalcSecondaryVariablesUnsaturatedFlow(initial);
-			break;
-		case FiniteElement::DEFORMATION || FiniteElement::DEFORMATION_FLOW || FiniteElement::DEFORMATION_DYNAMIC:
-			if (type == 42) // H2M                                                  //WW
-				CalcSecondaryVariablesUnsaturatedFlow(initial);
-
 			break;
 		case FiniteElement::PS_GLOBAL:
 			CalcSecondaryVariablesPSGLOBAL(); // WW
 			break;
 		default:
-			if (type == 1212)
-				// WW
-				CalcSecondaryVariablesUnsaturatedFlow(initial);
 			break;
 	}
 }
@@ -8757,90 +8256,12 @@ string GetPFNamebyCPName(string inname)
 	return inname;
 } // SB:namepatch
 
-//========================================================================
-// OK former model functions
-int GetRFControlGridAdapt(void)
-{
-	// OK  return (get_rfcp_adaptive_mesh_refinement_flag(rfcp));
-	if (show_onces_adp)
-		cout << "GetRFControlGridAdapt - to be removed"
-		     << "\n";
-	show_onces_adp = false;
-	return 0;
-}
-
-int GetRFControlModel(void)
-{
-	if (show_onces_mod)
-		cout << "GetRFControlModel - to be removed"
-		     << "\n";
-	show_onces_mod = false;
-	return -1;
-}
-
-int GetRFProcessChemicalModel(void)
-{
-	cout << "GetRFProcessChemicalModel - to be removed"
-	     << "\n";
-	return 0;
-}
-
-int GetRFProcessFlowModel(void)
-{
-	if (show_onces_mod_flow)
-		cout << "GetRFProcessFlowModel - to be removed"
-		     << "\n";
-	show_onces_mod_flow = false;
-	return 0;
-}
-
-int GetRFProcessHeatReactModel(void)
-{
-	cout << "GetRFProcessHeatReactModel - to be removed"
-	     << "\n";
-	return 0;
-}
 
 int GetRFProcessNumPhases(void)
 {
 	// DisplayMsgLn("GetRFProcessNumPhases - to be removed");
 	int no_phases = (int)mfp_vector.size();
 	return no_phases;
-}
-
-int GetRFProcessProcessing(char* rfpp_type)
-{
-	bool pcs_flow = false;
-	bool pcs_deform = false;
-	CRFProcess* m_pcs = NULL;
-	size_t no_processes = pcs_vector.size();
-	for (size_t i = 0; i < no_processes; i++)
-	{
-		m_pcs = pcs_vector[i];
-		//		if (m_pcs->_pcs_type_name.find("DEFORMATION") != string::npos)
-		if (isDeformationProcess(m_pcs->getProcessType()))
-			pcs_deform = true;
-		//		if (m_pcs->_pcs_type_name.find("FLOW") != string::npos)
-		if (isFlowProcess(m_pcs->getProcessType()))
-			pcs_flow = true;
-	}
-
-	if (strcmp(rfpp_type, "SD") == 0)
-	{
-		if (pcs_flow && pcs_deform)
-			return 1;
-	}
-	else
-		cout << "GetRFProcessProcessing - to be removed"
-		     << "\n";
-	return 0;
-}
-
-int GetRFProcessProcessingAndActivation(const char*)
-{
-	cout << "GetRFProcessProcessingAndActivation - to be removed"
-	     << "\n";
-	return 0;
 }
 
 long GetRFProcessNumComponents(void)
@@ -8850,13 +8271,6 @@ long GetRFProcessNumComponents(void)
 	return no_components;
 }
 
-int GetRFControlModex(void)
-{
-	cout << "GetRFControlModex - to be removed"
-	     << "\n";
-	return 0;
-}
-
 int GetRFProcessDensityFlow(void)
 {
 	if (show_onces_density)
@@ -8864,138 +8278,6 @@ int GetRFProcessDensityFlow(void)
 		     << "\n";
 	show_onces_density = false;
 	return 0;
-}
-
-int GetRFProcessNumContinua(void)
-{
-	cout << "GetRFProcessNumContinua - to be removed"
-	     << "\n";
-	return 0;
-}
-
-int GetRFProcessNumElectricFields(void)
-{
-	cout << "GetRFProcessNumElectricFields - to be removed"
-	     << "\n";
-	return 0;
-}
-
-int GetRFProcessNumTemperatures(void)
-{
-	cout << "GetRFProcessNumTemperatures - to be removed"
-	     << "\n";
-	return -1;
-}
-
-int GetRFProcessSimulation(void)
-{
-	cout << "GetRFProcessSimulation - to be removed"
-	     << "\n";
-	return -1;
-}
-
-/**************************************************************************
-   ROCKFLOW - Funktion: ModelsAddNodeValInfoStructure
-
-   Aufgabe:
-   Fuellt die Knotendaten-Infostruktur mit den zugehoerigen Modelldaten.
-   Wird vom Modell der Reihe nach fuer jede Knotengroesse aufgerufen.
-
-   Formalparameter: (E: Eingabe; R: Rueckgabe; X: Beides)
-   E:char *name         :Name der Knotengroesse fuer Ergebnisdatei
-   E:char *einheit      :Name der phys. Einheit fuer Ergebnisdatei
-   E:int speichern      :Werte sollen gespeichert werden (0/1)
-   E:int laden          :Werte sollen geladen werden falls vorhanden (0/1)
-   E:int restart        :Werte sollen bei Restart geladen werden (0/1)
-   E:int adapt_interpol :Werte sollen beim verfeinern auf Kinder interpoliert (0/1)
-   E:double vorgabe     :Vorgabe falls keine Restartdaten oder Anfangsbedingungen vorhanden sind
-
-   Ergebnis:
-   Knotenindex der gerade vergeben wurde
-
-   Programmaenderungen:
-   09/2000   CT    Erste Version
-
-**************************************************************************/
-int ModelsAddNodeValInfoStructure(char* name, char* einheit, int speichern, int laden, int restart, int adapt_interpol,
-                                  double vorgabe)
-{
-	anz_nval++;
-	nval_data = (NvalInfo*)Realloc(nval_data, anz_nval * sizeof(NvalInfo));
-
-	nval_data[anz_nval - 1].name = NULL;
-	nval_data[anz_nval - 1].einheit = NULL;
-
-	if (name)
-	{
-		nval_data[anz_nval - 1].name = (char*)Malloc(((int)strlen(name) + 1) * sizeof(char));
-		strcpy(nval_data[anz_nval - 1].name, name);
-	}
-	if (einheit)
-	{
-		nval_data[anz_nval - 1].einheit = (char*)Malloc(((int)strlen(einheit) + 1) * sizeof(char));
-		strcpy(nval_data[anz_nval - 1].einheit, einheit);
-	}
-
-	nval_data[anz_nval - 1].speichern = speichern;
-	nval_data[anz_nval - 1].laden = laden;
-	nval_data[anz_nval - 1].restart = restart;
-	nval_data[anz_nval - 1].adapt_interpol = adapt_interpol;
-	nval_data[anz_nval - 1].vorgabe = vorgabe;
-
-	return anz_nval - 1;
-}
-
-/**************************************************************************
-   ROCKFLOW - Funktion: ModelsAddElementValInfoStructure
-
-   Aufgabe:
-   Fuellt die Elementdaten-Infostruktur mit den zugehoerigen Modelldaten.
-   Wird vom Modell der Reihe nach fuer jede Elementgroesse aufgerufen.
-
-   Formalparameter: (E: Eingabe; R: Rueckgabe; X: Beides)
-   E:char *name         :Name der Elementgroesse fuer Ergebnisdatei
-   E:char *einheit      :Name der phys. Einheit fuer Ergebnisdatei
-   E:int speichern      :Werte sollen gespeichert werden (0/1)
-   E:int laden          :Werte sollen geladen werden falls vorhanden (0/1)
-   E:int restart        :Werte sollen bei Restart geladen werden (0/1)
-   E:int adapt_interpol :Werte sollen beim verfeinern auf Kinder interpoliert (0/1)
-   E:double vorgabe     :Vorgabe falls keine Restartdaten oder Anfangsbedingungen vorhanden sind
-
-   Ergebnis:
-   Elementindex der gerade vergeben wurde
-
-   Programmaenderungen:
-   09/2000   CT    Erste Version
-
-**************************************************************************/
-int ModelsAddElementValInfoStructure(char* name, char* einheit, int speichern, int laden, int restart,
-                                     int adapt_interpol, double vorgabe)
-{
-	anz_eval++;
-	eval_data = (EvalInfo*)Realloc(eval_data, anz_eval * sizeof(EvalInfo));
-
-	eval_data[anz_eval - 1].name = NULL;
-	eval_data[anz_eval - 1].einheit = NULL;
-
-	if (name)
-	{
-		eval_data[anz_eval - 1].name = (char*)Malloc(((int)strlen(name) + 1) * sizeof(char));
-		strcpy(eval_data[anz_eval - 1].name, name);
-	}
-	if (einheit)
-	{
-		eval_data[anz_eval - 1].einheit = (char*)Malloc(((int)strlen(einheit) + 1) * sizeof(char));
-		strcpy(eval_data[anz_eval - 1].einheit, einheit);
-	}
-
-	eval_data[anz_eval - 1].speichern = speichern;
-	eval_data[anz_eval - 1].laden = laden;
-	eval_data[anz_eval - 1].restart = restart;
-	eval_data[anz_eval - 1].adapt_interpol = adapt_interpol;
-	eval_data[anz_eval - 1].vorgabe = vorgabe;
-
-	return anz_eval - 1;
 }
 
 /**************************************************************************
@@ -11834,7 +11116,7 @@ void CRFProcess::CalcELEFluxes(const GEOLIB::Polyline* const ply, double* result
 				for (int k = 0; k < int(vec_nodes_edge.size()); k++)
 				{
 					Point_on_Geo = false;
-					for (int l = 0; l < int(nod_vector_at_geo.size()); l++)
+					for (std::size_t l = 0; l < nod_vector_at_geo.size(); l++)
 					{
 						if (vec_nodes_edge[k]->GetIndex() == nod_vector_at_geo[l])
 						{
@@ -12123,7 +11405,7 @@ void CRFProcess::CalcELEMassFluxes(const GEOLIB::Polyline* const ply, std::strin
 					for (int k = 0; k < int(vec_nodes_edge.size()); k++)
 					{
 						Point_on_Geo = false;
-						for (int l = 0; l < int(nod_vector_at_geo.size()); l++)
+						for (std::size_t l = 0; l < nod_vector_at_geo.size(); l++)
 						{
 							if (vec_nodes_edge[k]->GetIndex() == nod_vector_at_geo[l])
 							{
@@ -12615,10 +11897,11 @@ void CRFProcess::AssembleParabolicEquationRHSVector(CNode* m_nod)
 						 */
 					}
 				}
-				if (m_edg->GetMark())
-					break;
 			//----------------------------------------------------------------
 			// ToDo
+				//if (m_edg->GetMark())
+				//	break;
+                                break;
 			default:
 				cout << "Warning in CRFProcess::AssembleParabolicEquationRHSVector - not implemented for this element "
 				        "type"
@@ -14718,21 +14001,6 @@ void CRFProcess::configMaterialParameters()
 }
 
 /*************************************************************************
-   GeoSys - Function:
-   06/2009 OK Implementation
- **************************************************************************/
-bool PCSConfig()
-{
-	bool some_thing_done = false;
-	for (int i = 0; i < (int)pcs_vector.size(); i++) // OK
-	{
-		pcs_vector[i]->Config();
-		some_thing_done = true;
-	}
-	return some_thing_done;
-}
-
-/*************************************************************************
    GeoSys-Function: CalGPVelocitiesfromEclipse
    Task: Calculate gauss point velocities from Eclipse solution
       extrapolate velocities from nodes to gauss points
@@ -15276,7 +14544,7 @@ void CRFProcess::CalculateFluidDensitiesAndViscositiesAtNodes(CRFProcess* m_pcs)
 			{
 				cout << "Density calculation of water was not possible"
 				     << "\n";
-				system("Pause");
+				//system("Pause");
 				exit(0);
 			}
 			// calculate new moles of H2O
@@ -15359,7 +14627,7 @@ void CRFProcess::CalculateFluidDensitiesAndViscositiesAtNodes(CRFProcess* m_pcs)
 			{
 				cout << "Density calculation of gas was not possible"
 				     << "\n";
-				system("Pause");
+				//system("Pause");
 				exit(0);
 			}
 			// set new density to nodes
@@ -15701,7 +14969,7 @@ void CRFProcess::Phase_Transition_CO2(CRFProcess* m_pcs, int Step)
 			cout << "The volume is not equal before and after the calculation of CO2 phase transition! "
 			     << "\n";
 			cout << "Before: " << Volume_eff << " After: " << gas.volume + liquid.volume << "\n";
-			system("Pause");
+			//system("Pause");
 			exit(0);
 		}
 

@@ -659,7 +659,6 @@ public:
 
 #if !defined(USE_PETSC) && !defined(NEW_EQS) // && defined(other parallel libs)//03~04.3012. WW
 	void ConfigNODValues1(void);
-	void ConfigNODValues2(void);
 	void CreateNODValues(void);
 	void SetNODValues(); // OK
 	void CalcFluxesForCoupling(); // MB
@@ -679,8 +678,6 @@ public:
 	void CopyCouplingNODValues();
 	// WWvoid CalcFluxesForCoupling(); //MB
 	// Configuration 2 - ELE
-	void ConfigELEValues1(void);
-	void ConfigELEValues2(void);
 	void CreateELEValues(void);
 	void CreateELEGPValues();
 	void AllocateMemGPoint(); // NEW Gauss point values for CFEMSH WW
@@ -984,17 +981,7 @@ extern CRFProcess* PCSGetFlow(); // OK//JT
 extern CRFProcess* PCSGetHeat(); // JT
 extern CRFProcess* PCSGetMass(size_t component_number); // JT
 extern CRFProcess* PCSGetDeformation(); // JT
-extern bool PCSConfig(); //
-// NOD
-extern int PCSGetNODValueIndex(const std::string&, int);
-extern double PCSGetNODValue(long, char*, int);
-extern void PCSSetNODValue(long, const std::string&, double, int);
-// ELE
-extern int PCSGetELEValueIndex(char*);
-extern double PCSGetELEValue(long index, double* gp, double theta, const std::string& nod_fct_name);
-// Specials
-extern void PCSRestart();
-extern std::string PCSProblemType();
+
 // PCS global variables
 extern int pcs_no_components;
 extern bool pcs_monolithic_flow;
@@ -1017,50 +1004,9 @@ extern std::string GetPFNamebyCPName(std::string line_string);
 
 extern int memory_opt;
 
-typedef struct /* Knotenwert-Informationen */
-{
-	char* name; /* Name der Knotengroesse */
-	char* einheit; /* Einheit der Knotengroesse */
-	int speichern; /* s.u., wird Wert gespeichert ? */
-	int laden; /* s.u., wird Wert zu Beginn geladen ? */
-	int restart; /* s.u., wird Wert bei Restart geladen ? */
-	int adapt_interpol; /* Soll Wert bei Adaption auf Kinder interpoliert werden? */
-	double vorgabe; /* Default-Wert fuer Initialisierung */
-} NvalInfo;
-extern int anz_nval; /* Anzahl der Knotenwerte */
-extern int anz_nval0; /* Anzahl der Knotenwerte */
-extern NvalInfo* nval_data;
-extern int ModelsAddNodeValInfoStructure(char*, char*, int, int, int, int, double);
-
-typedef struct /* Elementwert-Informationen */
-{
-	char* name; /* Name der Elementgroesse */
-	char* einheit; /* Einheit der Elementgroesse */
-	int speichern; /* s.u., wird Wert gespeichert ? */
-	int laden; /* s.u., wird Wert zu Beginn geladen ? */
-	int restart; /* s.u., wird Wert bei Restart geladen ? */
-	int adapt_interpol; /* Soll Wert bei Adaption auf Kinder vererbt werden? */
-	double vorgabe; /* Default-Wert fuer Initialisierung */
-} EvalInfo;
-extern int anz_eval; /* Anzahl der Elementwerte */
-extern EvalInfo* eval_data;
-extern int ModelsAddElementValInfoStructure(char*, char*, int, int, int, int, double);
-
-extern int GetRFControlGridAdapt(void);
-extern int GetRFControlModel(void);
-extern int GetRFProcessChemicalModel(void);
-extern int GetRFProcessFlowModel(void);
-extern int GetRFProcessHeatReactModel(void);
 extern int GetRFProcessNumPhases(void);
-extern int GetRFProcessProcessing(char*);
-extern int GetRFProcessProcessingAndActivation(const char*);
 extern long GetRFProcessNumComponents(void);
-extern int GetRFControlModex(void);
 extern int GetRFProcessDensityFlow(void);
-extern int GetRFProcessNumContinua(void);
-extern int GetRFProcessNumElectricFields(void);
-extern int GetRFProcessNumTemperatures(void);
-extern int GetRFProcessSimulation(void);
 
 extern void initializeConstrainedProcesses(std::vector<CRFProcess*>& pcs_vector);
 

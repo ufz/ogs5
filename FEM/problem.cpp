@@ -44,7 +44,7 @@
 /*------------------------------------------------------------------------*/
 // Data file
 // OK411
-extern int ReadData(char*, GEOLIB::GEOObjects& geo_obj, std::string& unique_name);
+extern int ReadData(const char*, GEOLIB::GEOObjects& geo_obj, std::string& unique_name);
 /* PCS */
 #include "pcs_dm.h"
 #include "rf_pcs.h"
@@ -112,7 +112,7 @@ using process::CRFProcessDeformation;
             PreTimeloop
    Modification:
  ***************************************************************************/
-Problem::Problem (char* filename) :
+Problem::Problem (const char* filename) :
 	dt0(0.), print_result(true),
 	_linear_shapefunction_pool(NULL), _quadr_shapefunction_pool(NULL),
 	_geo_obj (new GEOLIB::GEOObjects), _geo_name (filename),
@@ -594,8 +594,10 @@ Problem::~Problem()
 	exe_flag = NULL;
 	//
 	PCSDestroyAllProcesses();
-	//
-	if (GetRFProcessProcessingAndActivation("MT") && GetRFProcessNumComponents() > 0)
+	// The body of GetRFProcessProcessingAndActivation just returns 0.
+        // Therefore, the following destruction never happens under
+	// if (GetRFProcessProcessingAndActivation("MT") && GetRFProcessNumComponents() > 0)
+	if (GetRFProcessNumComponents() > 0)
 	{
 		DestroyREACT(); // SB
 		cp_vec.clear(); // Destroy component properties vector
@@ -1982,7 +1984,7 @@ inline double Problem::MultiPhaseFlow()
 		{
 			std::cout << "Error running Eclipse!"
 			          << "\n";
-			system("Pause");
+			//system("Pause");
 			exit(0);
 		}
 	}
@@ -2016,7 +2018,7 @@ inline double Problem::MultiPhaseFlow()
 				    << "\n";
 				std::cout << "The run is terminated now ..."
 				          << "\n";
-				system("Pause");
+				//system("Pause");
 				exit(0);
 			}
 			FluidProp = MFPGet("GAS");
@@ -2027,7 +2029,7 @@ inline double Problem::MultiPhaseFlow()
 				    << "\n";
 				std::cout << "The run is terminated now ..."
 				          << "\n";
-				system("Pause");
+				//system("Pause");
 				exit(0);
 			}
 		}
@@ -4434,22 +4436,6 @@ void Problem::createShapeFunctionPool()
 			fem_assem->setShapeFunctionPool(_linear_shapefunction_pool, _quadr_shapefunction_pool);
 		}
 	}
-}
-
-/**************************************************************************
-   FEMLib-Method:
-   06/2009 OK Implementation
-**************************************************************************/
-bool MODCreate()
-{
-	PCSConfig(); // OK
-	if (!PCSCheck()) // OK
-	{
-		std::cout << "Not enough data for MOD creation.\n";
-		return false;
-	}
-	else
-		return true;
 }
 
 #ifdef BRNS

@@ -3790,7 +3790,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	   ----------------------
 	   -----------------------------------------------------------------*/
 	ElementValue_DM::ElementValue_DM(CElem * ele, const int NGP, bool HM_Staggered)
-	    : NodesOnPath(NULL), orientation(NULL), Strain(NULL), Strain_t_ip(NULL)
+	    : Stress(NULL), Stress_i(NULL), Stress_j(NULL), pStrain(NULL),
+	      y_surface(NULL), prep0(NULL), e_i(NULL), xi(NULL), MatP(NULL),
+	      Strain_Kel(NULL),	Strain_Max(NULL), Strain_pl(NULL),
+	      Strain_t_ip(NULL), e_pl(NULL), ev_loc_nr_res(NULL),
+	      lambda_pl(NULL), Strain(NULL), NodesOnPath(NULL),
+	      orientation(NULL), scalar_aniso_comp(NULL),
+	     scalar_aniso_tens(NULL)
 	{
 		int Plastic = 1;
 		const int LengthMat = 7; // Number of material parameter of SYS model.
@@ -3799,24 +3805,10 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		CSolidProperties* sdp = NULL;
 		int ele_dim;
 		//
-		Stress = NULL;
-		pStrain = NULL;
-		prep0 = NULL;
-		e_i = NULL;
-		xi = NULL;
-		MatP = NULL;
-		NodesOnPath = NULL;
-		orientation = NULL;
 		MshElemType::type ele_type = ele->GetElementType();
 		ele_dim = ele->GetDimension();
 		sdp = msp_vector[ele->GetPatchIndex()];
 		Plastic = sdp->Plastictity();
-		Strain_Kel = NULL;
-		Strain_Max = NULL;
-		Strain_pl = NULL;
-		e_pl = NULL;
-		lambda_pl = NULL;
-		ev_loc_nr_res = NULL;
 
 		if (ele_dim == 2)
 			LengthBS = 4;
@@ -3837,8 +3829,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		Stress = Stress_i;
 		if (HM_Staggered)
 			Stress_j = new Matrix(LengthBS, NGPoints);
-		else
-			Stress_j = NULL; // for HM coupling iteration
 		//
 		if (Plastic > 0)
 		{
@@ -3847,8 +3837,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			*y_surface = 0.0;
 			*pStrain = 0.0;
 		}
-		else
-			y_surface = NULL;
 		*Stress = 0.0;
 
 		if (Plastic == 2) // Rotational hardening model
@@ -3913,8 +3901,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		disp_j = 0.0;
 		tract_j = 0.0;
 		Localized = false;
-		scalar_aniso_comp = NULL; // WX: 11.2011 plasticity bedding
-		scalar_aniso_tens = NULL;
 		if (sdp->Plasticity_Bedding)
 		{
 			scalar_aniso_comp = new Matrix(NGPoints);

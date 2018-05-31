@@ -6133,7 +6133,6 @@ void DATWriteParticleControlPlaneFile(int current_time_step, string control_plan
 	if (pos==0)
 	vtk_file << "id, starting_time,  arrival_time_step_time, arrival-time-cp , start_coor_x, start_coor_y, start_coor_z, control_plane_x, control_plane_y, control_plane_z, time_correction_factor, x_back_shift " << endl;
 
-	int id = 0;
 	double starting_time = 0.0;
 	double time_correction = 0.0;
 	double arrival_time_step_time = 0.0;

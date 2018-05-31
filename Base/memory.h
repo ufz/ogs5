@@ -29,19 +29,6 @@
 
 /* Andere oeffentlich benutzte Module */
 
-/* Deklarationen */
-
-extern int InitMemoryTest(void);
-/* Startet Memory-Test, 0 bei Fehler */
-extern void StopMemoryTest(void);
-/* Beendet Memory-Test */
-extern long MemoryTestInTimeSum(void);
-/* Gibt Summe des aktuell allokierten Speichers zurueck */
-extern long MemoryTestInTimeMemory(void);
-/* Gibt Summe des Speichers fuer den Eigenbedarf zurueck */
-extern long MemoryTestInTimeArea(void);
-/* Gibt Groesse des aktuell durch Addressen eingegrenzten Bereichs zurueck */
-
 #ifndef MEMORY_STR
 extern void* Malloc(long bytes);
 /* Ersetzt malloc */

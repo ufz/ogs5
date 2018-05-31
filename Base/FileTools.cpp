@@ -157,6 +157,5 @@ std::string getCwd()
 #else
 	getcwd(cwd, FILENAME_MAX);
 #endif
-
 	return cwd;
 }
