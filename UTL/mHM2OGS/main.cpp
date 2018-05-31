@@ -1,6 +1,6 @@
 /**
  * \copyright
- * Copyright (c) 2015, OpenGeoSys Community (http://www.opengeosys.org)
+ * Copyright (c) 2018, OpenGeoSys Community (http://www.opengeosys.org)
  *            Distributed under a Modified BSD License.
  *              See accompanying file LICENSE.txt or
  *              http://www.opengeosys.org/project/license
@@ -12,8 +12,9 @@
 #include <string>
 #include <vector>
 
-#include "misc.h"
-#include "msh_mesh.h"
+#include "mHMPreprocessor.h"
+
+#include "Base/FileTools.h"
 
 void DisplayOption()
 {
@@ -109,20 +110,10 @@ int main(int argc, char* argv[])
 		DisplayMessage();
 	}
 
-	std::basic_string<char>::size_type indexChWin, indexChLinux;
-	indexChWin = indexChLinux = 0;
-	indexChWin = file_name.find_last_of('\\');
-	indexChLinux = file_name.find_last_of('/');
 	//
-	std::string file_path;
-	if (indexChWin != std::string::npos)
-		file_path = file_name.substr(0, indexChWin) + "\\";
-	else if (indexChLinux != std::string::npos)
-		file_path = file_name.substr(0, indexChLinux) + "/";
+	const std::string file_path = pathDirname(file_name);;
 	if (o_path.empty())
 		o_path = file_path;
-
-	MeshLib::CFEMesh* a_mesh = NULL;
 
 	std::string fname = file_name + ".msh";
 	std::ifstream is_mesh(fname.c_str(), std::ios::in);
@@ -130,10 +121,11 @@ int main(int argc, char* argv[])
 	std::string s_buff;
 	std::getline(is_mesh, s_buff);
 
+	MeshLib::mHMPreprocessor* mHM_preprocessor = NULL;
 	if (s_buff.find("#FEM_MSH") != std::string::npos)
 	{
-		a_mesh = new MeshLib::CFEMesh(NULL, &file_name);
-		a_mesh->Read(&is_mesh);
+		mHM_preprocessor = new MeshLib::mHMPreprocessor(&file_name);
+		mHM_preprocessor->Read(&is_mesh);
 	}
 	else
 	{
@@ -141,11 +133,8 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	a_mesh->mHM2NeumannBC(o_path);
-	if (a_mesh)
-	{
-		delete a_mesh;
-		a_mesh = NULL;
-	}
+	mHM_preprocessor->mHM2NeumannBC(o_path);
+
+	delete mHM_preprocessor;
 	return EXIT_SUCCESS;
 }

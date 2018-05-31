@@ -21,9 +21,10 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/UTL/MSHGEOTOOLS
 )
 
-set(mHM2OGS_SOURCES main.cpp misc.h misc.cpp )
+FILE(GLOB mHM2OGS_H RELATIVE  ${CMAKE_CURRENT_SOURCE_DIR}   *.h)
+FILE(GLOB mHM2OGS_CPP RELATIVE  ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 
-add_executable(mHM2OGS ${mHM2OGS_SOURCES})
+add_executable(mHM2OGS ${mHM2OGS_H} ${mHM2OGS_CPP})
 
 target_link_libraries( mHM2OGS
 	FileIO

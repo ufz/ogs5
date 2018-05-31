@@ -180,7 +180,7 @@ public:
 	}
 	int GetVertexNumber() const { return nnodes; }
 	void SetNodesNumber(int ivalue) { nnodes = ivalue; } // OK
-	CElem* GetOwner() { return owner; } // YD
+	CElem* GetOwner() const { return owner; } // YD
 	// Initialize topological properties
 	void InitializeMembers();
 	//------------------------------------------------------------------
@@ -244,6 +244,9 @@ public:
 	void FillTransformMatrix(const bool recompute_matrix = false);
 	void FillTransformMatrix(int noneed);
 	double getTransformTensor(int idx);
+	Math_Group::Matrix* getTransformTensor() const
+		{return transform_tensor;}
+
 	void AllocateMeomoryforAngle()
 	{
 		angle.resize(3);
@@ -285,6 +288,7 @@ public:
 
 	int GetExcavState() { return excavated; } // WX:01.2011 get excavation state
 	void SetExcavState(const int ExcavState) { excavated = ExcavState; } // WX:01.2011 set excavation state
+
 private:
 	// Members
 	// ID

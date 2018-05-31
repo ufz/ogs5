@@ -499,7 +499,7 @@ public:
 	GEOLIB::Grid<MeshLib::CNode> const* getGrid() const;
 #endif
 
-private:
+protected:
 	// private attributes
 	/**
 	 * reference to object of class GEOObject, that manages the geometry data
