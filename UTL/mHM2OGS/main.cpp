@@ -18,18 +18,18 @@
 
 void DisplayOption()
 {
-	std::string opt
-	    = "Options:\n"
-	      "    --version:  display version number.\n"
-	      "    --help:     display help info.\n"
-	      "    --output-directory: set output directory.\n";
+	std::string opt =
+	    "Options:\n"
+	    "    --version:  display version number.\n"
+	    "    --help:     display help info.\n"
+	    "    --output-directory: set output directory.\n";
 	std::cout << opt << std::endl;
 }
 void DisplayMessage()
 {
-	std::string info
-	    = "Pre-process tool for OGS using mHM recharge data.\n "
-	      "Command: mHM2OGS [file name] [option]\n";
+	std::string info =
+	    "Pre-process tool for OGS using mHM recharge data.\n "
+	    "Command: mHM2OGS [file name] [option]\n";
 	std::cout << info << std::endl;
 }
 
@@ -37,7 +37,8 @@ void DisplayMessageConsole()
 {
 	DisplayMessage();
 
-	std::cout << "Run in console.\nInput file name or with option:" << std::endl;
+	std::cout << "Run in console.\nInput file name or with option:"
+	          << std::endl;
 }
 void DisplayVersion()
 {
@@ -90,7 +91,8 @@ int main(int argc, char* argv[])
 		{
 			if (i + 1 >= arg_strings.size())
 			{
-				std::cerr << "Error: Parameter " << anArg << " needs a path for output files" << std::endl;
+				std::cerr << "Error: Parameter " << anArg
+				          << " needs a path for output files" << std::endl;
 				std::exit(EXIT_FAILURE);
 			}
 			std::string path = arg_strings[++i];
@@ -111,7 +113,7 @@ int main(int argc, char* argv[])
 	}
 
 	//
-	const std::string file_path = pathDirname(file_name);;
+	const std::string file_path = pathDirname(file_name);
 	if (o_path.empty())
 		o_path = file_path;
 
@@ -133,7 +135,7 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	mHM_preprocessor->mHM2NeumannBC(o_path);
+	mHM_preprocessor->transform_mHMData(o_path);
 
 	delete mHM_preprocessor;
 	return EXIT_SUCCESS;
