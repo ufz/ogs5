@@ -282,6 +282,8 @@ int main(int argc, char* argv[])
 	if (defaultOutputPath.empty())
 		defaultOutputPath = FilePath;
 
+	FilePath = FilePath + getDirSep();
+
 	std::string solver_pkg_name = BuildInfo::SOLVER_PACKAGE_NAME;
 	// No default linear solver package is in use.
 	if (solver_pkg_name.find("Default") == std::string::npos)

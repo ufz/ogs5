@@ -83,7 +83,7 @@ bool HasCRInLineEnding(std::string const& strFilename)
 	return foundCR;
 }
 
-inline char getDirSep()
+char getDirSep()
 {
 #ifdef WIN32
 	return '\\';
