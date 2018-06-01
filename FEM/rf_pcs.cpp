@@ -13602,7 +13602,7 @@ void CRFProcess::UpdateTransientBC()
 			if (!m_msh->top_surface_checked) // 07.06--19.08.2010. WW
 			{
 				if (m_msh->GetCoordinateFlag() / 10 == 3)
-					m_msh->MarkInterface_mHM_Hydro_3D();
+					m_msh->markTopSurfaceFaceElements3D();
 				m_msh->top_surface_checked = true;
 			}
 			break;
