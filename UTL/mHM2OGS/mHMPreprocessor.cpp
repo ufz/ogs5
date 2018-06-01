@@ -13,6 +13,12 @@
 
 #include <limits>
 
+#ifndef _MSC_VER
+#include <sys/time.h>
+#else
+#include <windows.h>
+#endif
+
 #include "Base/FileTools.h"
 
 #include "FEM/fem_ele.h"
@@ -40,7 +46,13 @@ mHMPreprocessor::~mHMPreprocessor()
 
 void mHMPreprocessor::transform_mHMData(const std::string& output_path)
 {
-	double ratio, step;
+#ifndef _MSC_VER
+	timeval t;
+	gettimeofday(&t, NULL);
+	double start_time = t.tv_sec + t.tv_usec / 1000000.0;
+#else
+	double start_time = timeGetTime();
+#endif
 
 	std::string aline;
 	std::stringstream ss;
@@ -56,7 +68,7 @@ void mHMPreprocessor::transform_mHMData(const std::string& output_path)
 
 	ConstructGrid();
 
-	mark_mHM_Interface3D();
+	markTopSurfaceFaceElements3D();
 	// Compute shape functions
 	// Check element types of meshes
 	std::vector<MshElemType::type> elem_types;
@@ -77,27 +89,29 @@ void mHMPreprocessor::transform_mHMData(const std::string& output_path)
 	_fem->setShapeFunctionPool(line_shapefunction_pool,
 	                           line_shapefunction_pool);
 
-	std::string key, uname, ofname;
-
+	std::string key;
 	getline(ins, aline);
 	ss.str(aline);
+	std::string uname;
 	ss >> key >> uname;
 	ss.clear();
 
 	getline(ins, aline);
 	ss.str(aline);
+	double ratio;
 	ss >> key >> ratio;
 	ss.clear();
 
-	step = 0.;
+	std::string file_path = pathDirname(*_geo_name);
+	std::string file_base_name = pathBasename(*_geo_name);
 
-	std::string infiltration_files;
-	infiltration_files = *_geo_name + ".ifl";
+	std::string of_path = (output_path.empty()) ? file_path : output_path;
+
+	const std::string infiltration_files =
+	    pathJoin(of_path, file_base_name + ".ifl");
 	std::ofstream infil(infiltration_files.c_str(), std::ios::trunc);
 
-	std::string file_path = pathDirname(*_geo_name);
-	if (!output_path.empty())
-		file_path = output_path;
+	double step = 0.;
 	while (!ins.eof())
 	{
 		getline(ins, aline);
@@ -111,11 +125,12 @@ void mHMPreprocessor::transform_mHMData(const std::string& output_path)
 		if (key.find("#STOP") != std::string::npos)
 			break;
 
-		ofname = file_path + key + ".bin";
+		const std::string ofname = pathJoin(of_path, key + ".bin");
 		infil << step << " " << key + ".bin"
 		      << "\n";
 
-		key = file_path + key;
+		key = pathJoin(file_path, key);
+		std::cout << "Processing file: " << key << std::endl;
 		transfromSingle_mHMdataToNodalFlux(key, ofname, ratio);
 
 		step += 1.0;
@@ -123,6 +138,14 @@ void mHMPreprocessor::transform_mHMData(const std::string& output_path)
 	infil << "#STOP"
 	      << "\n";
 	infil.close();
+
+#ifndef _MSC_VER
+	gettimeofday(&t, NULL);
+	const double elapsed_time = t.tv_sec + t.tv_usec / 1000000.0 - start_time;
+#else
+	const double elapsed_time(timeGetTime() - start_time) / 1000.0;
+#endif
+	std::cout << "Elapsed time: " << elapsed_time << " s" << std::endl;
 }
 
 //---------------------------------------------------------------------------

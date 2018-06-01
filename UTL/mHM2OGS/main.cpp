@@ -28,7 +28,7 @@ void DisplayOption()
 void DisplayMessage()
 {
 	std::string info =
-	    "Pre-process tool for OGS using mHM recharge data.\n "
+	    "Pre-process tool for OGS5 using mHM recharge data.\n "
 	    "Command: mHM2OGS [file name] [option]\n";
 	std::cout << info << std::endl;
 }
@@ -138,5 +138,7 @@ int main(int argc, char* argv[])
 	mHM_preprocessor->transform_mHMData(o_path);
 
 	delete mHM_preprocessor;
+
+	std::cout << "Terminate normally ^O^ ." << std::endl;
 	return EXIT_SUCCESS;
 }
