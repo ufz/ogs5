@@ -228,11 +228,13 @@ T* resize(T* array, size_t old_size, size_t new_size);
    last modified:
 **************************************************************************/
 CRFProcess::CRFProcess(void)
-    : _problem(NULL), p_var_index(NULL), num_nodes_p_var(NULL), fem(NULL), Memory_Type(0), Write_Matrix(false),
-      matrix_file(NULL), WriteSourceNBC_RHS(0),
+    : _problem(NULL), p_var_index(NULL), num_nodes_p_var(NULL),
+      fem(NULL), Memory_Type(0), Write_Matrix(false), matrix_file(NULL),
+      WriteSourceNBC_RHS(0),
 #ifdef JFNK_H2M
       JFNK_precond(false), norm_u_JFNK(NULL), array_u_JFNK(NULL), array_Fu_JFNK(NULL),
 #endif
+      number_of_steady_st_nodes(0),
       ele_val_name_vector(std::vector<std::string>())
 {
 	iter_lin = 0;
@@ -1064,6 +1066,8 @@ void CRFProcess::SetBoundaryConditionAndSourceTerm()
 			if (WriteSourceNBC_RHS == 1) // WW
 				WriteRHS_of_ST_NeumannBC();
 		}
+
+		number_of_steady_st_nodes = st_node.size();
 		m_st_group = NULL;
 	}
 	// Write BC/ST nodes for vsualization.WW

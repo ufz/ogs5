@@ -105,7 +105,7 @@ std::vector<NODE_HISTORY*> node_history_vector; // CMCD
  **************************************************************************/
 CSourceTerm::CSourceTerm()
     : ProcessInfo(), GeoInfo(), _coupled(false), _sub_dom_idx(-1), dis_linear_f(NULL),
-      start_pos_in_st(-1), GIS_shape_head(NULL), _distances(NULL)
+      GIS_shape_head(NULL), _distances(NULL)
 // 07.06.2010, 03.2010. WW
 {
 	CurveIndex = -1;
@@ -651,13 +651,14 @@ void CSourceTerm::ReadDistributionType(std::ifstream* st_file)
 		}
 		double timess;
 		GIS_shape_head = new double[6]; // 07.06.2010. WW
+		getline(ins, aline); // Read the comment of the GIS headers as a dummy string.
+		getline(ins, aline);
+		ss.str(aline);
 		for (int i = 0; i < 6; i++)
 		{
-			getline(ins, aline);
-			ss.str(aline);
-			ss >> aline >> GIS_shape_head[i];
-			ss.clear();
+			ss >> GIS_shape_head[i];
 		}
+		ss.clear();
 		while (!ins.eof())
 		{
 			getline(ins, aline);
@@ -4191,34 +4192,39 @@ GeoSys source term function:
 **************************************************************************/
 std::string CSourceTerm::DirectAssign_Precipitation(double current_time)
 {
-	int i, size;
-	double stepA, stepB, tim_val;
+	CRFProcess* m_pcs = PCSGet(convertProcessTypeToString(getProcessType()));
 
-	long l, nbc_node, n_index, osize = 0;
-	double n_val;
+	// Remove the entries that are added in the previous calling.
+	if (m_pcs->st_node.size() > 0)
+	{
+		for (std::size_t i = m_pcs->number_of_steady_st_nodes;
+			i <  m_pcs->st_node.size(); i++)
+		{
+			delete m_pcs->st_node_value[i];
+		   // m_pcs->st_node contains only pointers to CSourceTerm (held by st_vector).
+		   // its memory cannot be released in the destructor
+		}
+		m_pcs->st_node.erase(m_pcs->st_node.begin() + m_pcs->number_of_steady_st_nodes,
+			m_pcs->st_node.end() - m_pcs->number_of_steady_st_nodes);
+		m_pcs->st_node_value.erase(m_pcs->st_node_value.begin()
+			+ m_pcs->number_of_steady_st_nodes,
+			m_pcs->st_node_value.end() - m_pcs->number_of_steady_st_nodes);
+	}
 
+	double stepA = 0.;
+	double stepB = 0.;
 	std::string fileA, fileB;
-
-	CRFProcess* m_pcs = NULL;
-	CNodeValue* m_nod_val = NULL;
-	// PCSGet(pcs_type_name);
-	m_pcs = PCSGet(convertProcessTypeToString(getProcessType()));
-
-	if (start_pos_in_st < 0)
-		osize = (long)m_pcs->st_node.size();
-
-	size = (int)precip_times.size();
-	stepA = 0.;
-	stepB = 0.;
+	std::size_t num_files = precip_files.size();
 	if (current_time < m_pcs->GetTimeStepping()->time_start
 	    || fabs(current_time - m_pcs->GetTimeStepping()->time_start) < DBL_MIN)
 	{
 		fileA = precip_files[0];
 		stepB = -1.;
 	}
-	else if (current_time > precip_times[size - 1] || fabs(current_time - precip_times[size - 1]) < DBL_MIN)
+	else if (current_time > precip_times[num_files - 1]
+		|| fabs(current_time - precip_times[num_files - 1]) < DBL_MIN)
 	{
-		fileA = precip_files[size - 1];
+		fileA = precip_files[num_files - 1];
 		stepB = -1.;
 	}
 	else
@@ -4226,9 +4232,9 @@ std::string CSourceTerm::DirectAssign_Precipitation(double current_time)
 		double step_b = DBL_MAX;
 		double step_f = DBL_MAX;
 
-		for (i = 0; i < size; i++)
+		for (std::size_t i = 0; i < num_files; i++)
 		{
-			tim_val = precip_times[i];
+			double tim_val = precip_times[i];
 			if (current_time > tim_val)
 			{
 				if ((current_time - tim_val) < step_b)
@@ -4247,6 +4253,9 @@ std::string CSourceTerm::DirectAssign_Precipitation(double current_time)
 					fileB = precip_files[i];
 				}
 			}
+
+			if ((!fileA.empty()) && (!fileB.empty()))
+				break;
 		}
 		if (fabs(stepA - current_time) < DBL_MIN)
 			stepB = -1.;
@@ -4271,7 +4280,9 @@ std::string CSourceTerm::DirectAssign_Precipitation(double current_time)
 	bin_sA.setf(std::ios::scientific, std::ios::floatfield);
 	bin_sA.precision(14);
 
-	/*
+	std::size_t nbc_node;
+
+	/* // If linear interpolation is needed.
 	if(stepB>0.)
 	{
 	   fileB = FilePath + fileB;
@@ -4289,14 +4300,17 @@ std::string CSourceTerm::DirectAssign_Precipitation(double current_time)
 
 	bin_sA.read((char*)(&nbc_node), sizeof(nbc_node));
 
-	double valA; //, valB = 0.;
-	for (l = 0; l < nbc_node; l++)
+	for (std::size_t l = 0; l < nbc_node; l++)
 	{
+		std::size_t n_index;
 		bin_sA.read((char*)(&n_index), sizeof(n_index));
+		double valA;
 		bin_sA.read((char*)(&valA), sizeof(valA));
+		double n_val;
 		/*
 		if( stepB>0.)
 		{
+		   double valB;
 		   bin_sB.read((char*)(&n_index), sizeof(n_index));
 		   bin_sB.read((char*)(&valB), sizeof(valB));
 		   n_val = valA + (current_time - stepA)*(valB-valA)/(stepB-stepA);
@@ -4306,14 +4320,9 @@ std::string CSourceTerm::DirectAssign_Precipitation(double current_time)
 		n_val = valA;
 
 		//
-		if (start_pos_in_st < 0)
-		{
-			m_nod_val = new CNodeValue();
-			m_pcs->st_node_value.push_back(m_nod_val);
-			m_pcs->st_node.push_back(this);
-		}
-		else
-			m_nod_val = m_pcs->st_node_value[l + start_pos_in_st];
+		CNodeValue* m_nod_val = new CNodeValue();
+		m_pcs->st_node_value.push_back(m_nod_val);
+		m_pcs->st_node.push_back(this);
 
 		m_nod_val->msh_node_number = n_index;
 		m_nod_val->geo_node_number = n_index;
@@ -4323,9 +4332,6 @@ std::string CSourceTerm::DirectAssign_Precipitation(double current_time)
 		m_nod_val->CurveIndex = CurveIndex;
 		//
 	} //
-
-	if (start_pos_in_st < 0)
-		start_pos_in_st = osize;
 
 	bin_sA.close();
 	// bin_sB.close();
