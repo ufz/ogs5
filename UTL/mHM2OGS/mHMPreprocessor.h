@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -23,6 +24,8 @@ class ShapeFunctionPool;
 
 namespace MeshLib
 {
+struct RasterDataGIS;
+
 /**
  * Process the recharge data of mHM in order to used it as the Neumman BC on the
  * top surface of 3D domain.
@@ -51,13 +54,15 @@ private:
 	 * raster file, finds face elements on the top surface, and then performs
 	 * the numerical integration on the found surface elements to convert the
 	 * mHM data into nodal flux values.
-	 *  \param fname The input file name.
-	 *  \param ofname The output file name.
-	 *  \param ratio The ration of precipitation to the infiltration.
+	 *  \param fname        The input file name.
+	 *  \param ofname       The output file name.
+	 *  \param os_filenames Output stream for file names.
+	 *  \param ratio        The ration of precipitation to the infiltration.
 	 * 03/2010  WW
 	  */
-	void transfromSingle_mHMdataToNodalFlux(std::string const& fname,
+	RasterDataGIS transfromSingle_mHMdataToNodalFlux(
+	                                        std::string const& fname,
 	                                        std::string const& ofname,
-	                                        double ratio = 0.8);
+											double ratio = 0.8);
 };
 }  // end of namespace MeshLib

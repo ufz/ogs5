@@ -126,13 +126,24 @@ void mHMPreprocessor::transform_mHMData(const std::string& output_path)
 		if (key.find("#STOP") != std::string::npos)
 			break;
 
+
+		std::string mHM_file_name = pathJoin(file_path, key);
+		std::cout << "Processing file: " << mHM_file_name << std::endl;
 		const std::string ofname = pathJoin(of_path, key + ".bin");
+		const RasterDataGIS& raster_data =
+			transfromSingle_mHMdataToNodalFlux(mHM_file_name, ofname, ratio);
+
+		// Assume that the geometries of all data are the same.
+		if (step == 0.0)
+		{
+			infil << "GIS shapefile data headers:" << std::endl;
+			infil << raster_data.ncols << " " << raster_data.nrows << " "
+				<< raster_data.x0 << " " << raster_data.y0 << " "
+				<< raster_data.csize << " " << raster_data.ndata_v << std::endl;
+		}
+
 		infil << step << " " << key + ".bin"
 		      << "\n";
-
-		key = pathJoin(file_path, key);
-		std::cout << "Processing file: " << key << std::endl;
-		transfromSingle_mHMdataToNodalFlux(key, ofname, ratio);
 
 		step += 1.0;
 	}
@@ -206,7 +217,7 @@ void ReadShapeFile(std::string const& fname, RasterDataGIS& raster_data)
 	ins.close();
 }
 
-void mHMPreprocessor::transfromSingle_mHMdataToNodalFlux(
+RasterDataGIS mHMPreprocessor::transfromSingle_mHMdataToNodalFlux(
     std::string const& fname, std::string const& ofname, double ratio)
 {
 	std::vector<double> val;
@@ -305,6 +316,8 @@ void mHMPreprocessor::transfromSingle_mHMdataToNodalFlux(
 
 	ofile_bin.close();
 	val.clear();
+
+	return raster_data;
 }
 
 }  // end of namespace MeshLib
