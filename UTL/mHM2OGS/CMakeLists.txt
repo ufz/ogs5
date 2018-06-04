@@ -31,3 +31,11 @@ target_link_libraries( mHM2OGS
 	MSH
 	MSHGEOTOOLS
 )
+
+if (WIN32)
+	if (MSVC)
+		target_link_libraries( mHM2OGS
+			winmm.lib # for timer
+		)
+	endif()
+endif()

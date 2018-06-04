@@ -17,6 +17,7 @@
 #include <sys/time.h>
 #else
 #include <windows.h>
+#undef min
 #endif
 
 #include "Base/FileTools.h"
@@ -143,7 +144,7 @@ void mHMPreprocessor::transform_mHMData(const std::string& output_path)
 	gettimeofday(&t, NULL);
 	const double elapsed_time = t.tv_sec + t.tv_usec / 1000000.0 - start_time;
 #else
-	const double elapsed_time(timeGetTime() - start_time) / 1000.0;
+	const double elapsed_time = (timeGetTime() - start_time) / 1000.0;
 #endif
 	std::cout << "Elapsed time: " << elapsed_time << " s" << std::endl;
 }
@@ -266,7 +267,7 @@ void mHMPreprocessor::transfromSingle_mHMdataToNodalFlux(
 
 			node_val[k] = raster_data.zz[raster_data.ncols * ny + nx];
 			if (fabs(node_val[k] - raster_data.ndata_v) <
-			    std::numeric_limits<double>::min())
+				std::numeric_limits<double>::min())
 				node_val[k] = 0.;
 		}
 
