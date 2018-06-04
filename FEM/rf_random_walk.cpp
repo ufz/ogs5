@@ -6025,7 +6025,7 @@ void DATWriteParticleFile(int current_time_step)
 	char now[10];
 	sprintf(now, "%i", current_time_step);
 	string nowstr = now;
-	string vtk_file_name = pathJoin(defaultOutputPath, FileName.substr(FilePath.length(), FileName.length()));
+	string vtk_file_name = pathJoin(defaultOutputPath, pathBasename(FileName));
 	vtk_file_name += "_RWPT_" + nowstr + ".particles.vtk";
 	fstream vtk_file (vtk_file_name.data(),ios::out);
 	vtk_file.setf(ios::scientific,ios::floatfield);
@@ -6110,7 +6110,7 @@ void DATWriteParticleControlPlaneFile(int current_time_step, string control_plan
 	char now[10];
 	sprintf(now,"%i",current_time_step);
 	string nowstr = now;
-	string vtk_file_name = FileName + "_RWPT_";
+	string vtk_file_name = pathJoin(defaultOutputPath, pathBasename(FileName)) + "_RWPT_";
 	vtk_file_name += control_plane_name;
 	vtk_file_name += "_";
 	std::ostringstream strs;
