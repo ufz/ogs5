@@ -125,6 +125,7 @@ REACT_BRNS* m_vec_BRNS;
 #include "InterpolationAlgorithms/InverseDistanceInterpolation.h"
 #include "InterpolationAlgorithms/PiecewiseLinearInterpolation.h"
 
+#include "FileTools.h"
 #include "StringTools.h"
 
 #include "fct_mpi.h"
@@ -13591,14 +13592,10 @@ void CRFProcess::IncorporateSourceTerms_GEMS(void)
 void CRFProcess::UpdateTransientBC()
 {
 	//--------------- 24.03.2010. WW
-	long i;
-	CSourceTerm* precip;
-	CSourceTerm* a_st;
-	precip = NULL;
-
-	for (i = 0; i < (long)st_vector.size(); i++)
+	CSourceTerm* precip = NULL;
+	for (std::size_t i = 0; i < st_vector.size(); i++)
 	{
-		a_st = st_vector[i];
+		CSourceTerm*  a_st = st_vector[i];
 		if (a_st->getProcessDistributionType() == FiniteElement::PRECIPITATION
 		    && a_st->getProcessType() == getProcessType())
 		{
@@ -13615,12 +13612,12 @@ void CRFProcess::UpdateTransientBC()
 	if (precip) // 08-07.06.2010.  WW
 	{
 		string ofile_name;
-		ofile_name = precip->DirectAssign_Precipitation(aktuelle_zeit);
-
+		ofile_name = precip->assignPrecipitationDirectlyOnTopSurfaceNodes(aktuelle_zeit);
+		ofile_name = pathJoin(defaultOutputPath, ofile_name);
 		if (m_msh->GetCoordinateFlag() / 10 == 3) // 19.08.2010. WW
 		{
-			/// Remove .bin from the file name
-			i = (int)ofile_name.find_last_of(".");
+			/// Remove asc.bin from the file name
+			int i = (int)ofile_name.find_last_of(".");
 			if (i > 0)
 				ofile_name.erase(ofile_name.begin() + i, ofile_name.end());
 			i = (int)ofile_name.find_last_of(".");
@@ -13639,73 +13636,62 @@ void CRFProcess::UpdateTransientBC()
 			/// GIS_shape_head[4]:  cellsize
 			/// GIS_shape_head[5]:  NONDATA_value
 			double* g_para = precip->GIS_shape_head;
-			long size = (long)(g_para[0] * g_para[1]);
+			std::size_t ncols = static_cast<std::size_t>(g_para[0]);
+			std::size_t nrows = static_cast<std::size_t>(g_para[1]);
+			std::size_t size = ncols * nrows;
 			vector<double> cell_data_p(size);
 			vector<double> cell_data_v(size);
-			for (i = 0; i < size; i++)
+			for (std::size_t i = 0; i < size; i++)
 			{
 				cell_data_p[i] = g_para[5];
 				cell_data_v[i] = g_para[5];
 			}
 
-			int j, k, nnodes;
-			int node_xmin, node_xmax, node_ymin, node_ymax;
-			long m, n, mm, nn, l;
-			CElem* elem;
-			double* cent;
-			double vel_av[3], x1[3], x2[3], x3[3], sub_area[3], area, tol_a;
+			const int idx = fem->idx0 + 1;
+			int const* const vel_idx = fem->idx_vel;
 
-			double x_min, y_min, x_max, y_max;
-			long row_min, col_min, row_max, col_max;
-
-			int* vel_idx;
-			int idx = fem->idx0 + 1;
-			vel_idx = fem->idx_vel;
-
-			long n_idx, irow, icol, nrow, ncol;
-			nrow = (long)g_para[1];
-			ncol = (long)g_para[0];
-
-			node_xmin = node_xmax = node_ymin = node_ymax = 0;
-
-			tol_a = 1.e-8;
+			const double tol_a = 1.e-8;
 
 			of_flux.setf(ios::fixed, ios::floatfield);
 			of_primary.setf(ios::fixed, ios::floatfield);
 			of_flux.precision(1);
 			of_primary.precision(1);
 
-			of_flux << "ncols" << setw(19) << ncol << "\n";
-			of_flux << "nrows" << setw(19) << nrow << "\n";
+			of_flux << "ncols" << setw(19) << ncols << "\n";
+			of_flux << "nrows" << setw(19) << nrows << "\n";
 			of_flux << "xllcorner" << setw(15) << g_para[2] << "\n";
 			of_flux << "yllcorner" << setw(15) << g_para[3] << "\n";
-			of_flux << "cellsize" << setw(16) << (long)g_para[4] << "\n";
-			of_flux << "NODATA_value" << setw(11) << (long)g_para[5] << "\n";
+			of_flux << "cellsize" << setw(16) << g_para[4] << "\n";
+			of_flux << "NODATA_value" << setw(11) << g_para[5] << "\n";
 
-			of_primary << "ncols" << setw(19) << ncol << "\n";
-			of_primary << "nrows" << setw(19) << nrow << "\n";
+			of_primary << "ncols" << setw(19) << ncols << "\n";
+			of_primary << "nrows" << setw(19) << nrows << "\n";
 			of_primary << "xllcorner" << setw(15) << g_para[2] << "\n";
 			of_primary << "yllcorner" << setw(15) << g_para[3] << "\n";
-			of_primary << "cellsize" << setw(16) << (long)g_para[4] << "\n";
-			of_primary << "NODATA_value" << setw(11) << (long)g_para[5] << "\n";
+			of_primary << "cellsize" << setw(16) << g_para[4] << "\n";
+			of_primary << "NODATA_value" << setw(11) << g_para[5] << "\n";
 
-			for (i = 0; i < (long)m_msh->face_vector.size(); i++)
+			for (std::size_t  i = 0; i < m_msh->face_vector.size(); i++)
 			{
-				elem = m_msh->face_vector[i];
+				CElem* elem = m_msh->face_vector[i];
 				if (!elem->GetMark())
 					continue;
 
 				if (elem->GetElementType() != 4) /// If not triangle
 					continue;
 
-				//// In element
-				nnodes = elem->GetNodesNumber(false);
-				cent = elem->gravity_center;
+				// Find the range of this element
+				double x_min = 1.e+20;
+				double y_min = 1.e+20;
+				double x_max = -1.e+20;
+				double y_max = -1.e+20;
 
-				/// Find the range of this element
-				x_min = y_min = 1.e+20;
-				x_max = y_max = -1.e+20;
-				for (k = 0; k < nnodes; k++)
+				int node_xmin = 0;
+				int node_xmax = 0;
+				int node_ymin = 0;
+				int node_ymax = 0;
+				const std::size_t nnodes = elem->GetNodesNumber(false);
+				for (std::size_t k = 0; k < nnodes; k++)
 				{
 					double const* const pnt(elem->nodes[k]->getData());
 					if (pnt[0] < x_min)
@@ -13731,41 +13717,46 @@ void CRFProcess::UpdateTransientBC()
 				}
 
 				/// Determine the cells that this element covers. 05.10. 2010
-				col_min = (long)((x_min - g_para[2]) / g_para[4]);
-				row_min = nrow - (long)((y_max - g_para[3]) / g_para[4]);
-				col_max = (long)((x_max - g_para[2]) / g_para[4]);
-				row_max = nrow - (long)((y_min - g_para[3]) / g_para[4]);
+				int col_min = static_cast<int>((x_min - g_para[2]) / g_para[4]);
+				int row_min = nrows - static_cast<int>((y_max - g_para[3]) / g_para[4]);
+				int col_max = static_cast<int>((x_max - g_para[2]) / g_para[4]);
+				int row_max = nrows - static_cast<int>((y_min - g_para[3]) / g_para[4]);
 
+				double* cent = elem->gravity_center;
+
+				double x1[3];
 				double const* const pnt1(elem->nodes[0]->getData());
 				x1[0] = pnt1[0];
 				x1[1] = pnt1[1];
 				double const* const pnt2(elem->nodes[1]->getData());
+				double x2[3];
 				x2[0] = pnt2[0];
 				x2[1] = pnt2[1];
 				double const* const pnt3(elem->nodes[2]->getData());
+				double x3[3];
 				x3[0] = pnt3[0];
 				x3[1] = pnt3[1];
 
 				x3[2] = x2[2] = x1[2] = 0.;
 				cent[2] = 0.;
 
-				for (m = col_min; m <= col_max; m++)
+				for (int m = col_min; m <= col_max; m++)
 				{
-					mm = m;
-					if (m > ncol - 1)
-						mm = ncol - 1;
+					int mm = m;
+					if (m > static_cast<int>(ncols) - 1)
+						mm = ncols - 1;
 					if (m < 0)
 						mm = 0;
 					cent[0] = g_para[2] + g_para[4] * (mm + 0.5);
 
-					for (n = row_min; n <= row_max; n++)
+					for (int n = row_min; n <= row_max; n++)
 					{
-						nn = n;
-						if (n > nrow - 1)
-							nn = nrow - 1;
+						int nn = n;
+						if (n > static_cast<int>(nrows) - 1)
+							nn = nrows - 1;
 						if (nn < 0)
 							nn = 0;
-						cent[1] = g_para[3] + g_para[4] * (nrow - nn + 0.5);
+						cent[1] = g_para[3] + g_para[4] * (nrows - nn + 0.5);
 
 						if (cent[0] < x_min)
 						{
@@ -13792,32 +13783,34 @@ void CRFProcess::UpdateTransientBC()
 							cent[1] = pnt[1];
 						}
 
-						/// Check whether this point is in this element.
+						// Check whether this point is in this element.
+						double sub_area[3];
 						sub_area[0] = ComputeDetTri(cent, x2, x3);
 						sub_area[1] = ComputeDetTri(cent, x3, x1);
 						sub_area[2] = ComputeDetTri(cent, x1, x2);
-						area = ComputeDetTri(x1, x2, x3);
+						const double area = ComputeDetTri(x1, x2, x3);
 
 						/// This point locates within the element
 						if (fabs(area - sub_area[0] - sub_area[1] - sub_area[2]) < tol_a)
 						{
 							/// Use sub_area[k] as shape function
-							for (k = 0; k < 3; k++)
+							for (int k = 0; k < 3; k++)
 								sub_area[k] /= area;
 
-							l = nn * ncol + mm;
+							const int l = nn * ncols + mm;
 							cell_data_p[l] = 0.0;
 
-							for (k = 0; k < 3; k++)
+							double vel_av[3];
+							for (int k = 0; k < 3; k++)
 								vel_av[k] = 0.;
 
-							for (j = 0; j < nnodes; j++)
+							for (std::size_t j = 0; j < nnodes; j++)
 							{
-								n_idx = elem->GetNodeIndex(j);
+								const std::size_t n_idx = elem->GetNodeIndex(j);
 
 								cell_data_p[l] += sub_area[j] * GetNodeValue(n_idx, idx);
 
-								for (k = 0; k < 3; k++)
+								for (int k = 0; k < 3; k++)
 									vel_av[k] += sub_area[j] * GetNodeValue(n_idx, vel_idx[k]);
 							}
 							cell_data_v[l] = 1000.0 * (vel_av[0] * (*elem->transform_tensor)(0, 2)
@@ -13832,11 +13825,11 @@ void CRFProcess::UpdateTransientBC()
 			of_flux.precision(4);
 			// of_flux.setf(ios::scientific, ios::floatfield);
 			of_primary.precision(2);
-			for (irow = 0; irow < nrow; irow++)
+			for (std::size_t  irow = 0; irow < nrows; irow++)
 			{
-				for (icol = 0; icol < ncol; icol++)
+				for (std::size_t  icol = 0; icol < ncols; icol++)
 				{
-					m = irow * ncol + icol;
+					const std::size_t m = irow * ncols + icol;
 					of_flux << " " << setw(9) << cell_data_v[m];
 					of_primary << setw(11) << cell_data_p[m];
 				}

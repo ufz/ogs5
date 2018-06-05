@@ -4190,7 +4190,7 @@ void CSourceTerm::DirectAssign(CRFProcess* m_pcs, long ShiftInNodeVector)
 GeoSys source term function:
 03/2010 WW Implementation
 **************************************************************************/
-std::string CSourceTerm::DirectAssign_Precipitation(double current_time)
+std::string CSourceTerm::assignPrecipitationDirectlyOnTopSurfaceNodes(double current_time)
 {
 	CRFProcess* m_pcs = PCSGet(convertProcessTypeToString(getProcessType()));
 
