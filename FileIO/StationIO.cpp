@@ -3,7 +3,7 @@
  * 23/03/2010 KR Initial implementation
  *
  * \copyright
- * Copyright (c) 2015, OpenGeoSys Community (http://www.opengeosys.org)
+ * Copyright (c) 2018, OpenGeoSys Community (http://www.opengeosys.org)
  *            Distributed under a Modified BSD License.
  *              See accompanying file LICENSE.txt or
  *              http://www.opengeosys.org/project/license
