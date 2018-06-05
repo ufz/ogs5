@@ -44,4 +44,6 @@ std::string pathJoin(const std::string& path1, const std::string& path2);
 /// returns the current process working directory
 std::string getCwd();
 
+char getDirSep();
+
 #endif // FILETOOLS_H

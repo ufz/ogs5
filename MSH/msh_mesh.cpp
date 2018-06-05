@@ -27,6 +27,8 @@
 #include "memory.h"
 #include "Histogram.h"
 
+#include "FileTools.h"
+
 // GEOLib
 //#include "geo_pnt.h"
 //#include "geo_ply.h"
@@ -4070,16 +4072,8 @@ void CFEMesh::mHM2NeumannBC()
 	infiltration_files = *_geo_name + ".ifl";
 	std::ofstream infil(infiltration_files.c_str(), std::ios::trunc);
 
-	std::basic_string<char>::size_type indexChWin, indexChLinux;
-	indexChWin = indexChLinux = 0;
-	indexChWin = _geo_name->find_last_of('\\');
-	indexChLinux = _geo_name->find_last_of('/');
 	//
-	std::string file_path;
-	if (indexChWin != std::string::npos)
-		file_path = _geo_name->substr(0, indexChWin) + "\\";
-	else if (indexChLinux != std::string::npos)
-		file_path = _geo_name->substr(0, indexChLinux) + "/";
+	std::string file_path = pathDirname(*_geo_name);;
 
 	while (!ins.eof())
 	{
