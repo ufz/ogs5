@@ -13639,6 +13639,7 @@ void CRFProcess::UpdateTransientBC()
 			std::size_t ncols = static_cast<std::size_t>(g_para[0]);
 			std::size_t nrows = static_cast<std::size_t>(g_para[1]);
 			std::size_t size = ncols * nrows;
+			const double cell_area = g_para[4] * g_para[4];
 			vector<double> cell_data_p(size);
 			vector<double> cell_data_v(size);
 			for (std::size_t i = 0; i < size; i++)
@@ -13677,7 +13678,8 @@ void CRFProcess::UpdateTransientBC()
 				if (!elem->GetMark())
 					continue;
 
-				if (elem->GetElementType() != 4) /// If not triangle
+				if (elem->GetElementType() !=  MshElemType::TRIANGLE
+					|| elem->GetElementType() !=  MshElemType::QUAD)
 					continue;
 
 				// Find the range of this element
@@ -13813,9 +13815,8 @@ void CRFProcess::UpdateTransientBC()
 								for (int k = 0; k < 3; k++)
 									vel_av[k] += sub_area[j] * GetNodeValue(n_idx, vel_idx[k]);
 							}
-							cell_data_v[l] = 1000.0 * (vel_av[0] * (*elem->transform_tensor)(0, 2)
+							cell_data_v[l] = cell_area * (vel_av[0] * (*elem->transform_tensor)(0, 2)
 							                           + vel_av[1] * (*elem->transform_tensor)(1, 2)
-							                           // 1000*:  m-->mm
 							                           + vel_av[2] * (*elem->transform_tensor)(2, 2));
 						}
 					}
