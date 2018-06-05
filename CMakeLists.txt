@@ -322,6 +322,10 @@ endif ()
 
 include(scripts/cmake/packaging/Pack.cmake)
 
+if (OGS_CONFIG STREQUAL FEM OR OGS_CONFIG STREQUAL SP)
+    set(OGS_BUILD_UTILITIES ON)
+endif ()
+
 if (OGS_BUILD_UTILITIES)
 	add_subdirectory (UTL/MSHGEOTOOLS/)
 	add_subdirectory (UTL/mHM2OGS/)
