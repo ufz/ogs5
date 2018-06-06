@@ -13616,25 +13616,25 @@ void CRFProcess::UpdateTransientBC()
 		ofile_name = pathJoin(defaultOutputPath, ofile_name);
 		if (m_msh->GetCoordinateFlag() / 10 == 3) // 19.08.2010. WW
 		{
-			/// Remove asc.bin from the file name
-			int i = (int)ofile_name.find_last_of(".");
-			if (i > 0)
-				ofile_name.erase(ofile_name.begin() + i, ofile_name.end());
-			i = (int)ofile_name.find_last_of(".");
-			if (i > 0)
-				ofile_name.erase(ofile_name.begin() + i, ofile_name.end());
+			// Remove asc.bin from the file name
+			for (int ii=0; ii<2; ii++)
+			{
+				int pos = (int)ofile_name.find_last_of(".");
+				if (pos > 0)
+					ofile_name.erase(ofile_name.begin() + pos, ofile_name.end());
+			}
 			string of_name = ofile_name + ".flx.asc";
 			ofstream of_flux(of_name.c_str(), ios::trunc | ios::out);
 
 			of_name = ofile_name + ".pri.asc";
 			ofstream of_primary(of_name.c_str(), ios::trunc | ios::out);
 
-			/// GIS_shape_head[0]:  ncols
-			/// GIS_shape_head[1]:  nrows
-			/// GIS_shape_head[2]:  xllcorner
-			/// GIS_shape_head[3]:  yllcorner
-			/// GIS_shape_head[4]:  cellsize
-			/// GIS_shape_head[5]:  NONDATA_value
+			// GIS_shape_head[0]:  ncols
+			// GIS_shape_head[1]:  nrows
+			// GIS_shape_head[2]:  xllcorner
+			// GIS_shape_head[3]:  yllcorner
+			// GIS_shape_head[4]:  cellsize
+			// GIS_shape_head[5]:  NONDATA_value
 			double* g_para = precip->GIS_shape_head;
 			std::size_t ncols = static_cast<std::size_t>(g_para[0]);
 			std::size_t nrows = static_cast<std::size_t>(g_para[1]);
@@ -13718,7 +13718,7 @@ void CRFProcess::UpdateTransientBC()
 					}
 				}
 
-				/// Determine the cells that this element covers. 05.10. 2010
+				// Determine the cells that this element covers. 05.10. 2010
 				int col_min = static_cast<int>((x_min - g_para[2]) / g_para[4]);
 				int row_min = nrows - static_cast<int>((y_max - g_para[3]) / g_para[4]);
 				int col_max = static_cast<int>((x_max - g_para[2]) / g_para[4]);
@@ -13792,10 +13792,10 @@ void CRFProcess::UpdateTransientBC()
 						sub_area[2] = ComputeDetTri(cent, x1, x2);
 						const double area = ComputeDetTri(x1, x2, x3);
 
-						/// This point locates within the element
+						// This point locates within the element
 						if (fabs(area - sub_area[0] - sub_area[1] - sub_area[2]) < tol_a)
 						{
-							/// Use sub_area[k] as shape function
+							// Use sub_area[k] as shape function
 							for (int k = 0; k < 3; k++)
 								sub_area[k] /= area;
 

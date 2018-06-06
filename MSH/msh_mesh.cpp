@@ -3641,17 +3641,17 @@ void CFEMesh::markTopSurfaceFaceElements3D()
 				node_mark[elem->GetNodeIndex(k)] = true;
 #endif
 		}
+#ifdef output_top_z
 		else if ((*transform_tensor)(2, 2) * fac < -tol)
 		{
 			elem->SetMark(false);
 			for (int k = 0; k < 3; k++)
 				(*transform_tensor)(k, 2) *= fac;
 
-#ifdef output_top_z
-			for (k = 0; k < elem->GetNodesNumber(quad); k++)
+			for (std::size_t k = 0; k < elem->GetNodesNumber(quad); k++)
 				node_mark[elem->GetNodeIndex(k)] = bottom;
-#endif
 		}
+#endif
 		else
 			elem->SetMark(false);
 	}
