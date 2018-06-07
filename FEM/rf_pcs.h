@@ -394,7 +394,11 @@ public:
 	// 6-ST
 	// Node values from sourse/sink or Neumann BC. WW
 	std::vector<CNodeValue*> st_node_value; // WW
-	std::vector<CSourceTerm*> st_node; // WW
+	// Contains only pointers to CSourceTerm (held by st_vector).
+	// Its memory cannot be released in the destructor
+	std::vector<CSourceTerm*> st_node;
+	std::size_t number_of_steady_st_nodes; // number of steady sources term entries.
+
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012. WW
 	std::vector<long> st_node_value_in_dom; // WW for domain decomposition
 	std::vector<long> st_local_index_in_dom; // WW for domain decomposition

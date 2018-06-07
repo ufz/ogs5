@@ -123,7 +123,7 @@ public:
 	};
 	const std::vector<GEOLIB::Station*>& getClimateStations() const { return this->_weather_stations; }; // NB
 	// 03.2010. WW
-	std::string DirectAssign_Precipitation(double current_time);
+	std::string assignPrecipitationDirectlyOnTopSurfaceNodes(double current_time);
 
 	double getCoupLeakance() const;
 
@@ -276,7 +276,6 @@ private: // TF, KR
 	std::vector<double*> normal2surface;
 	std::vector<double*> pnt_parameter_vector;
 	// 03.2010. WW
-	long start_pos_in_st;
 	double* GIS_shape_head; // 07.06.2010. WW
 	std::vector<double> precip_times;
 	std::vector<std::string> precip_files;

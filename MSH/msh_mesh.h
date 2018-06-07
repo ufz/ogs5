@@ -197,6 +197,9 @@ public:
 	//
 	void ConstructGrid();
 	void GenerateHighOrderNodes();
+
+	void markTopSurfaceFaceElements3D();
+
 /// For parallel computing. 03.2012. WW
 #if defined(USE_PETSC) // || defined(other parallel solver libs)
 	void ConfigHighOrderElements();
@@ -473,23 +476,6 @@ public:
 	std::vector<size_t> xy_change;
 	bool nodes_are_sorted;
 
-	/// Import MODFlow grid. 10.2009 WW
-	void ImportMODFlowGrid(std::string const& fname);
-	/// Convert raster cells into grid. 12.2009 WW
-	void ConvertShapeCells(std::string const& fname);
-#ifdef USE_HydSysMshGen
-	// Be activated if it is still needed.
-	// WWmesh_header
-	/// Generate Column-surface grid system for the modeling of surafce-subsuface coupled processes
-	// 15.05.2009. WW // removed useless const TF
-	void HydroSysMeshGenerator(std::string fname, int nlayers, double thickness, int mapping);
-
-#endif
-	void MarkInterface_mHM_Hydro_3D(); // 07.06.2010. WW
-	void mHM2NeumannBC();
-	/// Comptute int {f} a dA on top surface.
-	void TopSurfaceIntegration();
-
 #ifndef NDEBUG
 	/**
 	 * This is a getter method to access the private attribute _mesh_grid
@@ -499,7 +485,7 @@ public:
 	GEOLIB::Grid<MeshLib::CNode> const* getGrid() const;
 #endif
 
-private:
+protected:
 	// private attributes
 	/**
 	 * reference to object of class GEOObject, that manages the geometry data
@@ -564,16 +550,6 @@ private:
 	bool has_multi_dim_ele;
 	int max_ele_dim;
 	int map_counter; // 21.01.2009 WW
-
-	bool mapping_check; // 23.01.2009 WW
-	/// Import shape file. 16.03.2026. WW
-	size_t ncols, nrows;
-	/// (x_0, y_0): coordinate of the left down corner
-	double x0, y0, csize, ndata_v;
-	std::vector<double> zz; // Elevation
-	inline void ReadShapeFile(std::string const& fname);
-	// 03.2010. WW
-	inline void Precipitation2NeumannBC(std::string const& fname, std::string const& ofname, double ratio = 0.8);
 
 	/// Store border nodes among different grids.
 	std::vector<GridsTopo*> grid_neighbors;
