@@ -22,6 +22,10 @@
 #include "femlib.h"
 #include "mathlib.h"
 
+#ifndef USE_PETSC
+#include "par_ddc.h"
+#endif
+
 #include "ShapeFunctionPool.h"
 
 namespace FiniteElement

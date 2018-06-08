@@ -35,6 +35,11 @@
 #include "equation_class.h"
 using Math_Group::CSparseMatrix;
 #endif
+
+#ifndef USE_PETSC
+#include "par_ddc.h"
+#endif
+
 //
 #define COMP_MOL_MASS_AIR 28.96 // kg/kmol WW  28.96
 #define GAS_CONSTANT 8314.41 // J/(kmol*K) WW

@@ -161,15 +161,22 @@
 /* Preprozessor-Definitionen */
 
 #include <cfloat>
+#include <cstdlib>
+
 //#include <stdio.h>
 #include "femlib.h" //CMCD 03 2004
 #include "makros.h"
 #include "memory.h"
 #include "display.h"
 #include "mathlib.h"
+#include "geo_mathlib.h" // for M3KreuzProdukt
+
 // WW----------------------
 #include "par_ddc.h"
 // WW----------------------
+
+#include "prototyp.h"
+
 double pai = 4.0 * atan(1.0);
 VoidFuncDXCDX ShapeFunction;
 VoidFuncDXCDX ShapeFunctionHQ;

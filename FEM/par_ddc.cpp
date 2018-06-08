@@ -26,23 +26,24 @@
 // #error to indicate a fatal error.  Users can either #undef
 // the names before including mpi.h or include mpi.h *before* stdio.h
 // or iostream.
+#include "par_ddc.h"
+
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS) \
     || defined(USE_MPI_KRC)
-//#undef SEEK_SET  //WW
-//#undef SEEK_END  //WW
-//#undef SEEK_CUR  //WW
 #include <mpi.h>
 #include "SplitMPI_Communicator.h"
 char t_fname[3];
 double time_ele_paral;
 #endif
-//---- MPI Parallel --------------
 
 #include <math.h>
 // C++ STL
 #include <iostream>
-using namespace std;
-#include "par_ddc.h"
+
+#include "rf_pcs.h"
+
+#include "msh_mesh.h"
+
 // FEM-Makros
 #include "makros.h"
 #ifndef NEW_EQS // WW. 11.2008
@@ -58,6 +59,18 @@ using namespace std;
 vector<CPARDomain*> dom_vector;
 vector<int> node_connected_doms; // This will be removed after sparse class is finished WW
 
+using namespace std;
+using process::CRFProcessDeformation;
+using FiniteElement::CFiniteElementVec;
+
+#ifdef NEW_EQS
+using Math_Group::Linear_EQS;
+using Math_Group::SparseTable;
+#endif
+
+#if defined(USE_MPI)
+using MeshLib::CFEMesh;
+#endif
 /**************************************************************************
    STRLib-Method:
    Task:

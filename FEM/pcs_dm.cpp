@@ -54,6 +54,10 @@
 #include "PETSC/PETScLinearSolver.h"
 #endif
 
+#ifndef USE_PETSC
+#include "par_ddc.h"
+#endif
+
 using namespace std;
 
 // Solver

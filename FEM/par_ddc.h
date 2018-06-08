@@ -24,7 +24,9 @@
 #include <string>
 #include <vector>
 
-#include "rf_pcs.h"
+#if defined(USE_MPI)
+#include <iostream>
+#endif
 
 //---------   Declaration ---------------------WW
 namespace FiniteElement
@@ -32,30 +34,31 @@ namespace FiniteElement
 class CFiniteElementStd;
 class CFiniteElementVec;
 }
+
+class CRFProcess;
 namespace process
 {
 class CRFProcessDeformation;
 }
+
+#ifdef NEW_EQS
 namespace Math_Group
 {
 class SparseTable;
 class Linear_EQS;
 }
-using process::CRFProcessDeformation;
-using FiniteElement::CFiniteElementVec;
-using Math_Group::Linear_EQS;
-using Math_Group::SparseTable;
-//---------   Declaration ---------------------WW
+class CNumerics;
+#endif
 
-#if defined(USE_MPI)
-// WW
+struct LINEAR_SOLVER;
+struct LINEAR_SOLVER_PROPERTIES;
+
 namespace MeshLib
 {
 class CFEMesh;
 }
-using MeshLib::CFEMesh;
-#endif
-void FindNodesOnInterface(CFEMesh* m_msh, bool quadr);
+
+void FindNodesOnInterface(MeshLib::CFEMesh* m_msh, bool quadr);
 
 //-----------------------------------------------
 class CPARDomain
@@ -69,7 +72,7 @@ private:
 	long num_inner_nodesHQ;
 	long num_boundary_nodes;
 	long num_boundary_nodesHQ;
-	friend void FindNodesOnInterface(CFEMesh* m_msh, bool quadr);
+	friend void FindNodesOnInterface(MeshLib::CFEMesh* m_msh, bool quadr);
 //#endif
 #if defined(USE_MPI) // 13.12.2007 WW
 	// Store global indices of all border nodes to border_nodes of the whole mesh
@@ -103,10 +106,10 @@ private:
 	long shift[5]; // WW
 // Equation
 #ifdef NEW_EQS // WW
-	SparseTable* sparse_graph;
-	SparseTable* sparse_graph_H;
-	Linear_EQS* eqs; // WW
-	Linear_EQS* eqsH; // WW
+	Math_Group::SparseTable* sparse_graph;
+	Math_Group::SparseTable* sparse_graph_H;
+	Math_Group::Linear_EQS* eqs; // WW
+	Math_Group::Linear_EQS* eqsH; // WW
 #endif
 	friend class CRFProcess; // WW
 	// WW //:: for SXC compiler
@@ -128,7 +131,7 @@ public:
 	char* lsp_name;
 #endif
 	// MSH
-	CFEMesh* m_msh;
+	MeshLib::CFEMesh* m_msh;
 	// public:
 	CPARDomain(void);
 	~CPARDomain(void);
