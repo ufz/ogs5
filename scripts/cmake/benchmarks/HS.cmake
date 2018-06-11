@@ -107,13 +107,15 @@ Benchmark(AUTHOR HS
 	OUTPUT_FILES ab1d0100.vtk
 )
 
-Benchmark(AUTHOR HS
-	PATH PETSc/TransLay2d/lag2d
-	CONFIG PETSC_GEMS
-	RUNTIME 210
-	NUM_PROCESSORS 4
-	OUTPUT_FILES lag2d0001.vtk
-)
+## Error: No upper or lower constrains set during equilibration!...
+## If your setup requires constrains, please contact georg.kosakowski@psi.ch
+#Benchmark(AUTHOR HS
+#	PATH PETSc/TransLay2d/lag2d
+#	CONFIG PETSC_GEMS
+#	RUNTIME 210
+#	NUM_PROCESSORS 4
+#	OUTPUT_FILES lag2d0001.vtk
+#)
 
 Benchmark(AUTHOR HS
 	PATH PETSc/ConcreteCrack/decal

@@ -60,6 +60,9 @@ using namespace std;
 using SolidProp::CSolidProperties;
 using namespace Math_Group;
 
+
+const double residual = 1.e-20;
+
 vector<CKinReact*> KinReact_vector; // declare instance CKinReact_vector
 vector<CKinReactData*> KinReactData_vector; // declare instance CKinReact_vector
 vector<CKinBlob*> KinBlob_vector; // declare extern instance of class Blob

@@ -30,7 +30,6 @@
 #include "GEOObjects.h"
 
 /* residual for linearisation of critical functions */
-#define residual 1.E-20
 #define maxMonod 5
 #define maxInhibition 5
 #define maxBioReactions 30
