@@ -52,6 +52,12 @@ using ::CRFProcess;
 using ::CMediumProperties;
 using process::CRFProcessDeformation;
 using MeshLib::CElem;
+// Maximum number of nodes of linear elements
+const int max_nnodes_LE = 8;
+// Maximum number of nodes of 2D quadratic elements
+const int max_nnodes_QE_2D = 9;
+// Maximum number of nodes of 3D quadratic elements
+const int max_nnodes_QE_3D = 20;
 
 CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	const int C_Sys_Flad, const int order)
@@ -68,41 +74,36 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	  AuxMatrix2((dim == 3)? new Matrix(3, 6) : new Matrix(2, 4)),
 	  Stiffness((pcs->Memory_Type == 0) ? new Matrix(60, 60) : NULL),
 	  PressureC(NULL), PressureC_S(NULL), PressureC_S_dp(NULL),
-	  RHS( (pcs->Memory_Type == 0) ? new Vec(60) : NULL), b_rhs(NULL),
+	  RHS( (pcs->Memory_Type == 0) ? new Vec(3 * max_nnodes_QE_3D) : NULL), b_rhs(NULL),
 	  smat(NULL), m_mfp(NULL), m_mmp(NULL),
 	  dstress(new double[ns]), dstrain(new double[ns]),
 	  stress_ne(new double[ns]), strain_ne(new double[ns]), stress0(new double[ns]),
-	  Disp((dim == 3)? new double[60] : new double[18]),
-	  Temp((dim == 3)? new double[20] : new double[9]),
-	  T1((dim == 3)? new double[20] : new double[9]),
-	  Tem(273.15 + 23.0), S_Water(1.), eleV_DM(NULL),
-	  NodesInJumpedA(enhanced_strain_dm && dim ==2 ? new bool[9]: NULL),
+	  Disp((dim == 3)? new double[max_nnodes_QE_3D * dim] : new double[max_nnodes_QE_2D * dim]),
+	  Temp(NULL), T1(NULL), Tem(273.15 + 23.0), S_Water(1.), eleV_DM(NULL),
+	  NodesInJumpedA(enhanced_strain_dm && dim ==2 ? new bool[max_nnodes_QE_2D]: NULL),
 	  Ge(enhanced_strain_dm && dim ==2 ?new Matrix(4, 2) : NULL),
 	  Pe(enhanced_strain_dm && dim ==2 ?new Matrix(2, 4) : NULL),
-	  BDG(enhanced_strain_dm && dim ==2 ?new Matrix(2, 18) : NULL),
-	  PDB(enhanced_strain_dm && dim ==2 ?new Matrix(18, 2) : NULL),
+	  BDG(enhanced_strain_dm && dim ==2 ?new Matrix(2, 2 * max_nnodes_QE_2D) : NULL),
+	  PDB(enhanced_strain_dm && dim ==2 ?new Matrix(2 * max_nnodes_QE_2D, 2) : NULL),
 	  DtD(enhanced_strain_dm && dim ==2 ?new Matrix(2, 2) : NULL),
 	  PeDe(enhanced_strain_dm && dim ==2 ?new Matrix(2, 4) : NULL),
 	  X0(enhanced_strain_dm && dim ==2 ? new double[3]: NULL),
 	  n_jump(enhanced_strain_dm && dim ==2 ? new double[3]: NULL),
 	  pr_stress(enhanced_strain_dm && dim ==2 ? new double[3]: NULL),
-	  Sxx(dim ==3 ? new double[20]: new double[9]),
-	  Syy(dim ==3 ? new double[20]: new double[9]),
-	  Szz(dim ==3 ? new double[20]: new double[9]),
-	  Sxy(dim ==3 ? new double[20]: new double[9]),
-	  Sxz(dim ==3 ? new double[20]: NULL),
-	  Syz(dim ==3 ? new double[20]: NULL),
-	  pstr(dim ==3 ? new double[20]: new double[9]),
-	  AuxNodal0(new double[8]),
-	  AuxNodal(new double[8]),
-	  AuxNodal_S0(new double[8]),
-	  AuxNodal_S(new double[8]),
-	  AuxNodal1(new double[60]), AuxNodal2(NULL),
+	  Sxx(dim ==3 ? new double[max_nnodes_QE_3D] : new double[max_nnodes_QE_2D]),
+	  Syy(dim ==3 ? new double[max_nnodes_QE_3D] : new double[max_nnodes_QE_2D]),
+	  Szz(dim ==3 ? new double[max_nnodes_QE_3D] : new double[max_nnodes_QE_2D]),
+	  Sxy(dim ==3 ? new double[max_nnodes_QE_3D] : new double[max_nnodes_QE_2D]),
+	  Sxz(dim ==3 ? new double[max_nnodes_QE_3D]: NULL),
+	  Syz(dim ==3 ? new double[max_nnodes_QE_3D]: NULL),
+	  pstr(dim ==3 ? new double[max_nnodes_QE_3D] : new double[max_nnodes_QE_2D]),
+	  AuxNodal0(NULL), AuxNodal(NULL), AuxNodal_S0(NULL), AuxNodal_S(NULL),
+	  AuxNodal1(NULL), AuxNodal2(NULL),
 	  dynamic((dm_pcs->pcs_type_name_vector[0].find("DYNAMIC") != std::string::npos)
 			? true : false),
-	  Mass(dynamic ? new Matrix(20, 20) : NULL),
+	  Mass(dynamic ? new Matrix(max_nnodes_QE_3D, max_nnodes_QE_3D) : NULL),
 	  Idx_Vel(dynamic ? new int[3] : NULL),
-	  dAcceleration(dynamic ? new Vec(60) : NULL),
+	  dAcceleration(dynamic ? new Vec(max_nnodes_QE_3D * dim) : NULL),
 	  beta2(dynamic ? dm_pcs->m_num->GetDynamicDamping_beta2() : 1.),
 	  bbeta1(dynamic ? dm_pcs->m_num->GetDynamicDamping_bbeta(): 1.)
 {
@@ -188,9 +189,19 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	if (pcs->Memory_Type == 0) // Do not store local matrices
 	{
 		if (H_Process)
-			PressureC = new Matrix(60, 20);
+		{
+			const int max_nnodes = (dim == 3) ? max_nnodes_QE_3D : max_nnodes_QE_2D;
+			PressureC = new Matrix(3 * max_nnodes, max_nnodes);
+		}
 	}
 
+	if (H_Process)
+	{
+		AuxNodal0 = new double[max_nnodes_LE];
+		AuxNodal = new double[max_nnodes_LE];
+		AuxNodal1 = (dim == 3) ? new double[max_nnodes_QE_3D * dim]
+					           : new double[max_nnodes_QE_2D * dim];
+	}
 	// Coupling
 	for (size_t i = 0; i < pcs_vector.size(); i++)
 	{
@@ -250,6 +261,8 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 		idx_P1_0 = h_pcs->GetNodeValueIndex("PRESSURE1");
 		idx_S0 = h_pcs->GetNodeValueIndex("SATURATION1");
 		idx_S = h_pcs->GetNodeValueIndex("SATURATION1") + 1;
+		AuxNodal_S0 = new double[max_nnodes_LE];
+		AuxNodal_S = new double[max_nnodes_LE];
 	}
 	else if (Flow_Type == 2)
 	{
@@ -257,7 +270,9 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 		idx_P2 = h_pcs->GetNodeValueIndex("PRESSURE2") + 1;
 		idx_S0 = h_pcs->GetNodeValueIndex("SATURATION1");
 		idx_S = h_pcs->GetNodeValueIndex("SATURATION1") + 1;
-		AuxNodal2 = new double[8];
+		AuxNodal2 = new double[max_nnodes_LE];
+		AuxNodal_S0 = new double[max_nnodes_LE];
+		AuxNodal_S = new double[max_nnodes_LE];
 	}
 	else if (Flow_Type == 3)
 	{
@@ -266,7 +281,9 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 		idx_S0 = h_pcs->GetNodeValueIndex("SATURATION1");
 		idx_S = idx_S0;
 		idx_Snw = h_pcs->GetNodeValueIndex("SATURATION2") + 1;
-		AuxNodal2 = new double[8];
+		AuxNodal_S0 = new double[max_nnodes_LE];
+		AuxNodal_S = new double[max_nnodes_LE];
+		AuxNodal2 = new double[max_nnodes_LE];
 	}
 
 	for (size_t i = 0; i < pcs_vector.size(); i++)
@@ -281,6 +298,8 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	{
 		idx_T0 = t_pcs->GetNodeValueIndex("TEMPERATURE1");
 		idx_T1 = idx_T0 + 1;
+		Temp = new double[max_nnodes_LE];
+		T1 = new double[max_nnodes_LE];
 	}
 	//
 	// Time unit factor
