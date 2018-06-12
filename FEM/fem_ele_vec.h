@@ -255,13 +255,16 @@ private:
 
 	friend class process::CRFProcessDeformation;
 
+	double* _nodal_p1;
+	double* _nodal_p2;
+
+	double* _nodal_cp0; /// capillary pressure.
+	double* _nodal_dcp; /// capillary pressure increment.
+
 	// Auxillarary vector
-	double* AuxNodal0;
-	double* AuxNodal;
-	double* AuxNodal_S0;
-	double* AuxNodal_S;
+	double* _nodal_S0;
+	double* _nodal_S;
 	double* AuxNodal1;
-	double* AuxNodal2;
 
 	// Dynamic
 	// Damping parameters

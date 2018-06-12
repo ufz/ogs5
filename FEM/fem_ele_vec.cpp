@@ -97,8 +97,9 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	  Sxz(dim ==3 ? new double[max_nnodes_QE_3D]: NULL),
 	  Syz(dim ==3 ? new double[max_nnodes_QE_3D]: NULL),
 	  pstr(dim ==3 ? new double[max_nnodes_QE_3D] : new double[max_nnodes_QE_2D]),
-	  AuxNodal0(NULL), AuxNodal(NULL), AuxNodal_S0(NULL), AuxNodal_S(NULL),
-	  AuxNodal1(NULL), AuxNodal2(NULL),
+	  _nodal_p1(NULL), _nodal_p2(NULL), _nodal_cp0(NULL), _nodal_dcp(NULL),
+	  _nodal_S0(NULL), _nodal_S(NULL),
+	  AuxNodal1(NULL),
 	  dynamic((dm_pcs->pcs_type_name_vector[0].find("DYNAMIC") != std::string::npos)
 			? true : false),
 	  Mass(dynamic ? new Matrix(max_nnodes_QE_3D, max_nnodes_QE_3D) : NULL),
@@ -197,8 +198,6 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 
 	if (H_Process)
 	{
-		AuxNodal0 = new double[max_nnodes_LE];
-		AuxNodal = new double[max_nnodes_LE];
 		AuxNodal1 = (dim == 3) ? new double[max_nnodes_QE_3D * dim]
 					           : new double[max_nnodes_QE_2D * dim];
 	}
@@ -247,6 +246,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	if (Flow_Type == 0)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
+		_nodal_p1 = new double[max_nnodes_LE];
 		if (dynamic)
 		{
 			idx_P = h_pcs->GetNodeValueIndex("PRESSURE1");
@@ -254,36 +254,56 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 		}
 	}
 	if (Flow_Type == 10)
+	{
 		idx_P1 = h_pcs->GetNodeValueIndex("HEAD") + 1;
+		_nodal_p1 = new double[max_nnodes_LE];
+	}
 	else if (Flow_Type == 1)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
+		_nodal_p1 = new double[max_nnodes_LE];
+
 		idx_P1_0 = h_pcs->GetNodeValueIndex("PRESSURE1");
+
 		idx_S0 = h_pcs->GetNodeValueIndex("SATURATION1");
+		_nodal_S0 = new double[max_nnodes_LE];
+
 		idx_S = h_pcs->GetNodeValueIndex("SATURATION1") + 1;
-		AuxNodal_S0 = new double[max_nnodes_LE];
-		AuxNodal_S = new double[max_nnodes_LE];
+		_nodal_S = new double[max_nnodes_LE];
+
+		_nodal_cp0 = new double[max_nnodes_LE];
+		_nodal_dcp = new double[max_nnodes_LE];
 	}
 	else if (Flow_Type == 2)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
+		_nodal_p1 = new double[max_nnodes_LE];
+
 		idx_P2 = h_pcs->GetNodeValueIndex("PRESSURE2") + 1;
+		_nodal_p2 = new double[max_nnodes_LE];
+
 		idx_S0 = h_pcs->GetNodeValueIndex("SATURATION1");
+		_nodal_S0 = new double[max_nnodes_LE];
+
 		idx_S = h_pcs->GetNodeValueIndex("SATURATION1") + 1;
-		AuxNodal2 = new double[max_nnodes_LE];
-		AuxNodal_S0 = new double[max_nnodes_LE];
-		AuxNodal_S = new double[max_nnodes_LE];
+		_nodal_S = new double[max_nnodes_LE];
+
+		_nodal_cp0 = new double[max_nnodes_LE];
+		_nodal_dcp = new double[max_nnodes_LE];
 	}
 	else if (Flow_Type == 3)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
+		_nodal_p1 = new double[max_nnodes_LE];
 		idx_P2 = h_pcs->GetNodeValueIndex("PRESSURE2");
+		_nodal_p2 = new double[max_nnodes_LE];
+
 		idx_S0 = h_pcs->GetNodeValueIndex("SATURATION1");
+		_nodal_S0 = new double[max_nnodes_LE];
 		idx_S = idx_S0;
+		_nodal_S = new double[max_nnodes_LE];
+
 		idx_Snw = h_pcs->GetNodeValueIndex("SATURATION2") + 1;
-		AuxNodal_S0 = new double[max_nnodes_LE];
-		AuxNodal_S = new double[max_nnodes_LE];
-		AuxNodal2 = new double[max_nnodes_LE];
 	}
 
 	for (size_t i = 0; i < pcs_vector.size(); i++)
@@ -340,8 +360,6 @@ CFiniteElementVec::~CFiniteElementVec()
 		delete[] Sxz;
 	if (Syz)
 		delete[] Syz;
-	if (AuxNodal2)
-		delete[] AuxNodal2;
 
 	if (dynamic)
 	{
@@ -414,19 +432,22 @@ CFiniteElementVec::~CFiniteElementVec()
 	if (Idx_Vel)
 		delete[] Idx_Vel;
 	X0 = n_jump = pr_stress = NULL;
-	delete[] AuxNodal;
-	delete[] AuxNodal_S0;
-	delete[] AuxNodal_S;
-	delete[] AuxNodal1;
-	AuxNodal = AuxNodal_S0 = AuxNodal_S = AuxNodal1 = NULL;
-	Idx_Vel = NULL;
-	//
-	_nodal_strain_indices = NULL;
-	_nodal_stress_indices = NULL;
-	strain_ne = NULL;
-	stress_ne = NULL;
-	stress0 = NULL;
-	//
+
+	if (_nodal_p1)
+		delete[] _nodal_p1;
+	if (_nodal_p2)
+		delete[] _nodal_p2;
+	if (_nodal_cp0)
+		delete[] _nodal_cp0;
+	if (_nodal_dcp)
+		delete[] _nodal_dcp;
+
+	if (_nodal_S0)
+		delete[] _nodal_S0;
+	if (_nodal_S)
+		delete[] _nodal_S;
+	if (AuxNodal1)
+		delete[] AuxNodal1;
 
 	// NW
 	for (int i = 0; i < (int)vec_B_matrix.size(); i++)
@@ -727,7 +748,7 @@ double CFiniteElementVec::CalDensity()
 			{
 				Sw = 0.; // WW
 				for (i = 0; i < nnodes; i++)
-					Sw += shapefct[i] * AuxNodal_S[i];
+					Sw += shapefct[i] * _nodal_S[i];
 			}
 			rho = (1. - porosity) * fabs(smat->Density()) + porosity * Sw * density_fluid;
 
@@ -845,7 +866,7 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 		if (PressureC_S || PressureC_S_dp)
 		{
 			// Pressure 1
-			fac2 = interpolate(AuxNodal0);
+			fac2 = interpolate(_nodal_p1);
 			// Saturation of phase 1
 			fac1 = m_mmp->SaturationCapillaryPressureFunction(fac2);
 			if (PressureC_S_dp)
@@ -1022,21 +1043,38 @@ void CFiniteElementVec::LocalAssembly(const int update)
 				else
 					Disp[j + i * nnodesHQ] = pcs->GetNodeValue(nodes[j], Idx_dm0[i]);
 
-	// Get saturation of element nodes
-	if (Flow_Type > 0 && Flow_Type != 10)
+	if (_nodal_p1)
 	{
 		for (int i = 0; i < nnodes; i++)
 		{
-			AuxNodal_S[i] = h_pcs->GetNodeValue(nodes[i], idx_S);
-			AuxNodal_S0[i] = h_pcs->GetNodeValue(nodes[i], idx_S0);
+			_nodal_p1[i] = h_pcs->GetNodeValue(nodes[i], idx_P1);
 		}
-		if (Flow_Type == 2 || Flow_Type == 3) // 09.10.2009 PCH
+	}
+	if (_nodal_p2)
+	{
+		for (int i = 0; i < nnodes; i++)
+		{
+			_nodal_p2[i] = h_pcs->GetNodeValue(nodes[i], idx_P2);
+		}
+	}
+	if (_nodal_S0)
+	{
+		for (int i = 0; i < nnodes; i++)
+		{
+			_nodal_S0[i] = h_pcs->GetNodeValue(nodes[i], idx_S0);
+		}
+	}
+	if (_nodal_S)
+	{
+		for (int i = 0; i < nnodes; i++)
+		{
+			_nodal_S[i] = h_pcs->GetNodeValue(nodes[i], idx_S);
+		}
+	}
 
-			for (int i = 0; i < nnodes; i++)
-			{
-				AuxNodal0[i] = h_pcs->GetNodeValue(nodes[i], idx_P1);
-				AuxNodal2[i] = h_pcs->GetNodeValue(nodes[i], idx_P2);
-			}
+	// Get saturation of element nodes
+	if (Flow_Type > 0 && Flow_Type != 10)
+	{
 		// 12.03.2008 WW
 		if ((Flow_Type == 1 || Flow_Type == 2) && (smat->SwellingPressureType == 3 || smat->SwellingPressureType == 4))
 		{
@@ -1046,9 +1084,9 @@ void CFiniteElementVec::LocalAssembly(const int update)
 			for (int i = 0; i < nnodes; i++)
 			{
 				// Pc
-				AuxNodal1[i] = fac * h_pcs->GetNodeValue(nodes[i], idx_P1 - 1);
+				_nodal_cp0[i] = fac * h_pcs->GetNodeValue(nodes[i], idx_P1 - 1);
 				// dPc
-				AuxNodal[i] = fac * (h_pcs->GetNodeValue(nodes[i], idx_P1) - h_pcs->GetNodeValue(nodes[i], idx_P1 - 1));
+				_nodal_dcp[i] = fac * (h_pcs->GetNodeValue(nodes[i], idx_P1) - h_pcs->GetNodeValue(nodes[i], idx_P1 - 1));
 			}
 		}
 	}
@@ -1444,10 +1482,10 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 	   fact_NR = 0.0;
 	   for (i=0;i<nnodes;i++)
 	   {
-	   fact_NR += AuxNodal_S[i];  /// Sw
+	   fact_NR += _nodal_S[i];  /// Sw
 
 	   /// dS_dPcPc
-	   fact_NR += m_mmp->SaturationPressureDependency(AuxNodal_S[i])*h_pcs->GetNodeValue(nodes[i],idx_P1);
+	   fact_NR += m_mmp->SaturationPressureDependency(_nodal_S[i])*h_pcs->GetNodeValue(nodes[i],idx_P1);
 	   }
 
 	   fact_NR /= static_cast<double>(nnodes);
@@ -1670,6 +1708,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			}
 		}
 
+		double nodal_pore_p[max_nnodes_LE];
 		switch (Flow_Type)
 		{
 			case 0: // Liquid flow
@@ -1678,8 +1717,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
 				for (i = 0; i < nnodes; i++)
 				{
-					val_n = h_pcs->GetNodeValue(nodes[i], idx_P1);
-					//                AuxNodal[i] = LoadFactor*( val_n -Max(pcs->GetNodeValue(nodes[i],idx_P0),0.0));
+					val_n = _nodal_p1[i];
+					//                nodal_pore_p[i] = LoadFactor*( val_n -Max(pcs->GetNodeValue(nodes[i],idx_P0),0.0));
 					// if(pcs->PCS_ExcavState == 1)
 					// WX:07.2011 for HM excavation
 					// val_n -= h_pcs->GetNodeValue(nodes[i],idx_P1 - 1);
@@ -1687,13 +1726,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						val_n = 0.;
 					if (pcs->Neglect_H_ini == 2) // WX:08.2011 -pw_ini
 						val_n -= h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-					AuxNodal[i] = LoadFactor * val_n;
+					nodal_pore_p[i] = LoadFactor * val_n;
 				}
 				break;
 			case 10: // Ground_flow. Will be merged to case 0
 				// WW dent_w =  m_mfp->Density();
 				for (i = 0; i < nnodes; i++)
-					AuxNodal[i] = LoadFactor * h_pcs->GetNodeValue(nodes[i], idx_P1);
+					nodal_pore_p[i] = LoadFactor * _nodal_p1[i];
 				break;
 			case 1: // Richards flow
 			{
@@ -1713,18 +1752,18 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				//
 				for (i = 0; i < nnodes; i++)
 				{
-					val_n = h_pcs->GetNodeValue(nodes[i], idx_P1);
+					val_n = _nodal_p1[i];
 					S_e = (m_mmp->SaturationCapillaryPressureFunction(-val_n) - m_mmp->capillary_pressure_values[1])
 					      / (m_mmp->capillary_pressure_values[2] - m_mmp->capillary_pressure_values[1]);
 					if (onExBoundaryState[i] == 1) // WX:02.2013
 						val_n = 0.;
 					if (biot < 0.0 && val_n < 0.0)
-						AuxNodal[i] = 0.0;
+						nodal_pore_p[i] = 0.0;
 					else
 					{
 // DECOVALEX
 #ifdef DECOVALEX
-						AuxNodal[i] = LoadFactor * (val_n - Max(h_pcs->GetNodeValue(nodes[i], idv0), 0.0));
+						nodal_pore_p[i] = LoadFactor * (val_n - Max(h_pcs->GetNodeValue(nodes[i], idv0), 0.0));
 #else
 						if (pcs->Neglect_H_ini == 2)
 						{
@@ -1740,38 +1779,38 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							{
 								case 1:
 									bishop_coef_ini = S_e_ini * smat->bishop_model_value;
-									AuxNodal[i] = LoadFactor * S_e * smat->bishop_model_value * val_n;
+									nodal_pore_p[i] = LoadFactor * S_e * smat->bishop_model_value * val_n;
 									break;
 								case 2:
 									bishop_coef_ini = pow(S_e_ini, smat->bishop_model_value);
-									AuxNodal[i] = LoadFactor * pow(S_e, smat->bishop_model_value) * val_n;
+									nodal_pore_p[i] = LoadFactor * pow(S_e, smat->bishop_model_value) * val_n;
 									break;
 								case 3:
 									h_pcs->GetNodeValue(nodes[i], idx_p1_ini) < smat->bishop_model_value
 									    ? bishop_coef_ini = 0.0
 									    : bishop_coef_ini = 1.0;
 									if (val_n < smat->bishop_model_value)
-										AuxNodal[i] = 0.0;
+										nodal_pore_p[i] = 0.0;
 									else
-										AuxNodal[i] = LoadFactor * val_n;
+										nodal_pore_p[i] = LoadFactor * val_n;
 									break;
 								default:
 									break;
 							}
 						}
 						else
-							AuxNodal[i] = LoadFactor * S_Water * val_n;
+							nodal_pore_p[i] = LoadFactor * S_Water * val_n;
 					} // WX:12.2012 end if(biot<0.0&&val_n<0.0) else
 
 					if (pcs->Neglect_H_ini == 2) // WX:08.2011
 					{
 						if (smat->bishop_model == 1 || smat->bishop_model == 2 || smat->bishop_model == 3)
-							AuxNodal[i] -= LoadFactor * bishop_coef_ini * h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
+							nodal_pore_p[i] -= LoadFactor * bishop_coef_ini * h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
 						else
 						{
 							double p0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
 							double Sat0 = LoadFactor * m_mmp->SaturationCapillaryPressureFunction(-p0);
-							AuxNodal[i] -= LoadFactor * Sat0 * p0;
+							nodal_pore_p[i] -= LoadFactor * Sat0 * p0;
 						}
 					}
 #endif
@@ -1808,7 +1847,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 									bishop_coef_ini = bishop_coef;
 									break;
 								case 2:
-									S_e = (AuxNodal_S[i] - m_mmp->capillary_pressure_values[1])
+									S_e = (_nodal_S[i] - m_mmp->capillary_pressure_values[1])
 									      / (m_mmp->capillary_pressure_values[2] - m_mmp->capillary_pressure_values[1]);
 									if (pcs->Neglect_H_ini == 2)
 									{
@@ -1820,13 +1859,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 									bishop_coef = pow(S_e, smat->bishop_model_value);
 									break;
 								case 3:
-									S_e = (AuxNodal_S[i] - m_mmp->capillary_pressure_values[1])
+									S_e = (_nodal_S[i] - m_mmp->capillary_pressure_values[1])
 									      / (m_mmp->capillary_pressure_values[2] - m_mmp->capillary_pressure_values[1]);
 									if (pcs->Neglect_H_ini == 2)
 										h_pcs->GetNodeValue(nodes[i], idx_p1_ini) < smat->bishop_model_value
 										    ? bishop_coef_ini = 0.0
 										    : bishop_coef_ini = 1.0;
-									h_pcs->GetNodeValue(nodes[i], idx_P1) < smat->bishop_model_value
+												_nodal_p1[i] < smat->bishop_model_value
 									    ? bishop_coef = 0.0
 									    : bishop_coef = 1.0;
 									break;
@@ -1837,7 +1876,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							if (smat->bishop_model == 1 || smat->bishop_model == 2
 							    || smat->bishop_model == 3) // pg-bishop*pc 05.2011 WX
 							{
-								val_n = h_pcs->GetNodeValue(nodes[i], idx_P2)
+								val_n = _nodal_p2[i]
 								        - bishop_coef * h_pcs->GetNodeValue(nodes[i], idx_P1);
 								if (onExBoundaryState[i] == 1) // WX:02.2013
 									val_n = 0.;
@@ -1847,8 +1886,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							}
 							else
 							{
-								val_n = h_pcs->GetNodeValue(nodes[i], idx_P2) // pg - Sw*pc
-								        - AuxNodal_S[i] * h_pcs->GetNodeValue(nodes[i], idx_P1);
+								val_n = _nodal_p2[i] // pg - Sw*pc
+								        - _nodal_S[i] * h_pcs->GetNodeValue(nodes[i], idx_P1);
 								if (onExBoundaryState[i] == 1) // WX:02.2013
 									val_n = 0.;
 								if (pcs->Neglect_H_ini == 2)
@@ -1857,12 +1896,12 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							}
 
 							if (biot < 0.0 && val_n < 0.0)
-								AuxNodal[i] = 0.0;
+								nodal_pore_p[i] = 0.0;
 							else
-								AuxNodal[i] = val_n * LoadFactor;
+								nodal_pore_p[i] = val_n * LoadFactor;
 						}
 
-						PressureC->multi(AuxNodal, AuxNodal1);
+						PressureC->multi(nodal_pore_p, AuxNodal1);
 					}
 					else
 					{
@@ -1870,13 +1909,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						{
 							for (i = 0; i < nnodes; i++)
 							{
-								AuxNodal0[i] -= h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-								AuxNodal2[i] -= h_pcs->GetNodeValue(nodes[i], idx_p2_ini);
+								_nodal_p1[i] -= h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
+								_nodal_p2[i] -= h_pcs->GetNodeValue(nodes[i], idx_p2_ini);
 							}
 						}
 
-						PressureC->multi(AuxNodal2, AuxNodal1, LoadFactor);
-						PressureC_S->multi(AuxNodal0, AuxNodal1, -1.0 * LoadFactor);
+						PressureC->multi(_nodal_p2, AuxNodal1, LoadFactor);
+						PressureC_S->multi(_nodal_p1, AuxNodal1, -1.0 * LoadFactor);
 					}
 
 					break;
@@ -1887,13 +1926,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					{
 						double Snw = h_pcs->GetNodeValue(nodes[i], idx_Snw);
 						double Sw = 1.0 - Snw;
-						double Pw = h_pcs->GetNodeValue(nodes[i], idx_P1);
-						double Pnw = h_pcs->GetNodeValue(nodes[i], idx_P2);
+						double Pw = _nodal_p1[i];
+						double Pnw = _nodal_p2[i];
 						val_n = Sw * Pw + Snw * Pnw;
 						if (biot < 0.0 && val_n < 0.0)
-							AuxNodal[i] = 0.0;
+							nodal_pore_p[i] = 0.0;
 						else
-							AuxNodal[i] = val_n * LoadFactor;
+							nodal_pore_p[i] = val_n * LoadFactor;
 					}
 					break;
 				}
@@ -1903,8 +1942,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				if (dynamic)
 					for (i = 0; i < nnodes; i++)
 					{
-						AuxNodal[i] *= fact;
-						AuxNodal[i] += dt * a_n[nodes[i] + NodeShift[problem_dimension_dm]]
+						nodal_pore_p[i] *= fact;
+						nodal_pore_p[i] += dt * a_n[nodes[i] + NodeShift[problem_dimension_dm]]
 						               + pcs->GetNodeValue(nodes[i], idx_P);
 					}
 
@@ -1914,7 +1953,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				{
 					for (i = 0; i < dim_times_nnodesHQ; i++)
 						AuxNodal1[i] = 0.0;
-					PressureC->multi(AuxNodal, AuxNodal1);
+					PressureC->multi(nodal_pore_p, AuxNodal1);
 				}
 				for (i = 0; i < dim_times_nnodesHQ; i++)
 					(*RHS)[i] -= fabs(biot) * AuxNodal1[i];
@@ -2195,7 +2234,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					dstress[i] += (*eleV_DM->Stress)(i, gp);
 				S_Water = 1.0; // WX:02.2013
 				if (Flow_Type > 0 && Flow_Type != 10)
-					S_Water = interpolate(AuxNodal_S, 1);
+					S_Water = interpolate(_nodal_S, 1);
 			}
 			else
 			{
@@ -2267,8 +2306,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						//
 						if (smat->SwellingPressureType == 3)
 						{
-							double suc = interpolate(AuxNodal1);
-							double dsuc = interpolate(AuxNodal);
+							double suc = interpolate(_nodal_cp0);
+							double dsuc = interpolate(_nodal_dcp);
 							(*smat->data_Youngs)(7) = suc;
 							(*smat->data_Youngs)(8) = dsuc;
 							smat->CalStress_and_TangentialMatrix_CC_SubStep(gp, eleV_DM, dstress, ConsistDep, update);
@@ -2492,18 +2531,18 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			// Fluid coupling;
 			S_Water = 1.0;
 			if (Flow_Type > 0 && Flow_Type != 10)
-				S_Water = interpolate(AuxNodal_S, 1);
+				S_Water = interpolate(_nodal_S, 1);
 			// Decovalex. Swelling pressure
 			if (smat->SwellingPressureType == 1)
 			{
-				dS = -interpolate(AuxNodal_S0, 1);
+				dS = -interpolate(_nodal_S0, 1);
 				dS += S_Water;
 				for (i = 0; i < 3; i++)
 					dstress[i] -= 2.0 * S_Water * dS * smat->Max_SwellingPressure;
 			}
 			else if (smat->SwellingPressureType == 2) // LBNL's model
 			{
-				dS = -interpolate(AuxNodal_S0, 1);
+				dS = -interpolate(_nodal_S0, 1);
 				dS += S_Water;
 				for (i = 0; i < 3; i++)
 					dstress[i] -= dS * smat->Max_SwellingPressure;
