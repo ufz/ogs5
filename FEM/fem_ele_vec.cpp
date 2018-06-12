@@ -12,23 +12,16 @@
    Designed and programmed by WW, 06/2004
  */
 
+#include "fem_ele_vec.h"
+
 #include <cfloat>
-//#include "makros.h"
-//#include <iostream>
-// Sytem matrix
+#include <algorithm>
 #include "mathlib.h"
+#include "matrix_class.h"
 #include "matrix_routines.h"
 #include "pcs_dm.h"
 #include "rf_mfp_new.h"
 #include "rf_msp_new.h"
-// Time step
-//#include "rf_tim_new.h"
-// MSHLib
-//#include "msh_elem.h"
-// FEMLib
-//#include "fem_ele.h"
-#include "fem_ele_vec.h"
-//#include "rf_pcs.h"
 #include "tools.h" //12.2009. WW
 // Equation
 #if defined(NEW_EQS)
@@ -52,51 +45,75 @@ std::vector<FiniteElement::ElementValue_DM*> ele_value_dm;
 
 namespace FiniteElement
 {
-//-------------------------------------------------------------------------
-//-------------------------------------------------------------------------
-//-------------------------------------------------------------------------
-// class Element_DM
+using SolidProp::CSolidProperties;
+using Math_Group::Matrix;
+using Math_Group::Vec;
+using ::CRFProcess;
+using ::CMediumProperties;
+using process::CRFProcessDeformation;
+using MeshLib::CElem;
 
-//  Constructor of class Element_DM
-CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs, const int C_Sys_Flad, const int order)
-    : CElement(C_Sys_Flad, order), pcs(dm_pcs), PressureC(NULL), PressureC_S(NULL), PressureC_S_dp(NULL), b_rhs(NULL)
+CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
+	const int C_Sys_Flad, const int order)
+    : CElement(C_Sys_Flad, order), pcs(dm_pcs), h_pcs(NULL), t_pcs(NULL), excavation(false),
+	  ns((dim == 3)? 6: 4),  Flow_Type(-1),
+      idx_P(-1), idx_P0(-1), idx_P1(-1), idx_P1_0(-1), idx_P2(-1),
+	  idx_T0(-1), idx_T1(-1), idx_S0(-1), idx_S(-1), idx_Snw(-1), idx_pls(-1),
+	  _nodal_stress_indices(new  int[ns]), _nodal_strain_indices ((new  int[ns])),
+	  B_matrix((dim == 3)? new Matrix(6, 3) : new Matrix(4, 2)),
+	  B_matrix_T((dim == 3)? new Matrix(3, 6) : new Matrix(2, 4)),
+	  De((dim == 3)? new Matrix(6, 6) : new Matrix(4, 4)),
+	  ConsistDep((dim == 3)? new Matrix(6, 6) : new Matrix(4, 4)),
+	  AuxMatrix((dim == 3)? new Matrix(3, 3) : new Matrix(2, 2)),
+	  AuxMatrix2((dim == 3)? new Matrix(3, 6) : new Matrix(2, 4)),
+	  Stiffness((pcs->Memory_Type == 0) ? new Matrix(60, 60) : NULL),
+	  PressureC(NULL), PressureC_S(NULL), PressureC_S_dp(NULL),
+	  RHS( (pcs->Memory_Type == 0) ? new Vec(60) : NULL), b_rhs(NULL),
+	  smat(NULL), m_mfp(NULL), m_mmp(NULL),
+	  dstress(new double[ns]), dstrain(new double[ns]),
+	  stress_ne(new double[ns]), strain_ne(new double[ns]), stress0(new double[ns]),
+	  Disp((dim == 3)? new double[60] : new double[18]),
+	  Temp((dim == 3)? new double[20] : new double[9]),
+	  T1((dim == 3)? new double[20] : new double[9]),
+	  Tem(273.15 + 23.0), S_Water(1.), eleV_DM(NULL),
+	  NodesInJumpedA(enhanced_strain_dm && dim ==2 ? new bool[9]: NULL),
+	  Ge(enhanced_strain_dm && dim ==2 ?new Matrix(4, 2) : NULL),
+	  Pe(enhanced_strain_dm && dim ==2 ?new Matrix(2, 4) : NULL),
+	  BDG(enhanced_strain_dm && dim ==2 ?new Matrix(2, 18) : NULL),
+	  PDB(enhanced_strain_dm && dim ==2 ?new Matrix(18, 2) : NULL),
+	  DtD(enhanced_strain_dm && dim ==2 ?new Matrix(2, 2) : NULL),
+	  PeDe(enhanced_strain_dm && dim ==2 ?new Matrix(2, 4) : NULL),
+	  X0(enhanced_strain_dm && dim ==2 ? new double[3]: NULL),
+	  n_jump(enhanced_strain_dm && dim ==2 ? new double[3]: NULL),
+	  pr_stress(enhanced_strain_dm && dim ==2 ? new double[3]: NULL),
+	  Sxx(dim ==3 ? new double[20]: new double[9]),
+	  Syy(dim ==3 ? new double[20]: new double[9]),
+	  Szz(dim ==3 ? new double[20]: new double[9]),
+	  Sxy(dim ==3 ? new double[20]: new double[9]),
+	  Sxz(dim ==3 ? new double[20]: NULL),
+	  Syz(dim ==3 ? new double[20]: NULL),
+	  pstr(dim ==3 ? new double[20]: new double[9]),
+	  AuxNodal0(new double[8]),
+	  AuxNodal(new double[8]),
+	  AuxNodal_S0(new double[8]),
+	  AuxNodal_S(new double[8]),
+	  AuxNodal1(new double[60]), AuxNodal2(NULL),
+	  dynamic((dm_pcs->pcs_type_name_vector[0].find("DYNAMIC") != std::string::npos)
+			? true : false),
+	  Mass(dynamic ? new Matrix(20, 20) : NULL),
+	  Idx_Vel(dynamic ? new int[3] : NULL),
+	  dAcceleration(dynamic ? new Vec(60) : NULL),
+	  beta2(dynamic ? dm_pcs->m_num->GetDynamicDamping_beta2() : 1.),
+	  bbeta1(dynamic ? dm_pcs->m_num->GetDynamicDamping_bbeta(): 1.)
 {
-	int i;
-	excavation = false; // 12.2009. WW
-
-	S_Water = 1.0;
-	Tem = 273.15 + 23.0;
-	h_pcs = NULL;
-	t_pcs = NULL;
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012. WW
 	m_dom = NULL;
 #endif
 
-	AuxNodal2 = NULL;
-	Idx_Vel = NULL;
-	X0 = n_jump = pr_stress = NULL;
-	//
-	ns = 4;
-	if (dim == 3)
-		ns = 6;
-	//  10.11.2010. WW
-	AuxNodal0 = new double[8];
-	AuxNodal = new double[8];
-	AuxNodal_S0 = new double[8];
-	AuxNodal_S = new double[8];
-	AuxNodal1 = new double[60];
-
-	Idx_Stress = new int[ns];
-	Idx_Strain = new int[ns];
-	strain_ne = new double[ns];
-	stress_ne = new double[ns];
-	stress0 = new double[ns];
-	for (i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 		NodeShift[i] = pcs->Shift[i];
-	if (dm_pcs->pcs_type_name_vector[0].find("DYNAMIC") != std::string::npos)
+	if (dynamic)
 	{
-		// Indecex in nodal value table
-		Idx_Vel = new int[3];
 		Idx_dm0[0] = pcs->GetNodeValueIndex("ACCELERATION_X1");
 		Idx_dm0[1] = pcs->GetNodeValueIndex("ACCELERATION_Y1");
 		Idx_dm1[0] = Idx_dm0[0] + 1;
@@ -110,19 +127,9 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs, con
 			Idx_dm1[2] = Idx_dm1[2] + 1;
 			Idx_Vel[2] = pcs->GetNodeValueIndex("VELOCITY_DM_Z");
 		}
-		Mass = new Matrix(20, 20);
-		dAcceleration = new Vec(60);
-
-		beta2 = dm_pcs->m_num->GetDynamicDamping_beta2();
-		bbeta1 = dm_pcs->m_num->GetDynamicDamping_bbeta();
-		dynamic = true;
 	}
 	else
 	{
-		dynamic = false;
-		dAcceleration = NULL;
-		// Idx_Vel[0] = Idx_Vel[1] = Idx_Vel[2] = -1;
-		beta2 = bbeta1 = 1.0;
 		// Indecex in nodal value table
 		Idx_dm0[0] = pcs->GetNodeValueIndex("DISPLACEMENT_X1");
 		Idx_dm0[1] = pcs->GetNodeValueIndex("DISPLACEMENT_Y1");
@@ -137,26 +144,30 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs, con
 		}
 	}
 
-	// idx_pls =  pcs->GetNodeValueIndex("STRAIN_PLS");
 	// Strain
-	Idx_Strain[0] = pcs->GetNodeValueIndex("STRAIN_XX");
-	Idx_Strain[1] = pcs->GetNodeValueIndex("STRAIN_YY");
-	Idx_Strain[2] = pcs->GetNodeValueIndex("STRAIN_ZZ");
-	Idx_Strain[3] = pcs->GetNodeValueIndex("STRAIN_XY");
+	_nodal_strain_indices[0] = pcs->GetNodeValueIndex("STRAIN_XX");
+	_nodal_strain_indices[1] = pcs->GetNodeValueIndex("STRAIN_YY");
+	_nodal_strain_indices[2] = pcs->GetNodeValueIndex("STRAIN_ZZ");
+	_nodal_strain_indices[3] = pcs->GetNodeValueIndex("STRAIN_XY");
 	// Stress
-	Idx_Stress[0] = pcs->GetNodeValueIndex("STRESS_XX");
-	Idx_Stress[1] = pcs->GetNodeValueIndex("STRESS_YY");
-	Idx_Stress[2] = pcs->GetNodeValueIndex("STRESS_ZZ");
-	Idx_Stress[3] = pcs->GetNodeValueIndex("STRESS_XY");
-
-	idx_S = -1;
-	// Saturation;
-	S_Water = 1.0;
+	_nodal_stress_indices[0] = pcs->GetNodeValueIndex("STRESS_XX");
+	_nodal_stress_indices[1] = pcs->GetNodeValueIndex("STRESS_YY");
+	_nodal_stress_indices[2] = pcs->GetNodeValueIndex("STRESS_ZZ");
+	_nodal_stress_indices[3] = pcs->GetNodeValueIndex("STRESS_XY");
+	//
+	if (dim == 3)
+	{
+		_nodal_strain_indices[4] = pcs->GetNodeValueIndex("STRAIN_XZ");
+		_nodal_strain_indices[5] = pcs->GetNodeValueIndex("STRAIN_YZ");
+		//
+		_nodal_stress_indices[4] = pcs->GetNodeValueIndex("STRESS_XZ");
+		_nodal_stress_indices[5] = pcs->GetNodeValueIndex("STRESS_YZ");
+	}
 
 	// For cache NW
 	vec_B_matrix.resize(20);
 	vec_B_matrix_T.resize(20);
-	for (i = 0; i < (int)vec_B_matrix.size(); i++)
+	for (int i = 0; i < (int)vec_B_matrix.size(); i++)
 	{
 		switch (dim)
 		{
@@ -170,108 +181,17 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs, con
 				break;
 		}
 	}
-	//  10.11.2010. WW
-	if (enhanced_strain_dm)
-	{
-		X0 = new double[3];
-		n_jump = new double[3];
-		pr_stress = new double[3];
-	}
 
-	//
-	switch (dim)
-	{
-		case 2:
-			ns = 4;
-			B_matrix = new Matrix(4, 2);
-			B_matrix_T = new Matrix(2, 4);
-			dstress = new double[4];
-			dstrain = new double[4];
-			De = new Matrix(4, 4);
-			ConsistDep = new Matrix(4, 4);
-			AuxMatrix = new Matrix(2, 2);
-			AuxMatrix2 = new Matrix(2, 4); // NW
-			Disp = new double[18];
-			Temp = new double[9];
-			T1 = new double[9];
-
-			Sxx = new double[9];
-			Syy = new double[9];
-			Szz = new double[9];
-			Sxy = new double[9];
-			pstr = new double[9];
-
-			Sxz = NULL;
-			Syz = NULL;
-
-			if (enhanced_strain_dm)
-			{
-				NodesInJumpedA = new bool[9];
-				Ge = new Matrix(4, 2);
-				Pe = new Matrix(2, 4);
-				PeDe = new Matrix(2, 4);
-
-				BDG = new Matrix(2, 18);
-				PDB = new Matrix(18, 2);
-				DtD = new Matrix(2, 2);
-			}
-			break;
-		case 3:
-			ns = 6;
-			B_matrix = new Matrix(6, 3);
-			B_matrix_T = new Matrix(3, 6);
-			dstress = new double[6];
-			dstrain = new double[6];
-			De = new Matrix(6, 6);
-			ConsistDep = new Matrix(6, 6);
-			AuxMatrix = new Matrix(3, 3);
-			AuxMatrix2 = new Matrix(3, 6); // NW
-			Disp = new double[60];
-			Temp = new double[20];
-			T1 = new double[20];
-
-			Sxx = new double[20];
-			Syy = new double[20];
-			Szz = new double[20];
-			Sxy = new double[20];
-			Sxz = new double[20];
-			Syz = new double[20];
-			pstr = new double[20];
-
-			// Indecex in nodal value table
-			Idx_Strain[4] = pcs->GetNodeValueIndex("STRAIN_XZ");
-			Idx_Strain[5] = pcs->GetNodeValueIndex("STRAIN_YZ");
-			//
-			Idx_Stress[4] = pcs->GetNodeValueIndex("STRESS_XZ");
-			Idx_Stress[5] = pcs->GetNodeValueIndex("STRESS_YZ");
-			break;
-	}
 	*B_matrix = 0.0;
 	*B_matrix_T = 0.0;
 
 	if (pcs->Memory_Type == 0) // Do not store local matrices
 	{
-		Stiffness = new Matrix(60, 60);
-		RHS = new Vec(60);
 		if (H_Process)
 			PressureC = new Matrix(60, 20);
 	}
-	else // Local matrices stored and allocated the pcs.cpp;
-	{
-		Stiffness = NULL;
-		RHS = NULL;
-	}
-
-	// Material properties
-	smat = NULL;
-	// Fluid coupling
-	m_mfp = NULL;
-	// Medium property
-	m_mmp = NULL; //
 
 	// Coupling
-	Flow_Type = -1;
-	idx_P = -1;
 	for (size_t i = 0; i < pcs_vector.size(); i++)
 	{
 		//      if (pcs_vector[i]->pcs_type_name.find("FLOW") != string::npos) {
@@ -392,8 +312,8 @@ CFiniteElementVec::~CFiniteElementVec()
 	delete[] Szz;
 	delete[] Sxy;
 	delete[] pstr;
-	delete[] Idx_Strain;
-	delete[] Idx_Stress;
+	delete[] _nodal_strain_indices;
+	delete[] _nodal_stress_indices;
 	delete[] strain_ne;
 	delete[] stress_ne;
 	delete[] stress0;
@@ -482,8 +402,8 @@ CFiniteElementVec::~CFiniteElementVec()
 	AuxNodal = AuxNodal_S0 = AuxNodal_S = AuxNodal1 = NULL;
 	Idx_Vel = NULL;
 	//
-	Idx_Strain = NULL;
-	Idx_Stress = NULL;
+	_nodal_strain_indices = NULL;
+	_nodal_stress_indices = NULL;
 	strain_ne = NULL;
 	stress_ne = NULL;
 	stress0 = NULL;
@@ -794,12 +714,6 @@ double CFiniteElementVec::CalDensity()
 
 			if (Flow_Type == 2 || Flow_Type == 3)
 			{
-				/*
-				   p_g=0.0;
-				   for(i = 0; i< nnodes; i++)
-				   p_g += shapefct[i]*AuxNodal2[i];
-				   rho += porosity * (1.0-Sw)*COMP_MOL_MASS_AIR*p_g/(GAS_CONSTANT*(Tem+273.15));
-				 */
 				CFluidProperties* GasProp;
 				GasProp = MFPGet("GAS");
 				rho += porosity * (1.0 - Sw) * GasProp->Density();
@@ -2801,25 +2715,25 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			ESxy /= dbuff[i];
 			ESzz /= dbuff[i];
 
-			ESxx += pcs->GetNodeValue(nodes[i], Idx_Strain[0]);
-			ESyy += pcs->GetNodeValue(nodes[i], Idx_Strain[1]);
-			ESzz += pcs->GetNodeValue(nodes[i], Idx_Strain[2]);
-			ESxy += pcs->GetNodeValue(nodes[i], Idx_Strain[3]);
+			ESxx += pcs->GetNodeValue(nodes[i], _nodal_strain_indices[0]);
+			ESyy += pcs->GetNodeValue(nodes[i], _nodal_strain_indices[1]);
+			ESzz += pcs->GetNodeValue(nodes[i], _nodal_strain_indices[2]);
+			ESxy += pcs->GetNodeValue(nodes[i], _nodal_strain_indices[3]);
 
-			pcs->SetNodeValue(nodes[i], Idx_Strain[0], ESxx);
-			pcs->SetNodeValue(nodes[i], Idx_Strain[1], ESyy);
-			pcs->SetNodeValue(nodes[i], Idx_Strain[2], ESzz);
-			pcs->SetNodeValue(nodes[i], Idx_Strain[3], ESxy);
+			pcs->SetNodeValue(nodes[i], _nodal_strain_indices[0], ESxx);
+			pcs->SetNodeValue(nodes[i], _nodal_strain_indices[1], ESyy);
+			pcs->SetNodeValue(nodes[i], _nodal_strain_indices[2], ESzz);
+			pcs->SetNodeValue(nodes[i], _nodal_strain_indices[3], ESxy);
 
 			if (ele_dim == 3)
 			{
 				ESxz /= dbuff[i];
 				ESyz /= dbuff[i];
-				ESxz += pcs->GetNodeValue(nodes[i], Idx_Strain[4]);
-				ESyz += pcs->GetNodeValue(nodes[i], Idx_Strain[5]);
+				ESxz += pcs->GetNodeValue(nodes[i], _nodal_strain_indices[4]);
+				ESyz += pcs->GetNodeValue(nodes[i], _nodal_strain_indices[5]);
 				//
-				pcs->SetNodeValue(nodes[i], Idx_Strain[4], ESxz);
-				pcs->SetNodeValue(nodes[i], Idx_Strain[5], ESyz);
+				pcs->SetNodeValue(nodes[i], _nodal_strain_indices[4], ESxz);
+				pcs->SetNodeValue(nodes[i], _nodal_strain_indices[5], ESyz);
 			}
 		}
 	}
@@ -2965,17 +2879,17 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			Pls /= dbuff[i];
 			//
 			long node_i = nodes[i];
-			ESxx += pcs->GetNodeValue(node_i, Idx_Stress[0]);
-			ESyy += pcs->GetNodeValue(node_i, Idx_Stress[1]);
-			ESzz += pcs->GetNodeValue(node_i, Idx_Stress[2]);
-			ESxy += pcs->GetNodeValue(node_i, Idx_Stress[3]);
+			ESxx += pcs->GetNodeValue(node_i, _nodal_stress_indices[0]);
+			ESyy += pcs->GetNodeValue(node_i, _nodal_stress_indices[1]);
+			ESzz += pcs->GetNodeValue(node_i, _nodal_stress_indices[2]);
+			ESxy += pcs->GetNodeValue(node_i, _nodal_stress_indices[3]);
 			if (eleV_DM->pStrain) // 08.02.2008 WW
 				Pls += pcs->GetNodeValue(node_i, idx_pls);
 
-			pcs->SetNodeValue(node_i, Idx_Stress[0], ESxx);
-			pcs->SetNodeValue(node_i, Idx_Stress[1], ESyy);
-			pcs->SetNodeValue(node_i, Idx_Stress[2], ESzz);
-			pcs->SetNodeValue(node_i, Idx_Stress[3], ESxy);
+			pcs->SetNodeValue(node_i, _nodal_stress_indices[0], ESxx);
+			pcs->SetNodeValue(node_i, _nodal_stress_indices[1], ESyy);
+			pcs->SetNodeValue(node_i, _nodal_stress_indices[2], ESzz);
+			pcs->SetNodeValue(node_i, _nodal_stress_indices[3], ESxy);
 			if (eleV_DM->pStrain) // 08.02.2008 WW
 				pcs->SetNodeValue(node_i, idx_pls, fabs(Pls));
 
@@ -2984,11 +2898,11 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				ESxz /= dbuff[i];
 				ESyz /= dbuff[i];
 
-				ESxz += pcs->GetNodeValue(node_i, Idx_Stress[4]);
-				ESyz += pcs->GetNodeValue(node_i, Idx_Stress[5]);
+				ESxz += pcs->GetNodeValue(node_i, _nodal_stress_indices[4]);
+				ESyz += pcs->GetNodeValue(node_i, _nodal_stress_indices[5]);
 
-				pcs->SetNodeValue(node_i, Idx_Stress[4], ESxz);
-				pcs->SetNodeValue(node_i, Idx_Stress[5], ESyz);
+				pcs->SetNodeValue(node_i, _nodal_stress_indices[4], ESxz);
+				pcs->SetNodeValue(node_i, _nodal_stress_indices[5], ESyz);
 			}
 		}
 	}
@@ -3778,6 +3692,35 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		}
 	}
 
+
+	/***************************************************************************
+	   GeoSys - Funktion:
+	            CFiniteElementVec:: CalcStrain_v()
+	   Aufgabe:
+	           Calculate effictive strain at Gauss points
+	   Formalparameter:
+	           E:
+
+	   Programming:
+	   01/2009   WW/UWG
+	 **************************************************************************/
+	double CFiniteElementVec::CalcStrain_v()
+	{
+		for (int j(0); j < ns; j++)
+		{
+			dstrain[j] = 0.0;
+			for (int i = 0; i < nnodesHQ; i++)
+				dstrain[j] += pcs->GetNodeValue(nodes[i], _nodal_strain_indices[j]) * shapefctHQ[i];
+		}
+		double val = 0;
+		for (int i = 0; i < 3; i++)
+			val += dstrain[i] * dstrain[i];
+		for (int i = 3; i < ns; i++)
+			val += 0.5 * dstrain[i] * dstrain[i];
+
+		return sqrt(2.0 * val / 3.);
+	}
+
 	/*----------------------------------------------------------------
 	   Class ElementValue_DM
 
@@ -4104,31 +4047,9 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		ev_loc_nr_res = NULL;
 	}
 
-	/***************************************************************************
-	   GeoSys - Funktion:
-	            CFiniteElementVec:: CalcStrain_v()
-	   Aufgabe:
-	           Calculate effictive strain at Gauss points
-	   Formalparameter:
-	           E:
-
-	   Programming:
-	   01/2009   WW/UWG
-	 **************************************************************************/
-	double CFiniteElementVec::CalcStrain_v()
+	double ElementValue_DM::MeanStress(const int gp)
 	{
-		for (int j(0); j < ns; j++)
-		{
-			dstrain[j] = 0.0;
-			for (int i = 0; i < nnodesHQ; i++)
-				dstrain[j] += pcs->GetNodeValue(nodes[i], Idx_Strain[j]) * shapefctHQ[i];
-		}
-		double val = 0;
-		for (int i = 0; i < 3; i++)
-			val += dstrain[i] * dstrain[i];
-		for (int i = 3; i < ns; i++)
-			val += 0.5 * dstrain[i] * dstrain[i];
-
-		return sqrt(2.0 * val / 3.);
+		return (*Stress)(0, gp) + (*Stress)(1, gp) + (*Stress)(2, gp);
 	}
+
 } // end namespace FiniteElement
