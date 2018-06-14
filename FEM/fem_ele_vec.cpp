@@ -1647,18 +1647,7 @@ void CFiniteElementVec::ComputeMass()
  **************************************************************************/
 void CFiniteElementVec::GlobalAssembly_RHS()
 {
-	int i, j, k;
-	double fact, val_n = 0.0;
-	double* a_n = NULL;
-	double biot = 1.0;
-	// WW double dent_w = 1000.0;
-	bool Residual;
-	Residual = false;
-	fact = 1.0;
-	k = 0;
-	int idx_p1_ini = 0, idx_p2_ini = 0; //, idx_sw_ini;//WX:08.2011 neglect ini h affect
-
-	biot = smat->biot_const;
+	bool Residual = false;
 	if (Flow_Type >= 0)
 	{
 		if (pcs->type / 10 == 4) // Monolithic scheme
@@ -1671,14 +1660,9 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			Residual = true;
 	}
 	if (dynamic)
-	{
-		fact = bbeta1 * dt;
 		Residual = true;
-		// Solution of the previous step
-		a_n = pcs->GetAuxArray();
-	}
+
 	// Assemble coupling matrix
-	// If dynamic GetNodeValue(nodes[i],idx_P0) = 0;
 	if (Residual)
 	{
 		// WX:02.2013 coupling excavation
@@ -1738,206 +1722,128 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			}
 		}
 
+		const double biot = smat->biot_const;
 		double nodal_pore_p[max_nnodes_LE];
+		const int dim_times_nnodesHQ(dim * nnodesHQ);
+		for (int i = 0; i < dim_times_nnodesHQ; i++)
+			AuxNodal1[i] = 0.0;
 		switch (Flow_Type)
 		{
-			case 0: // Liquid flow
+			//case 10: // Ground_flow. Will be merged to case 0
+			case 0:  // Liquid flow
 				// For monolithic scheme and liquid flow, the limit of positive pressure must be removed
-				if (pcs->Neglect_H_ini == 2) // WX
-					idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
-				for (i = 0; i < nnodes; i++)
-				{
-					val_n = _nodal_p1[i];
-					//                nodal_pore_p[i] = LoadFactor*( val_n -Max(pcs->GetNodeValue(nodes[i],idx_P0),0.0));
-					// if(pcs->PCS_ExcavState == 1)
-					// WX:07.2011 for HM excavation
-					// val_n -= h_pcs->GetNodeValue(nodes[i],idx_P1 - 1);
-					if (onExBoundaryState[i] == 1) // WX:02.2013
-						val_n = 0.;
-					if (pcs->Neglect_H_ini == 2) // WX:08.2011 -pw_ini
-						val_n -= h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-					nodal_pore_p[i] = LoadFactor * val_n;
-				}
-				break;
-			case 10: // Ground_flow. Will be merged to case 0
-				// WW dent_w =  m_mfp->Density();
-				for (i = 0; i < nnodes; i++)
+				for (int i = 0; i < nnodes; i++)
 					nodal_pore_p[i] = LoadFactor * _nodal_p1[i];
-				break;
-			case 1: // Richards flow
-			{
-				// WX:08.2011
-				double bishop_coef_ini = 0.0;
-				double S_e, S_e_ini = 0.0, sw_ini;
-
+				if (excavation)
+				{
+					for (int i = 0; i < nnodes; i++)
+					{
+						if (onExBoundaryState[i] == 1) // WX:02.2013
+							nodal_pore_p[i] = 0.0;
+					}
+				}
 				if (pcs->Neglect_H_ini == 2)
 				{
-					idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
+					const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
+					for (int i = 0; i < nnodes; i++)
+						nodal_pore_p[i] -= LoadFactor * h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
 				}
-#ifdef DECOVALEX
-				int idv0;
-				// DECOVALEX
-				idv0 = S_Water * h_pcs->GetNodeValueIndex("PRESSURE_I");
-#endif
-				//
-				for (i = 0; i < nnodes; i++)
+				// If dymanic
+				if (dynamic)
 				{
-					val_n = _nodal_p1[i];
-					S_e = (m_mmp->SaturationCapillaryPressureFunction(-val_n) - m_mmp->capillary_pressure_values[1])
-					      / (m_mmp->capillary_pressure_values[2] - m_mmp->capillary_pressure_values[1]);
-					if (onExBoundaryState[i] == 1) // WX:02.2013
-						val_n = 0.;
-					if (biot < 0.0 && val_n < 0.0)
-						nodal_pore_p[i] = 0.0;
-					else
+					const double fact = bbeta1 * dt;
+					double const* const	a_n = pcs->GetAuxArray();
+					for (int i = 0; i < nnodes; i++)
 					{
-// DECOVALEX
-#ifdef DECOVALEX
-						nodal_pore_p[i] = LoadFactor * (val_n - Max(h_pcs->GetNodeValue(nodes[i], idv0), 0.0));
-#else
-						if (pcs->Neglect_H_ini == 2)
+						nodal_pore_p[i] *= fact;
+						nodal_pore_p[i] += dt * a_n[nodes[i] + NodeShift[problem_dimension_dm]]
+						               + pcs->GetNodeValue(nodes[i], idx_P);
+					}
+				}
+				PressureC->multi(nodal_pore_p, AuxNodal1);
+				break;
+			case 1: // Richards flow
+				{
+					if (smat->bishop_model < 0)
+					{
+						for (int i = 0; i < nnodes; i++)
 						{
-							sw_ini = m_mmp->SaturationCapillaryPressureFunction(
-							    -h_pcs->GetNodeValue(nodes[i], idx_p1_ini));
-							S_e_ini = (sw_ini - m_mmp->capillary_pressure_values[1])
-							          / (m_mmp->capillary_pressure_values[2] - m_mmp->capillary_pressure_values[1]);
+							nodal_pore_p[i] = (_nodal_p1[i] < 0.0) ?
+								 0.0 : LoadFactor * S_Water * _nodal_p1[i];
 						}
-
-						if (smat->bishop_model > 0)
+						if (excavation)
 						{
-							switch (smat->bishop_model)
+							for (int i = 0; i < nnodes; i++)
 							{
-								case 1:
-									bishop_coef_ini = S_e_ini * smat->bishop_model_value;
-									nodal_pore_p[i] = LoadFactor * S_e * smat->bishop_model_value * val_n;
-									break;
-								case 2:
-									bishop_coef_ini = pow(S_e_ini, smat->bishop_model_value);
-									nodal_pore_p[i] = LoadFactor * pow(S_e, smat->bishop_model_value) * val_n;
-									break;
-								case 3:
-									h_pcs->GetNodeValue(nodes[i], idx_p1_ini) < smat->bishop_model_value
-									    ? bishop_coef_ini = 0.0
-									    : bishop_coef_ini = 1.0;
-									if (val_n < smat->bishop_model_value)
-										nodal_pore_p[i] = 0.0;
-									else
-										nodal_pore_p[i] = LoadFactor * val_n;
-									break;
-								default:
-									break;
+								if (onExBoundaryState[i] == 1) // WX:02.2013
+									nodal_pore_p[i] = 0.0;
 							}
 						}
-						else
-							nodal_pore_p[i] = LoadFactor * S_Water * val_n;
-					} // WX:12.2012 end if(biot<0.0&&val_n<0.0) else
-
-					if (pcs->Neglect_H_ini == 2) // WX:08.2011
-					{
-						if (smat->bishop_model == 1 || smat->bishop_model == 2 || smat->bishop_model == 3)
-							nodal_pore_p[i] -= LoadFactor * bishop_coef_ini * h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-						else
+						if (pcs->Neglect_H_ini == 2)
 						{
-							double p0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-							double Sat0 = LoadFactor * m_mmp->SaturationCapillaryPressureFunction(-p0);
-							nodal_pore_p[i] -= LoadFactor * Sat0 * p0;
+							const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
+							for (int i = 0; i < nnodes; i++)
+							{
+								const double p0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
+								const double Sat0 = LoadFactor * m_mmp->SaturationCapillaryPressureFunction(-p0);
+								nodal_pore_p[i] -= LoadFactor * Sat0 * p0;
+							}
+						}
+
+						break;
+					}
+					else // Has a bishop model
+					{
+						for (int i = 0; i < nnodes; i++)
+						{
+							const double val_n = _nodal_p1[i];
+							if (val_n < 0.0)
+								nodal_pore_p[i] = 0.0;
+							else
+							{
+								const double S_e = m_mmp->GetEffectiveSaturationForPerm(_nodal_S[i], 0);
+								nodal_pore_p[i] = LoadFactor * smat->getBishopCoefficient(S_e, val_n) * val_n;
+							} // WX:12.2012 end if(biot<0.0&&val_n<0.0) else
+						}
+
+						if (excavation)
+						{
+							for (int i = 0; i < nnodes; i++)
+							{
+								if (onExBoundaryState[i] == 1)
+									nodal_pore_p[i] = 0.0;
+							}
+						}
+
+						if (pcs->Neglect_H_ini == 2)
+						{
+							for (int i = 0; i < nnodes; i++)
+							{
+								const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
+								const double p0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
+								const double Sw0 = m_mmp->SaturationCapillaryPressureFunction(-p0);
+								const double S_e0 =  m_mmp->GetEffectiveSaturationForPerm(Sw0, 0);
+								nodal_pore_p[i] -= LoadFactor * smat->getBishopCoefficient(S_e0, p0) * p0;
+							}
 						}
 					}
-#endif
-					}
-					break;
 				}
-				case 2:
+				PressureC->multi(nodal_pore_p, AuxNodal1);
+				break;
+			case 2:
 				{ // Multi-phase-flow: p_g-Sw*p_c
 					// 07.2011. WW
 					const int dim_times_nnodesHQ(dim * nnodesHQ);
-					for (i = 0; i < dim_times_nnodesHQ; i++)
+					for (int i = 0; i < dim_times_nnodesHQ; i++)
 						AuxNodal1[i] = 0.0;
 
-					if (h_pcs->Neglect_H_ini == 2)
-					{
-						idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
-						idx_p2_ini = h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
-						// idx_sw_ini = h_pcs->GetNodeValueIndex("SATURATION1_Ini");
-					}
-
-					if (smat->bishop_model > 0)
-					{
-						double bishop_coef = 0.0, bishop_coef_ini = 0.0;
-						double S_e, S_e_ini = 0.0, sw_ini;
-
-						for (i = 0; i < nnodes; i++)
-						{
-							sw_ini
-							    = m_mmp->SaturationCapillaryPressureFunction(h_pcs->GetNodeValue(nodes[i], idx_p1_ini));
-							switch (smat->bishop_model)
-							{
-								case 1:
-									bishop_coef = smat->bishop_model_value;
-									bishop_coef_ini = bishop_coef;
-									break;
-								case 2:
-									S_e = (_nodal_S[i] - m_mmp->capillary_pressure_values[1])
-									      / (m_mmp->capillary_pressure_values[2] - m_mmp->capillary_pressure_values[1]);
-									if (pcs->Neglect_H_ini == 2)
-									{
-										S_e_ini = (sw_ini - m_mmp->capillary_pressure_values[1])
-										          / (m_mmp->capillary_pressure_values[2]
-										             - m_mmp->capillary_pressure_values[1]);
-										bishop_coef_ini = pow(S_e_ini, smat->bishop_model_value);
-									}
-									bishop_coef = pow(S_e, smat->bishop_model_value);
-									break;
-								case 3:
-									S_e = (_nodal_S[i] - m_mmp->capillary_pressure_values[1])
-									      / (m_mmp->capillary_pressure_values[2] - m_mmp->capillary_pressure_values[1]);
-									if (pcs->Neglect_H_ini == 2)
-										h_pcs->GetNodeValue(nodes[i], idx_p1_ini) < smat->bishop_model_value
-										    ? bishop_coef_ini = 0.0
-										    : bishop_coef_ini = 1.0;
-												_nodal_p1[i] < smat->bishop_model_value
-									    ? bishop_coef = 0.0
-									    : bishop_coef = 1.0;
-									break;
-								default:
-									break;
-							}
-
-							if (smat->bishop_model == 1 || smat->bishop_model == 2
-							    || smat->bishop_model == 3) // pg-bishop*pc 05.2011 WX
-							{
-								val_n = _nodal_p2[i]
-								        - bishop_coef * h_pcs->GetNodeValue(nodes[i], idx_P1);
-								if (onExBoundaryState[i] == 1) // WX:02.2013
-									val_n = 0.;
-								if (pcs->Neglect_H_ini == 2)
-									val_n -= h_pcs->GetNodeValue(nodes[i], idx_p2_ini)
-									         - bishop_coef_ini * h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-							}
-							else
-							{
-								val_n = _nodal_p2[i] // pg - Sw*pc
-								        - _nodal_S[i] * h_pcs->GetNodeValue(nodes[i], idx_P1);
-								if (onExBoundaryState[i] == 1) // WX:02.2013
-									val_n = 0.;
-								if (pcs->Neglect_H_ini == 2)
-									val_n -= h_pcs->GetNodeValue(nodes[i], idx_p2_ini)
-									         - sw_ini * h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-							}
-
-							if (biot < 0.0 && val_n < 0.0)
-								nodal_pore_p[i] = 0.0;
-							else
-								nodal_pore_p[i] = val_n * LoadFactor;
-						}
-
-						PressureC->multi(nodal_pore_p, AuxNodal1);
-					}
-					else
+					if (smat->bishop_model < 0) // No bishop model
 					{
 						if (pcs->Neglect_H_ini == 2)
 						{
-							for (i = 0; i < nnodes; i++)
+							const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
+							const int idx_p2_ini = h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
+							for (int i = 0; i < nnodes; i++)
 							{
 								_nodal_p1[i] -= h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
 								_nodal_p2[i] -= h_pcs->GetNodeValue(nodes[i], idx_p2_ini);
@@ -1946,61 +1852,83 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 
 						PressureC->multi(_nodal_p2, AuxNodal1, LoadFactor);
 						PressureC_S->multi(_nodal_p1, AuxNodal1, -1.0 * LoadFactor);
+						break;
 					}
+
+					// Has bishop model
+					for (int i = 0; i < nnodes; i++)
+					{
+						const double S_e = m_mmp->GetEffectiveSaturationForPerm(_nodal_S[i], 0);
+						const double bishop_coef = smat->getBishopCoefficient(S_e, _nodal_p1[i]);
+						const double pore_p = _nodal_p2[i] - bishop_coef * _nodal_p1[i];
+						nodal_pore_p[i] = (pore_p < 0.0) ? 0. : pore_p * LoadFactor;
+					}
+
+					if (excavation)
+					{
+						for (int i = 0; i < nnodes; i++)
+						{
+							if (onExBoundaryState[i] == 1) // WX:02.2013
+							nodal_pore_p[i] = 0.;
+						}
+					}
+
+					if (pcs->Neglect_H_ini == 2)
+					{
+						const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
+						const int idx_p2_ini = h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
+						for (int i = 0; i < nnodes; i++)
+						{
+							const double p0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
+							const double Sw0 = m_mmp->SaturationCapillaryPressureFunction(p0);
+							const double S_e0 =  m_mmp->GetEffectiveSaturationForPerm(Sw0, 0);
+							const double bishop_coef = smat->getBishopCoefficient(S_e0, p0);
+							const double pore_p0 = h_pcs->GetNodeValue(nodes[i], idx_p2_ini)
+								   - bishop_coef * h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
+							nodal_pore_p[i] -= (pore_p0 < 0.) ? 0. : bishop_coef * LoadFactor;
+						}
+					}
+
+					PressureC->multi(nodal_pore_p, AuxNodal1);
 
 					break;
 				}
 				case 3: // Multi-phase-flow: SwPw+SgPg	// PCH 05.05.2009
 				{
-					for (i = 0; i < nnodes; i++)
+					for (int i = 0; i < nnodes; i++)
 					{
 						double Snw = h_pcs->GetNodeValue(nodes[i], idx_Snw);
 						double Sw = 1.0 - Snw;
 						double Pw = _nodal_p1[i];
 						double Pnw = _nodal_p2[i];
-						val_n = Sw * Pw + Snw * Pnw;
-						if (biot < 0.0 && val_n < 0.0)
-							nodal_pore_p[i] = 0.0;
-						else
-							nodal_pore_p[i] = val_n * LoadFactor;
+						const double val_n = Sw * Pw + Snw * Pnw;
+						nodal_pore_p[i] = (val_n < 0.0) ? 0.0 : val_n * LoadFactor;
 					}
+					PressureC->multi(nodal_pore_p, AuxNodal1);
 					break;
 				}
+
 			} // end switch
 
-				// If dymanic
-				if (dynamic)
-					for (i = 0; i < nnodes; i++)
-					{
-						nodal_pore_p[i] *= fact;
-						nodal_pore_p[i] += dt * a_n[nodes[i] + NodeShift[problem_dimension_dm]]
-						               + pcs->GetNodeValue(nodes[i], idx_P);
-					}
-
-				const int dim_times_nnodesHQ(dim * nnodesHQ);
-				// Coupling effect to RHS
-				if (Flow_Type != 2) // 07.2011. WW
-				{
-					for (i = 0; i < dim_times_nnodesHQ; i++)
-						AuxNodal1[i] = 0.0;
-					PressureC->multi(nodal_pore_p, AuxNodal1);
-				}
-				for (i = 0; i < dim_times_nnodesHQ; i++)
-					(*RHS)[i] -= fabs(biot) * AuxNodal1[i];
+			for (int i = 0; i < dim_times_nnodesHQ; i++)
+				(*RHS)[i] -= fabs(biot) * AuxNodal1[i];
 		} // End if partioned
 
-		// If dymanic
+		// If dynamic
 		if (dynamic)
-			for (size_t i = 0; i < dim; i++)
-				for (j = 0; j < nnodesHQ; j++)
-					for (k = 0; k < nnodesHQ; k++)
+		{
+			double const* const	a_n = pcs->GetAuxArray();
+			for (std::size_t i = 0; i < dim; i++)
+				for (int j = 0; j < nnodesHQ; j++)
+					for (int k = 0; k < nnodesHQ; k++)
 						(*RHS)[i * nnodesHQ + j]
 						    += (*Mass)(j, k) * ((*dAcceleration)(i* nnodesHQ + k) + a_n[nodes[k] + NodeShift[i]]);
+		}
 
 // RHS->Write();
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//06.2013. WW
-		for (size_t i = 0; i < dim; i++)
-			for (j = 0; j < nnodesHQ; j++)
+		for (std::size_t i = 0; i < dim; i++)
+			for (int j = 0; j < nnodesHQ; j++)
 				b_rhs[eqs_number[j] + NodeShift[i]] -= (*RHS)[i * nnodesHQ + j];
 #endif
 
@@ -2019,8 +1947,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			{
 				node = MeshElement->nodes[i];
 				onExBoundary = false;
-				const size_t n_elements(node->getConnectedElementIDs().size());
-				for (size_t j = 0; j < n_elements; j++)
+				const std::size_t n_elements(node->getConnectedElementIDs().size());
+				for (std::size_t j = 0; j < n_elements; j++)
 				{
 					elem = pcs->m_msh->ele_vector[node->getConnectedElementIDs()[j]];
 					if (!elem->GetMark())
@@ -2060,7 +1988,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				if (!onExBoundary)
 				{
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//06.2013. WW
-					for (size_t j = 0; j < dim; j++)
+					for (std::size_t j = 0; j < dim; j++)
 						b_rhs[eqs_number[i] + NodeShift[j]] = 0.0;
 #endif
 				}
