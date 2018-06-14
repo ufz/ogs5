@@ -8188,6 +8188,21 @@ FiniteElement::SolidReactiveSystem CSolidProperties::getSolidReactiveSystem() co
 	return _reactive_system;
 }
 
+double CSolidProperties::getBishopCoefficient(const double effectiveS, const double p) const
+{
+	switch (bishop_model)
+	{
+		case 1:
+			return effectiveS * bishop_model_value;
+		case 2:
+			return std::pow(effectiveS, bishop_model_value);
+		case 3:
+			return  p < bishop_model_value ?  0.0 : 1.0;
+		default:
+			return p;
+	}
+	return p;
+}
 } // end namespace
 
 /////////////////////////////////////////////////////////////////////////////
