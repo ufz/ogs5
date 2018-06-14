@@ -50,6 +50,10 @@
 using Math_Group::CSparseMatrix;
 #endif
 
+#ifndef USE_PETSC
+#include "par_ddc.h"
+#endif
+
 #ifdef OGS_USE_CVODE
 extern "C" {
 #include <cvode/cvode.h> /* prototypes for CVODE fcts., consts. */

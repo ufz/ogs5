@@ -17,15 +17,10 @@
 
 #define fem_INC
 
-// C++
-//#include <vector>
-//#include <string>
-
-#if defined(USE_PETSC) // || defined(other parallel libs)//03.3012. WW
 #include "prototyp.h"
-#else
-// MSH
-#include "par_ddc.h" //OK //Moved from fem_ele_std.h. WW
+
+#ifndef USE_PETSC
+class CPARDomain;
 #endif
 
 #include "MSHEnums.h"

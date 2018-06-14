@@ -130,6 +130,10 @@ REACT_BRNS* m_vec_BRNS;
 
 #include "fct_mpi.h"
 
+#ifndef USE_PETSC
+#include "par_ddc.h"
+#endif
+
 using namespace std;
 using namespace MeshLib;
 using namespace Math_Group;

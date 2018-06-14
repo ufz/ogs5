@@ -679,7 +679,8 @@ void vec<T*>::operator=(const vec<T*>& v)
    03/2010 WW: CRS storage for matrix algbraic
  ********************************************************************
  */
-SparseTable::SparseTable(CFEMesh* a_mesh, bool quadratic, bool symm, StorageType stype)
+SparseTable::SparseTable(MeshLib::CFEMesh* a_mesh, bool quadratic,
+			 bool symm, StorageType stype)
     : symmetry(symm), storage_type(stype)
 {
 	long i = 0, j = 0, ii = 0, jj = 0;
