@@ -16,6 +16,7 @@
 
 #include <cfloat>
 #include <algorithm>
+
 #include "mathlib.h"
 #include "matrix_class.h"
 #include "matrix_routines.h"
@@ -62,7 +63,7 @@ const int max_nnodes_QE_3D = 20;
 CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	const int C_Sys_Flad, const int order)
     : CElement(C_Sys_Flad, order), pcs(dm_pcs), h_pcs(NULL), t_pcs(NULL), excavation(false),
-	  ns((dim == 3)? 6: 4),  Flow_Type(-1),
+	  ns((dim == 3)? 6: 4),  _flow_type(NO_PCS),
       idx_P(-1), idx_P0(-1), idx_P1(-1), idx_P1_0(-1), idx_P2(-1),
 	  idx_T0(-1), idx_T1(-1), idx_S0(-1), idx_S(-1), idx_Snw(-1), idx_pls(-1),
 	  idx_p1_ini(-1), idx_p2_ini(-1),
@@ -211,42 +212,24 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 		// TF
 		if (isFlowProcess(pcs_vector[i]->getProcessType()))
 		{
-			h_pcs = pcs_vector[i];
 			// 25.04.2008, 04.09.2008  WW
-			if (h_pcs->type == 1 || h_pcs->type == 41)
+			h_pcs = pcs_vector[i];
+			_flow_type = h_pcs->getProcessType();
+			if (_flow_type == FiniteElement::DEFORMATION_FLOW
+				|| _flow_type == FiniteElement::DEFORMATION_DYNAMIC)
+				_flow_type =  FiniteElement::LIQUID_FLOW;
+			if (_flow_type == FiniteElement::DEFORMATION_H2)
 			{
-				//				if (h_pcs->pcs_type_name.find("GROUND") != string::npos)
-				// TF
-				if (h_pcs->getProcessType() == GROUNDWATER_FLOW)
-					Flow_Type = 10;
-				else
-					Flow_Type = 0;
-				// 25.08.2005.  WW
-			}
-			else if (h_pcs->type == 14 || h_pcs->type == 22)
-				Flow_Type = 1;
-			else if (h_pcs->type == 1212 || h_pcs->type == 42)
-			{
-				Flow_Type = 2; // 25.04.2008.  WW
-
+				_flow_type =  FiniteElement::MULTI_PHASE_FLOW;
 				// 07.2011. WW
 				PressureC_S = new Matrix(60, 20);
-				if (pcs->m_num->nls_method == 1 && h_pcs->type == 42) // Newton-raphson. WW
+				if (pcs->m_num->nls_method == 1) // Newton-raphson. WW
 					PressureC_S_dp = new Matrix(60, 20);
 			}
-			// WW idx_P0 = pcs->GetNodeValueIndex("POROPRESSURE0");
-			break;
-			//		} else if (pcs_vector[i]->pcs_type_name.find("PS_GLOBAL") != string::npos) {
 		} // TF
-		else if (pcs_vector[i]->getProcessType() == PS_GLOBAL)
-		{
-			h_pcs = pcs_vector[i];
-			if (h_pcs->type == 1313)
-				Flow_Type = 3; // 05.05.2009.  PCH
-			break;
-		}
 	}
-	if (Flow_Type == 0)
+
+	if (_flow_type == FiniteElement::LIQUID_FLOW)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
 		idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
@@ -257,12 +240,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 			idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE_RATE1");
 		}
 	}
-	if (Flow_Type == 10)
-	{
-		idx_P1 = h_pcs->GetNodeValueIndex("HEAD") + 1;
-		_nodal_p1 = new double[max_nnodes_LE];
-	}
-	else if (Flow_Type == 1)
+	else if (_flow_type == FiniteElement::RICHARDS_FLOW)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
 		_nodal_p1 = new double[max_nnodes_LE];
@@ -279,7 +257,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 		_nodal_cp0 = new double[max_nnodes_LE];
 		_nodal_dcp = new double[max_nnodes_LE];
 	}
-	else if (Flow_Type == 2)
+	else if (_flow_type == FiniteElement::MULTI_PHASE_FLOW)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
 		_nodal_p1 = new double[max_nnodes_LE];
@@ -298,7 +276,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 		_nodal_cp0 = new double[max_nnodes_LE];
 		_nodal_dcp = new double[max_nnodes_LE];
 	}
-	else if (Flow_Type == 3)
+	else if (_flow_type == FiniteElement::PS_GLOBAL)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
 		_nodal_p1 = new double[max_nnodes_LE];
@@ -765,10 +743,10 @@ double CFiniteElementVec::CalDensity()
 			double rho = (1. - porosity) * fabs(smat->Density())
 				+ porosity * _wettingS * density_fluid;
 
-			if (Flow_Type == 2 || Flow_Type == 3)
+			if (_flow_type == FiniteElement::MULTI_PHASE_FLOW
+				|| _flow_type == FiniteElement::PS_GLOBAL)
 			{
-				CFluidProperties* GasProp;
-				GasProp = MFPGet("GAS");
+				CFluidProperties* const GasProp = MFPGet("GAS");
 				rho += porosity * (1.0 - _wettingS) * GasProp->Density();
 			}
 			return rho;
@@ -1088,24 +1066,21 @@ void CFiniteElementVec::LocalAssembly(const int update)
 	}
 
 	// Get saturation of element nodes
-	if (Flow_Type > 0 && Flow_Type != 10)
+	if (smat->SwellingPressureType == 3 || smat->SwellingPressureType == 4)
 	{
-		// 12.03.2008 WW
-		if ((Flow_Type == 1 || Flow_Type == 2) && (smat->SwellingPressureType == 3 || smat->SwellingPressureType == 4))
+		if (_flow_type == FiniteElement::RICHARDS_FLOW
+		|| _flow_type == FiniteElement::MULTI_PHASE_FLOW)
 		{
-			double fac = 1.0;
-			if (Flow_Type == 1)
-				fac = -1.0;
+			const double fac = (_flow_type == FiniteElement::RICHARDS_FLOW) ? -1. : 1.;
 			for (int i = 0; i < nnodes; i++)
 			{
 				// Pc
 				_nodal_cp0[i] = fac * h_pcs->GetNodeValue(nodes[i], idx_P1 - 1);
 				// dPc
-				_nodal_dcp[i] = fac * (h_pcs->GetNodeValue(nodes[i], idx_P1) - h_pcs->GetNodeValue(nodes[i], idx_P1 - 1));
+				_nodal_dcp[i] = fac * h_pcs->GetNodeValue(nodes[i], idx_P1) - _nodal_cp0[i];
 			}
 		}
 	}
-	//
 
 	// -------------------------------12.2009.  WW
 	if (pcs->ite_steps == 1)
@@ -1360,11 +1335,6 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
  **************************************************************************/
 void CFiniteElementVec::GlobalAssembly_Stiffness()
 {
-	int i, j;
-	double f1, f2;
-	f1 = 1.0;
-	f2 = -1.0;
-
 #if defined(NEW_EQS) && defined(JFNK_H2M)
 	/// If not JFNK. 02.2011. WW
 	if (pcs->m_num->nls_method == 2)
@@ -1372,15 +1342,14 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 		if (!pcs->JFNK_precond)
 			return;
 
-		long kk = 0;
 		// Assemble Jacobi preconditioner
 		for (size_t k = 0; k < ele_dim; k++)
 		{
 			for (size_t l = 0; l < ele_dim; l++)
-				for (i = 0; i < nnodesHQ; i++)
+				for (int i = 0; i < nnodesHQ; i++)
 				{
-					kk = eqs_number[i] + NodeShift[k];
-					for (j = 0; j < nnodesHQ; j++)
+					const long kk = eqs_number[i] + NodeShift[k];
+					for (int j = 0; j < nnodesHQ; j++)
 					{
 						if (kk != eqs_number[j] + NodeShift[l])
 							continue;
@@ -1402,14 +1371,16 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 		A = pcs->eqs_new->A;
 #endif
 
+	double f1 = 1.0;
+	double f2 = -1.0;
 	if (dynamic)
 	{
 		f1 = 0.5 * beta2 * dt * dt;
 		f2 = -0.5 * bbeta1 * dt;
 		// Assemble stiffness matrix
-		for (i = 0; i < nnodesHQ; i++)
+		for (int i = 0; i < nnodesHQ; i++)
 		{
-			for (j = 0; j < nnodesHQ; j++)
+			for (int j = 0; j < nnodesHQ; j++)
 			{
 				// Local assembly of stiffness matrix
 				for (size_t k = 0; k < ele_dim; k++)
@@ -1425,9 +1396,9 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 	}
 
 	// Assemble stiffness matrix
-	for (i = 0; i < nnodesHQ; i++)
+	for (int i = 0; i < nnodesHQ; i++)
 	{
-		for (j = 0; j < nnodesHQ; j++)
+		for (int j = 0; j < nnodesHQ; j++)
 		{
 			// Local assembly of stiffness matrix
 			for (size_t k = 0; k < ele_dim; k++)
@@ -1454,9 +1425,7 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 
 	if (PressureC)
 	{
-		i = 0; // phase
-		if (Flow_Type == 2) // Multi-phase-flow
-			i = 1;
+		const int i = (_flow_type == FiniteElement::MULTI_PHASE_FLOW) ? 1 : 0;
 		GlobalAssembly_PressureCoupling(PressureC, f2 * biot, i);
 	}
 	// H2: p_g- S_w*p_c
@@ -1567,7 +1536,7 @@ void CFiniteElementVec::ComputeMass()
 void CFiniteElementVec::GlobalAssembly_RHS()
 {
 	bool Residual = false;
-	if (Flow_Type >= 0)
+	if (_flow_type != FiniteElement::NO_PCS)
 	{
 		if (pcs->type / 10 == 4) // Monolithic scheme
 		{
@@ -1644,11 +1613,9 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		const int dim_times_nnodesHQ(dim * nnodesHQ);
 		for (int i = 0; i < dim_times_nnodesHQ; i++)
 			AuxNodal1[i] = 0.0;
-		switch (Flow_Type)
+		switch (_flow_type)
 		{
-			//case 10: // Ground_flow. Will be merged to case 0
-			case 0:  // Liquid flow
-				// For monolithic scheme and liquid flow, the limit of positive pressure must be removed
+			case FiniteElement::LIQUID_FLOW:
 				for (int i = 0; i < nnodes; i++)
 					nodal_pore_p[i] = LoadFactor * _nodal_p1[i];
 				if (excavation)
@@ -1678,7 +1645,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				}
 				PressureC->multi(nodal_pore_p, AuxNodal1);
 				break;
-			case 1: // Richards flow
+			case FiniteElement::RICHARDS_FLOW:
 				{
 					if (smat->bishop_model < 0) // Without Bishop
 					{
@@ -1739,7 +1706,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					PressureC->multi(nodal_pore_p, AuxNodal1);
 				}
 				break;
-			case 2:
+			case FiniteElement::MULTI_PHASE_FLOW:
 				{ // Multi-phase-flow: p_g-Sw*p_c
 					// 07.2011. WW
 					const int dim_times_nnodesHQ(dim * nnodesHQ);
@@ -1814,7 +1781,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 
 					break;
 				}
-				case 3: // Multi-phase-flow: SwPw+SgPg	// PCH 05.05.2009
+			case FiniteElement::PS_GLOBAL:
 				{
 					for (int i = 0; i < nnodes; i++)
 					{
@@ -1997,8 +1964,10 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				RecordGuassStrain(gp, gp_r, gp_s, gp_t);
 			if (F_Flag || T_Flag)
 				getShapefunctValues(gp, 1); // Linear order interpolation function
+
 			_wettingS = 1.0;
-			if (Flow_Type > 0 && Flow_Type != 10)
+			if (_flow_type != FiniteElement::NO_PCS
+				&& _flow_type != FiniteElement::LIQUID_FLOW)
 				_wettingS = interpolate(_nodal_S, 1);
 
 			//---------------------------------------------------------

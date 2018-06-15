@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "fem_ele.h"
+#include "FEMEnums.h"
 
 namespace SolidProp
 {
@@ -44,6 +45,8 @@ class CElem;
 }
 namespace FiniteElement
 {
+enum ProcessType;
+
 // Vector for storing element values
 class ElementValue_DM
 {
@@ -118,6 +121,8 @@ public:
 	// Get strain
 	double* GetStrain() const { return dstrain; }
 
+	ProcessType getCoupledFlowProcessType() const { return _flow_type; }
+
 	//----------- Enhanced element -----------------------
 	// Geometry related
 	bool LocalAssembly_CheckLocalization(CElem* MElement);
@@ -131,8 +136,9 @@ private:
 	bool excavation; // 12.2009. WW
 	//
 	const int ns; // Number of stresses components
+
 	// Flow coupling
-	int Flow_Type;
+	ProcessType _flow_type;
 
 	// Primary value indeces
 	// Column index in the node value table
