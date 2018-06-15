@@ -140,6 +140,8 @@ private:
 	int idx_T0, idx_T1;
 	int idx_S0, idx_S, idx_Snw;
 	int idx_pls;
+	int idx_p1_ini;
+	int idx_p2_ini;
 	// Displacement column indices in the node value table
 	int* _nodal_stress_indices;
 	int* _nodal_strain_indices;
