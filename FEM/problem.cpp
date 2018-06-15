@@ -1864,9 +1864,6 @@ inline double Problem::RichardsFlow()
 			error = m_pcs->ExecuteNonLinear(loop_process_number);
 		if (m_pcs->saturation_switch == true)
 			m_pcs->CalcSaturationRichards(1, false); // JOD
-		else
-			// WW
-			m_pcs->CalcSecondaryVariablesUnsaturatedFlow();
 		// WW#ifndef NEW_EQS //WW. 07.11.2008
 		// WW      if(lop_coupling_iterations > 1) // JOD  coupling
 		// WW         pcs_coupling_error = m_pcs->CalcCouplingNODError();
@@ -1877,13 +1874,16 @@ inline double Problem::RichardsFlow()
 	{
 		CFEMesh* m_msh = FEMGet("RICHARDS_FLOW"); // WW
 		if (m_msh->geo_name.compare("REGIONAL") == 0)
+		{
 			LOPExecuteRegionalRichardsFlow(m_pcs, loop_process_number);
+			if (m_pcs->TimeStepAccept())
+				m_pcs->CalcSecondaryVariablesUnsaturatedFlow();
+		}
 		else
 			error = m_pcs->ExecuteNonLinear(loop_process_number);
 		if (m_pcs->TimeStepAccept())
 		{
 			// WW
-			m_pcs->CalcSecondaryVariablesUnsaturatedFlow();
 			CalcVelocities = true;
 			conducted = true; // WW
 		}
