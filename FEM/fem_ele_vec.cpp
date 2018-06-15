@@ -68,7 +68,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	  idx_p1_ini(-1), idx_p2_ini(-1),
 	  PressureC(NULL), PressureC_S(NULL), PressureC_S_dp(NULL), b_rhs(NULL),
 	  smat(NULL), m_mfp(NULL), m_mmp(NULL),
-	  Temp(NULL), T1(NULL), Tem(273.15 + 23.0), S_Water(1.), eleV_DM(NULL),
+	  Temp(NULL), T1(NULL), Tem(273.15 + 23.0), _wettingS(1.), eleV_DM(NULL),
 	  _nodal_p1(NULL), _nodal_p2(NULL), _nodal_cp0(NULL), _nodal_dcp(NULL),
 	  _nodal_S0(NULL), _nodal_S(NULL), AuxNodal1(NULL),
 	  dynamic((dm_pcs->pcs_type_name_vector[0].find("DYNAMIC") != std::string::npos)
@@ -753,55 +753,37 @@ void CFiniteElementVec::ComputeStrain(const int ip)
  **************************************************************************/
 double CFiniteElementVec::CalDensity()
 {
-	double rho;
-	// OK_MFP
-	//--------------------------------------------------------------------
-	// MFP fluid properties
-	double density_fluid = 0.0;
-	double porosity = 0.0;
-	// double p_g = 0.0;
-	double Sw = 0.0;
-	int no_phases = (int)mfp_vector.size();
-	int i = 0, phase = 0;
-
-	rho = 0.0;
 	if (F_Flag)
 	{
-		if ((no_phases > 0) && (no_phases > phase))
-			density_fluid = m_mfp->Density();
-
-		// OK_MMP
 		//--------------------------------------------------------------------
-		// MMP medium properties
-		porosity = m_mmp->Porosity(this);
 		// Assume solid density is constant. (*smat->data_Density)(0)
 		if (smat->Density() > 0.0)
 		{
-			Sw = 1.0; // JT, should be 1.0, unless multiphase (calculate below) (if unsaturated, fluid density would be
-			          // negligible... so still works)
-			if (Flow_Type > 0 && Flow_Type != 10)
-			{
-				Sw = 0.; // WW
-				for (i = 0; i < nnodes; i++)
-					Sw += shapefct[i] * _nodal_S[i];
-			}
-			rho = (1. - porosity) * fabs(smat->Density()) + porosity * Sw * density_fluid;
+			const double density_fluid = (mfp_vector.empty()) ?  m_mfp->Density() : 0.0;
+			const double porosity = m_mmp->Porosity(this);
+
+			double rho = (1. - porosity) * fabs(smat->Density())
+				+ porosity * _wettingS * density_fluid;
 
 			if (Flow_Type == 2 || Flow_Type == 3)
 			{
 				CFluidProperties* GasProp;
 				GasProp = MFPGet("GAS");
-				rho += porosity * (1.0 - Sw) * GasProp->Density();
+				rho += porosity * (1.0 - _wettingS) * GasProp->Density();
 			}
+			return rho;
 		}
 		else
-			rho = 0.0;
+			return 0.0;
 	}
-	else
-	    // If negative value is given in the .msp file, gravity by solid is skipped
-	    if (smat->Density() > 0.0)
-		rho = smat->Density();
-	return rho;
+
+    // If negative value is given in the .msp file, gravity by solid is skipped
+    if (smat->Density() > 0.0)
+	{
+		return smat->Density();
+	}
+
+	return 0.0;
 }
 /***************************************************************************
    GeoSys - Funktion:
@@ -1702,7 +1684,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					{
 						for (int i = 0; i < nnodes; i++)
 						{
-							nodal_pore_p[i] = LoadFactor * S_Water * _nodal_p1[i];
+							nodal_pore_p[i] = LoadFactor * _wettingS * _nodal_p1[i];
 						}
 						if (excavation)
 						{
@@ -2010,10 +1992,15 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			}
 
 			ComputeStrain(gp);
+
 			if (update)
 				RecordGuassStrain(gp, gp_r, gp_s, gp_t);
 			if (F_Flag || T_Flag)
 				getShapefunctValues(gp, 1); // Linear order interpolation function
+			_wettingS = 1.0;
+			if (Flow_Type > 0 && Flow_Type != 10)
+				_wettingS = interpolate(_nodal_S, 1);
+
 			//---------------------------------------------------------
 			// Material properties (Integration of the stress)
 			//---------------------------------------------------------
@@ -2039,9 +2026,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			{
 				for (i = 0; i < ns; i++)
 					dstress[i] += (*eleV_DM->Stress)(i, gp);
-				S_Water = 1.0; // WX:02.2013
-				if (Flow_Type > 0 && Flow_Type != 10)
-					S_Water = interpolate(_nodal_S, 1);
 			}
 			else
 			{
@@ -2129,9 +2113,9 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						   double suc = interpolate(AuxNodal1);
 						   double dsuc = interpolate(AuxNodal);
 						   smat->TEPSwellingParameter_kis(suc);
-						   S_Water = m_mmp->SaturationCapillaryPressureFunction(suc);
-						   dS = S_Water - m_mmp->SaturationCapillaryPressureFunction(suc-dsuc);
-						   de_vsw = pow(S_Water, (*smat->data_Youngs)(2) )*dS;
+						   _wettingS = m_mmp->SaturationCapillaryPressureFunction(suc);
+						   dS = _wettingS - m_mmp->SaturationCapillaryPressureFunction(suc-dsuc);
+						   de_vsw = pow(_wettingS, (*smat->data_Youngs)(2) )*dS;
 						   }
 						 */
 						else
@@ -2336,21 +2320,18 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 
 
 			// Fluid coupling;
-			S_Water = 1.0;
-			if (Flow_Type > 0 && Flow_Type != 10)
-				S_Water = interpolate(_nodal_S, 1);
 			// Decovalex. Swelling pressure
 			if (smat->SwellingPressureType == 1)
 			{
 				dS = -interpolate(_nodal_S0, 1);
-				dS += S_Water;
+				dS += _wettingS;
 				for (i = 0; i < 3; i++)
-					dstress[i] -= 2.0 * S_Water * dS * smat->Max_SwellingPressure;
+					dstress[i] -= 2.0 * _wettingS * dS * smat->Max_SwellingPressure;
 			}
 			else if (smat->SwellingPressureType == 2) // LBNL's model
 			{
 				dS = -interpolate(_nodal_S0, 1);
-				dS += S_Water;
+				dS += _wettingS;
 				for (i = 0; i < 3; i++)
 					dstress[i] -= dS * smat->Max_SwellingPressure;
 			}
