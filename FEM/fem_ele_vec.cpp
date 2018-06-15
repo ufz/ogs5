@@ -65,6 +65,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	  ns((dim == 3)? 6: 4),  Flow_Type(-1),
       idx_P(-1), idx_P0(-1), idx_P1(-1), idx_P1_0(-1), idx_P2(-1),
 	  idx_T0(-1), idx_T1(-1), idx_S0(-1), idx_S(-1), idx_Snw(-1), idx_pls(-1),
+	  idx_p1_ini(-1), idx_p2_ini(-1),
 	  PressureC(NULL), PressureC_S(NULL), PressureC_S_dp(NULL), b_rhs(NULL),
 	  smat(NULL), m_mfp(NULL), m_mmp(NULL),
 	  Temp(NULL), T1(NULL), Tem(273.15 + 23.0), S_Water(1.), eleV_DM(NULL),
@@ -248,6 +249,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	if (Flow_Type == 0)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
+		idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
 		_nodal_p1 = new double[max_nnodes_LE];
 		if (dynamic)
 		{
@@ -266,6 +268,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 		_nodal_p1 = new double[max_nnodes_LE];
 
 		idx_P1_0 = h_pcs->GetNodeValueIndex("PRESSURE1");
+		idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
 
 		idx_S0 = h_pcs->GetNodeValueIndex("SATURATION1");
 		_nodal_S0 = new double[max_nnodes_LE];
@@ -280,9 +283,11 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
 		_nodal_p1 = new double[max_nnodes_LE];
+		idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
 
 		idx_P2 = h_pcs->GetNodeValueIndex("PRESSURE2") + 1;
 		_nodal_p2 = new double[max_nnodes_LE];
+		idx_p2_ini = h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
 
 		idx_S0 = h_pcs->GetNodeValueIndex("SATURATION1");
 		_nodal_S0 = new double[max_nnodes_LE];
@@ -1744,11 +1749,10 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				}
 				if (pcs->Neglect_H_ini == 2)
 				{
-					const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
 					for (int i = 0; i < nnodes; i++)
 						nodal_pore_p[i] -= LoadFactor * h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
 				}
-				// If dymanic
+				// If dynamic
 				if (dynamic)
 				{
 					const double fact = bbeta1 * dt;
@@ -1764,11 +1768,11 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				break;
 			case 1: // Richards flow
 				{
-					if (smat->bishop_model < 0)
+					if (smat->bishop_model < 0) // Without Bishop
 					{
 						for (int i = 0; i < nnodes; i++)
 						{
-							nodal_pore_p[i] = (_nodal_p1[i] < 0.0) ?
+							nodal_pore_p[i] = (biot < 0.0 && _nodal_p1[i] < 0.0) ?
 								 0.0 : LoadFactor * S_Water * _nodal_p1[i];
 						}
 						if (excavation)
@@ -1781,23 +1785,23 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						}
 						if (pcs->Neglect_H_ini == 2)
 						{
-							const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
 							for (int i = 0; i < nnodes; i++)
 							{
 								const double p0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
 								const double Sat0 = LoadFactor * m_mmp->SaturationCapillaryPressureFunction(-p0);
-								nodal_pore_p[i] -= LoadFactor * Sat0 * p0;
+								nodal_pore_p[i] -= (p0 > 0.0) ? LoadFactor * Sat0 * p0 : 0.0;
 							}
 						}
-
+						PressureC->multi(nodal_pore_p, AuxNodal1);
 						break;
 					}
-					else // Has a bishop model
+
+					// Has Bishop model
 					{
 						for (int i = 0; i < nnodes; i++)
 						{
 							const double val_n = _nodal_p1[i];
-							if (val_n < 0.0)
+							if (biot < 0.0 &&  val_n < 0.0)
 								nodal_pore_p[i] = 0.0;
 							else
 							{
@@ -1819,7 +1823,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						{
 							for (int i = 0; i < nnodes; i++)
 							{
-								const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
 								const double p0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
 								const double Sw0 = m_mmp->SaturationCapillaryPressureFunction(-p0);
 								const double S_e0 =  m_mmp->GetEffectiveSaturationForPerm(Sw0, 0);
@@ -1827,8 +1830,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							}
 						}
 					}
+					PressureC->multi(nodal_pore_p, AuxNodal1);
 				}
-				PressureC->multi(nodal_pore_p, AuxNodal1);
 				break;
 			case 2:
 				{ // Multi-phase-flow: p_g-Sw*p_c
@@ -1841,8 +1844,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					{
 						if (pcs->Neglect_H_ini == 2)
 						{
-							const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
-							const int idx_p2_ini = h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
 							for (int i = 0; i < nnodes; i++)
 							{
 								_nodal_p1[i] -= h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
@@ -1861,7 +1862,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						const double S_e = m_mmp->GetEffectiveSaturationForPerm(_nodal_S[i], 0);
 						const double bishop_coef = smat->getBishopCoefficient(S_e, _nodal_p1[i]);
 						const double pore_p = _nodal_p2[i] - bishop_coef * _nodal_p1[i];
-						nodal_pore_p[i] = (pore_p < 0.0) ? 0. : pore_p * LoadFactor;
+						nodal_pore_p[i] = (biot < 0.0 &&  pore_p < 0.0) ? 0. : pore_p * LoadFactor;
 					}
 
 					if (excavation)
@@ -1875,8 +1876,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 
 					if (pcs->Neglect_H_ini == 2)
 					{
-						const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
-						const int idx_p2_ini = h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
 						for (int i = 0; i < nnodes; i++)
 						{
 							const double p0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
@@ -1885,7 +1884,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							const double bishop_coef = smat->getBishopCoefficient(S_e0, p0);
 							const double pore_p0 = h_pcs->GetNodeValue(nodes[i], idx_p2_ini)
 								   - bishop_coef * h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-							nodal_pore_p[i] -= (pore_p0 < 0.) ? 0. : bishop_coef * LoadFactor;
+							nodal_pore_p[i] -= (biot < 0.0 && pore_p0 < 0.) ? 0. : bishop_coef * LoadFactor;
 						}
 					}
 
@@ -1902,7 +1901,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						double Pw = _nodal_p1[i];
 						double Pnw = _nodal_p2[i];
 						const double val_n = Sw * Pw + Snw * Pnw;
-						nodal_pore_p[i] = (val_n < 0.0) ? 0.0 : val_n * LoadFactor;
+						nodal_pore_p[i] = (biot < 0.0 && val_n < 0.0) ? 0.0 : val_n * LoadFactor;
 					}
 					PressureC->multi(nodal_pore_p, AuxNodal1);
 					break;
