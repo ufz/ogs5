@@ -1704,8 +1704,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					{
 						for (int i = 0; i < nnodes; i++)
 						{
-							nodal_pore_p[i] = (biot < 0.0 && _nodal_p1[i] < 0.0) ?
-								 0.0 : LoadFactor * S_Water * _nodal_p1[i];
+							nodal_pore_p[i] = LoadFactor * S_Water * _nodal_p1[i];
 						}
 						if (excavation)
 						{
@@ -1721,7 +1720,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							{
 								const double p0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
 								const double Sat0 = LoadFactor * m_mmp->SaturationCapillaryPressureFunction(-p0);
-								nodal_pore_p[i] -= (p0 > 0.0) ? LoadFactor * Sat0 * p0 : 0.0;
+								nodal_pore_p[i] -= LoadFactor * Sat0 * p0;
 							}
 						}
 						PressureC->multi(nodal_pore_p, AuxNodal1);
@@ -1733,13 +1732,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						for (int i = 0; i < nnodes; i++)
 						{
 							const double val_n = _nodal_p1[i];
-							if (biot < 0.0 &&  val_n < 0.0)
-								nodal_pore_p[i] = 0.0;
-							else
-							{
-								const double S_e = m_mmp->GetEffectiveSaturationForPerm(_nodal_S[i], 0);
-								nodal_pore_p[i] = LoadFactor * smat->getBishopCoefficient(S_e, val_n) * val_n;
-							} // WX:12.2012 end if(biot<0.0&&val_n<0.0) else
+							const double S_e = m_mmp->GetEffectiveSaturationForPerm(_nodal_S[i], 0);
+							nodal_pore_p[i] = LoadFactor * smat->getBishopCoefficient(S_e, val_n) * val_n;
 						}
 
 						if (excavation)
@@ -1794,7 +1788,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						const double S_e = m_mmp->GetEffectiveSaturationForPerm(_nodal_S[i], 0);
 						const double bishop_coef = smat->getBishopCoefficient(S_e, _nodal_p1[i]);
 						const double pore_p = _nodal_p2[i] - bishop_coef * _nodal_p1[i];
-						nodal_pore_p[i] = (biot < 0.0 &&  pore_p < 0.0) ? 0. : pore_p * LoadFactor;
+						nodal_pore_p[i] = pore_p * LoadFactor;
 					}
 
 					if (excavation)
@@ -1816,7 +1810,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							const double bishop_coef = smat->getBishopCoefficient(S_e0, p0);
 							const double pore_p0 = h_pcs->GetNodeValue(nodes[i], idx_p2_ini)
 								   - bishop_coef * h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-							nodal_pore_p[i] -= (biot < 0.0 && pore_p0 < 0.) ? 0. : bishop_coef * LoadFactor;
+							nodal_pore_p[i] -= bishop_coef * LoadFactor;
 						}
 					}
 
@@ -1832,8 +1826,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						double Sw = 1.0 - Snw;
 						double Pw = _nodal_p1[i];
 						double Pnw = _nodal_p2[i];
-						const double val_n = Sw * Pw + Snw * Pnw;
-						nodal_pore_p[i] = (biot < 0.0 && val_n < 0.0) ? 0.0 : val_n * LoadFactor;
+						nodal_pore_p[i] = (Sw * Pw + Snw * Pnw) * LoadFactor;
 					}
 					PressureC->multi(nodal_pore_p, AuxNodal1);
 					break;
@@ -1842,7 +1835,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			} // end switch
 
 			for (int i = 0; i < dim_times_nnodesHQ; i++)
-				(*RHS)[i] -= fabs(biot) * AuxNodal1[i];
+				(*RHS)[i] -= biot * AuxNodal1[i];
 		} // End if partioned
 
 		// If dynamic
