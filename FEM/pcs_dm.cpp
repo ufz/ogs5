@@ -233,19 +233,20 @@ void CRFProcessDeformation::InitialNodeValueHpcs()
 	if (fem_dm->getCoupledFlowProcessType() == FiniteElement::NO_PCS)
 		return;
 
-	CRFProcess* tmp_h_pcs = fem_dm->h_pcs;
-	const int idv_p_ini = tmp_h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
-	const int idv_p_1 = tmp_h_pcs->GetNodeValueIndex("PRESSURE1");
+	CRFProcess* h_pcs = fem_dm->h_pcs;
+	const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
+	const int idx_p1_1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
 	for (std::size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
-		tmp_h_pcs->SetNodeValue(i, idv_p_ini, tmp_h_pcs->GetNodeValue(i, idv_p_1));
-
+	{
+		h_pcs->SetNodeValue(i, idx_p1_ini, h_pcs->GetNodeValue(i, idx_p1_1));
+	}
 	if (fem_dm->getCoupledFlowProcessType() == FiniteElement::MULTI_PHASE_FLOW)
 	{
-		const int idv_p2_ini = tmp_h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
-		const int idv_p2_1 = tmp_h_pcs->GetNodeValueIndex("PRESSURE2");
+		const int idx_p2_ini = h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
+		const int idx_p2_1 = h_pcs->GetNodeValueIndex("PRESSURE2") + 1;
 		for (std::size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
 		{
-			tmp_h_pcs->SetNodeValue(i, idv_p2_ini, tmp_h_pcs->GetNodeValue(i, idv_p2_1));
+			h_pcs->SetNodeValue(i, idx_p2_ini, h_pcs->GetNodeValue(i, idx_p2_1));
 		}
 	}
 
@@ -2771,22 +2772,7 @@ void CRFProcessDeformation::PostExcavation()
 		// 07.04.2010 WW
 		if ((fem_dm->getCoupledFlowProcessType() != FiniteElement::NO_PCS) && Neglect_H_ini == 2)
 		{
-			CRFProcess* h_pcs = fem_dm->h_pcs;
-			const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
-			const int idx_p1_1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
-			for (size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
-			{
-				h_pcs->SetNodeValue(i, idx_p1_ini, h_pcs->GetNodeValue(i, idx_p1_1));
-			}
-			if (fem_dm->getCoupledFlowProcessType() == FiniteElement::MULTI_PHASE_FLOW)
-			{
-				const int idx_p2_ini = h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
-				const int idx_p2_1 = h_pcs->GetNodeValueIndex("PRESSURE2") + 1;
-				for (size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
-				{
-					h_pcs->SetNodeValue(i, idx_p2_ini, h_pcs->GetNodeValue(i, idx_p2_1));
-				}
-			}
+			InitialNodeValueHpcs();
 		}
 
 		bool done;
@@ -2921,22 +2907,7 @@ void CRFProcessDeformation::UpdateIniStateValue()
 		CalIniTotalStress();
 	if ((fem_dm->getCoupledFlowProcessType() != FiniteElement::NO_PCS) && Neglect_H_ini == 2)
 	{
-		CRFProcess* const h_pcs = fem_dm->h_pcs;
-		const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
-		const int idx_p1_1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
-		for (size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
-		{
-			h_pcs->SetNodeValue(i, idx_p1_ini, h_pcs->GetNodeValue(i, idx_p1_1));
-		}
-		if (fem_dm->getCoupledFlowProcessType() != FiniteElement::MULTI_PHASE_FLOW)
-		{
-			const int idx_p2_ini = h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
-			const int idx_p2_1 = h_pcs->GetNodeValueIndex("PRESSURE2") + 1;
-			for (size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
-			{
-				h_pcs->SetNodeValue(i, idx_p2_ini, h_pcs->GetNodeValue(i, idx_p2_1));
-			}
-		}
+		InitialNodeValueHpcs();
 	}
 	return;
 }
