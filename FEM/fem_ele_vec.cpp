@@ -816,18 +816,13 @@ double CFiniteElementVec::CalDensity()
  **************************************************************************/
 void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 {
-	int i, j, k, l;
-	double rho, fac, fac1, fac2, dN_dx, f_buff;
-	fac = fac1 = fac2 = f_buff = 0.0;
-	dN_dx = 0.0;
-	rho = CalDensity();
 	const int nnodesHQ = this->nnodesHQ;
 	const int nnodes = this->nnodes;
 	const int ele_dim = this->ele_dim;
 	const int ns = this->ns;
 
 	// NW cache B, B^T
-	for (i = 0; i < nnodesHQ; i++)
+	for (int i = 0; i < nnodesHQ; i++)
 	{
 		setTransB_Matrix(i);
 		(*this->vec_B_matrix[i]) = *B_matrix;
@@ -842,13 +837,13 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 	Matrix* tmp_AuxMatrix2 = AuxMatrix2;
 	Matrix* tmp_Stiffness = Stiffness;
 
-	for (i = 0; i < nnodesHQ; i++)
+	for (int i = 0; i < nnodesHQ; i++)
 	{
 		// NW      setTransB_Matrix(i);
 		tmp_B_matrix_T = this->vec_B_matrix_T[i];
 		// Local assembly of A*u=int(B^t*sigma) for Newton-Raphson method
-		for (j = 0; j < ele_dim; j++)
-			for (k = 0; k < ns; k++)
+		for (int j = 0; j < ele_dim; j++)
+			for (int k = 0; k < ns; k++)
 				(*RHS)[j * nnodesHQ + i] += (*tmp_B_matrix_T)(j, k) * (dstress[k] - stress0[k]) * fkt;
 		// TEST             (*B_matrix_T)(j,k)*dstress[k]*fkt;
 		if (PreLoad == 11)
@@ -864,7 +859,7 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 		(*tmp_AuxMatrix2) = 0.0;
 		// NW
 		tmp_B_matrix_T->multi(*p_D, *tmp_AuxMatrix2);
-		for (j = 0; j < nnodesHQ; j++)
+		for (int j = 0; j < nnodesHQ; j++)
 		{
 			// NW          setB_Matrix(j);
 			tmp_B_matrix = this->vec_B_matrix[j];
@@ -874,10 +869,10 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 			// NW          B_matrix_T->multi(*p_D, *B_matrix, *AuxMatrix);
 
 			// Local assembly of stiffness matrix
-			for (k = 0; k < ele_dim; k++)
+			for (int k = 0; k < ele_dim; k++)
 			{
 				const int kia = i + k * nnodesHQ;
-				for (l = 0; l < ele_dim; l++)
+				for (int l = 0; l < ele_dim; l++)
 					(*tmp_Stiffness)(kia, j + l * nnodesHQ) += (*tmp_AuxMatrix)(k, l) * fkt;
 			}
 		} // loop j
@@ -895,35 +890,37 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 	// 07.2011 WW
 	if ((PressureC || PressureC_S || PressureC_S_dp) && !PreLoad)
 	{
-		fac = LoadFactor * fkt;
+		double fac = LoadFactor * fkt;
+		double S1 = 0;
+		double fac2 = 0;
 
 		// 07.2011. WW
 		if (PressureC_S || PressureC_S_dp)
 		{
 			// Pressure 1
-			fac2 = interpolate(_nodal_p1);
+			const double pc = interpolate(_nodal_p1);
 			// Saturation of phase 1
-			fac1 = m_mmp->SaturationCapillaryPressureFunction(fac2);
+			S1 = m_mmp->SaturationCapillaryPressureFunction(pc);
 			if (PressureC_S_dp)
-				fac2 = fac1 - fac2 * m_mmp->PressureSaturationDependency(fac1, true);
+				fac2 = S1 - pc * m_mmp->PressureSaturationDependency(S1, true);
 			// JT: dSdP now returns actual sign (<0)
 		}
 
 		if (axisymmetry)
 		{
-			for (k = 0; k < nnodesHQ; k++)
+			for (int k = 0; k < nnodesHQ; k++)
 			{
-				for (l = 0; l < nnodes; l++)
-					for (j = 0; j < ele_dim; j++)
+				for (int l = 0; l < nnodes; l++)
+					for (int j = 0; j < ele_dim; j++)
 					{
-						dN_dx = dshapefctHQ[nnodesHQ * j + k];
+						double dN_dx = dshapefctHQ[nnodesHQ * j + k];
 						if (j == 0)
 							dN_dx += shapefctHQ[k] / Radius;
 
-						f_buff = fac * dN_dx * shapefct[l];
+						const double f_buff = fac * dN_dx * shapefct[l];
 						(*PressureC)(nnodesHQ* j + k, l) += f_buff;
 						if (PressureC_S)
-							(*PressureC_S)(nnodesHQ* j + k, l) += f_buff * fac1;
+							(*PressureC_S)(nnodesHQ* j + k, l) += f_buff * S1;
 						if (PressureC_S_dp)
 							(*PressureC_S_dp)(nnodesHQ* j + k, l) += f_buff * fac2;
 					}
@@ -931,15 +928,15 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 		}
 		else
 		{
-			for (k = 0; k < nnodesHQ; k++)
+			for (int k = 0; k < nnodesHQ; k++)
 			{
-				for (l = 0; l < nnodes; l++)
-					for (j = 0; j < ele_dim; j++)
+				for (int l = 0; l < nnodes; l++)
+					for (int j = 0; j < ele_dim; j++)
 					{
-						f_buff = fac * dshapefctHQ[nnodesHQ * j + k] * shapefct[l];
+						const double f_buff = fac * dshapefctHQ[nnodesHQ * j + k] * shapefct[l];
 						(*PressureC)(nnodesHQ* j + k, l) += f_buff;
 						if (PressureC_S)
-							(*PressureC_S)(nnodesHQ* j + k, l) += f_buff * fac1;
+							(*PressureC_S)(nnodesHQ* j + k, l) += f_buff * S1;
 						if (PressureC_S_dp)
 							(*PressureC_S_dp)(nnodesHQ* j + k, l) += f_buff * fac2;
 					}
@@ -949,11 +946,12 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 	//---------------------------------------------------------
 	// Assemble gravity force vector
 	//---------------------------------------------------------
+	const double rho = CalDensity();
 	if (rho > 0.0 && GravityForce)
 	{
 		// 2D, in y-direction
 		// 3D, in z-direction
-		i = (ele_dim - 1) * nnodesHQ;
+		const int i = (ele_dim - 1) * nnodesHQ;
 		double timeFactor = 1.;
 		if (smat->gravity_ramp)
 		{
@@ -965,7 +963,7 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 		}
 
 		const double coeff = LoadFactor * rho * smat->grav_const * fkt * timeFactor;
-		for (k = 0; k < nnodesHQ; k++)
+		for (int k = 0; k < nnodesHQ; k++)
 		{
 			(*RHS)[i + k] += coeff * shapefctHQ[k];
 			//        (*RHS)(i+ka) += LoadFactor * rho * smat->grav_const * shapefctHQ[ka] * fkt;
@@ -1768,17 +1766,33 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 
 					if (smat->bishop_model < 0) // No bishop model
 					{
+						for (int i = 0; i < nnodes; i++)
+						{
+							const double pore_p = _nodal_p2[i] - _nodal_S[i] * _nodal_p1[i];
+							nodal_pore_p[i] = pore_p * LoadFactor;
+						}
+
+						if (excavation)
+						{
+							for (int i = 0; i < nnodes; i++)
+							{
+								if (onExBoundaryState[i] == 1) // WX:02.2013
+									nodal_pore_p[i] = 0.;
+							}
+						}
+
 						if (pcs->Neglect_H_ini == 2)
 						{
 							for (int i = 0; i < nnodes; i++)
 							{
-								_nodal_p1[i] -= h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-								_nodal_p2[i] -= h_pcs->GetNodeValue(nodes[i], idx_p2_ini);
+								const double pc0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
+								const double Sw0 = m_mmp->SaturationCapillaryPressureFunction(pc0);
+								const double pore_p0 = h_pcs->GetNodeValue(nodes[i], idx_p2_ini)
+									   - Sw0 * pc0;
+								nodal_pore_p[i] -= pore_p0 * LoadFactor;
 							}
 						}
-
-						PressureC->multi(_nodal_p2, AuxNodal1, LoadFactor);
-						PressureC_S->multi(_nodal_p1, AuxNodal1, -1.0 * LoadFactor);
+						PressureC->multi(nodal_pore_p, AuxNodal1, LoadFactor);
 						break;
 					}
 
@@ -1804,13 +1818,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					{
 						for (int i = 0; i < nnodes; i++)
 						{
-							const double p0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-							const double Sw0 = m_mmp->SaturationCapillaryPressureFunction(p0);
+							const double pc0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
+							const double Sw0 = m_mmp->SaturationCapillaryPressureFunction(pc0);
 							const double S_e0 =  m_mmp->GetEffectiveSaturationForPerm(Sw0, 0);
-							const double bishop_coef = smat->getBishopCoefficient(S_e0, p0);
+							const double bishop_coef = smat->getBishopCoefficient(S_e0, pc0);
 							const double pore_p0 = h_pcs->GetNodeValue(nodes[i], idx_p2_ini)
-								   - bishop_coef * h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-							nodal_pore_p[i] -= bishop_coef * LoadFactor;
+								   - bishop_coef * pc0;
+							nodal_pore_p[i] -= pore_p0 * LoadFactor;
 						}
 					}
 
