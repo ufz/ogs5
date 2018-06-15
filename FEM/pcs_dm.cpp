@@ -226,51 +226,29 @@ void CRFProcessDeformation::Initialization()
 
 /*************************************************************************
 WX:08.2011 initialise node value of h pcs
+WW: Use enum type
 *************************************************************************/
 void CRFProcessDeformation::InitialNodeValueHpcs()
 {
-	CRFProcess* tmp_h_pcs = NULL;
-	if (fem_dm->h_pcs == NULL)
+	if (fem_dm->getCoupledFlowProcessType() == FiniteElement::NO_PCS)
 		return;
 
-	tmp_h_pcs = fem_dm->h_pcs;
-	int h_pcs_type = tmp_h_pcs->type;
-	int idv_p_ini, idv_p1_ini, idv_p2_ini, idv_p_1, idv_p1_1, idv_p2_1; // idv_sw_ini, idv_sw_1;
-	size_t i;
-	if (h_pcs_type == 1 || h_pcs_type == 41) // Liquide Flow
+	CRFProcess* tmp_h_pcs = fem_dm->h_pcs;
+	const int idv_p_ini = tmp_h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
+	const int idv_p_1 = tmp_h_pcs->GetNodeValueIndex("PRESSURE1");
+	for (std::size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
+		tmp_h_pcs->SetNodeValue(i, idv_p_ini, tmp_h_pcs->GetNodeValue(i, idv_p_1));
+
+	if (fem_dm->getCoupledFlowProcessType() == FiniteElement::MULTI_PHASE_FLOW)
 	{
-		idv_p_ini = tmp_h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
-		idv_p_1 = tmp_h_pcs->GetNodeValueIndex("PRESSURE1");
-		for (i = 0; i < m_msh->GetNodesNumber(false); i++)
-			tmp_h_pcs->SetNodeValue(i, idv_p_ini, tmp_h_pcs->GetNodeValue(i, idv_p_1));
-	}
-	else if (h_pcs_type == 14) // Richards Flow
-	{
-		idv_p_ini = tmp_h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
-		// idv_sw_ini = tmp_h_pcs->GetNodeValueIndex("SATURATION1_Ini");
-		idv_p_1 = tmp_h_pcs->GetNodeValueIndex("PRESSURE1");
-		// idv_sw_1 = tmp_h_pcs->GetNodeValueIndex("SATURATION1");
-		for (i = 0; i < m_msh->GetNodesNumber(false); i++)
+		const int idv_p2_ini = tmp_h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
+		const int idv_p2_1 = tmp_h_pcs->GetNodeValueIndex("PRESSURE2");
+		for (std::size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
 		{
-			tmp_h_pcs->SetNodeValue(i, idv_p_ini, tmp_h_pcs->GetNodeValue(i, idv_p_1));
-			// tmp_h_pcs->SetNodeValue(i,idv_sw_ini,tmp_h_pcs->GetNodeValue(i,idv_sw_1));
-		}
-	}
-	else if (h_pcs_type == 1212 || h_pcs_type == 42) // Multi Phase Flwo
-	{
-		idv_p1_ini = tmp_h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
-		idv_p2_ini = tmp_h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
-		// idv_sw_ini = tmp_h_pcs->GetNodeValueIndex("SATURSTION1_Ini");
-		idv_p1_1 = tmp_h_pcs->GetNodeValueIndex("PRESSURE1");
-		idv_p2_1 = tmp_h_pcs->GetNodeValueIndex("PRESSURE2");
-		// idv_sw_1 = tmp_h_pcs->GetNodeValueIndex("SATURATION1");
-		for (i = 0; i < m_msh->GetNodesNumber(false); i++)
-		{
-			tmp_h_pcs->SetNodeValue(i, idv_p1_ini, tmp_h_pcs->GetNodeValue(i, idv_p1_1));
 			tmp_h_pcs->SetNodeValue(i, idv_p2_ini, tmp_h_pcs->GetNodeValue(i, idv_p2_1));
-			// tmp_h_pcs->SetNodeValue(i,idv_sw_ini,tmp_h_pcs->GetNodeValue(i,idv_sw_1));
 		}
 	}
+
 	return;
 }
 /*************************************************************************
@@ -2791,35 +2769,28 @@ void CRFProcessDeformation::PostExcavation()
 	{
 		//	 		  MXDumpGLS("rf_pcs.txt",1,eqs->b,eqs->x);  //abort();}
 		// 07.04.2010 WW
-		bool done;
-		ElementValue_DM* eleV_DM = NULL;
-		if ((fem_dm->Flow_Type == 0 || fem_dm->Flow_Type == 2 || fem_dm->Flow_Type == 1) && Neglect_H_ini == 2)
+		if ((fem_dm->getCoupledFlowProcessType() != FiniteElement::NO_PCS) && Neglect_H_ini == 2)
 		{
-			int tmp_type, idx_p1_ini, idx_p2_ini, idx_p1_1, idx_p2_1; //, idx_sw_1;//idx_sw_ini,
-			CRFProcess* h_pcs = NULL;
-			h_pcs = fem_dm->h_pcs;
-			tmp_type = h_pcs->type;
-			idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
-			idx_p1_1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
-			if (tmp_type == 1212)
-			{
-				idx_p2_ini = h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
-				// idx_sw_ini = h_pcs->GetNodeValueIndex("SATURATION1_Ini");
-				idx_p2_1 = h_pcs->GetNodeValueIndex("PRESSURE2") + 1;
-				// idx_sw_1 = h_pcs->GetNodeValueIndex("SATURATION1")+1;
-			}
+			CRFProcess* h_pcs = fem_dm->h_pcs;
+			const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
+			const int idx_p1_1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
 			for (size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
 			{
-				// if(tmp_type==1)//LiquideFlow, RichardsFlow, MultiPhaseFlow
 				h_pcs->SetNodeValue(i, idx_p1_ini, h_pcs->GetNodeValue(i, idx_p1_1));
-				if (tmp_type == 1212)
+			}
+			if (fem_dm->getCoupledFlowProcessType() == FiniteElement::MULTI_PHASE_FLOW)
+			{
+				const int idx_p2_ini = h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
+				const int idx_p2_1 = h_pcs->GetNodeValueIndex("PRESSURE2") + 1;
+				for (size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
 				{
-					// h_pcs->SetNodeValue(i, idx_p1_ini, h_pcs->GetNodeValue(i, idx_p1_1));
 					h_pcs->SetNodeValue(i, idx_p2_ini, h_pcs->GetNodeValue(i, idx_p2_1));
-					// h_pcs->SetNodeValue(i, idx_sw_ini, h_pcs->GetNodeValue(i, idx_sw_1));
 				}
 			}
 		}
+
+		bool done;
+		ElementValue_DM* eleV_DM = NULL;
 		for (size_t l = 0; l < m_msh->ele_vector.size(); l++)
 		{
 			eleV_DM = ele_value_dm[l];
@@ -2948,32 +2919,22 @@ void CRFProcessDeformation::UpdateIniStateValue()
 	}
 	if (Neglect_H_ini == 1)
 		CalIniTotalStress();
-	if ((fem_dm->Flow_Type == 0 || fem_dm->Flow_Type == 1 || fem_dm->Flow_Type == 2) && Neglect_H_ini == 2)
+	if ((fem_dm->getCoupledFlowProcessType() != FiniteElement::NO_PCS) && Neglect_H_ini == 2)
 	{
-		int tmp_type;
-		CRFProcess* h_pcs = NULL;
-		h_pcs = fem_dm->h_pcs;
-		tmp_type = fem_dm->Flow_Type;
-		int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
-		int idx_p1_1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
-		if (tmp_type == 0 || tmp_type == 1) // LiquideFlow,RichardsFlow
+		CRFProcess* const h_pcs = fem_dm->h_pcs;
+		const int idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
+		const int idx_p1_1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
+		for (size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
 		{
-			for (size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
-			{
-				h_pcs->SetNodeValue(i, idx_p1_ini, h_pcs->GetNodeValue(i, idx_p1_1));
-			}
+			h_pcs->SetNodeValue(i, idx_p1_ini, h_pcs->GetNodeValue(i, idx_p1_1));
 		}
-		else if (tmp_type == 2)
+		if (fem_dm->getCoupledFlowProcessType() != FiniteElement::MULTI_PHASE_FLOW)
 		{
-			int idx_p2_ini = h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
-			// int idx_sw_ini = h_pcs->GetNodeValueIndex("SATURATION1_Ini");
-			int idx_p2_1 = h_pcs->GetNodeValueIndex("PRESSURE2") + 1;
-			// int idx_sw_1 = h_pcs->GetNodeValueIndex("SATURATION1")+1;
+			const int idx_p2_ini = h_pcs->GetNodeValueIndex("PRESSURE2_Ini");
+			const int idx_p2_1 = h_pcs->GetNodeValueIndex("PRESSURE2") + 1;
 			for (size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
 			{
-				h_pcs->SetNodeValue(i, idx_p1_ini, h_pcs->GetNodeValue(i, idx_p1_1));
 				h_pcs->SetNodeValue(i, idx_p2_ini, h_pcs->GetNodeValue(i, idx_p2_1));
-				// h_pcs->SetNodeValue(i, idx_sw_ini, h_pcs->GetNodeValue(i, idx_sw_1));
 			}
 		}
 	}
