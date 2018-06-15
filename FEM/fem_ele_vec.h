@@ -196,7 +196,7 @@ private:
 	double* T1;
 	double Tem;
 
-	double S_Water;
+	double _wettingS;
 
 	// Element value
 	ElementValue_DM* eleV_DM;
