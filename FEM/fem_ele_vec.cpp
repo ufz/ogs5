@@ -1684,7 +1684,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					{
 						for (int i = 0; i < nnodes; i++)
 						{
-							nodal_pore_p[i] = LoadFactor * _wettingS * _nodal_p1[i];
+							nodal_pore_p[i] = LoadFactor * _nodal_S[i] * _nodal_p1[i];
 						}
 						if (excavation)
 						{
