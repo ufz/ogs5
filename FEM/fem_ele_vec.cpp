@@ -1667,66 +1667,64 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	if (dynamic)
 		Residual = true;
 
-	// Assemble coupling matrix
-	if (Residual)
+	bool onExBoundaryState[max_nnodes_QE_3D] = {false};
+	if (excavation)
 	{
-		// WX:02.2013 coupling excavation
-		int onExBoundaryState[20] = {0};
-		if (excavation)
+		int valid = 0;
+		excavation = true;
+		bool onExBoundary = false;
+		CNode* node;
+		CElem* elem;
+		CSolidProperties* smat_e;
+
+		for (int i = 0; i < nnodesHQ; i++)
 		{
-			int valid = 0;
-			excavation = true;
-			bool onExBoundary = false;
-			CNode* node;
-			CElem* elem;
-			CSolidProperties* smat_e;
-
-			for (int i = 0; i < nnodes; i++)
+			node = MeshElement->nodes[i];
+			onExBoundary = false;
+			const std::size_t n_elements(node->getConnectedElementIDs().size());
+			for (std::size_t j = 0; j < n_elements; j++)
 			{
-				node = MeshElement->nodes[i];
-				onExBoundary = false;
-				const size_t n_elements(node->getConnectedElementIDs().size());
-				for (size_t j = 0; j < n_elements; j++)
-				{
-					elem = pcs->m_msh->ele_vector[node->getConnectedElementIDs()[j]];
-					if (!elem->GetMark())
-						continue;
+				elem = pcs->m_msh->ele_vector[node->getConnectedElementIDs()[j]];
+				if (!elem->GetMark())
+					continue;
 
-					smat_e = msp_vector[elem->GetPatchIndex()];
-					if (smat_e->excavation > 0)
-					{
-						if (fabs(GetCurveValue(smat_e->excavation, 0, aktuelle_zeit, &valid) - 1.0) < DBL_MIN)
-						{
-							onExBoundary = true;
-							break;
-						}
-					}
-					else if (pcs->ExcavMaterialGroup > -1)
-					{
-						double const* ele_center(elem->GetGravityCenter());
-						if ((GetCurveValue(pcs->ExcavCurve, 0, aktuelle_zeit, &valid) + pcs->ExcavBeginCoordinate)
-						    < (ele_center[pcs->ExcavDirection]))
-						{
-							onExBoundary = true;
-							break;
-						}
-						else if (elem->GetPatchIndex() != static_cast<size_t>(pcs->ExcavMaterialGroup))
-						{
-							onExBoundary = true;
-							break;
-						}
-					}
-					else
+				smat_e = msp_vector[elem->GetPatchIndex()];
+				if (smat_e->excavation > 0)
+				{
+					if (fabs(GetCurveValue(smat_e->excavation, 0, aktuelle_zeit, &valid) - 1.0) < DBL_MIN)
 					{
 						onExBoundary = true;
 						break;
 					}
 				}
-				if (onExBoundary)
-					onExBoundaryState[i] = 1;
+				else if (pcs->ExcavMaterialGroup > -1)
+				{
+					double const* ele_center(elem->GetGravityCenter());
+					if ((GetCurveValue(pcs->ExcavCurve, 0, aktuelle_zeit, &valid) + pcs->ExcavBeginCoordinate)
+					    < (ele_center[pcs->ExcavDirection]))
+					{
+						onExBoundary = true;
+						break;
+					}
+					else if (elem->GetPatchIndex() != static_cast<size_t>(pcs->ExcavMaterialGroup))
+					{
+						onExBoundary = true;
+						break;
+					}
+				}
+				else
+				{
+					onExBoundary = true;
+					break;
+				}
 			}
+			if (onExBoundary)
+				onExBoundaryState[i] = 1;
 		}
+	}
 
+	if (Residual)
+	{
 		const double biot = smat->biot_const;
 		double nodal_pore_p[max_nnodes_LE];
 		const int dim_times_nnodesHQ(dim * nnodesHQ);
@@ -1929,70 +1927,19 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		for (std::size_t i = 0; i < dim; i++)
 			for (int j = 0; j < nnodesHQ; j++)
 				b_rhs[eqs_number[j] + NodeShift[i]] -= (*RHS)[i * nnodesHQ + j];
-#endif
 
-		// WX:07.2011 if not on excav boundary, RHS=0
-		int valid = 0;
 		if (excavation)
 		{
-			excavation = true;
-			bool onExBoundary = false;
-
-			CNode* node;
-			CElem* elem;
-			CSolidProperties* smat_e;
-
 			for (int i = 0; i < nnodesHQ; i++)
 			{
-				node = MeshElement->nodes[i];
-				onExBoundary = false;
-				const std::size_t n_elements(node->getConnectedElementIDs().size());
-				for (std::size_t j = 0; j < n_elements; j++)
+				if (!onExBoundaryState[i])
 				{
-					elem = pcs->m_msh->ele_vector[node->getConnectedElementIDs()[j]];
-					if (!elem->GetMark())
-						continue;
-
-					smat_e = msp_vector[elem->GetPatchIndex()];
-					if (smat_e->excavation > 0)
-					{
-						if (fabs(GetCurveValue(smat_e->excavation, 0, aktuelle_zeit, &valid) - 1.0) < DBL_MIN)
-						{
-							onExBoundary = true;
-							break;
-						}
-					}
-					else if (pcs->ExcavMaterialGroup > -1)
-					{
-						double const* ele_center(elem->GetGravityCenter());
-						if ((GetCurveValue(pcs->ExcavCurve, 0, aktuelle_zeit, &valid) + pcs->ExcavBeginCoordinate)
-						    < (ele_center[pcs->ExcavDirection]))
-						{
-							onExBoundary = true;
-							break;
-						}
-						else if (elem->GetPatchIndex() != static_cast<size_t>(pcs->ExcavMaterialGroup))
-						{
-							onExBoundary = true;
-							break;
-						}
-					}
-					else
-					{
-						onExBoundary = true;
-						break;
-					}
-				}
-
-				if (!onExBoundary)
-				{
-#if !defined(USE_PETSC) // && !defined(other parallel libs)//06.2013. WW
 					for (std::size_t j = 0; j < dim; j++)
 						b_rhs[eqs_number[i] + NodeShift[j]] = 0.0;
-#endif
 				}
 			}
 		}
+#endif
 	}
 	/***************************************************************************
 	   GeoSys - Funktion:
