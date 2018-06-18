@@ -1484,72 +1484,6 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 		GlobalAssembly_PressureCoupling(PressureC_S, -f2 * biot, 0);
 	if (PressureC_S_dp)
 		GlobalAssembly_PressureCoupling(PressureC_S_dp, -f2 * biot, 0);
-
-	/*
-	   // Assemble coupling matrix
-	   if(Flow_Type>=0&&pcs->type/40 == 1)              // Monolithic scheme
-	   {
-
-	   f2 *= biot;
-
-	   double fact_NR = 0.;
-	   if(pcs->m_num->nls_method == 1) // If Newton-Raphson method
-	   {
-	      if(Flow_Type == 2)     // Multi-phase-flow: p_g-Sw*p_c
-	   {
-
-	   // P_g related:
-	   for (i=0;i<nnodesHQ;i++)
-	   {
-	   for (j=0;j<nnodes;j++)
-	   {
-	   for(k=0; k<ele_dim; k++)
-	   #ifdef NEW_EQS
-	   (*A)(NodeShift[k]+eqs_number[i], NodeShift[dim+1]+eqs_number[j])
-	   += f2*(*PressureC)(nnodesHQ*k+i,j);
-	   #else
-	   MXInc(NodeShift[k]+eqs_number[i], NodeShift[dim+1]+eqs_number[j],\
-	   f2*(*PressureC)(nnodesHQ*k+i,j));
-	   #endif
-	   }
-	   }
-
-	   fact_NR = 0.0;
-	   for (i=0;i<nnodes;i++)
-	   {
-	   fact_NR += _nodal_S[i];  /// Sw
-
-	   /// dS_dPcPc
-	   fact_NR += m_mmp->SaturationPressureDependency(_nodal_S[i])*h_pcs->GetNodeValue(nodes[i],idx_P1);
-	   }
-
-	   fact_NR /= static_cast<double>(nnodes);
-
-	   f2 *= -1.0*fact_NR;
-
-	   }
-	   }
-
-	   // Add pressure coupling matrix to the stifness matrix
-	   for (i=0;i<nnodesHQ;i++)
-	   {
-	   for (j=0;j<nnodes;j++)
-	   {
-	   for(k=0; k<ele_dim; k++)
-	   #ifdef NEW_EQS
-	   (*A)(NodeShift[k]+eqs_number[i], NodeShift[dim]+eqs_number[j])
-	   += f2*(*PressureC)(nnodesHQ*k+i,j);
-	   #else
-	   MXInc(NodeShift[k]+eqs_number[i], NodeShift[dim]+eqs_number[j],\
-	   f2*(*PressureC)(nnodesHQ*k+i,j));
-	   #endif
-	   }
-	   }
-
-	   }
-	 */
-	// TEST OUT
-	// PressureC->Write();
 }
 #endif //#if defined(USE_PETSC) // || defined(other parallel libs)//07.2013. WW
 //--------------------------------------------------------------------------
@@ -2042,44 +1976,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 
 		if (PModel == 5)
 			smat->CalculateCoefficent_HOEKBROWN(); // WX:02.2011
-		/*
-		   string fname=FileName+"_D.txt";
-		   ofstream out_f(fname.c_str());
-		   De->Write(out_f);
-		 */
-
-		/*
-		   //TEST
-		   fstream oss;
-		   if(update)
-		   {
-		   char tf_name[10];
-		   #ifdef USE_MPI
-		   sprintf(tf_name,"%d",myrank);
-		    string fname = FileName+tf_name+".stress";
-		   #else
-		    string fname = FileName+".stress";
-		   #endif
-		   oss.open(fname.c_str(), ios::app|ios::out);
-		   //    oss.open(fname.c_str(), ios::trunc|ios::out);
-		   oss<<"\nElement  "<<Index<<"\n";
-		   oss<<"\n";
-
-		   oss<<"Diaplacement "<<"\n";
-		   for(i=0;i<nnodesHQ;i++)
-		   {
-		   oss<<nodes[i]<<"  ";
-		   for(int ii=0; ii<dim; ii++)
-		   oss<<Disp[ii*nnodesHQ+i]<<"  ";
-		   oss<<"\n";
-		   }
-		   oss<<"Temperature "<<"\n";
-		   for(i=0; i<nnodes;i++)
-		   oss<<Temp[i]<<"  ";
-		   oss<<"\n";
-		   oss.close();
-		   }
-		 */
 		//
 		if (PoroModel == 4 || T_Flag || smat->Creep_mode > 0)
 			Strain_TCS = true;
@@ -2486,18 +2382,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			ExtropolateGuassStrain();
 		else if (smat->Creep_mode == 1000) // HL_ODS. Strain increment by creep
 			smat->AccumulateEtr_HL_ODS(eleV_DM, nGaussPoints);
-
-		/*
-		   //TEST
-
-		      //TEST
-		        if(update&&Index==0)
-		        {
-		           oss<<" Stress "<<"\n";
-		           eleV_DM->Stress->Write(oss);
-		           oss.close();
-		        }
-		 */
 	}
 
 	/***************************************************************************
