@@ -2066,8 +2066,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						//
 						if (smat->SwellingPressureType == 3)
 						{
-							double suc = interpolate(_nodal_cp0);
-							double dsuc = interpolate(_nodal_dcp);
+							const double suc = interpolate(_nodal_cp0);
+							const double dsuc = interpolate(_nodal_dcp);
 							(*smat->data_Youngs)(7) = suc;
 							(*smat->data_Youngs)(8) = dsuc;
 							smat->CalStress_and_TangentialMatrix_CC_SubStep(gp, eleV_DM, dstress, ConsistDep, update);
@@ -2077,16 +2077,15 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							// de_vsw = -smat->TEPSwellingParameter(pn,suc)*dsuc/(suc+1.0e5);
 						}
 						/*
-						   else if (smat->SwellingPressureType==4)  //Power. 07.05.2008 WW
-						   {
-						   double suc = interpolate(AuxNodal1);
-						   double dsuc = interpolate(AuxNodal);
-						   smat->TEPSwellingParameter_kis(suc);
-						   _wettingS = m_mmp->SaturationCapillaryPressureFunction(suc);
-						   dS = _wettingS - m_mmp->SaturationCapillaryPressureFunction(suc-dsuc);
-						   de_vsw = pow(_wettingS, (*smat->data_Youngs)(2) )*dS;
-						   }
-						 */
+						else if (smat->SwellingPressureType==4)  //Power. 07.05.2008 WW
+						{
+							const double suc = interpolate(_nodal_cp0);
+							cont double dsuc = interpolate(_nodal_dcp);
+							smat->TEPSwellingParameter_kis(suc);
+							dS = _wettingS - m_mmp->SaturationCapillaryPressureFunction(suc-dsuc);
+							de_vsw = pow(_wettingS, (*smat->data_Youngs)(2) )*dS;
+						}
+						*/
 						else
 							smat->CalStress_and_TangentialMatrix_CC(gp, eleV_DM, dstress, ConsistDep, update);
 
