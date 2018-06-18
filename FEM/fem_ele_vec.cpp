@@ -65,46 +65,14 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	  ns((dim == 3)? 6: 4),  Flow_Type(-1),
       idx_P(-1), idx_P0(-1), idx_P1(-1), idx_P1_0(-1), idx_P2(-1),
 	  idx_T0(-1), idx_T1(-1), idx_S0(-1), idx_S(-1), idx_Snw(-1), idx_pls(-1),
-	  _nodal_stress_indices(new  int[ns]), _nodal_strain_indices ((new  int[ns])),
-	  B_matrix((dim == 3)? new Matrix(6, 3) : new Matrix(4, 2)),
-	  B_matrix_T((dim == 3)? new Matrix(3, 6) : new Matrix(2, 4)),
-	  De((dim == 3)? new Matrix(6, 6) : new Matrix(4, 4)),
-	  ConsistDep((dim == 3)? new Matrix(6, 6) : new Matrix(4, 4)),
-	  AuxMatrix((dim == 3)? new Matrix(3, 3) : new Matrix(2, 2)),
-	  AuxMatrix2((dim == 3)? new Matrix(3, 6) : new Matrix(2, 4)),
-	  Stiffness((pcs->Memory_Type == 0) ? new Matrix(60, 60) : NULL),
-	  PressureC(NULL), PressureC_S(NULL), PressureC_S_dp(NULL),
-	  RHS( (pcs->Memory_Type == 0) ? new Vec(3 * max_nnodes_QE_3D) : NULL), b_rhs(NULL),
+	  PressureC(NULL), PressureC_S(NULL), PressureC_S_dp(NULL), b_rhs(NULL),
 	  smat(NULL), m_mfp(NULL), m_mmp(NULL),
-	  dstress(new double[ns]), dstrain(new double[ns]),
-	  stress_ne(new double[ns]), strain_ne(new double[ns]), stress0(new double[ns]),
-	  Disp((dim == 3)? new double[max_nnodes_QE_3D * dim] : new double[max_nnodes_QE_2D * dim]),
 	  Temp(NULL), T1(NULL), Tem(273.15 + 23.0), S_Water(1.), eleV_DM(NULL),
-	  NodesInJumpedA(enhanced_strain_dm && dim ==2 ? new bool[max_nnodes_QE_2D]: NULL),
-	  Ge(enhanced_strain_dm && dim ==2 ?new Matrix(4, 2) : NULL),
-	  Pe(enhanced_strain_dm && dim ==2 ?new Matrix(2, 4) : NULL),
-	  BDG(enhanced_strain_dm && dim ==2 ?new Matrix(2, 2 * max_nnodes_QE_2D) : NULL),
-	  PDB(enhanced_strain_dm && dim ==2 ?new Matrix(2 * max_nnodes_QE_2D, 2) : NULL),
-	  DtD(enhanced_strain_dm && dim ==2 ?new Matrix(2, 2) : NULL),
-	  PeDe(enhanced_strain_dm && dim ==2 ?new Matrix(2, 4) : NULL),
-	  X0(enhanced_strain_dm && dim ==2 ? new double[3]: NULL),
-	  n_jump(enhanced_strain_dm && dim ==2 ? new double[3]: NULL),
-	  pr_stress(enhanced_strain_dm && dim ==2 ? new double[3]: NULL),
-	  Sxx(dim ==3 ? new double[max_nnodes_QE_3D] : new double[max_nnodes_QE_2D]),
-	  Syy(dim ==3 ? new double[max_nnodes_QE_3D] : new double[max_nnodes_QE_2D]),
-	  Szz(dim ==3 ? new double[max_nnodes_QE_3D] : new double[max_nnodes_QE_2D]),
-	  Sxy(dim ==3 ? new double[max_nnodes_QE_3D] : new double[max_nnodes_QE_2D]),
-	  Sxz(dim ==3 ? new double[max_nnodes_QE_3D]: NULL),
-	  Syz(dim ==3 ? new double[max_nnodes_QE_3D]: NULL),
-	  pstr(dim ==3 ? new double[max_nnodes_QE_3D] : new double[max_nnodes_QE_2D]),
 	  _nodal_p1(NULL), _nodal_p2(NULL), _nodal_cp0(NULL), _nodal_dcp(NULL),
-	  _nodal_S0(NULL), _nodal_S(NULL),
-	  AuxNodal1(NULL),
+	  _nodal_S0(NULL), _nodal_S(NULL), AuxNodal1(NULL),
 	  dynamic((dm_pcs->pcs_type_name_vector[0].find("DYNAMIC") != std::string::npos)
 			? true : false),
-	  Mass(dynamic ? new Matrix(max_nnodes_QE_3D, max_nnodes_QE_3D) : NULL),
-	  Idx_Vel(dynamic ? new int[3] : NULL),
-	  dAcceleration(dynamic ? new Vec(max_nnodes_QE_3D * dim) : NULL),
+	  Mass(NULL), Idx_Vel(NULL), dAcceleration(NULL),
 	  beta2(dynamic ? dm_pcs->m_num->GetDynamicDamping_beta2() : 1.),
 	  bbeta1(dynamic ? dm_pcs->m_num->GetDynamicDamping_bbeta(): 1.)
 {
@@ -116,6 +84,10 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 		NodeShift[i] = pcs->Shift[i];
 	if (dynamic)
 	{
+		Mass = new Matrix(max_nnodes_QE_3D, max_nnodes_QE_3D);
+		Idx_Vel = new int[3];
+		dAcceleration = new Vec(max_nnodes_QE_3D * dim);
+
 		Idx_dm0[0] = pcs->GetNodeValueIndex("ACCELERATION_X1");
 		Idx_dm0[1] = pcs->GetNodeValueIndex("ACCELERATION_Y1");
 		Idx_dm1[0] = Idx_dm0[0] + 1;
@@ -147,11 +119,13 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	}
 
 	// Strain
+	_nodal_strain_indices = new int[ns];
 	_nodal_strain_indices[0] = pcs->GetNodeValueIndex("STRAIN_XX");
 	_nodal_strain_indices[1] = pcs->GetNodeValueIndex("STRAIN_YY");
 	_nodal_strain_indices[2] = pcs->GetNodeValueIndex("STRAIN_ZZ");
 	_nodal_strain_indices[3] = pcs->GetNodeValueIndex("STRAIN_XY");
 	// Stress
+	_nodal_stress_indices = new int[ns];
 	_nodal_stress_indices[0] = pcs->GetNodeValueIndex("STRESS_XX");
 	_nodal_stress_indices[1] = pcs->GetNodeValueIndex("STRESS_YY");
 	_nodal_stress_indices[2] = pcs->GetNodeValueIndex("STRESS_ZZ");
@@ -165,6 +139,32 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 		_nodal_stress_indices[4] = pcs->GetNodeValueIndex("STRESS_XZ");
 		_nodal_stress_indices[5] = pcs->GetNodeValueIndex("STRESS_YZ");
 	}
+
+	dstress = new double[ns];
+	dstrain = new double[ns];
+	stress_ne = new double[ns];
+	strain_ne = new double[ns];
+	stress0 = new double[ns];
+
+	const int max_nodes =  (dim == 3) ? max_nnodes_QE_3D : max_nnodes_QE_2D;
+	Sxx = new double[max_nodes];
+	Syy = new double[max_nodes];
+	Szz = new double[max_nodes];
+	Sxy = new double[max_nodes];
+	Sxz = (dim == 3) ? new double[max_nnodes_QE_3D]: NULL;
+	Syz = (dim == 3) ? new double[max_nnodes_QE_3D]: NULL;
+	pstr = new double[max_nodes];
+
+	Disp =  new double[max_nodes * dim];
+
+	B_matrix = new Matrix(ns, dim);
+	B_matrix_T = new Matrix(dim, ns);
+	De = new Matrix(ns, ns);
+	ConsistDep = new Matrix(ns, ns);
+	AuxMatrix = new Matrix(dim, dim);
+	AuxMatrix2 = new Matrix(dim, ns);
+	Stiffness = (pcs->Memory_Type == 0) ?
+		new Matrix(max_nnodes_QE_3D * dim, max_nnodes_QE_3D * dim) : NULL;
 
 	// For cache NW
 	vec_B_matrix.resize(20);
@@ -183,6 +183,8 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 				break;
 		}
 	}
+
+	RHS = (pcs->Memory_Type == 0) ? new Vec(3 * max_nnodes_QE_3D) : NULL;
 
 	*B_matrix = 0.0;
 	*B_matrix_T = 0.0;
@@ -321,6 +323,34 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 		Temp = new double[max_nnodes_LE];
 		T1 = new double[max_nnodes_LE];
 	}
+
+	if (enhanced_strain_dm && dim == 2)
+	{
+		NodesInJumpedA = new bool[max_nnodes_QE_2D];
+		Ge = new Matrix(4, 2);
+		Pe = new Matrix(2, 4);
+		BDG = new Matrix(2, 2 * max_nnodes_QE_2D);
+		PDB = new Matrix(2 * max_nnodes_QE_2D, 2);
+		DtD = new Matrix(2, 2);
+		PeDe = new Matrix(2, 4);
+		X0 = new double[3];
+		n_jump = new double[3];
+		pr_stress = new double[3];
+	}
+	else
+	{
+		NodesInJumpedA = NULL;
+		Ge = NULL;
+		Pe = NULL;
+		BDG = NULL;
+		PDB = NULL;
+		DtD = NULL;
+		PeDe = NULL;
+		X0 = NULL;
+		n_jump = NULL;
+		pr_stress = NULL;
+	}
+
 	//
 	// Time unit factor
 	time_unit_factor = pcs->time_unit_factor;

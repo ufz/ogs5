@@ -268,7 +268,7 @@ private:
 
 	// Dynamic
 	// Damping parameters
-	bool dynamic;
+	const bool dynamic;
 	Matrix* Mass; // For dynamic analysis
 	int* Idx_Vel;
 	// Auxillarary vector
