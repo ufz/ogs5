@@ -12,23 +12,16 @@
    Designed and programmed by WW, 06/2004
  */
 
+#include "fem_ele_vec.h"
+
 #include <cfloat>
-//#include "makros.h"
-//#include <iostream>
-// Sytem matrix
+#include <algorithm>
 #include "mathlib.h"
+#include "matrix_class.h"
 #include "matrix_routines.h"
 #include "pcs_dm.h"
 #include "rf_mfp_new.h"
 #include "rf_msp_new.h"
-// Time step
-//#include "rf_tim_new.h"
-// MSHLib
-//#include "msh_elem.h"
-// FEMLib
-//#include "fem_ele.h"
-#include "fem_ele_vec.h"
-//#include "rf_pcs.h"
 #include "tools.h" //12.2009. WW
 // Equation
 #if defined(NEW_EQS)
@@ -52,51 +45,49 @@ std::vector<FiniteElement::ElementValue_DM*> ele_value_dm;
 
 namespace FiniteElement
 {
-//-------------------------------------------------------------------------
-//-------------------------------------------------------------------------
-//-------------------------------------------------------------------------
-// class Element_DM
+using SolidProp::CSolidProperties;
+using Math_Group::Matrix;
+using Math_Group::Vec;
+using ::CRFProcess;
+using ::CMediumProperties;
+using process::CRFProcessDeformation;
+using MeshLib::CElem;
+// Maximum number of nodes of linear elements
+const int max_nnodes_LE = 8;
+// Maximum number of nodes of 2D quadratic elements
+const int max_nnodes_QE_2D = 9;
+// Maximum number of nodes of 3D quadratic elements
+const int max_nnodes_QE_3D = 20;
 
-//  Constructor of class Element_DM
-CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs, const int C_Sys_Flad, const int order)
-    : CElement(C_Sys_Flad, order), pcs(dm_pcs), PressureC(NULL), PressureC_S(NULL), PressureC_S_dp(NULL), b_rhs(NULL)
+CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
+	const int C_Sys_Flad, const int order)
+    : CElement(C_Sys_Flad, order), pcs(dm_pcs), h_pcs(NULL), t_pcs(NULL), excavation(false),
+	  ns((dim == 3)? 6: 4),  Flow_Type(-1),
+      idx_P(-1), idx_P0(-1), idx_P1(-1), idx_P1_0(-1), idx_P2(-1),
+	  idx_T0(-1), idx_T1(-1), idx_S0(-1), idx_S(-1), idx_Snw(-1), idx_pls(-1),
+	  PressureC(NULL), PressureC_S(NULL), PressureC_S_dp(NULL), b_rhs(NULL),
+	  smat(NULL), m_mfp(NULL), m_mmp(NULL),
+	  Temp(NULL), T1(NULL), Tem(273.15 + 23.0), S_Water(1.), eleV_DM(NULL),
+	  _nodal_p1(NULL), _nodal_p2(NULL), _nodal_cp0(NULL), _nodal_dcp(NULL),
+	  _nodal_S0(NULL), _nodal_S(NULL), AuxNodal1(NULL),
+	  dynamic((dm_pcs->pcs_type_name_vector[0].find("DYNAMIC") != std::string::npos)
+			? true : false),
+	  Mass(NULL), Idx_Vel(NULL), dAcceleration(NULL),
+	  beta2(dynamic ? dm_pcs->m_num->GetDynamicDamping_beta2() : 1.),
+	  bbeta1(dynamic ? dm_pcs->m_num->GetDynamicDamping_bbeta(): 1.)
 {
-	int i;
-	excavation = false; // 12.2009. WW
-
-	S_Water = 1.0;
-	Tem = 273.15 + 23.0;
-	h_pcs = NULL;
-	t_pcs = NULL;
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012. WW
 	m_dom = NULL;
 #endif
 
-	AuxNodal2 = NULL;
-	Idx_Vel = NULL;
-	X0 = n_jump = pr_stress = NULL;
-	//
-	ns = 4;
-	if (dim == 3)
-		ns = 6;
-	//  10.11.2010. WW
-	AuxNodal0 = new double[8];
-	AuxNodal = new double[8];
-	AuxNodal_S0 = new double[8];
-	AuxNodal_S = new double[8];
-	AuxNodal1 = new double[60];
-
-	Idx_Stress = new int[ns];
-	Idx_Strain = new int[ns];
-	strain_ne = new double[ns];
-	stress_ne = new double[ns];
-	stress0 = new double[ns];
-	for (i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 		NodeShift[i] = pcs->Shift[i];
-	if (dm_pcs->pcs_type_name_vector[0].find("DYNAMIC") != std::string::npos)
+	if (dynamic)
 	{
-		// Indecex in nodal value table
+		Mass = new Matrix(max_nnodes_QE_3D, max_nnodes_QE_3D);
 		Idx_Vel = new int[3];
+		dAcceleration = new Vec(max_nnodes_QE_3D * dim);
+
 		Idx_dm0[0] = pcs->GetNodeValueIndex("ACCELERATION_X1");
 		Idx_dm0[1] = pcs->GetNodeValueIndex("ACCELERATION_Y1");
 		Idx_dm1[0] = Idx_dm0[0] + 1;
@@ -110,19 +101,9 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs, con
 			Idx_dm1[2] = Idx_dm1[2] + 1;
 			Idx_Vel[2] = pcs->GetNodeValueIndex("VELOCITY_DM_Z");
 		}
-		Mass = new Matrix(20, 20);
-		dAcceleration = new Vec(60);
-
-		beta2 = dm_pcs->m_num->GetDynamicDamping_beta2();
-		bbeta1 = dm_pcs->m_num->GetDynamicDamping_bbeta();
-		dynamic = true;
 	}
 	else
 	{
-		dynamic = false;
-		dAcceleration = NULL;
-		// Idx_Vel[0] = Idx_Vel[1] = Idx_Vel[2] = -1;
-		beta2 = bbeta1 = 1.0;
 		// Indecex in nodal value table
 		Idx_dm0[0] = pcs->GetNodeValueIndex("DISPLACEMENT_X1");
 		Idx_dm0[1] = pcs->GetNodeValueIndex("DISPLACEMENT_Y1");
@@ -137,26 +118,58 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs, con
 		}
 	}
 
-	// idx_pls =  pcs->GetNodeValueIndex("STRAIN_PLS");
 	// Strain
-	Idx_Strain[0] = pcs->GetNodeValueIndex("STRAIN_XX");
-	Idx_Strain[1] = pcs->GetNodeValueIndex("STRAIN_YY");
-	Idx_Strain[2] = pcs->GetNodeValueIndex("STRAIN_ZZ");
-	Idx_Strain[3] = pcs->GetNodeValueIndex("STRAIN_XY");
+	_nodal_strain_indices = new int[ns];
+	_nodal_strain_indices[0] = pcs->GetNodeValueIndex("STRAIN_XX");
+	_nodal_strain_indices[1] = pcs->GetNodeValueIndex("STRAIN_YY");
+	_nodal_strain_indices[2] = pcs->GetNodeValueIndex("STRAIN_ZZ");
+	_nodal_strain_indices[3] = pcs->GetNodeValueIndex("STRAIN_XY");
 	// Stress
-	Idx_Stress[0] = pcs->GetNodeValueIndex("STRESS_XX");
-	Idx_Stress[1] = pcs->GetNodeValueIndex("STRESS_YY");
-	Idx_Stress[2] = pcs->GetNodeValueIndex("STRESS_ZZ");
-	Idx_Stress[3] = pcs->GetNodeValueIndex("STRESS_XY");
+	_nodal_stress_indices = new int[ns];
+	_nodal_stress_indices[0] = pcs->GetNodeValueIndex("STRESS_XX");
+	_nodal_stress_indices[1] = pcs->GetNodeValueIndex("STRESS_YY");
+	_nodal_stress_indices[2] = pcs->GetNodeValueIndex("STRESS_ZZ");
+	_nodal_stress_indices[3] = pcs->GetNodeValueIndex("STRESS_XY");
+	//
+	if (dim == 3)
+	{
+		_nodal_strain_indices[4] = pcs->GetNodeValueIndex("STRAIN_XZ");
+		_nodal_strain_indices[5] = pcs->GetNodeValueIndex("STRAIN_YZ");
+		//
+		_nodal_stress_indices[4] = pcs->GetNodeValueIndex("STRESS_XZ");
+		_nodal_stress_indices[5] = pcs->GetNodeValueIndex("STRESS_YZ");
+	}
 
-	idx_S = -1;
-	// Saturation;
-	S_Water = 1.0;
+	dstress = new double[ns];
+	dstrain = new double[ns];
+	stress_ne = new double[ns];
+	strain_ne = new double[ns];
+	stress0 = new double[ns];
+
+	const int max_nodes =  (dim == 3) ? max_nnodes_QE_3D : max_nnodes_QE_2D;
+	Sxx = new double[max_nodes];
+	Syy = new double[max_nodes];
+	Szz = new double[max_nodes];
+	Sxy = new double[max_nodes];
+	Sxz = (dim == 3) ? new double[max_nnodes_QE_3D]: NULL;
+	Syz = (dim == 3) ? new double[max_nnodes_QE_3D]: NULL;
+	pstr = new double[max_nodes];
+
+	Disp =  new double[max_nodes * dim];
+
+	B_matrix = new Matrix(ns, dim);
+	B_matrix_T = new Matrix(dim, ns);
+	De = new Matrix(ns, ns);
+	ConsistDep = new Matrix(ns, ns);
+	AuxMatrix = new Matrix(dim, dim);
+	AuxMatrix2 = new Matrix(dim, ns);
+	Stiffness = (pcs->Memory_Type == 0) ?
+		new Matrix(max_nnodes_QE_3D * dim, max_nnodes_QE_3D * dim) : NULL;
 
 	// For cache NW
 	vec_B_matrix.resize(20);
 	vec_B_matrix_T.resize(20);
-	for (i = 0; i < (int)vec_B_matrix.size(); i++)
+	for (int i = 0; i < (int)vec_B_matrix.size(); i++)
 	{
 		switch (dim)
 		{
@@ -170,108 +183,27 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs, con
 				break;
 		}
 	}
-	//  10.11.2010. WW
-	if (enhanced_strain_dm)
-	{
-		X0 = new double[3];
-		n_jump = new double[3];
-		pr_stress = new double[3];
-	}
 
-	//
-	switch (dim)
-	{
-		case 2:
-			ns = 4;
-			B_matrix = new Matrix(4, 2);
-			B_matrix_T = new Matrix(2, 4);
-			dstress = new double[4];
-			dstrain = new double[4];
-			De = new Matrix(4, 4);
-			ConsistDep = new Matrix(4, 4);
-			AuxMatrix = new Matrix(2, 2);
-			AuxMatrix2 = new Matrix(2, 4); // NW
-			Disp = new double[18];
-			Temp = new double[9];
-			T1 = new double[9];
+	RHS = (pcs->Memory_Type == 0) ? new Vec(3 * max_nnodes_QE_3D) : NULL;
 
-			Sxx = new double[9];
-			Syy = new double[9];
-			Szz = new double[9];
-			Sxy = new double[9];
-			pstr = new double[9];
-
-			Sxz = NULL;
-			Syz = NULL;
-
-			if (enhanced_strain_dm)
-			{
-				NodesInJumpedA = new bool[9];
-				Ge = new Matrix(4, 2);
-				Pe = new Matrix(2, 4);
-				PeDe = new Matrix(2, 4);
-
-				BDG = new Matrix(2, 18);
-				PDB = new Matrix(18, 2);
-				DtD = new Matrix(2, 2);
-			}
-			break;
-		case 3:
-			ns = 6;
-			B_matrix = new Matrix(6, 3);
-			B_matrix_T = new Matrix(3, 6);
-			dstress = new double[6];
-			dstrain = new double[6];
-			De = new Matrix(6, 6);
-			ConsistDep = new Matrix(6, 6);
-			AuxMatrix = new Matrix(3, 3);
-			AuxMatrix2 = new Matrix(3, 6); // NW
-			Disp = new double[60];
-			Temp = new double[20];
-			T1 = new double[20];
-
-			Sxx = new double[20];
-			Syy = new double[20];
-			Szz = new double[20];
-			Sxy = new double[20];
-			Sxz = new double[20];
-			Syz = new double[20];
-			pstr = new double[20];
-
-			// Indecex in nodal value table
-			Idx_Strain[4] = pcs->GetNodeValueIndex("STRAIN_XZ");
-			Idx_Strain[5] = pcs->GetNodeValueIndex("STRAIN_YZ");
-			//
-			Idx_Stress[4] = pcs->GetNodeValueIndex("STRESS_XZ");
-			Idx_Stress[5] = pcs->GetNodeValueIndex("STRESS_YZ");
-			break;
-	}
 	*B_matrix = 0.0;
 	*B_matrix_T = 0.0;
 
 	if (pcs->Memory_Type == 0) // Do not store local matrices
 	{
-		Stiffness = new Matrix(60, 60);
-		RHS = new Vec(60);
 		if (H_Process)
-			PressureC = new Matrix(60, 20);
+		{
+			const int max_nnodes = (dim == 3) ? max_nnodes_QE_3D : max_nnodes_QE_2D;
+			PressureC = new Matrix(3 * max_nnodes, max_nnodes);
+		}
 	}
-	else // Local matrices stored and allocated the pcs.cpp;
+
+	if (H_Process)
 	{
-		Stiffness = NULL;
-		RHS = NULL;
+		AuxNodal1 = (dim == 3) ? new double[max_nnodes_QE_3D * dim]
+					           : new double[max_nnodes_QE_2D * dim];
 	}
-
-	// Material properties
-	smat = NULL;
-	// Fluid coupling
-	m_mfp = NULL;
-	// Medium property
-	m_mmp = NULL; //
-
 	// Coupling
-	Flow_Type = -1;
-	idx_P = -1;
 	for (size_t i = 0; i < pcs_vector.size(); i++)
 	{
 		//      if (pcs_vector[i]->pcs_type_name.find("FLOW") != string::npos) {
@@ -316,6 +248,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs, con
 	if (Flow_Type == 0)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
+		_nodal_p1 = new double[max_nnodes_LE];
 		if (dynamic)
 		{
 			idx_P = h_pcs->GetNodeValueIndex("PRESSURE1");
@@ -323,30 +256,56 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs, con
 		}
 	}
 	if (Flow_Type == 10)
+	{
 		idx_P1 = h_pcs->GetNodeValueIndex("HEAD") + 1;
+		_nodal_p1 = new double[max_nnodes_LE];
+	}
 	else if (Flow_Type == 1)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
+		_nodal_p1 = new double[max_nnodes_LE];
+
 		idx_P1_0 = h_pcs->GetNodeValueIndex("PRESSURE1");
+
 		idx_S0 = h_pcs->GetNodeValueIndex("SATURATION1");
+		_nodal_S0 = new double[max_nnodes_LE];
+
 		idx_S = h_pcs->GetNodeValueIndex("SATURATION1") + 1;
+		_nodal_S = new double[max_nnodes_LE];
+
+		_nodal_cp0 = new double[max_nnodes_LE];
+		_nodal_dcp = new double[max_nnodes_LE];
 	}
 	else if (Flow_Type == 2)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
+		_nodal_p1 = new double[max_nnodes_LE];
+
 		idx_P2 = h_pcs->GetNodeValueIndex("PRESSURE2") + 1;
+		_nodal_p2 = new double[max_nnodes_LE];
+
 		idx_S0 = h_pcs->GetNodeValueIndex("SATURATION1");
+		_nodal_S0 = new double[max_nnodes_LE];
+
 		idx_S = h_pcs->GetNodeValueIndex("SATURATION1") + 1;
-		AuxNodal2 = new double[8];
+		_nodal_S = new double[max_nnodes_LE];
+
+		_nodal_cp0 = new double[max_nnodes_LE];
+		_nodal_dcp = new double[max_nnodes_LE];
 	}
 	else if (Flow_Type == 3)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
+		_nodal_p1 = new double[max_nnodes_LE];
 		idx_P2 = h_pcs->GetNodeValueIndex("PRESSURE2");
+		_nodal_p2 = new double[max_nnodes_LE];
+
 		idx_S0 = h_pcs->GetNodeValueIndex("SATURATION1");
+		_nodal_S0 = new double[max_nnodes_LE];
 		idx_S = idx_S0;
+		_nodal_S = new double[max_nnodes_LE];
+
 		idx_Snw = h_pcs->GetNodeValueIndex("SATURATION2") + 1;
-		AuxNodal2 = new double[8];
 	}
 
 	for (size_t i = 0; i < pcs_vector.size(); i++)
@@ -361,7 +320,37 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs, con
 	{
 		idx_T0 = t_pcs->GetNodeValueIndex("TEMPERATURE1");
 		idx_T1 = idx_T0 + 1;
+		Temp = new double[max_nnodes_LE];
+		T1 = new double[max_nnodes_LE];
 	}
+
+	if (enhanced_strain_dm && dim == 2)
+	{
+		NodesInJumpedA = new bool[max_nnodes_QE_2D];
+		Ge = new Matrix(4, 2);
+		Pe = new Matrix(2, 4);
+		BDG = new Matrix(2, 2 * max_nnodes_QE_2D);
+		PDB = new Matrix(2 * max_nnodes_QE_2D, 2);
+		DtD = new Matrix(2, 2);
+		PeDe = new Matrix(2, 4);
+		X0 = new double[3];
+		n_jump = new double[3];
+		pr_stress = new double[3];
+	}
+	else
+	{
+		NodesInJumpedA = NULL;
+		Ge = NULL;
+		Pe = NULL;
+		BDG = NULL;
+		PDB = NULL;
+		DtD = NULL;
+		PeDe = NULL;
+		X0 = NULL;
+		n_jump = NULL;
+		pr_stress = NULL;
+	}
+
 	//
 	// Time unit factor
 	time_unit_factor = pcs->time_unit_factor;
@@ -392,8 +381,8 @@ CFiniteElementVec::~CFiniteElementVec()
 	delete[] Szz;
 	delete[] Sxy;
 	delete[] pstr;
-	delete[] Idx_Strain;
-	delete[] Idx_Stress;
+	delete[] _nodal_strain_indices;
+	delete[] _nodal_stress_indices;
 	delete[] strain_ne;
 	delete[] stress_ne;
 	delete[] stress0;
@@ -401,8 +390,6 @@ CFiniteElementVec::~CFiniteElementVec()
 		delete[] Sxz;
 	if (Syz)
 		delete[] Syz;
-	if (AuxNodal2)
-		delete[] AuxNodal2;
 
 	if (dynamic)
 	{
@@ -475,19 +462,22 @@ CFiniteElementVec::~CFiniteElementVec()
 	if (Idx_Vel)
 		delete[] Idx_Vel;
 	X0 = n_jump = pr_stress = NULL;
-	delete[] AuxNodal;
-	delete[] AuxNodal_S0;
-	delete[] AuxNodal_S;
-	delete[] AuxNodal1;
-	AuxNodal = AuxNodal_S0 = AuxNodal_S = AuxNodal1 = NULL;
-	Idx_Vel = NULL;
-	//
-	Idx_Strain = NULL;
-	Idx_Stress = NULL;
-	strain_ne = NULL;
-	stress_ne = NULL;
-	stress0 = NULL;
-	//
+
+	if (_nodal_p1)
+		delete[] _nodal_p1;
+	if (_nodal_p2)
+		delete[] _nodal_p2;
+	if (_nodal_cp0)
+		delete[] _nodal_cp0;
+	if (_nodal_dcp)
+		delete[] _nodal_dcp;
+
+	if (_nodal_S0)
+		delete[] _nodal_S0;
+	if (_nodal_S)
+		delete[] _nodal_S;
+	if (AuxNodal1)
+		delete[] AuxNodal1;
 
 	// NW
 	for (int i = 0; i < (int)vec_B_matrix.size(); i++)
@@ -788,18 +778,12 @@ double CFiniteElementVec::CalDensity()
 			{
 				Sw = 0.; // WW
 				for (i = 0; i < nnodes; i++)
-					Sw += shapefct[i] * AuxNodal_S[i];
+					Sw += shapefct[i] * _nodal_S[i];
 			}
 			rho = (1. - porosity) * fabs(smat->Density()) + porosity * Sw * density_fluid;
 
 			if (Flow_Type == 2 || Flow_Type == 3)
 			{
-				/*
-				   p_g=0.0;
-				   for(i = 0; i< nnodes; i++)
-				   p_g += shapefct[i]*AuxNodal2[i];
-				   rho += porosity * (1.0-Sw)*COMP_MOL_MASS_AIR*p_g/(GAS_CONSTANT*(Tem+273.15));
-				 */
 				CFluidProperties* GasProp;
 				GasProp = MFPGet("GAS");
 				rho += porosity * (1.0 - Sw) * GasProp->Density();
@@ -912,7 +896,7 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 		if (PressureC_S || PressureC_S_dp)
 		{
 			// Pressure 1
-			fac2 = interpolate(AuxNodal0);
+			fac2 = interpolate(_nodal_p1);
 			// Saturation of phase 1
 			fac1 = m_mmp->SaturationCapillaryPressureFunction(fac2);
 			if (PressureC_S_dp)
@@ -1089,21 +1073,38 @@ void CFiniteElementVec::LocalAssembly(const int update)
 				else
 					Disp[j + i * nnodesHQ] = pcs->GetNodeValue(nodes[j], Idx_dm0[i]);
 
-	// Get saturation of element nodes
-	if (Flow_Type > 0 && Flow_Type != 10)
+	if (_nodal_p1)
 	{
 		for (int i = 0; i < nnodes; i++)
 		{
-			AuxNodal_S[i] = h_pcs->GetNodeValue(nodes[i], idx_S);
-			AuxNodal_S0[i] = h_pcs->GetNodeValue(nodes[i], idx_S0);
+			_nodal_p1[i] = h_pcs->GetNodeValue(nodes[i], idx_P1);
 		}
-		if (Flow_Type == 2 || Flow_Type == 3) // 09.10.2009 PCH
+	}
+	if (_nodal_p2)
+	{
+		for (int i = 0; i < nnodes; i++)
+		{
+			_nodal_p2[i] = h_pcs->GetNodeValue(nodes[i], idx_P2);
+		}
+	}
+	if (_nodal_S0)
+	{
+		for (int i = 0; i < nnodes; i++)
+		{
+			_nodal_S0[i] = h_pcs->GetNodeValue(nodes[i], idx_S0);
+		}
+	}
+	if (_nodal_S)
+	{
+		for (int i = 0; i < nnodes; i++)
+		{
+			_nodal_S[i] = h_pcs->GetNodeValue(nodes[i], idx_S);
+		}
+	}
 
-			for (int i = 0; i < nnodes; i++)
-			{
-				AuxNodal0[i] = h_pcs->GetNodeValue(nodes[i], idx_P1);
-				AuxNodal2[i] = h_pcs->GetNodeValue(nodes[i], idx_P2);
-			}
+	// Get saturation of element nodes
+	if (Flow_Type > 0 && Flow_Type != 10)
+	{
 		// 12.03.2008 WW
 		if ((Flow_Type == 1 || Flow_Type == 2) && (smat->SwellingPressureType == 3 || smat->SwellingPressureType == 4))
 		{
@@ -1113,9 +1114,9 @@ void CFiniteElementVec::LocalAssembly(const int update)
 			for (int i = 0; i < nnodes; i++)
 			{
 				// Pc
-				AuxNodal1[i] = fac * h_pcs->GetNodeValue(nodes[i], idx_P1 - 1);
+				_nodal_cp0[i] = fac * h_pcs->GetNodeValue(nodes[i], idx_P1 - 1);
 				// dPc
-				AuxNodal[i] = fac * (h_pcs->GetNodeValue(nodes[i], idx_P1) - h_pcs->GetNodeValue(nodes[i], idx_P1 - 1));
+				_nodal_dcp[i] = fac * (h_pcs->GetNodeValue(nodes[i], idx_P1) - h_pcs->GetNodeValue(nodes[i], idx_P1 - 1));
 			}
 		}
 	}
@@ -1511,10 +1512,10 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 	   fact_NR = 0.0;
 	   for (i=0;i<nnodes;i++)
 	   {
-	   fact_NR += AuxNodal_S[i];  /// Sw
+	   fact_NR += _nodal_S[i];  /// Sw
 
 	   /// dS_dPcPc
-	   fact_NR += m_mmp->SaturationPressureDependency(AuxNodal_S[i])*h_pcs->GetNodeValue(nodes[i],idx_P1);
+	   fact_NR += m_mmp->SaturationPressureDependency(_nodal_S[i])*h_pcs->GetNodeValue(nodes[i],idx_P1);
 	   }
 
 	   fact_NR /= static_cast<double>(nnodes);
@@ -1737,6 +1738,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			}
 		}
 
+		double nodal_pore_p[max_nnodes_LE];
 		switch (Flow_Type)
 		{
 			case 0: // Liquid flow
@@ -1745,8 +1747,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
 				for (i = 0; i < nnodes; i++)
 				{
-					val_n = h_pcs->GetNodeValue(nodes[i], idx_P1);
-					//                AuxNodal[i] = LoadFactor*( val_n -Max(pcs->GetNodeValue(nodes[i],idx_P0),0.0));
+					val_n = _nodal_p1[i];
+					//                nodal_pore_p[i] = LoadFactor*( val_n -Max(pcs->GetNodeValue(nodes[i],idx_P0),0.0));
 					// if(pcs->PCS_ExcavState == 1)
 					// WX:07.2011 for HM excavation
 					// val_n -= h_pcs->GetNodeValue(nodes[i],idx_P1 - 1);
@@ -1754,13 +1756,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						val_n = 0.;
 					if (pcs->Neglect_H_ini == 2) // WX:08.2011 -pw_ini
 						val_n -= h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-					AuxNodal[i] = LoadFactor * val_n;
+					nodal_pore_p[i] = LoadFactor * val_n;
 				}
 				break;
 			case 10: // Ground_flow. Will be merged to case 0
 				// WW dent_w =  m_mfp->Density();
 				for (i = 0; i < nnodes; i++)
-					AuxNodal[i] = LoadFactor * h_pcs->GetNodeValue(nodes[i], idx_P1);
+					nodal_pore_p[i] = LoadFactor * _nodal_p1[i];
 				break;
 			case 1: // Richards flow
 			{
@@ -1780,18 +1782,18 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				//
 				for (i = 0; i < nnodes; i++)
 				{
-					val_n = h_pcs->GetNodeValue(nodes[i], idx_P1);
+					val_n = _nodal_p1[i];
 					S_e = (m_mmp->SaturationCapillaryPressureFunction(-val_n) - m_mmp->capillary_pressure_values[1])
 					      / (m_mmp->capillary_pressure_values[2] - m_mmp->capillary_pressure_values[1]);
 					if (onExBoundaryState[i] == 1) // WX:02.2013
 						val_n = 0.;
 					if (biot < 0.0 && val_n < 0.0)
-						AuxNodal[i] = 0.0;
+						nodal_pore_p[i] = 0.0;
 					else
 					{
 // DECOVALEX
 #ifdef DECOVALEX
-						AuxNodal[i] = LoadFactor * (val_n - Max(h_pcs->GetNodeValue(nodes[i], idv0), 0.0));
+						nodal_pore_p[i] = LoadFactor * (val_n - Max(h_pcs->GetNodeValue(nodes[i], idv0), 0.0));
 #else
 						if (pcs->Neglect_H_ini == 2)
 						{
@@ -1807,38 +1809,38 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							{
 								case 1:
 									bishop_coef_ini = S_e_ini * smat->bishop_model_value;
-									AuxNodal[i] = LoadFactor * S_e * smat->bishop_model_value * val_n;
+									nodal_pore_p[i] = LoadFactor * S_e * smat->bishop_model_value * val_n;
 									break;
 								case 2:
 									bishop_coef_ini = pow(S_e_ini, smat->bishop_model_value);
-									AuxNodal[i] = LoadFactor * pow(S_e, smat->bishop_model_value) * val_n;
+									nodal_pore_p[i] = LoadFactor * pow(S_e, smat->bishop_model_value) * val_n;
 									break;
 								case 3:
 									h_pcs->GetNodeValue(nodes[i], idx_p1_ini) < smat->bishop_model_value
 									    ? bishop_coef_ini = 0.0
 									    : bishop_coef_ini = 1.0;
 									if (val_n < smat->bishop_model_value)
-										AuxNodal[i] = 0.0;
+										nodal_pore_p[i] = 0.0;
 									else
-										AuxNodal[i] = LoadFactor * val_n;
+										nodal_pore_p[i] = LoadFactor * val_n;
 									break;
 								default:
 									break;
 							}
 						}
 						else
-							AuxNodal[i] = LoadFactor * S_Water * val_n;
+							nodal_pore_p[i] = LoadFactor * S_Water * val_n;
 					} // WX:12.2012 end if(biot<0.0&&val_n<0.0) else
 
 					if (pcs->Neglect_H_ini == 2) // WX:08.2011
 					{
 						if (smat->bishop_model == 1 || smat->bishop_model == 2 || smat->bishop_model == 3)
-							AuxNodal[i] -= LoadFactor * bishop_coef_ini * h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
+							nodal_pore_p[i] -= LoadFactor * bishop_coef_ini * h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
 						else
 						{
 							double p0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
 							double Sat0 = LoadFactor * m_mmp->SaturationCapillaryPressureFunction(-p0);
-							AuxNodal[i] -= LoadFactor * Sat0 * p0;
+							nodal_pore_p[i] -= LoadFactor * Sat0 * p0;
 						}
 					}
 #endif
@@ -1875,7 +1877,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 									bishop_coef_ini = bishop_coef;
 									break;
 								case 2:
-									S_e = (AuxNodal_S[i] - m_mmp->capillary_pressure_values[1])
+									S_e = (_nodal_S[i] - m_mmp->capillary_pressure_values[1])
 									      / (m_mmp->capillary_pressure_values[2] - m_mmp->capillary_pressure_values[1]);
 									if (pcs->Neglect_H_ini == 2)
 									{
@@ -1887,13 +1889,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 									bishop_coef = pow(S_e, smat->bishop_model_value);
 									break;
 								case 3:
-									S_e = (AuxNodal_S[i] - m_mmp->capillary_pressure_values[1])
+									S_e = (_nodal_S[i] - m_mmp->capillary_pressure_values[1])
 									      / (m_mmp->capillary_pressure_values[2] - m_mmp->capillary_pressure_values[1]);
 									if (pcs->Neglect_H_ini == 2)
 										h_pcs->GetNodeValue(nodes[i], idx_p1_ini) < smat->bishop_model_value
 										    ? bishop_coef_ini = 0.0
 										    : bishop_coef_ini = 1.0;
-									h_pcs->GetNodeValue(nodes[i], idx_P1) < smat->bishop_model_value
+												_nodal_p1[i] < smat->bishop_model_value
 									    ? bishop_coef = 0.0
 									    : bishop_coef = 1.0;
 									break;
@@ -1904,7 +1906,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							if (smat->bishop_model == 1 || smat->bishop_model == 2
 							    || smat->bishop_model == 3) // pg-bishop*pc 05.2011 WX
 							{
-								val_n = h_pcs->GetNodeValue(nodes[i], idx_P2)
+								val_n = _nodal_p2[i]
 								        - bishop_coef * h_pcs->GetNodeValue(nodes[i], idx_P1);
 								if (onExBoundaryState[i] == 1) // WX:02.2013
 									val_n = 0.;
@@ -1914,8 +1916,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							}
 							else
 							{
-								val_n = h_pcs->GetNodeValue(nodes[i], idx_P2) // pg - Sw*pc
-								        - AuxNodal_S[i] * h_pcs->GetNodeValue(nodes[i], idx_P1);
+								val_n = _nodal_p2[i] // pg - Sw*pc
+								        - _nodal_S[i] * h_pcs->GetNodeValue(nodes[i], idx_P1);
 								if (onExBoundaryState[i] == 1) // WX:02.2013
 									val_n = 0.;
 								if (pcs->Neglect_H_ini == 2)
@@ -1924,12 +1926,12 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							}
 
 							if (biot < 0.0 && val_n < 0.0)
-								AuxNodal[i] = 0.0;
+								nodal_pore_p[i] = 0.0;
 							else
-								AuxNodal[i] = val_n * LoadFactor;
+								nodal_pore_p[i] = val_n * LoadFactor;
 						}
 
-						PressureC->multi(AuxNodal, AuxNodal1);
+						PressureC->multi(nodal_pore_p, AuxNodal1);
 					}
 					else
 					{
@@ -1937,13 +1939,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						{
 							for (i = 0; i < nnodes; i++)
 							{
-								AuxNodal0[i] -= h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-								AuxNodal2[i] -= h_pcs->GetNodeValue(nodes[i], idx_p2_ini);
+								_nodal_p1[i] -= h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
+								_nodal_p2[i] -= h_pcs->GetNodeValue(nodes[i], idx_p2_ini);
 							}
 						}
 
-						PressureC->multi(AuxNodal2, AuxNodal1, LoadFactor);
-						PressureC_S->multi(AuxNodal0, AuxNodal1, -1.0 * LoadFactor);
+						PressureC->multi(_nodal_p2, AuxNodal1, LoadFactor);
+						PressureC_S->multi(_nodal_p1, AuxNodal1, -1.0 * LoadFactor);
 					}
 
 					break;
@@ -1954,13 +1956,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					{
 						double Snw = h_pcs->GetNodeValue(nodes[i], idx_Snw);
 						double Sw = 1.0 - Snw;
-						double Pw = h_pcs->GetNodeValue(nodes[i], idx_P1);
-						double Pnw = h_pcs->GetNodeValue(nodes[i], idx_P2);
+						double Pw = _nodal_p1[i];
+						double Pnw = _nodal_p2[i];
 						val_n = Sw * Pw + Snw * Pnw;
 						if (biot < 0.0 && val_n < 0.0)
-							AuxNodal[i] = 0.0;
+							nodal_pore_p[i] = 0.0;
 						else
-							AuxNodal[i] = val_n * LoadFactor;
+							nodal_pore_p[i] = val_n * LoadFactor;
 					}
 					break;
 				}
@@ -1970,8 +1972,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				if (dynamic)
 					for (i = 0; i < nnodes; i++)
 					{
-						AuxNodal[i] *= fact;
-						AuxNodal[i] += dt * a_n[nodes[i] + NodeShift[problem_dimension_dm]]
+						nodal_pore_p[i] *= fact;
+						nodal_pore_p[i] += dt * a_n[nodes[i] + NodeShift[problem_dimension_dm]]
 						               + pcs->GetNodeValue(nodes[i], idx_P);
 					}
 
@@ -1981,7 +1983,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				{
 					for (i = 0; i < dim_times_nnodesHQ; i++)
 						AuxNodal1[i] = 0.0;
-					PressureC->multi(AuxNodal, AuxNodal1);
+					PressureC->multi(nodal_pore_p, AuxNodal1);
 				}
 				for (i = 0; i < dim_times_nnodesHQ; i++)
 					(*RHS)[i] -= fabs(biot) * AuxNodal1[i];
@@ -2262,7 +2264,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					dstress[i] += (*eleV_DM->Stress)(i, gp);
 				S_Water = 1.0; // WX:02.2013
 				if (Flow_Type > 0 && Flow_Type != 10)
-					S_Water = interpolate(AuxNodal_S, 1);
+					S_Water = interpolate(_nodal_S, 1);
 			}
 			else
 			{
@@ -2334,8 +2336,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						//
 						if (smat->SwellingPressureType == 3)
 						{
-							double suc = interpolate(AuxNodal1);
-							double dsuc = interpolate(AuxNodal);
+							double suc = interpolate(_nodal_cp0);
+							double dsuc = interpolate(_nodal_dcp);
 							(*smat->data_Youngs)(7) = suc;
 							(*smat->data_Youngs)(8) = dsuc;
 							smat->CalStress_and_TangentialMatrix_CC_SubStep(gp, eleV_DM, dstress, ConsistDep, update);
@@ -2559,18 +2561,18 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			// Fluid coupling;
 			S_Water = 1.0;
 			if (Flow_Type > 0 && Flow_Type != 10)
-				S_Water = interpolate(AuxNodal_S, 1);
+				S_Water = interpolate(_nodal_S, 1);
 			// Decovalex. Swelling pressure
 			if (smat->SwellingPressureType == 1)
 			{
-				dS = -interpolate(AuxNodal_S0, 1);
+				dS = -interpolate(_nodal_S0, 1);
 				dS += S_Water;
 				for (i = 0; i < 3; i++)
 					dstress[i] -= 2.0 * S_Water * dS * smat->Max_SwellingPressure;
 			}
 			else if (smat->SwellingPressureType == 2) // LBNL's model
 			{
-				dS = -interpolate(AuxNodal_S0, 1);
+				dS = -interpolate(_nodal_S0, 1);
 				dS += S_Water;
 				for (i = 0; i < 3; i++)
 					dstress[i] -= dS * smat->Max_SwellingPressure;
@@ -2801,25 +2803,25 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			ESxy /= dbuff[i];
 			ESzz /= dbuff[i];
 
-			ESxx += pcs->GetNodeValue(nodes[i], Idx_Strain[0]);
-			ESyy += pcs->GetNodeValue(nodes[i], Idx_Strain[1]);
-			ESzz += pcs->GetNodeValue(nodes[i], Idx_Strain[2]);
-			ESxy += pcs->GetNodeValue(nodes[i], Idx_Strain[3]);
+			ESxx += pcs->GetNodeValue(nodes[i], _nodal_strain_indices[0]);
+			ESyy += pcs->GetNodeValue(nodes[i], _nodal_strain_indices[1]);
+			ESzz += pcs->GetNodeValue(nodes[i], _nodal_strain_indices[2]);
+			ESxy += pcs->GetNodeValue(nodes[i], _nodal_strain_indices[3]);
 
-			pcs->SetNodeValue(nodes[i], Idx_Strain[0], ESxx);
-			pcs->SetNodeValue(nodes[i], Idx_Strain[1], ESyy);
-			pcs->SetNodeValue(nodes[i], Idx_Strain[2], ESzz);
-			pcs->SetNodeValue(nodes[i], Idx_Strain[3], ESxy);
+			pcs->SetNodeValue(nodes[i], _nodal_strain_indices[0], ESxx);
+			pcs->SetNodeValue(nodes[i], _nodal_strain_indices[1], ESyy);
+			pcs->SetNodeValue(nodes[i], _nodal_strain_indices[2], ESzz);
+			pcs->SetNodeValue(nodes[i], _nodal_strain_indices[3], ESxy);
 
 			if (ele_dim == 3)
 			{
 				ESxz /= dbuff[i];
 				ESyz /= dbuff[i];
-				ESxz += pcs->GetNodeValue(nodes[i], Idx_Strain[4]);
-				ESyz += pcs->GetNodeValue(nodes[i], Idx_Strain[5]);
+				ESxz += pcs->GetNodeValue(nodes[i], _nodal_strain_indices[4]);
+				ESyz += pcs->GetNodeValue(nodes[i], _nodal_strain_indices[5]);
 				//
-				pcs->SetNodeValue(nodes[i], Idx_Strain[4], ESxz);
-				pcs->SetNodeValue(nodes[i], Idx_Strain[5], ESyz);
+				pcs->SetNodeValue(nodes[i], _nodal_strain_indices[4], ESxz);
+				pcs->SetNodeValue(nodes[i], _nodal_strain_indices[5], ESyz);
 			}
 		}
 	}
@@ -2965,17 +2967,17 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			Pls /= dbuff[i];
 			//
 			long node_i = nodes[i];
-			ESxx += pcs->GetNodeValue(node_i, Idx_Stress[0]);
-			ESyy += pcs->GetNodeValue(node_i, Idx_Stress[1]);
-			ESzz += pcs->GetNodeValue(node_i, Idx_Stress[2]);
-			ESxy += pcs->GetNodeValue(node_i, Idx_Stress[3]);
+			ESxx += pcs->GetNodeValue(node_i, _nodal_stress_indices[0]);
+			ESyy += pcs->GetNodeValue(node_i, _nodal_stress_indices[1]);
+			ESzz += pcs->GetNodeValue(node_i, _nodal_stress_indices[2]);
+			ESxy += pcs->GetNodeValue(node_i, _nodal_stress_indices[3]);
 			if (eleV_DM->pStrain) // 08.02.2008 WW
 				Pls += pcs->GetNodeValue(node_i, idx_pls);
 
-			pcs->SetNodeValue(node_i, Idx_Stress[0], ESxx);
-			pcs->SetNodeValue(node_i, Idx_Stress[1], ESyy);
-			pcs->SetNodeValue(node_i, Idx_Stress[2], ESzz);
-			pcs->SetNodeValue(node_i, Idx_Stress[3], ESxy);
+			pcs->SetNodeValue(node_i, _nodal_stress_indices[0], ESxx);
+			pcs->SetNodeValue(node_i, _nodal_stress_indices[1], ESyy);
+			pcs->SetNodeValue(node_i, _nodal_stress_indices[2], ESzz);
+			pcs->SetNodeValue(node_i, _nodal_stress_indices[3], ESxy);
 			if (eleV_DM->pStrain) // 08.02.2008 WW
 				pcs->SetNodeValue(node_i, idx_pls, fabs(Pls));
 
@@ -2984,11 +2986,11 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				ESxz /= dbuff[i];
 				ESyz /= dbuff[i];
 
-				ESxz += pcs->GetNodeValue(node_i, Idx_Stress[4]);
-				ESyz += pcs->GetNodeValue(node_i, Idx_Stress[5]);
+				ESxz += pcs->GetNodeValue(node_i, _nodal_stress_indices[4]);
+				ESyz += pcs->GetNodeValue(node_i, _nodal_stress_indices[5]);
 
-				pcs->SetNodeValue(node_i, Idx_Stress[4], ESxz);
-				pcs->SetNodeValue(node_i, Idx_Stress[5], ESyz);
+				pcs->SetNodeValue(node_i, _nodal_stress_indices[4], ESxz);
+				pcs->SetNodeValue(node_i, _nodal_stress_indices[5], ESyz);
 			}
 		}
 	}
@@ -3778,6 +3780,35 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		}
 	}
 
+
+	/***************************************************************************
+	   GeoSys - Funktion:
+	            CFiniteElementVec:: CalcStrain_v()
+	   Aufgabe:
+	           Calculate effictive strain at Gauss points
+	   Formalparameter:
+	           E:
+
+	   Programming:
+	   01/2009   WW/UWG
+	 **************************************************************************/
+	double CFiniteElementVec::CalcStrain_v()
+	{
+		for (int j(0); j < ns; j++)
+		{
+			dstrain[j] = 0.0;
+			for (int i = 0; i < nnodesHQ; i++)
+				dstrain[j] += pcs->GetNodeValue(nodes[i], _nodal_strain_indices[j]) * shapefctHQ[i];
+		}
+		double val = 0;
+		for (int i = 0; i < 3; i++)
+			val += dstrain[i] * dstrain[i];
+		for (int i = 3; i < ns; i++)
+			val += 0.5 * dstrain[i] * dstrain[i];
+
+		return sqrt(2.0 * val / 3.);
+	}
+
 	/*----------------------------------------------------------------
 	   Class ElementValue_DM
 
@@ -4104,31 +4135,9 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		ev_loc_nr_res = NULL;
 	}
 
-	/***************************************************************************
-	   GeoSys - Funktion:
-	            CFiniteElementVec:: CalcStrain_v()
-	   Aufgabe:
-	           Calculate effictive strain at Gauss points
-	   Formalparameter:
-	           E:
-
-	   Programming:
-	   01/2009   WW/UWG
-	 **************************************************************************/
-	double CFiniteElementVec::CalcStrain_v()
+	double ElementValue_DM::MeanStress(const int gp)
 	{
-		for (int j(0); j < ns; j++)
-		{
-			dstrain[j] = 0.0;
-			for (int i = 0; i < nnodesHQ; i++)
-				dstrain[j] += pcs->GetNodeValue(nodes[i], Idx_Strain[j]) * shapefctHQ[i];
-		}
-		double val = 0;
-		for (int i = 0; i < 3; i++)
-			val += dstrain[i] * dstrain[i];
-		for (int i = 3; i < ns; i++)
-			val += 0.5 * dstrain[i] * dstrain[i];
-
-		return sqrt(2.0 * val / 3.);
+		return (*Stress)(0, gp) + (*Stress)(1, gp) + (*Stress)(2, gp);
 	}
+
 } // end namespace FiniteElement

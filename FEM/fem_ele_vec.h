@@ -14,11 +14,10 @@
  */
 #ifndef fem_dm_INC
 #define fem_dm_INC
+
+#include <vector>
+
 #include "fem_ele.h"
-//#include "matrix_class.h"
-// Material properties
-//#include "rf_mfp_new.h"
-//#include "rf_mmp_new.h"
 
 namespace SolidProp
 {
@@ -33,21 +32,18 @@ namespace process
 {
 class CRFProcessDeformation;
 }
+
+namespace Math_Group
+{
+class Matrix;
+}
+
 namespace MeshLib
 {
 class CElem;
 }
 namespace FiniteElement
 {
-using SolidProp::CSolidProperties;
-using Math_Group::Matrix;
-using Math_Group::SymMatrix;
-using Math_Group::Vec;
-using ::CRFProcess;
-using ::CMediumProperties;
-using process::CRFProcessDeformation;
-using MeshLib::CElem;
-
 // Vector for storing element values
 class ElementValue_DM
 {
@@ -59,7 +55,7 @@ public:
 	void Write_BIN(std::fstream& os, const bool last_step = false);
 	void Read_BIN(std::fstream& is);
 	void ReadElementStressASCI(std::fstream& is);
-	double MeanStress(const int gp) { return (*Stress)(0, gp) + (*Stress)(1, gp) + (*Stress)(2, gp); }
+	double MeanStress(const int gp);
 
 private:
 	// Friend class
@@ -67,35 +63,35 @@ private:
 	friend class process::CRFProcessDeformation;
 	friend class ::CMediumProperties;
 	friend class CFiniteElementVec;
-	Matrix* Stress0; // Initial stress
-	Matrix* Stress;
-	Matrix* Stress_i;
-	Matrix* Stress_j;
-	Matrix* pStrain;
-	Matrix* y_surface;
+	Math_Group::Matrix* Stress0; // Initial stress
+	Math_Group::Matrix* Stress;
+	Math_Group::Matrix* Stress_i;
+	Math_Group::Matrix* Stress_j;
+	Math_Group::Matrix* pStrain;
+	Math_Group::Matrix* y_surface;
 	// Preconsolidation pressure
-	Matrix* prep0;
-	Matrix* e_i; // Void ratio
+	Math_Group::Matrix* prep0;
+	Math_Group::Matrix* e_i; // Void ratio
 	// Variables of single yield surface model
-	Matrix* xi; // Rotational hardening variables
-	Matrix* MatP; // Material parameters
-	Matrix* Strain_Kel; // TN - Burgers model dev. Kelvin strain
-	Matrix* Strain_Max; // TN - Burgers model dev. Maxwell strain
-	Matrix* Strain_pl; // TN - Minkley - deviatoric plastic strain
-	Matrix* Strain_t_ip; // TN - introduced to save previous strain in all integration points
-	Matrix* e_pl;
-	Matrix* ev_loc_nr_res;
-	Matrix* lambda_pl; // TN - Minkley - volumetric plastic strain, plastic arc length, plastic multiplier
-	Matrix* Strain; // NB - Strain tensor for reload-feature
+	Math_Group::Matrix* xi; // Rotational hardening variables
+	Math_Group::Matrix* MatP; // Material parameters
+	Math_Group::Matrix* Strain_Kel; // TN - Burgers model dev. Kelvin strain
+	Math_Group::Matrix* Strain_Max; // TN - Burgers model dev. Maxwell strain
+	Math_Group::Matrix* Strain_pl; // TN - Minkley - deviatoric plastic strain
+	Math_Group::Matrix* Strain_t_ip; // TN - introduced to save previous strain in all integration points
+	Math_Group::Matrix* e_pl;
+	Math_Group::Matrix* ev_loc_nr_res;
+	Math_Group::Matrix* lambda_pl; // TN - Minkley - volumetric plastic strain, plastic arc length, plastic multiplier
+	Math_Group::Matrix* Strain; // NB - Strain tensor for reload-feature
 	// Discontinuity
 	double disp_j;
 	double tract_j;
 	bool Localized;
-	Matrix* NodesOnPath;
+	Math_Group::Matrix* NodesOnPath;
 	double* orientation;
 
-	Matrix* scalar_aniso_comp; // WX:11.2011
-	Matrix* scalar_aniso_tens; // WX:11.2011 for aniso. plas.
+	Math_Group::Matrix* scalar_aniso_comp; // WX:11.2011
+	Math_Group::Matrix* scalar_aniso_tens; // WX:11.2011 for aniso. plas.
 };
 
 // Derived element for deformation caculation
@@ -134,7 +130,7 @@ private:
 	// excavation
 	bool excavation; // 12.2009. WW
 	//
-	int ns; // Number of stresses components
+	const int ns; // Number of stresses components
 	// Flow coupling
 	int Flow_Type;
 
@@ -144,22 +140,15 @@ private:
 	int idx_T0, idx_T1;
 	int idx_S0, idx_S, idx_Snw;
 	int idx_pls;
-	// Displacement column indeces in the node value table
-	int* Idx_Stress;
-	int* Idx_Strain;
+	// Displacement column indices in the node value table
+	int* _nodal_stress_indices;
+	int* _nodal_strain_indices;
 
 	// B matrix
 	Matrix* B_matrix;
 	Matrix* B_matrix_T;
 	std::vector<Matrix*> vec_B_matrix; // NW
 	std::vector<Matrix*> vec_B_matrix_T; // NW
-
-	//------ Material -------
-	CSolidProperties* smat;
-	CFluidProperties* m_mfp; // Fluid coupling
-	// Medium property
-	CMediumProperties* m_mmp; // Fluid coupling
-	double CalDensity();
 
 	// Elastic constitutive matrix
 	Matrix* De;
@@ -170,22 +159,29 @@ private:
 	Matrix* AuxMatrix;
 	Matrix* AuxMatrix2; // NW
 	Matrix* Stiffness;
+
 	Matrix* PressureC;
 	Matrix* PressureC_S; // Function of S
 	Matrix* PressureC_S_dp; // Function of S and ds_dp
-	Matrix* Mass; // For dynamic analysis
 	Vec* RHS;
 	// Global RHS. 08.2010. WW
 	double* b_rhs;
 
+	//------ Material -------
+	SolidProp::CSolidProperties* smat;
+	CFluidProperties* m_mfp; // Fluid coupling
+	// Medium property
+	CMediumProperties* m_mmp; // Fluid coupling
+	double CalDensity();
+
 	//  Stresses:
 	//  s11, s22, s33, s12, s13, s23
 	double* dstress;
-	//  Straines:
+	//  Strains:
 	//  s11, s22, s33, s12, s13, s23
 	double* dstrain;
-	double* strain_ne;
 	double* stress_ne;
+	double* strain_ne;
 	double* stress0;
 	// Results, displacements
 	//  u_x1, u_x2, u_x3, ..., u_xn,
@@ -194,8 +190,10 @@ private:
 	double* Disp;
 
 	// Temperatures of nodes
-	double* Temp, Tem;
+	double* Temp;
 	double* T1;
+	double Tem;
+
 	double S_Water;
 
 	// Element value
@@ -208,6 +206,8 @@ private:
 	Matrix* Ge;
 	// Singular enhanced strain matrix
 	Matrix* Pe;
+	// 2. For enhanced strain approach
+	Matrix* BDG, *PDB, *DtD, *PeDe; // For enhanced strain element
 	// Additional node. Normally, the gravity center
 	double* X0;
 	// Normal to the discontinuity surface
@@ -229,8 +229,6 @@ private:
 
 	// Temporarily used variables
 	double* Sxx, *Syy, *Szz, *Sxy, *Sxz, *Syz, *pstr;
-	// 2. For enhanced strain approach
-	Matrix* BDG, *PDB, *DtD, *PeDe; // For enhanced strain element
 
 	/// Extropolation
 	bool RecordGuassStrain(const int gp, const int gp_r, const int gp_s, int gp_t);
@@ -257,21 +255,25 @@ private:
 
 	friend class process::CRFProcessDeformation;
 
+	double* _nodal_p1;
+	double* _nodal_p2;
+
+	double* _nodal_cp0; /// capillary pressure.
+	double* _nodal_dcp; /// capillary pressure increment.
+
 	// Auxillarary vector
-	double* AuxNodal0;
-	double* AuxNodal;
-	double* AuxNodal_S0;
-	double* AuxNodal_S;
+	double* _nodal_S0;
+	double* _nodal_S;
 	double* AuxNodal1;
-	double* AuxNodal2;
 
 	// Dynamic
 	// Damping parameters
-	bool dynamic;
+	const bool dynamic;
+	Matrix* Mass; // For dynamic analysis
 	int* Idx_Vel;
-	double beta2, bbeta1;
 	// Auxillarary vector
 	Vec* dAcceleration;
+	const double beta2, bbeta1;
 	void ComputeMass();
 };
 } // end namespace
