@@ -779,7 +779,6 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 	const int nnodesHQ = this->nnodesHQ;
 	const int nnodes = this->nnodes;
 	const int ele_dim = this->ele_dim;
-	const int ns = this->ns;
 
 	// NW cache B, B^T
 	for (int i = 0; i < nnodesHQ; i++)
@@ -803,9 +802,12 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 		tmp_B_matrix_T = this->vec_B_matrix_T[i];
 		// Local assembly of A*u=int(B^t*sigma) for Newton-Raphson method
 		for (int j = 0; j < ele_dim; j++)
+		{
+			const int jj = j * nnodesHQ;
 			for (int k = 0; k < ns; k++)
-				(*RHS)[j * nnodesHQ + i] += (*tmp_B_matrix_T)(j, k) * (dstress[k] - stress0[k]) * fkt;
+				(*RHS)[jj + i] += (*tmp_B_matrix_T)(j, k) * (dstress[k] - stress0[k]) * fkt;
 		// TEST             (*B_matrix_T)(j,k)*dstress[k]*fkt;
+		}
 		if (PreLoad == 11)
 			continue;
 		if (excavation)
@@ -868,38 +870,47 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 
 		if (axisymmetry)
 		{
-			for (int k = 0; k < nnodesHQ; k++)
+			for (int j = 0; j < ele_dim; j++)
 			{
-				for (int l = 0; l < nnodes; l++)
-					for (int j = 0; j < ele_dim; j++)
+				const int jj = nnodesHQ * j;
+				for (int k = 0; k < nnodesHQ; k++)
+				{
+					const int jk = jj + k;
+					for (int l = 0; l < nnodes; l++)
 					{
-						double dN_dx = dshapefctHQ[nnodesHQ * j + k];
-						if (j == 0)
-							dN_dx += shapefctHQ[k] / Radius;
+						const double dN_dx = (j == 0) ?
+							dshapefctHQ[jk] + shapefctHQ[k] / Radius
+							: dshapefctHQ[jk];
 
 						const double f_buff = fac * dN_dx * shapefct[l];
-						(*PressureC)(nnodesHQ* j + k, l) += f_buff;
+						(*PressureC)(jk, l) += f_buff;
 						if (PressureC_S)
-							(*PressureC_S)(nnodesHQ* j + k, l) += f_buff * S1;
+							(*PressureC_S)(jk, l) += f_buff * S1;
 						if (PressureC_S_dp)
-							(*PressureC_S_dp)(nnodesHQ* j + k, l) += f_buff * fac2;
+							(*PressureC_S_dp)(jk, l) += f_buff * fac2;
 					}
+				}
 			}
 		}
 		else
 		{
-			for (int k = 0; k < nnodesHQ; k++)
+			for (int j = 0; j < ele_dim; j++)
 			{
-				for (int l = 0; l < nnodes; l++)
-					for (int j = 0; j < ele_dim; j++)
+				const int jj = nnodesHQ * j;
+				for (int k = 0; k < nnodesHQ; k++)
+				{
+					const int jk = jj + k;
+					const double f_buff = fac * dshapefctHQ[jk];
+					for (int l = 0; l < nnodes; l++)
 					{
-						const double f_buff = fac * dshapefctHQ[nnodesHQ * j + k] * shapefct[l];
-						(*PressureC)(nnodesHQ* j + k, l) += f_buff;
+						(*PressureC)(jk, l) += f_buff * shapefct[l];
+
 						if (PressureC_S)
-							(*PressureC_S)(nnodesHQ* j + k, l) += f_buff * S1;
+							(*PressureC_S)(jk, l) += f_buff * S1 * shapefct[l];
 						if (PressureC_S_dp)
-							(*PressureC_S_dp)(nnodesHQ* j + k, l) += f_buff * fac2;
+							(*PressureC_S_dp)(jk, l) += f_buff * fac2 * shapefct[l];
 					}
+				}
 			}
 		}
 	}
@@ -926,7 +937,6 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 		for (int k = 0; k < nnodesHQ; k++)
 		{
 			(*RHS)[i + k] += coeff * shapefctHQ[k];
-			//        (*RHS)(i+ka) += LoadFactor * rho * smat->grav_const * shapefctHQ[ka] * fkt;
 		}
 	}
 }
