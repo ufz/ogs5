@@ -162,6 +162,7 @@
 
 #include <cfloat>
 #include <cstdlib>
+#include <algorithm>
 
 //#include <stdio.h>
 #include "femlib.h" //CMCD 03 2004
