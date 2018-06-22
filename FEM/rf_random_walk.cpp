@@ -3868,6 +3868,10 @@ int RandomWalk::SolveForNextPosition(Particle* A, Particle* B)
 {
 	// Mount the proper mesh
 	m_msh = selectMeshForFluidMomentumProcess();
+
+	int coordinate_system = m_msh->GetCoordinateFlag();
+
+
 	//	for(int i=0; i< (int)pcs_vector.size(); ++i)
 	//	{
 	//		m_pcs = pcs_vector[i];
@@ -3881,6 +3885,8 @@ int RandomWalk::SolveForNextPosition(Particle* A, Particle* B)
 	//			m_msh = FEMGet("GROUNDWATER_FLOW");
 	//	}
 	MeshLib::CElem* theElement = m_msh->ele_vector[B->elementIndex];
+	//m_msh->FillTransformMatrix();
+	//m_msh->PT->SolveAnglesOfTheElment(theElement);
 
 	// Getting the number of the edges in the element that Particle P belongs
 	int nEdges = theElement->GetEdgesNumber();
@@ -3924,10 +3930,23 @@ int RandomWalk::SolveForNextPosition(Particle* A, Particle* B)
 			// Two points in the edge
 			double X1[3] = {theNodes[0]->getData()[0], theNodes[0]->getData()[1], theNodes[0]->getData()[2]};
 			double X2[3] = {theNodes[1]->getData()[0], theNodes[1]->getData()[1], theNodes[1]->getData()[2]};
+			// Only used if 2D-XZ Model
+			double X1_4XZ[3] = { theNodes[0]->getData()[0], theNodes[0]->getData()[2], theNodes[0]->getData()[1] };
+			double X2_4XZ[3] = { theNodes[1]->getData()[0], theNodes[1]->getData()[2], theNodes[1]->getData()[1] };
 			//         X1[0] = theNodes[0]->X(); X1[1] = theNodes[0]->Y(); X1[2] = theNodes[0]->Z();
 			//         X2[0] = theNodes[1]->X(); X2[1] = theNodes[1]->Y(); X2[2] = theNodes[1]->Z();
+
+			// If 2D-XZ Model
+			if (coordinate_system == 22)
+			{
+				X1[1] = X1_4XZ[1];
+				X1[2] = X1_4XZ[2];
+				X2[1] = X2_4XZ[1];
+				X2[2] = X2_4XZ[2];
+			}
 			ToTheXYPlane(theElement, X1);
 			ToTheXYPlane(theElement, X2);
+
 			for (int j = 0; j < 3; ++j)
 			{
 				p1[j] = X1[j];
@@ -3937,7 +3956,16 @@ int RandomWalk::SolveForNextPosition(Particle* A, Particle* B)
 			p3[0] = B->x;
 			p3[1] = B->y;
 			p3[2] = B->z;
+
+			// If 2D-XZ Model
+			if (coordinate_system == 22)
+			{
+				p3[0] = B->x;
+				p3[1] = B->z;
+				p3[2] = B->y;
+			}
 			ToTheXYPlane(theElement, p3);
+
 			p3[2] = theElement->GetAngle(2);
 
 			int dDStatus = 1;
@@ -3968,7 +3996,15 @@ int RandomWalk::SolveForNextPosition(Particle* A, Particle* B)
 					V[0] = B->Vx;
 					V[1] = B->Vy;
 					V[2] = B->Vz;
+					// If 2D-XZ Model
+					if (coordinate_system == 22)
+					{
+						V[0] = B->Vx;
+						V[1] = B->Vz;
+						V[2] = B->Vy;
+					}
 					ToTheXYPlane(B->elementIndex, V);
+
 					double dsp[3];
 					GetDisplacement(B, Z, V, dD, B->t, dsp);
 
@@ -4043,6 +4079,13 @@ int RandomWalk::SolveForNextPosition(Particle* A, Particle* B)
 						B->x = IC[0];
 						B->y = IC[1];
 						B->z = IC[2];
+						// If 2D-XZ Model
+						if (coordinate_system == 22)
+						{
+							B->x = IC[0];
+							B->y = IC[2];
+							B->z = IC[1];
+						}
 						CheckBoundary2D(A, B);
 						return 1; // The element index switched to the neighbor element
 					}
@@ -4063,6 +4106,13 @@ int RandomWalk::SolveForNextPosition(Particle* A, Particle* B)
 						B->x = IC[0];
 						B->y = IC[1];
 						B->z = IC[2];
+						// If 2D-XZ Model
+						if (coordinate_system == 22)
+						{
+							B->x = IC[0];
+							B->y = IC[2];
+							B->z = IC[1];
+						}
 						CheckBoundary2D(A, B);
 						return 1;
 					}
@@ -4098,6 +4148,13 @@ int RandomWalk::SolveForNextPosition(Particle* A, Particle* B)
 				V[0] = B->Vx;
 				V[1] = B->Vy;
 				V[2] = B->Vz;
+				// If 2D-XZ Model
+				if (coordinate_system == 22)
+				{
+					V[0] = B->Vx;
+					V[1] = B->Vz;
+					V[2] = B->Vy;
+				}
 				ToTheXYPlane(B->elementIndex, V); // V XY planed.
 
 				double dsp[3];
@@ -4111,6 +4168,13 @@ int RandomWalk::SolveForNextPosition(Particle* A, Particle* B)
 				P[0] = B->x;
 				P[1] = B->y;
 				P[2] = B->z;
+				// If 2D-XZ Model
+				if (coordinate_system == 22)
+				{
+					P[0] = B->x;
+					P[1] = B->z;
+					P[2] = B->y;
+				}
 				ToTheXYPlane(B->elementIndex, P);
 				P[0] += dsp[0];
 				P[1] += dsp[1];
@@ -4119,6 +4183,14 @@ int RandomWalk::SolveForNextPosition(Particle* A, Particle* B)
 				B->x = P[0];
 				B->y = P[1];
 				B->z = P[2];
+				// If 2D-XZ Model
+				if (coordinate_system == 22)
+				{
+					B->x = P[0];
+					B->y = P[2];
+					B->z = P[1];
+				}
+
 				CheckBoundary2D(A, B);
 			}
 			else if (ele_dim == 1)
