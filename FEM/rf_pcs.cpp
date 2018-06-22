@@ -4364,10 +4364,16 @@ void CRFProcess::CheckExcavedElement()
 		if ((int)elem->GetPatchIndex() == ExcavMaterialGroup && elem->GetExcavState() == -1) // WX:04.2012
 		{
 			double const* ele_center(elem->GetGravityCenter());
-			if ((GetCurveValue(ExcavCurve, 0, aktuelle_zeit, &valid) + ExcavBeginCoordinate)
-			        > (ele_center[ExcavDirection])
-			    && (ele_center[ExcavDirection] - ExcavBeginCoordinate) > -0.001)
+			const double expected_coordinate =
+				GetCurveValue(ExcavCurve, 0, aktuelle_zeit, &valid) + ExcavBeginCoordinate;
+			const double element_center_x_in_excavation_direction = ele_center[ExcavDirection];
+			const double max_excavation_range = std::max(expected_coordinate, ExcavBeginCoordinate);
+			const double min_excavation_range = std::min(expected_coordinate, ExcavBeginCoordinate);
+			if ( element_center_x_in_excavation_direction > min_excavation_range &&
+				 element_center_x_in_excavation_direction < max_excavation_range )
+			{
 				elem->SetExcavState(1);
+			}
 		}
 	}
 }
@@ -6254,18 +6260,22 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
 			node = m_msh->nod_vector[m_bc_node->geo_node_number];
 			double const* node_coordinate(node->getData()); // Coordinates(node_coordinate);
 
-			if ((node_coordinate[ExcavDirection] >= ExcavBeginCoordinate
-			     && (GetCurveValue(ExcavCurve, 0, aktuelle_zeit, &valid) + ExcavBeginCoordinate)
-			            >= node_coordinate[ExcavDirection])
-			    || (node_coordinate[ExcavDirection] < ExcavBeginCoordinate
-			        && (GetCurveValue(ExcavCurve, 0, aktuelle_zeit, &valid) + ExcavBeginCoordinate)
-			               < node_coordinate[ExcavDirection]))
+			const double expected_coordinate =
+				GetCurveValue(ExcavCurve, 0, aktuelle_zeit, &valid) + ExcavBeginCoordinate;
+			const double max_excavation_range = std::max(expected_coordinate, ExcavBeginCoordinate);
+			const double min_excavation_range = std::min(expected_coordinate, ExcavBeginCoordinate);
+
+			if (node_coordinate[ExcavDirection] > min_excavation_range &&
+			     node_coordinate[ExcavDirection] < max_excavation_range)
 			{
 				excavated = true;
 #ifndef USE_PETSC
 				for (unsigned int j = 0; j < node->getConnectedElementIDs().size(); j++)
 				{
 					CElem* elem = m_msh->ele_vector[node->getConnectedElementIDs()[j]];
+					if (!elem->GetMark())
+						continue;
+
 					double const* tmp_ele_coor(elem->GetGravityCenter());
 					// if(elem->GetPatchIndex()!=ExcavMaterialGroup){
 					// if(elem->GetExcavState()==-1)
@@ -6275,9 +6285,8 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
 						onExBoundary = true;
 						break;
 					}
-					else if (tmp_ele_coor[ExcavDirection]
-					             - (GetCurveValue(ExcavCurve, 0, aktuelle_zeit, &valid) - ExcavBeginCoordinate)
-					         > -0.001)
+					else if (tmp_ele_coor[ExcavDirection] > min_excavation_range &&
+						tmp_ele_coor[ExcavDirection] < max_excavation_range)
 					{
 						onExBoundary = true;
 						// tmp_counter1++;
