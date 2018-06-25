@@ -1810,43 +1810,45 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					PressureC->multi(nodal_pore_p, AuxNodal1);
 					break;
 				}
+			default:
+				break;
 
-			} // end switch
+		} // end switch
 
-			for (int i = 0; i < dim_times_nnodesHQ; i++)
-				(*RHS)[i] -= biot * AuxNodal1[i];
-		} // End if partioned
+		for (int i = 0; i < dim_times_nnodesHQ; i++)
+			(*RHS)[i] -= biot * AuxNodal1[i];
+	} // End if partioned
 
-		// If dynamic
-		if (dynamic)
-		{
-			double const* const	a_n = pcs->GetAuxArray();
-			for (std::size_t i = 0; i < dim; i++)
-				for (int j = 0; j < nnodesHQ; j++)
-					for (int k = 0; k < nnodesHQ; k++)
-						(*RHS)[i * nnodesHQ + j]
-						    += (*Mass)(j, k) * ((*dAcceleration)(i* nnodesHQ + k) + a_n[nodes[k] + NodeShift[i]]);
-		}
+	// If dynamic
+	if (dynamic)
+	{
+		double const* const	a_n = pcs->GetAuxArray();
+		for (std::size_t i = 0; i < dim; i++)
+			for (int j = 0; j < nnodesHQ; j++)
+				for (int k = 0; k < nnodesHQ; k++)
+					(*RHS)[i * nnodesHQ + j]
+					    += (*Mass)(j, k) * ((*dAcceleration)(i* nnodesHQ + k) + a_n[nodes[k] + NodeShift[i]]);
+	}
 
 // RHS->Write();
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//06.2013. WW
-		for (std::size_t i = 0; i < dim; i++)
-			for (int j = 0; j < nnodesHQ; j++)
-				b_rhs[eqs_number[j] + NodeShift[i]] -= (*RHS)[i * nnodesHQ + j];
+	for (std::size_t i = 0; i < dim; i++)
+		for (int j = 0; j < nnodesHQ; j++)
+			b_rhs[eqs_number[j] + NodeShift[i]] -= (*RHS)[i * nnodesHQ + j];
 
-		if (excavation)
+	if (excavation)
+	{
+		for (int i = 0; i < nnodesHQ; i++)
 		{
-			for (int i = 0; i < nnodesHQ; i++)
+			if (!onExBoundaryState[i])
 			{
-				if (!onExBoundaryState[i])
-				{
-					for (std::size_t j = 0; j < dim; j++)
-						b_rhs[eqs_number[i] + NodeShift[j]] = 0.0;
-				}
+				for (std::size_t j = 0; j < dim; j++)
+					b_rhs[eqs_number[i] + NodeShift[j]] = 0.0;
 			}
 		}
-#endif
 	}
+#endif
+}
 	/***************************************************************************
 	   GeoSys - Funktion:
 	           CFiniteElementVec:: LocalAssembly_continuum()
