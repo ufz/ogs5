@@ -34,6 +34,7 @@
 using namespace std;
 using namespace Math_Group;
 
+const std::string INDEX_STR = "  ";
 #define PCT_FILE_EXTENSION ".pct"
 #define SWAP(x, y) \
 	{              \
@@ -2833,6 +2834,11 @@ void RandomWalk::RandomWalkOutput(double dbl_time, int current_time_step)
 	{
 		current_name = rwpt_out_strings[i];
 		COutput* out = OUTGetRWPT(current_name);
+
+		if (out->dat_type_name.compare("PVD")==0)
+		OutputOption = 1;
+		else OutputOption = 0;
+
 		if (!out)
 			continue;
 
@@ -6062,6 +6068,7 @@ void PCTRead(string file_base_name)
 **************************************************************************/
 void DATWriteParticleFile(int current_time_step)
 {
+
 	CFEMesh* m_msh = NULL;
 	RandomWalk* RW = NULL;
 
@@ -6092,6 +6099,16 @@ void DATWriteParticleFile(int current_time_step)
 
 	RW = m_msh->PT;
 	int np = RW->numOfParticles;
+
+
+
+	if (RW->OutputOption == 1)
+	{
+		DATWriteParticleVTPFile(current_time_step);
+		return;
+	}
+
+	
 
 	// file naming
 	char now[10];
@@ -6265,6 +6282,169 @@ void DATWriteParticleControlPlaneFile(int current_time_step, string control_plan
 		}
 		}
 	}
+	vtk_file.close();
+}
+
+bool WriteHeaderOf_RWPT_PVD(std::fstream& fin)
+{
+	fin << "<?xml version=\"1.0\"?>"
+		<< "\n";
+	fin << "<VTKFile type=\"Collection\" version=\"0.1\" byte_order=\"LittleEndian\" "
+		"compressor=\"vtkZLibDataCompressor\">"
+		<< "\n";
+	fin << INDEX_STR << "<Collection>"
+		<< "\n";
+	return true;
+}
+
+bool WriteEndOf_RWPT_PVD(std::fstream& fin)
+{
+	fin << INDEX_STR << "</Collection>"
+		<< "\n";
+	fin << "</VTKFile>"
+		<< "\n";
+	return true;
+}
+
+bool WriteDatasetOf_RWPT_PVD(std::fstream& fin, double timestep, const std::string& vtkfile)
+{
+	fin.setf(ios::scientific, std::ios::floatfield);
+	fin.precision(12);
+	fin << INDEX_STR << INDEX_STR << "<DataSet timestep=\"" << timestep << "\" group=\"\" part=\"0\" file=\"" << vtkfile
+		<< "\"/>"
+		<< "\n";
+	return true;
+}
+
+void DATWriteParticleVTPFile(int current_time_step)
+{
+	CFEMesh* m_msh = NULL;
+	RandomWalk* RW = NULL;
+	CRFProcess* m_pcs = NULL;
+	CTimeDiscretization* m_tim = NULL;
+
+	double time_end = -1.0;
+	// Gather the momentum mesh
+	size_t pcs_vector_size(pcs_vector.size());
+	for (size_t i = 0; i < pcs_vector_size; ++i)
+	{
+		m_pcs = pcs_vector[i];
+		time_end = m_pcs->GetTimeStepping()->time_end;
+		const FiniteElement::ProcessType pcs_type(pcs_vector[i]->getProcessType());
+		//		if( m_pcs->pcs_type_name.find("RICHARDS_FLOW")!=string::npos){
+		if (pcs_type == FiniteElement::RICHARDS_FLOW)
+		{
+			m_msh = FEMGet("RICHARDS_FLOW");
+			break;
+		}
+		//		else if( m_pcs->pcs_type_name.find("LIQUID_FLOW")!=string::npos){
+		else if (pcs_type == FiniteElement::LIQUID_FLOW)
+		{
+			m_msh = FEMGet("LIQUID_FLOW");
+			break;
+		}
+		else if (pcs_type == FiniteElement::GROUNDWATER_FLOW)
+		{
+			m_msh = FEMGet("GROUNDWATER_FLOW");
+			break;
+		}
+	}
+
+	RW = m_msh->PT;
+	int np = RW->numOfParticles;
+
+	// file naming
+	char now[10];
+	sprintf(now, "%i", current_time_step);
+	string nowstr = now;
+	string vtk_file_name = pathJoin(defaultOutputPath, pathBasename(FileName));
+	vtk_file_name += "_RWPT_" + nowstr + ".particles.vtk";
+	fstream vtk_file(vtk_file_name.data(), ios::out);
+	vtk_file.setf(ios::scientific, ios::floatfield);
+	vtk_file.precision(12);
+	if (!vtk_file.good())
+		return;
+	vtk_file.seekg(0L, ios::beg);
+
+	// PVD
+
+	string pvd_file_name = pathJoin(defaultOutputPath, pathBasename(FileName));
+	pvd_file_name += "_RWPT.particles.pvd";
+	char c_dummy[10];
+	string istr = c_dummy;
+	double time_past = 0.0;
+
+	fstream fin(pvd_file_name.data(), ios::out);
+	WriteHeaderOf_RWPT_PVD(fin);
+
+
+
+
+	for (int i = 0; i <= current_time_step; ++i)
+	{
+		sprintf(c_dummy, "%i", i);
+		istr = c_dummy;
+		for (int t = 0; t < time_vector.size(); ++t)
+		{
+			m_tim = time_vector[t];
+			if (m_tim->pcs_type_name.compare("RANDOM_WALK") == 0)
+			{
+				if (current_time_step > 0.0 && i>0)
+					time_past = time_past + m_tim->time_step_vector[i - 1];
+				else
+					time_past = 0.0;
+				WriteDatasetOf_RWPT_PVD(fin, time_past, pathJoin(defaultOutputPath, pathBasename(FileName)) + "_RWPT_" + istr.data() + ".particles.vtk");
+			}
+		}
+
+
+	}
+
+	WriteEndOf_RWPT_PVD(fin);
+	fin.close();
+
+
+	// Write VTK Header
+	vtk_file << "# vtk DataFile Version 3.6.2" << "\n";
+	vtk_file << "Particle file: OpenGeoSys->Paraview. Current time (s) = " <<
+		RW->CurrentTime << "\n";
+	vtk_file << "ASCII" << "\n";
+	vtk_file << "\n";
+	vtk_file << "DATASET POLYDATA" << "\n"; //KR vtk_file << "DATASET PARTICLES"  << "\n";
+	vtk_file << "POINTS " << RW->numOfParticles << " double" << "\n";
+
+	// Write particle locations
+	for (int i = 0; i < np; ++i)
+	{
+		vtk_file << RW->X[i].Now.x << " " << RW->X[i].Now.y << " " << RW->X[i].Now.z << endl;
+	}
+	// KR add "vertices" block to create a correct VTK file
+	vtk_file << "VERTICES " << np << " " << (2 * np) << "\n";
+	for (int i = 0; i < np; ++i)
+		vtk_file << 1 << " " << i << "\n";
+
+	// Write particle identities
+	vtk_file << "\n";
+	vtk_file << "POINT_DATA " << RW->numOfParticles << "\n";
+	vtk_file << "SCALARS identity int 1" << "\n";
+	vtk_file << "LOOKUP_TABLE default" << "\n";
+	for (int i = 0; i < np; ++i)
+		vtk_file << RW->X[i].Now.identity << "\n";
+
+	// Write particle on_boundary or not
+	vtk_file << endl;
+	vtk_file << "SCALARS on_boundary int 1" << endl;
+	vtk_file << "LOOKUP_TABLE default" << endl;
+	for (int i = 0; i < np; ++i)
+		vtk_file << RW->X[i].Now.on_boundary << endl;
+
+	// Write particle vectors
+	vtk_file << endl;
+	vtk_file << "VECTORS velocity double" << endl;
+	for (int i = 0; i < np; ++i)
+		vtk_file << RW->X[i].Now.Vx << " " << RW->X[i].Now.Vy << " " << RW->X[i].Now.Vz << endl;
+
+	// Let's close it, now
 	vtk_file.close();
 }
 

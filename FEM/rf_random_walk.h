@@ -125,7 +125,7 @@ public:
 	// 2: Velocity solved as in FDM approach
 	int FDMIndexSwitch; // 0: Build
 	// 1: No need to build
-
+	int OutputOption;
 	int GridOption;
 	double CurrentTime;
 	double* ChanceOfIrreversed;
@@ -259,8 +259,13 @@ private:
 	 */
 	CFEMesh* selectMeshForFluidMomentumProcess();
 };
-
 extern void PCTRead(std::string);
 extern void DATWriteParticleFile(int);
+extern void DATWriteParticleVTPFile(int);
 extern void DATWriteParticleControlPlaneFile(int,string,double);
+
+bool WriteHeaderOf_RWPT_PVD(std::fstream& fin);
+bool WriteEndOf_RWPT_PVD(std::fstream& fin);
+bool WriteDatasetOf_RWPT_PVD(std::fstream& fin, double timestep, const std::string& vtkfile);
+
 #endif // OK

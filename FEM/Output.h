@@ -199,6 +199,11 @@ public:
 	std::vector<double> _control_plane_x_normal_vector;
 	std::vector<double> _control_plane_y_normal_vector;
 	std::vector<double> _control_plane_z_normal_vector;
+	// DAT
+	/**
+	* this attribute stores the output format
+	*/
+	std::string dat_type_name;
 
 private:
 	friend void OUTData(double, int step, bool force_output);
@@ -235,11 +240,6 @@ private:
 	// File status
 	bool _new_file_opened; // WW
 
-	// DAT
-	/**
-	 * this attribute stores the output format
-	 */
-	std::string dat_type_name;
 
 	// ELE value
 	std::vector<std::string> _ele_value_vector;
