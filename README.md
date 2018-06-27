@@ -7,8 +7,6 @@
 
 - General homepage: http://www.opengeosys.org
 - Wiki: https://svn.ufz.de/ogs
-- Build instructions: https://docs.opengeosys.org/docs/devguide5/getting-started/introduction
-- Jenkins: https://svn.ufz.de:8443/job/OGS-5/
 
 ## Quickstart ##
 
