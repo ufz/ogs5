@@ -420,6 +420,10 @@ private:
 	// Get solid reactive system - TN
 	FiniteElement::SolidReactiveSystem getSolidReactiveSystem() const;
 
+	/// \param effectiveS Effective saturation.
+	/// \param p          Fluid pressure.
+	double getBishopCoefficient(const double effectiveS, const double p) const;
+
 	Minkley::SolidMinkley* material_minkley;
 	Burgers::SolidBurgers* material_burgers;
 	SolidMath::Invariants* smath;
