@@ -10723,6 +10723,16 @@ void CFiniteElementStd::Assemble_RHS_M()
 				grad_du += dshapefctHQ[i + offset] * dot_u_k[i];
 			}
 		}
+		if (axisymmetry)
+		{
+			calculateRadius(gp);
+			getShapefunctValues(gp, 2); // Quadratic interpolation function
+			for (int i = 0; i < nnodesHQ; i++)
+			{
+				grad_du += shapefctHQ[i] * _dot_ux[i] / Radius;
+			}
+		}
+
 		grad_du /= dt;
 		for (int ii = 0; ii < dof_n; ii++)
 		{
