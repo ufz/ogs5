@@ -2086,7 +2086,6 @@ void CRFProcessDeformation::Extropolation_GaussValue()
 			fem_dm->setOrder(2);
 			fem_dm->SetIntegrationPointNumber(elem->GetElementType());
 
-			fem_dm->SetMaterial();
 			//         eval_DM = ele_value_dm[i];
 			// TEST        (*eval_DM->Stress) += (*eval_DM->Stress0);
 			fem_dm->ExtropolateGuassStress();

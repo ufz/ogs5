@@ -145,37 +145,21 @@ Problem::Problem (const char* filename) :
 	// Create ST
 	// OK STCreateFromPNT();
 	//----------------------------------------------------------------------
-	GetHeterogeneousFields(); // OK/MB
 	//----------------------------------------------------------------------
-	// Test MSH-MMP //OK
-	bool validMatID = true;
-	if (fem_msh_vector.size() == 1)
-	{
-		size_t max_matId = MSHGetMaxPatchIndex(fem_msh_vector[0]);
-		validMatID = (max_matId + 1 <= mmp_vector.size());
-	}
-	else
-	{
-		int g_max_mmp_groups = MSHSetMaxMMPGroups();
-		validMatID = !(g_max_mmp_groups > (int)mmp_vector.size());
-	}
-
-	if (!validMatID)
-	{
-		std::cout << "Error: not enough MMP data. please check MMP and material IDs in a mesh." << std::endl;
-		print_result = false; // OK
-		return;
-	}
 	//----------------------------------------------------------------------
 	// Create PCS processes
 	PCSCreate();
-	if (!PCSCheck()) // OK4910 reactivated
+
+	initializeConstrainedProcesses(pcs_vector);
+
+	MMPRead(filename);
+	if (!PCSCheck())
 	{
 		print_result = false; // OK
 		return;
 	}
 
-	initializeConstrainedProcesses(pcs_vector);
+	GetHeterogeneousFields(); // OK/MB
 
 	CRFProcess* pcs_fluid_momentum = PCSGet("FLUID_MOMENTUM");
 	if (pcs_fluid_momentum)

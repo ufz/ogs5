@@ -237,7 +237,6 @@ int ReadData(const char* dateiname, GEOLIB::GEOObjects& geo_obj, std::string& un
 	TIMRead(dateiname);
 
 	MSPRead(dateiname);
-	MMPRead(dateiname);
 	REACINTRead(dateiname); // CB new reaction interface
 	RCRead(dateiname);
 	REACT_CAP_Read(dateiname, geo_obj, unique_name); // DL/SB 11/2008 ChemASpp inteface new
