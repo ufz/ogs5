@@ -8535,7 +8535,7 @@ void CFiniteElementStd::Assemble_strainCPL(const int phase)
 					NodalVal4[i] = -fac * (dm_pcs->GetNodeValue(nodes[i], Idx_dm1[2])
 					                       - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[2]));
 			}
-		else if (Residual == 1) // Mono
+		else if (Residual == 1) // Mono and plastic
 
 			// du is stored in u_0
 			for (i = 0; i < nnodesHQ; i++)
@@ -10630,14 +10630,15 @@ void CFiniteElementStd::Assemble_RHS_M()
 	for (i = nnodes; i < nnodesHQ; i++)
 		nodes[i] = MeshElement->nodes_index[i];
 
-	if (dm_pcs->type == 42) // Monolitihc scheme.
+        // If monolithic scheme and plastic deformation.
+	if (dm_pcs->type == 42 && pcs_deformation > 100)
 
 		for (i = 0; i < nnodesHQ; i++)
 		{
-			NodalVal2[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm1[0]);
-			NodalVal3[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm1[1]);
+			NodalVal2[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm0[0]);
+			NodalVal3[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm0[1]);
 			if (dim == 3) // 3D.
-				NodalVal4[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm1[2]);
+				NodalVal4[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm0[2]);
 		}
 	else
 		for (i = 0; i < nnodesHQ; i++)
