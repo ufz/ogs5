@@ -128,6 +128,10 @@ public:
 	void UnitCoordinates(double* realXYZ);
 	// For axisymmetrical problems
 	void calculateRadius(const int gp);
+
+	/// Get radius if the shape function is already calculated.
+	double getRadius() const;
+
 	//
 	void setUnitCoordinates(double* u)
 	{
@@ -164,11 +168,15 @@ public:
 	int isDeformationCoupling() const { return D_Flag; }
 	int isConcentrationCoupling() const { return C_Flag; }
 
+	bool isAxisymmetry() const { return axisymmetry; }
+
 	// Interpolate Gauss values
 	double interpolate(double const* const nodalVal, const int order = 1) const;
-	double interpolate(const int idx, CRFProcess* m_pcs, const int order = 1);
+	double interpolate(const int idx, CRFProcess const* const m_pcs, const int order = 1) const;
+	double grad(const int idx, const int component, CRFProcess const* const m_pcs, const int order = 1) const;
+
 	// double elemnt_average (const int idx, const int order =1);
-	double elemnt_average(const int idx, CRFProcess* m_pcs, const int order = 1);
+	double elemnt_average(const int idx, CRFProcess const* const m_pcs, const int order = 1) const;
 
 	void SetCenterGP(const MshElemType::type elem_type = MshElemType::INVALID);
 	int GetGPindex() const { return gp; }
@@ -307,7 +315,6 @@ protected:
 	double X[20];
 	double Y[20];
 	double Z[20];
-	double node_val[20];
 	double dbuff[20];
 	double dbuff0[27]; // Auxullary
 

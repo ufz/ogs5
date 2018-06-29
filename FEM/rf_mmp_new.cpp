@@ -39,11 +39,15 @@ extern double gravity_constant;
 #include "rf_mmp_new.h"
 //#include "rf_react.h"
 // Gauss point veclocity
+
+#include "FEMEnums.h"
 #include "fem_ele_std.h"
 #include "fem_ele_vec.h"
 // MSHLib
 //#include "msh_lib.h"
 #include "pcs_dm.h" //WX
+
+#include "Material/PorousMedium/Porosity/TheoreticalPorosity.h"
 
 #include "PhysicalConstant.h"
 
@@ -70,7 +74,8 @@ using FiniteElement::ElementValue_DM;
    02/2004 OK Implementation
    last modification:
 **************************************************************************/
-CMediumProperties::CMediumProperties() : geo_dimension(0), _mesh(NULL), _geo_type(GEOLIB::GEODOMAIN)
+CMediumProperties::CMediumProperties() : geo_dimension(0), _mesh(NULL), _geo_type(GEOLIB::GEODOMAIN),
+    _theoretical_porosity(NULL)
 {
 	name = "DEFAULT";
 	mode = 0;
@@ -160,6 +165,8 @@ CMediumProperties::~CMediumProperties(void)
 	if (c_coefficient)
 		delete[] c_coefficient; // WW
 	geo_name_vector.clear();
+	if (_theoretical_porosity)
+		delete _theoretical_porosity;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -503,6 +510,39 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 					in >> porosity_model_values[0]; // set a default value for BRNS calculation
 					break;
 #endif
+				case 17:
+				{
+					// The porosity is calculated by solving
+					// dn/dt=(a-n)(dp/dt/K-3*alpha*dT/dt + d(e_v)/dt)
+					CRFProcess* process_T = NULL;
+					CRFProcess* process_H = NULL;
+					CRFProcess* process_M = NULL;
+
+					for (std::size_t i = 0; i < pcs_vector.size(); i++)
+					{
+						if (pcs_vector[i]->getProcessType() == FiniteElement::HEAT_TRANSPORT)
+							process_T = pcs_vector[i];
+						if (isFlowProcess(pcs_vector[i]->getProcessType()))
+							process_H = pcs_vector[i];
+						if (FiniteElement::isDeformationProcess(pcs_vector[i]->getProcessType()))
+							process_M = pcs_vector[i];
+					}
+					if (!process_T || !process_H || !process_M)
+					{
+						std::cout << "Porosity model 17 is only for coupled THM problems.";
+						exit(EXIT_FAILURE);
+					}
+
+					double n0;
+					in >> n0; // Initial porosity
+					const std::size_t material_id = mmp_vector.size();
+					SolidProp::CSolidProperties* const mat_s = msp_vector[material_id];
+					mat_s->Calculate_Lame_Constant();
+					_theoretical_porosity = new MaterialLib::TheoreticalPorosity(
+					    *process_T, *process_H, *process_M, n0, mat_s->getBulkModulus(), mat_s->getBiotsConstant(),
+					    mat_s->Thermal_Expansion());
+				}
+				break;
 				default:
 					std::cerr << "Error in MMPRead: no valid porosity model"
 					          << "\n";
@@ -3864,6 +3904,11 @@ double CMediumProperties::Porosity(long number, double theta)
 				}
 			break;
 #endif
+		case 17:
+		{
+            
+		}
+		break;
 		default:
 			cout << "Unknown porosity model!"
 			     << "\n";
@@ -4011,7 +4056,6 @@ double CMediumProperties::Porosity(CElement* assem)
 			// KG44: TODO!!!!!!!!!!!!! check the above  ***************
 			break;
 #endif
-
 		default:
 			DisplayMsgLn("Unknown porosity model!");
 			break;

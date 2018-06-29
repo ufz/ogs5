@@ -8361,7 +8361,7 @@ void CRFProcess::SetElementValue(long n, int nidx, double value)
    03/2005 OK Implementation
    last modified:
 **************************************************************************/
-double CRFProcess::GetNodeValue(size_t n, int nidx)
+double CRFProcess::GetNodeValue(const std:: size_t n, const int nidx) const
 {
 	double value;
 #ifdef gDEBUG
@@ -8407,7 +8407,7 @@ double CRFProcess::GetElementValue(size_t n, int nidx)
    01/2006 OK Test
    03/2012 JT: Checks are unnecessary. Allow reverse order.
 **************************************************************************/
-int CRFProcess::GetNodeValueIndex(const std::string& var_name, bool reverse_order) // JT: Allow reverse order
+int CRFProcess::GetNodeValueIndex(const std::string& var_name, bool reverse_order) const// JT: Allow reverse order
 {
 	if (!reverse_order)
 	{

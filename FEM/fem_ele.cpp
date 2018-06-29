@@ -324,6 +324,14 @@ void CElement::calculateRadius(const int gp)
 		Radius += shapefct[i] * X[i];
 }
 
+double CElement::getRadius() const
+{
+	double r = 0.0;
+	for (int i = 0; i < nnodes; i++)
+		r += shapefct[i] * X[i];
+	return r;
+}
+
 /**************************************************************************
    FEMLib-Method:
    Task:
@@ -507,20 +515,27 @@ double CElement::interpolate(double const* const nodalVal, const int order) cons
    09/2005 WW Implementation
    Last modified:
 **************************************************************************/
-double CElement::interpolate(const int idx, CRFProcess* m_pcs, const int order)
+double CElement::interpolate(const int idx, CRFProcess const* const m_pcs, const int order) const
 {
-	int i;
 	const int nn = (order == 2) ? nnodesHQ : nnodes;
 	const double* inTerpo = (order == 2) ? shapefctHQ : shapefct;
 	double val = 0.0;
 
-	//
-	for (i = 0; i < nn; i++)
-		node_val[i] = m_pcs->GetNodeValue(nodes[i], idx);
 	for (int i = 0; i < nn; i++)
-		val += node_val[i] * inTerpo[i];
+		val += m_pcs->GetNodeValue(nodes[i], idx) * inTerpo[i];
 	return val;
 }
+
+double CElement::grad(const int idx,  const int component, CRFProcess const* const m_pcs, const int order) const
+{
+	const int nn = (order == 2) ? nnodesHQ : nnodes;
+	double const* const dN = (order == 2) ? dshapefctHQ : dshapefct;
+	double val = 0.0;
+	for (int i = 0; i < nn; i++)
+		val += m_pcs->GetNodeValue(nodes[i], idx) * dN[nn * component + i];
+	return val;
+}
+
 /**************************************************************************
    FEMLib-Method:
    Task:
@@ -529,18 +544,12 @@ double CElement::interpolate(const int idx, CRFProcess* m_pcs, const int order)
    Last modified:
 **************************************************************************/
 // double CElement::elemnt_average (const int idx, const int order)
-double CElement::elemnt_average(const int idx, CRFProcess* m_pcs, const int order)
+double CElement::elemnt_average(const int idx, CRFProcess const* const m_pcs, const int order) const
 {
-	int i;
-	int nn = nnodes;
 	double val = 0.0;
-	// WW    double* inTerpo = shapefct;
-	if (order == 2)
-		nn = nnodes;
-	// WW       inTerpo = shapefctHQ;
-	//
-	for (i = 0; i < nn; i++)
-		node_val[i] = m_pcs->GetNodeValue(nodes[i], idx);
+	const int nn = (order == 2) ? nnodesHQ : nnodes;
+	for (int i = 0; i < nn; i++)
+		val += m_pcs->GetNodeValue(nodes[i], idx);
 	return val / (double)nn;
 }
 

@@ -143,6 +143,12 @@ if(OGS_CHEMSOLVER STREQUAL GEMS)
 	set( SOURCES ${SOURCES} rf_REACT_GEM.h rf_REACT_GEM.cpp )
 endif()
 
+file(GLOB_RECURSE PorousMSources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} Material/PorousMedium/*.cpp)
+file(GLOB_RECURSE PorousMHeaders RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} Material/PorousMedium/*.h)
+
+set( SOURCES ${SOURCES} ${PorousMSources})
+set( HEADERS ${HEADERS} ${PorousMHeaders})
+
 include_directories(
 	${CMAKE_SOURCE_DIR}/Base
 	${CMAKE_SOURCE_DIR}/FEM

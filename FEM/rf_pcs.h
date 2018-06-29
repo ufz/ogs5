@@ -602,12 +602,12 @@ public:
 	// OK
 	std::vector<std::string> nod_val_name_vector;
 	void SetNodeValue(long, int, double); // OK
-	double GetNodeValue(size_t, int); // OK
+	double GetNodeValue(const std:: size_t n, const int nidx) const; // OK
 	double* getNodeValue_per_Variable(const int entry_id) const // WW
 	{
 		return nod_val_vector[entry_id];
 	}
-	int GetNodeValueIndex(const std::string&, bool reverse_order = false); // OK
+	int GetNodeValueIndex(const std::string&, bool reverse_order = false) const; // OK
 	//-----------------------------
 
 	std::vector<std::string> const& getElementValueNameVector() { return ele_val_name_vector; }

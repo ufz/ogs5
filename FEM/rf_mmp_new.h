@@ -30,12 +30,19 @@
 
 // PCSLib
 #include "rf_pcs.h"
+#include "Material/PorousMedium/Porosity/TheoreticalPorosity.h"
 
 namespace FiniteElement
 {
 class CFiniteElementStd;
 }
 using FiniteElement::CFiniteElementStd;
+
+namespace MaterialLib
+{
+class TheoreticalPorosity;
+}
+
 class CMediumProperties
 {
 public:
@@ -181,6 +188,8 @@ private:
 	 */
 	GEOLIB::GEOTYPE _geo_type;
 	FiniteElement::FrictionPhase _fric_phase;
+
+	MaterialLib::TheoreticalPorosity* _theoretical_porosity;
 
 public:
 	// GEO
