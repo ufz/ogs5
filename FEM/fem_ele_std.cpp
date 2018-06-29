@@ -8540,10 +8540,10 @@ void CFiniteElementStd::Assemble_strainCPL(const int phase)
 			// du is stored in u_0
 			for (i = 0; i < nnodesHQ; i++)
 			{
-				NodalVal2[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm0[0]);
-				NodalVal3[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm0[1]);
+				NodalVal2[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm1[0]);
+				NodalVal3[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm1[1]);
 				if (dim == 3) // 3D.
-					NodalVal4[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm0[2]);
+					NodalVal4[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm1[2]);
 			}
 		else if (Residual == 2) // Mono dynamic
 
