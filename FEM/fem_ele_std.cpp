@@ -8529,94 +8529,96 @@ void CFiniteElementStd::AssembleParabolicEquationNewtonJacobian(double** jacob,
  **************************************************************************/
 void CFiniteElementStd::Assemble_strainCPL(const int phase)
 {
-	int i, j;
-	double* u_n = NULL; // Dynamic
-	double fac;
-	int Residual = -1;
-
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//03~04.3012. WW
 	int shift_index = problem_dimension_dm + phase;
 #endif
 
-	fac = 1.0 / dt;
-
-	if (dm_pcs->type != 41)
-		// if(D_Flag != 41)
-		Residual = 0;
-	else // Mono
-	    if (pcs_deformation > 100) // Pls
-		Residual = 1;
-	if (dynamic)
-	{
-		Residual = 2;
-		fac = pcs->m_num->GetDynamicDamping_beta1() * dt;
-		u_n = dm_pcs->GetAuxArray();
-	}
-	if (MediaProp->storage_model == 7) // RW/WW
-		fac *= MediaProp->storage_model_values[0];
-	else
-		fac *= fabs(SolidProp->biot_const); // WX:11.2012. biot coeff is needed, in some case biot is defined negative
+	const double biots_constant = (MediaProp->storage_model == 7) ? // RW/WW
+			MediaProp->storage_model_values[0] : fabs(SolidProp->biot_const);
+	const double fac = biots_constant *
+		( dynamic ? pcs->m_num->GetDynamicDamping_beta1() * dt : 1.0 / dt);
 
 	//
-	for (i = nnodes; i < nnodesHQ; i++)
+	for (int i = nnodes; i < nnodesHQ; i++)
 		nodes[i] = MeshElement->nodes_index[i];
 	(*StrainCoupling) = 0.0;
 	CalcStrainCoupling(phase);
-	//	if(D_Flag != 41&&aktueller_zeitschritt>1)
+
+	int Residual = -1;
+	if (dm_pcs->getProcessType() != FiniteElement::DEFORMATION_FLOW)
+	{
+		Residual = 0;
+	}
+	else // Mono
+	{
+		if (pcs_deformation > 100) // Pls
+			Residual = 1;
+	}
+	if (dynamic)
+	{
+		Residual = 2;
+	}
+
 	if (Residual >= 0)
 	{ // Incorparate this after the first time step
+		double* dot_u[3] = {_dot_ux, _dot_uy, _dot_uz};
 		if (Residual == 0) // Partitioned
-
-			for (i = 0; i < nnodesHQ; i++)
+		{
+			for (std::size_t k=0; k< ele_dim; k++)
 			{
-				_dot_ux[i]
-				    = -fac * (dm_pcs->GetNodeValue(nodes[i], Idx_dm1[0]) - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[0]));
-				_dot_uy[i]
-				    = -fac * (dm_pcs->GetNodeValue(nodes[i], Idx_dm1[1]) - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[1]));
-				if (dim == 3) // 3D.
-					_dot_uz[i] = -fac * (dm_pcs->GetNodeValue(nodes[i], Idx_dm1[2])
-					                 - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[2]));
+				double* dot_u_k = dot_u[k];
+				for (int i = 0; i < nnodesHQ; i++)
+				{
+					dot_u_k[i]
+					    = -fac * (dm_pcs->GetNodeValue(nodes[i], Idx_dm1[k]) - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[k]));
+				}
 			}
+		}
 		else if (Residual == 1) // Mono and plastic
-
-			// du is stored in u_0
-			for (i = 0; i < nnodesHQ; i++)
+		{
+			for (std::size_t k=0; k< ele_dim; k++)
 			{
-				_dot_ux[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm1[0]);
-				_dot_uy[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm1[1]);
-				if (dim == 3) // 3D.
-					_dot_uz[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm1[2]);
+				double* dot_u_k = dot_u[k];
+				// du is stored in u_0
+				for (int i = 0; i < nnodesHQ; i++)
+				{
+					dot_u_k[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm0[k]);
+				}
 			}
+		}
 		else if (Residual == 2) // Mono dynamic
+        {
 
 			// da is stored in a_0
 			// v_{n+1} = v_{n}+a_n*dt+beta1*dt*da
 			// a_n is in dm_pcs->ARRAY
-			for (i = 0; i < nnodesHQ; i++)
+			double const* const u_n = dm_pcs->GetAuxArray(); // Dynamic
+			for (std::size_t k=0; k< ele_dim; k++)
 			{
-				_dot_ux[i] = -(pcs->GetNodeValue(nodes[i], idx_vel_disp[0]) + fac * pcs->GetNodeValue(nodes[i], Idx_dm0[0])
-				           + u_n[nodes[i]] * dt);
-				_dot_uy[i] = -(pcs->GetNodeValue(nodes[i], idx_vel_disp[1]) + fac * pcs->GetNodeValue(nodes[i], Idx_dm0[1])
-				           + u_n[nodes[i] + NodeShift[1]] * dt);
-				if (dim == 3) // 3D.
-					_dot_uz[i]
-					    = -(pcs->GetNodeValue(nodes[i], idx_vel_disp[2]) + fac * pcs->GetNodeValue(nodes[i], Idx_dm0[2])
-					        + u_n[nodes[i] + NodeShift[2]] * dt);
+				double* dot_u_k = dot_u[k];
+				for (int i = 0; i < nnodesHQ; i++)
+				{
+					dot_u_k[i] = -(pcs->GetNodeValue(nodes[i], idx_vel_disp[k]) + fac * pcs->GetNodeValue(nodes[i], Idx_dm0[k])
+					           + u_n[nodes[i] + NodeShift[k]] * dt);
+				}
 			}
+		}
 
-		for (i = 0; i < nnodes; i++)
+		for (int i = 0; i < nnodes; i++)
 		{
 			NodalVal[i] = 0.0;
-			for (j = 0; j < nnodesHQ; j++)
+			for (std::size_t k=0; k< ele_dim; k++)
 			{
-				NodalVal[i] += (*StrainCoupling)(i, j) * _dot_ux[j];
-				NodalVal[i] += (*StrainCoupling)(i, j + nnodesHQ) * _dot_uy[j];
-				if (dim == 3) // 3D.
-					NodalVal[i] += (*StrainCoupling)(i, j + 2 * nnodesHQ) * _dot_uz[j];
+				double const* const dot_u_k = dot_u[k];
+				const int offset =  nnodesHQ * k;
+				for (int j = 0; j < nnodesHQ; j++)
+				{
+					NodalVal[i] += (*StrainCoupling)(i, j + offset) * dot_u_k[j];
+				}
 			}
 		}
 		// Add RHS
-		for (i = 0; i < nnodes; i++)
+		for (int i = 0; i < nnodes; i++)
 		{
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//03~04.3012. WW
 			eqs_rhs[NodeShift[shift_index] + eqs_number[i]] += NodalVal[i];
@@ -10658,68 +10660,74 @@ void CFiniteElementStd::Assemble_RHS_LIQUIDFLOW()
  **************************************************************************/
 void CFiniteElementStd::Assemble_RHS_M()
 {
-	int i, ii;
-	// ---- Gauss integral
-	int gp_r = 0, gp_s = 0, gp_t = 0;
-	double fkt, fac, grad_du = 0.0;
-	// Material
-	int dof_n = 2;
+	const int dof_n = 2;
 	//----------------------------------------------------------------------
-	for (i = 0; i < dof_n * nnodes; i++)
+	for (int i = 0; i < dof_n * nnodes; i++)
 		NodalVal[i] = 0.0;
-	for (i = nnodes; i < nnodesHQ; i++)
+	for (int i = nnodes; i < nnodesHQ; i++)
 		nodes[i] = MeshElement->nodes_index[i];
 
-        // If monolithic scheme and plastic deformation.
-	if (dm_pcs->type == 42 && pcs_deformation > 100)
+	double* dot_u[3] = {_dot_ux, _dot_uy, _dot_uz};
 
-		for (i = 0; i < nnodesHQ; i++)
+	// If monolithic scheme and plastic deformation.
+	if (dm_pcs->type == 42 && pcs_deformation > 100)
+	{
+		for (std::size_t k=0; k< ele_dim; k++)
 		{
-			NodalVal2[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm0[0]);
-			NodalVal3[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm0[1]);
-			if (dim == 3) // 3D.
-				NodalVal4[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm0[2]);
+			double* dot_u_k = dot_u[k]; // du is stored in U0
+			for (int i = 0; i < nnodesHQ; i++)
+			{
+				dot_u_k[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm0[k]);
+			}
 		}
+	}
 	else
-		for (i = 0; i < nnodesHQ; i++)
+	{
+		for (std::size_t k=0; k< ele_dim; k++)
 		{
-			_dot_ux[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm1[0]) - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[0]);
-			_dot_uy[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm1[1]) - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[1]);
-			if (dim == 3) // 3D.
-				_dot_uz[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm1[2]) - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[2]);
+			double* dot_u_k = dot_u[k];
+			for (int i = 0; i < nnodesHQ; i++)
+			{
+				dot_u_k[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm1[k])
+						   - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[k]);
+			}
 		}
+	}
 	//======================================================================
 	SetHighOrderNodes();
 	ComputeGradShapefctInElement(false);
 
 	//
 	// Loop over Gauss points
+	// ---- Gauss integral
+	int gp_r = 0, gp_s = 0, gp_t = 0;
 	for (gp = 0; gp < nGaussPoints; gp++)
 	{
 		//---------------------------------------------------------
 		//  Get local coordinates and weights
 		//  Compute Jacobian matrix and its determinate
 		//---------------------------------------------------------
-		fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
+		const double fkt = GetGaussData(gp, gp_r, gp_s, gp_t);
 		// Compute geometry
 		getShapefunctValues(gp, 1); // Linear interpolation function
 
 		getGradShapefunctValues(gp, 2);
-		grad_du = 0.0;
-		// axi
-		for (i = 0; i < nnodesHQ; i++)
+		double grad_du = 0.0;
+
+		for (std::size_t k=0; k< ele_dim; k++)
 		{
-			grad_du += dshapefctHQ[i] * _dot_ux[i] + dshapefctHQ[i + nnodesHQ] * _dot_uy[i];
-			if (dim == 3) // 3D.
-				grad_du += dshapefctHQ[i + nnodesHQ * 2] * _dot_uz[i];
+			double const* const dot_u_k = dot_u[k];
+            const int offset = nnodesHQ * k;
+			for (int i = 0; i < nnodesHQ; i++)
+			{
+				grad_du += dshapefctHQ[i + offset] * dot_u_k[i];
+			}
 		}
 		grad_du /= dt;
-		for (ii = 0; ii < dof_n; ii++)
+		for (int ii = 0; ii < dof_n; ii++)
 		{
 			// Material
-			fac = fkt * grad_du * CalCoef_RHS_M_MPhase(ii);
-			// WX:11.2012:biot coef.
-			fac *= SolidProp->biot_const;
+			const double fac = fkt * grad_du * CalCoef_RHS_M_MPhase(ii);
 
 // Calculate MHS
 #if defined(USE_PETSC) //|| defined (other parallel solver) //WW 04.2014
@@ -10727,7 +10735,7 @@ void CFiniteElementStd::Assemble_RHS_M()
 			{
 				const int i = local_idx[ia];
 #else
-			for (i = 0; i < nnodes; i++)
+			for (int i = 0; i < nnodes; i++)
 			{
 #endif
 				NodalVal[i + ii * nnodes] += fac * shapefct[i];
@@ -10741,16 +10749,16 @@ void CFiniteElementStd::Assemble_RHS_M()
 		dm_shift = problem_dimension_dm;
 #endif
 
-	for (ii = 0; ii < dof_n; ii++)
+	for (int ii = 0; ii < dof_n; ii++)
 	{
-		int ii_sh = ii * nnodes;
-		for (i = 0; i < nnodes; i++)
+		const int ii_sh = ii * nnodes;
+		for (int i = 0; i < nnodes; i++)
 		{
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//03~04.3012. WW
-			int i_sh = NodeShift[ii + dm_shift];
-			eqs_rhs[i_sh + eqs_number[i]] -= NodalVal[i + ii_sh];
+			const int i_sh = NodeShift[ii + dm_shift];
+			eqs_rhs[i_sh + eqs_number[i]] -= SolidProp->biot_const* NodalVal[i + ii_sh];
 #endif
-			(*RHS)[i + LocalShift + ii_sh] -= NodalVal[i + ii_sh];
+			(*RHS)[i + LocalShift + ii_sh] -= SolidProp->biot_const * NodalVal[i + ii_sh];
 		}
 	}
 	setOrder(1);
