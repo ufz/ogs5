@@ -3905,10 +3905,7 @@ double CMediumProperties::Porosity(long number, double theta)
 			break;
 #endif
 		case 17:
-		{
-            
-		}
-		break;
+			return _theoretical_porosity->getPorosity(*assem, aktuelle_zeit, dt);
 		default:
 			cout << "Unknown porosity model!"
 			     << "\n";
