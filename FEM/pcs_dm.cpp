@@ -1553,7 +1553,7 @@ void CRFProcessDeformation::InitializeNewtonSteps(const bool ini_excav)
 		end = problem_dimension_dm;
 
 	/// Dynamic: plus p_0 = 0
-	if (type == 41 && !fem_dm->dynamic)
+	if (type /10 == 4 && !fem_dm->dynamic)
 	{
 		// p_1 = 0
 		for (i = 0; i < pcs_number_of_primary_nvals; i++)
