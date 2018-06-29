@@ -193,11 +193,11 @@ void CFiniteElementStd::ComputeAdditionalJacobi_H2()
 			for (int i = 0; i < nnodes; i++)
 			//            for (i=0;i<nnodesHQ;i++)
 			{
-				vw[0] += NodalVal2[i] * dshapefct[i] + NodalVal3[i] * dshapefct[i + nnodes];
+				vw[0] += _dot_ux[i] * dshapefct[i] + _dot_uy[i] * dshapefct[i + nnodes];
 				//               vw[0]  += NodalVal2[i]*dshapefctHQ[i]+NodalVal3[i]*dshapefctHQ[i+nnodesHQ];
 				if (dim == 3) // 3D.
 					//                  vw[0]  +=   NodalVal4[i]*dshapefctHQ[2*nnodesHQ+i];
-					vw[0] += NodalVal4[i] * dshapefct[2 * nnodes + i];
+					vw[0] += _dot_uz[i] * dshapefct[2 * nnodes + i];
 			}
 			vw[0] *= dSdp / dt;
 		}
@@ -324,11 +324,11 @@ void CFiniteElementStd::ComputeAdditionalJacobi_Richards()
 			for (int i = 0; i < nnodes; i++)
 			//            for (i=0;i<nnodesHQ;i++)
 			{
-				vw[0] += NodalVal2[i] * dshapefct[i] + NodalVal3[i] * dshapefct[i + nnodes];
+				vw[0] += _dot_ux[i] * dshapefct[i] + _dot_uy[i] * dshapefct[i + nnodes];
 				//               vw[0]  += NodalVal2[i]*dshapefctHQ[i]+NodalVal3[i]*dshapefctHQ[i+nnodesHQ];
 				if (dim == 3) // 3D.
 					//                  vw[0]  +=   NodalVal4[i]*dshapefctHQ[2*nnodesHQ+i];
-					vw[0] += NodalVal4[i] * dshapefct[2 * nnodes + i];
+					vw[0] += _dot_uz[i] * dshapefct[2 * nnodes + i];
 			}
 			vw[0] *= dSdp / dt;
 		}

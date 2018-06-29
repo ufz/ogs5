@@ -85,6 +85,7 @@ static inline double time_interpolate(double const* const a, double const* const
 namespace FiniteElement
 {
 using namespace PhysicalConstant;
+
 //========================================================================
 // Element calculation
 //========================================================================
@@ -95,12 +96,8 @@ using namespace PhysicalConstant;
 **************************************************************************/
 CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, const int order)
     : CElement(C_Sys_Flad, order), phase(0), comp(0), SolidProp(NULL), FluidProp(NULL), MediaProp(NULL), pcs(Pcs),
-      dm_pcs(NULL), HEAD_Flag(false)
+      dm_pcs(NULL), HEAD_Flag(false), _dot_ux(NULL), _dot_uy(NULL), _dot_uz(NULL)
 {
-	int i;
-	int size_m = 64; // 25.2.2007
-	string name2;
-	char name1[MAX_ZEILE];
 	cpl_pcs = NULL;
 	// 27.2.2007 WW
 	newton_raphson = false;
@@ -123,6 +120,24 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 	idx_vel_disp = NULL; // WW
 	weight_func = NULL; // WW
 	idx_vel = new int[3];
+
+	NodalValue = new double*[12];
+	for (int i = 0; i < 12; i++)
+	{
+		NodalValue[i] = new double[40];
+	}
+
+	// Maximum number of nodes of linear elements
+	const int max_nnodes_LE = 8;
+	// Maximum number of nodes of 2D quadratic elements
+	const int max_nnodes_QE_2D = 9;
+	// Maximum number of nodes of 3D quadratic elements
+	const int max_nnodes_QE_3D = 20;
+
+	const int size_m = max_nnodes_LE * pcs->GetDOF();
+
+	NodalVal = new double[size_m];
+	NodalVal0 = new double[size_m];
 	NodalVal1 = new double[size_m];
 	NodalVal2 = new double[size_m];
 	NodalVal3 = new double[size_m];
@@ -162,7 +177,7 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 	eqs_rhs = NULL; // 08.2006 WW
 	//
 	// 12.12.2007 WW
-	for (i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 		NodeShift[i] = 0;
 	//
 	dynamic = false;
@@ -170,7 +185,6 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 		dynamic = true;
 	idx_vel_disp = new int[3];
 
-	dm_pcs = NULL;
 	heat_phase_change = false;
 
 	idx_vel_disp[0] = idx_vel_disp[1] = idx_vel_disp[2] = -1;
@@ -183,7 +197,7 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 	string pcs_primary = pcs->pcs_primary_function_name[0];
 	if (pcs_primary.compare("HEAD") == 0)
 		HEAD_Flag = true;
-	for (i = 0; i < 9; i++)
+	for (int i = 0; i < 9; i++)
 		mat[i] = 0.0;
 
 	idx0 = idx1 = 0; // column index in the node value data
@@ -282,12 +296,15 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 
 		// case 'M':                             // Mass transport
 		case MASS_TRANSPORT:
+		{
 			PcsType = EPT_MASS_TRANSPORT;
+			char name1[MAX_ZEILE];
 			sprintf(name1, "%s", pcs->pcs_primary_function_name[0]);
-			name2 = name1;
+			const std::string name2 = name1;
 			idx0 = pcs->GetNodeValueIndex(name2);
 			idx1 = idx0 + 1;
-			break;
+		}
+		break;
 
 		// case 'O':                             // Liquid flow
 		case OVERLAND_FLOW:
@@ -313,7 +330,7 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 				// WW
 				Advection = new Matrix(size_m, size_m);
 				// 12.12.2007 WW
-				for (i = 0; i < pcs->pcs_number_of_primary_nvals; i++)
+				for (int i = 0; i < pcs->pcs_number_of_primary_nvals; i++)
 					NodeShift[i] = i * pcs->m_msh->GetNodesNumber(false);
 			}
 			PcsType = EPT_RICHARDS_FLOW;
@@ -339,7 +356,7 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 		case MULTI_PHASE_FLOW:
 			// // 02.2.2007 GravityMatrix = new  SymMatrix(size_m);
 			// 12.12.2007 WW
-			for (i = 0; i < pcs->pcs_number_of_primary_nvals; i++)
+			for (int i = 0; i < pcs->pcs_number_of_primary_nvals; i++)
 				NodeShift[i] = i * pcs->m_msh->GetNodesNumber(false);
 			//
 			idx0 = pcs->GetNodeValueIndex("PRESSURE1");
@@ -351,12 +368,11 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 			idx_vel[1] = pcs->GetNodeValueIndex("VELOCITY_Y1");
 			idx_vel[2] = pcs->GetNodeValueIndex("VELOCITY_Z1");
 			PcsType = EPT_MULTIPHASE_FLOW;
-			size_m = 40;
 			break;
 
 		// case 'P':                             // 04.03.2009 PCH
 		case PS_GLOBAL:
-			for (i = 0; i < pcs->pcs_number_of_primary_nvals; i++)
+			for (int i = 0; i < pcs->pcs_number_of_primary_nvals; i++)
 				NodeShift[i] = i * pcs->m_msh->GetNodesNumber(false);
 			//
 			idx0 = pcs->GetNodeValueIndex("PRESSURE1");
@@ -368,7 +384,6 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 			idx_vel[1] = pcs->GetNodeValueIndex("VELOCITY_Y1");
 			idx_vel[2] = pcs->GetNodeValueIndex("VELOCITY_Z1");
 			PcsType = EPT_PSGLOBAL;
-			size_m = 40;
 			break;
 
 		// case 'S':// MULTI_COMPONENTIAL_FLOW
@@ -383,12 +398,11 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 			idx_vel[1] = pcs->GetNodeValueIndex("VELOCITY_Y1");
 			idx_vel[2] = pcs->GetNodeValueIndex("VELOCITY_Z1");
 			PcsType = EPT_MULTI_COMPONENTIAL_FLOW;
-			size_m = 40;
 			break;
 
 		// case 'N':                                // TNEQ
 		case TNEQ:
-			for (i = 0; i < pcs->pcs_number_of_primary_nvals; i++)
+			for (int i = 0; i < pcs->pcs_number_of_primary_nvals; i++)
 				NodeShift[i] = i * pcs->m_msh->GetNodesNumber(false);
 			idx0 = pcs->GetNodeValueIndex("PRESSURE1");
 			idx1 = idx0 + 1;
@@ -402,11 +416,10 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 			idx_vel[1] = pcs->GetNodeValueIndex("VELOCITY_Y1");
 			idx_vel[2] = pcs->GetNodeValueIndex("VELOCITY_Z1");
 			PcsType = EPT_THERMAL_NONEQUILIBRIUM;
-			size_m = 64;
 			break;
 
 		case TES:
-			for (i = 0; i < pcs->pcs_number_of_primary_nvals; i++)
+			for (int i = 0; i < pcs->pcs_number_of_primary_nvals; i++)
 				NodeShift[i] = i * pcs->m_msh->GetNodesNumber(false);
 			idx0 = pcs->GetNodeValueIndex("PRESSURE1");
 			idx1 = idx0 + 1;
@@ -418,10 +431,10 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 			idx_vel[1] = pcs->GetNodeValueIndex("VELOCITY_Y1");
 			idx_vel[2] = pcs->GetNodeValueIndex("VELOCITY_Z1");
 			PcsType = EPT_TES;
-			size_m = 64;
 			break;
 	}
 
+	const int size_dm = (dim == 3) ? max_nnodes_QE_3D : max_nnodes_QE_2D;
 	if (pcs->Memory_Type == 0) // Do not store local matrices
 	{
 		// 04.03.2009 PCH
@@ -456,7 +469,9 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 		}
 
 		if (D_Flag)
-			StrainCoupling = new Matrix(size_m, 60);
+		{
+			StrainCoupling = new Matrix(size_m, size_dm * dim);
+		}
 		RHS = new Vec(size_m);
 	}
 	//
@@ -476,9 +491,6 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 	SolidProp1 = NULL;
 	MediaProp1 = NULL;
 	flag_cpl_pcs = false; // OK
-	// size_m changed
-	NodalVal = new double[size_m];
-	NodalVal0 = new double[size_m];
 
 	if (GasMassForm)
 	{
@@ -496,6 +508,20 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad, cons
 // local_matrix = new double[size_m * size_m]; //> local matrix
 // local_vec = new double[size_m]; //> local vector
 #endif
+	// Coupling
+	for (std::size_t i = 0; i < pcs_vector.size(); i++)
+	{
+		const FiniteElement::ProcessType pcs_type = pcs_vector[i]->getProcessType();
+		if (isDeformationProcess(pcs_type))
+		{
+			_dot_ux = new double[size_dm];
+			_dot_uy = new double[size_dm];
+			if (dim == 3)
+				_dot_uz = new double[size_dm];
+			break;
+		}
+	}
+
 	dof_index = 0;
 	drho_gw_dT = .0;
 	dSdp = .0;
@@ -566,6 +592,15 @@ CFiniteElementStd::~CFiniteElementStd()
 	AuxMatrix = NULL;
 	AuxMatrix1 = NULL;
 	// 27.2.2007 WW
+	if (NodalValue)
+	{
+		for (int i = 0; i < 12; i++)
+		{
+			delete[] NodalValue[i];
+		}
+	}
+	delete[] NodalValue;
+
 	delete[] NodalVal;
 	delete[] NodalVal0;
 	delete[] NodalVal1;
@@ -586,6 +621,14 @@ CFiniteElementStd::~CFiniteElementStd()
 	delete[] NodalVal_t2_1;
 	delete[] NodalVal_X0;
 	delete[] NodalVal_X1;
+
+	if (_dot_ux)
+		delete[] _dot_ux;
+	if (_dot_uy)
+		delete[] _dot_uy;
+	if (_dot_uz)
+		delete[] _dot_uz;
+
 	if (idx_vel_disp)
 		delete[] idx_vel_disp;
 	delete[] idx_vel; // AKS
@@ -1543,7 +1586,6 @@ double CFiniteElementStd::CalCoefMass()
 			// Is this really needed?
 			val = MediaProp->StorageFunction(Index, unit, pcs->m_num->ls_theta);
 
-			// get drho/dp/rho from material model or direct input
 			if (FluidProp->compressibility_model_pressure > 0)
 			{
 				rho_val = FluidProp->Density();
@@ -8527,23 +8569,23 @@ void CFiniteElementStd::Assemble_strainCPL(const int phase)
 
 			for (i = 0; i < nnodesHQ; i++)
 			{
-				NodalVal2[i]
+				_dot_ux[i]
 				    = -fac * (dm_pcs->GetNodeValue(nodes[i], Idx_dm1[0]) - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[0]));
-				NodalVal3[i]
+				_dot_uy[i]
 				    = -fac * (dm_pcs->GetNodeValue(nodes[i], Idx_dm1[1]) - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[1]));
 				if (dim == 3) // 3D.
-					NodalVal4[i] = -fac * (dm_pcs->GetNodeValue(nodes[i], Idx_dm1[2])
-					                       - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[2]));
+					_dot_uz[i] = -fac * (dm_pcs->GetNodeValue(nodes[i], Idx_dm1[2])
+					                 - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[2]));
 			}
 		else if (Residual == 1) // Mono and plastic
 
 			// du is stored in u_0
 			for (i = 0; i < nnodesHQ; i++)
 			{
-				NodalVal2[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm1[0]);
-				NodalVal3[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm1[1]);
+				_dot_ux[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm1[0]);
+				_dot_uy[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm1[1]);
 				if (dim == 3) // 3D.
-					NodalVal4[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm1[2]);
+					_dot_uz[i] = -fac * pcs->GetNodeValue(nodes[i], Idx_dm1[2]);
 			}
 		else if (Residual == 2) // Mono dynamic
 
@@ -8552,14 +8594,12 @@ void CFiniteElementStd::Assemble_strainCPL(const int phase)
 			// a_n is in dm_pcs->ARRAY
 			for (i = 0; i < nnodesHQ; i++)
 			{
-				NodalVal2[i]
-				    = -(pcs->GetNodeValue(nodes[i], idx_vel_disp[0]) + fac * pcs->GetNodeValue(nodes[i], Idx_dm0[0])
-				        + u_n[nodes[i]] * dt);
-				NodalVal3[i]
-				    = -(pcs->GetNodeValue(nodes[i], idx_vel_disp[1]) + fac * pcs->GetNodeValue(nodes[i], Idx_dm0[1])
-				        + u_n[nodes[i] + NodeShift[1]] * dt);
+				_dot_ux[i] = -(pcs->GetNodeValue(nodes[i], idx_vel_disp[0]) + fac * pcs->GetNodeValue(nodes[i], Idx_dm0[0])
+				           + u_n[nodes[i]] * dt);
+				_dot_uy[i] = -(pcs->GetNodeValue(nodes[i], idx_vel_disp[1]) + fac * pcs->GetNodeValue(nodes[i], Idx_dm0[1])
+				           + u_n[nodes[i] + NodeShift[1]] * dt);
 				if (dim == 3) // 3D.
-					NodalVal4[i]
+					_dot_uz[i]
 					    = -(pcs->GetNodeValue(nodes[i], idx_vel_disp[2]) + fac * pcs->GetNodeValue(nodes[i], Idx_dm0[2])
 					        + u_n[nodes[i] + NodeShift[2]] * dt);
 			}
@@ -8569,10 +8609,10 @@ void CFiniteElementStd::Assemble_strainCPL(const int phase)
 			NodalVal[i] = 0.0;
 			for (j = 0; j < nnodesHQ; j++)
 			{
-				NodalVal[i] += (*StrainCoupling)(i, j) * NodalVal2[j];
-				NodalVal[i] += (*StrainCoupling)(i, j + nnodesHQ) * NodalVal3[j];
+				NodalVal[i] += (*StrainCoupling)(i, j) * _dot_ux[j];
+				NodalVal[i] += (*StrainCoupling)(i, j + nnodesHQ) * _dot_uy[j];
 				if (dim == 3) // 3D.
-					NodalVal[i] += (*StrainCoupling)(i, j + 2 * nnodesHQ) * NodalVal4[j];
+					NodalVal[i] += (*StrainCoupling)(i, j + 2 * nnodesHQ) * _dot_uz[j];
 			}
 		}
 		// Add RHS
@@ -10643,10 +10683,10 @@ void CFiniteElementStd::Assemble_RHS_M()
 	else
 		for (i = 0; i < nnodesHQ; i++)
 		{
-			NodalVal2[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm1[0]) - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[0]);
-			NodalVal3[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm1[1]) - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[1]);
+			_dot_ux[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm1[0]) - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[0]);
+			_dot_uy[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm1[1]) - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[1]);
 			if (dim == 3) // 3D.
-				NodalVal4[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm1[2]) - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[2]);
+				_dot_uz[i] = dm_pcs->GetNodeValue(nodes[i], Idx_dm1[2]) - dm_pcs->GetNodeValue(nodes[i], Idx_dm0[2]);
 		}
 	//======================================================================
 	SetHighOrderNodes();
@@ -10669,9 +10709,9 @@ void CFiniteElementStd::Assemble_RHS_M()
 		// axi
 		for (i = 0; i < nnodesHQ; i++)
 		{
-			grad_du += dshapefctHQ[i] * NodalVal2[i] + dshapefctHQ[i + nnodesHQ] * NodalVal3[i];
+			grad_du += dshapefctHQ[i] * _dot_ux[i] + dshapefctHQ[i + nnodesHQ] * _dot_uy[i];
 			if (dim == 3) // 3D.
-				grad_du += dshapefctHQ[i + nnodesHQ * 2] * NodalVal4[i];
+				grad_du += dshapefctHQ[i + nnodesHQ * 2] * _dot_uz[i];
 		}
 		grad_du /= dt;
 		for (ii = 0; ii < dof_n; ii++)

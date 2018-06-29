@@ -431,7 +431,7 @@ protected:
 	// Vector of local node values, e.g. pressure, temperature.
 	// Assume maximium element nodes is 20
 	// double OldMatrix[64]; // For grid adapting
-	double NodalValue[12][40];
+	double** NodalValue;
 	double* NodalVal;
 	double* NodalVal0; //?? NodalValueSaturation, NodalValueTemperature; ...
 	double* NodalVal1;
@@ -451,6 +451,11 @@ protected:
 	double* NodalVal_t2_1; // for TEMPERATURE2 current time step
 	double* NodalVal_X0; // for CONCENTRATION previous time step
 	double* NodalVal_X1; // for CONCENTRATION current time step
+
+	double* _dot_ux; /// Nodal values of du_x/dt
+	double* _dot_uy; /// Nodal values of du_y/dt
+	double* _dot_uz; /// Nodal values of du_z/dt
+
 	//
 	double* weight_func; // NW
 	void CalcFEM_FCT(); // NW
