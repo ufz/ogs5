@@ -9470,6 +9470,7 @@ void CRFProcess::Extropolation_MatValue()
 		elem = m_msh->ele_vector[i];
 		if (elem->GetMark()) // Marked for use
 		{
+			fem->ConfigElement(elem);
 			fem->CalcNodeMatParatemer(*elem);
 		}
 	}

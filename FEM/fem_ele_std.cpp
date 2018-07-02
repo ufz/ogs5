@@ -9724,6 +9724,9 @@ void CFiniteElementStd::CalcNodeMatParatemer(MeshLib::CElem& elem)
 	w[0] = w[1] = w[2] = 1.0;
 	//----------------------------------------------------------------------
 	setOrder(1);
+
+	Config();
+
 	// Set material
 	SetMaterial();
 
