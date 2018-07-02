@@ -48,6 +48,7 @@ extern double gravity_constant;
 #include "pcs_dm.h" //WX
 
 #include "Material/PorousMedium/Porosity/TheoreticalPorosity.h"
+#include "Material/PorousMedium/Permeability/PorosityDependentFractureRockPermeability.h"
 
 #include "PhysicalConstant.h"
 
@@ -75,7 +76,7 @@ using FiniteElement::ElementValue_DM;
    last modification:
 **************************************************************************/
 CMediumProperties::CMediumProperties() : geo_dimension(0), _mesh(NULL), _geo_type(GEOLIB::GEODOMAIN),
-    _theoretical_porosity(NULL)
+    _theoretical_porosity(NULL), _k_of_n_fracture(NULL)
 {
 	name = "DEFAULT";
 	mode = 0;
@@ -1513,6 +1514,17 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 						std::cout << "Warning in MMPRead: permeability_model 8 is not implemented for "
 						             "permeability_tensor_type 2"
 						          << "\n";
+					break;
+				case 9:
+				{
+					permeability_model = 9;
+					std::string file_name;
+					in >> file_name;
+					file_name = FilePath + file_name;
+					_k_of_n_fracture =
+						new MaterialLib::PorosityDependentFractureRockPermeability(
+									file_name, *fem_msh_vector[0]);
+				}
 					break;
 				default:
 					std::cout << "Error in MMPRead: no valid permeability model"
@@ -4458,6 +4470,13 @@ double* CMediumProperties::PermeabilityTensor(long index)
 					tensor[0] = m_pcs_tmp->GetElementValue(index, idx_k + 1);
 				}
 				break;
+			case 9:
+			{
+				const double porosity = _theoretical_porosity->getPorosity(
+								*(m_pcs->GetAssember()), aktuelle_zeit, dt);
+				tensor[0] = _k_of_n_fracture->getPermeability(index, porosity);
+				break;
+			}
 			default:
 				break;
 		}
