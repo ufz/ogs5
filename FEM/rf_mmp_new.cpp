@@ -4185,222 +4185,236 @@ double* CMediumProperties::PermeabilityTensor(long index)
 	if (permeability_tensor_type == 0)
 	{ // only when permeability is isotropic
 		tensor[0] = permeability_tensor[0];
-		if (permeability_model == 2)
-		{ // here get the initial permeability values from material perperty class;
-			// get the index:-------------------------------------------------------------------
-			for (perm_index = 0; perm_index < (int)m_pcs->m_msh->mat_names_vector.size(); perm_index++)
-				if (m_pcs->m_msh->mat_names_vector[perm_index].compare("PERMEABILITY") == 0)
-					break;
-			// end of getting the index---------------------------------------------------------
+		switch (permeability_model)
+		{
+			case 2:
+			{ // here get the initial permeability values from material perperty class;
+				// get the index:-------------------------------------------------------------------
+				for (perm_index = 0; perm_index < (int)m_pcs->m_msh->mat_names_vector.size(); perm_index++)
+					if (m_pcs->m_msh->mat_names_vector[perm_index].compare("PERMEABILITY") == 0)
+						break;
+				// end of getting the index---------------------------------------------------------
 
-			tensor[0] = _mesh->ele_vector[index]->mat_vector(perm_index);
-			// CMCD
-			// 01.09.2011 WW.  int edx = m_pcs->GetElementValueIndex("PERMEABILITY");
-			// CMCD
-			// 01.09.2011 WW.   m_pcs->SetElementValue(index,edx,tensor[0]);
-		}
-		else if (permeability_model == 3)
-		{ // HS: 11.2008, for K-C relationship
-			k_new = tensor[0];
-			CRFProcess* pcs_tmp(NULL);
-			for (size_t i = 0; i < pcs_vector.size(); i++)
-			{
-				pcs_tmp = pcs_vector[i];
-				if (pcs_tmp->getProcessType() == FiniteElement::GROUNDWATER_FLOW
-				    || pcs_tmp->getProcessType() == FiniteElement::LIQUID_FLOW
-				    || pcs_tmp->getProcessType() == FiniteElement::RICHARDS_FLOW)
-					break;
+				tensor[0] = _mesh->ele_vector[index]->mat_vector(perm_index);
+				// CMCD
+				// 01.09.2011 WW.  int edx = m_pcs->GetElementValueIndex("PERMEABILITY");
+				// CMCD
+				// 01.09.2011 WW.   m_pcs->SetElementValue(index,edx,tensor[0]);
 			}
-			// get indexes
-			idx_k = pcs_tmp->GetElementValueIndex("PERMEABILITY");
-			idx_n = pcs_tmp->GetElementValueIndex("POROSITY");
-
-			// get values of k0, n0, and n.
-			k_new = pcs_tmp->GetElementValue(index, idx_k + 1);
-			n_new = pcs_tmp->GetElementValue(index, idx_n + 1);
-
-			// if first time step, get the k_new from material class
-			if (aktueller_zeitschritt == 1) // for the first time step.....
-			{
-				// get the permeability.
-				//				KC_permeability_initial = k_new = tensor[0];
-				//				KC_porosity_initial = n_new;
-			}
-			// save old permeability
-			pcs_tmp->SetElementValue(index, idx_k, k_new);
-
-			// calculate new permeability
-			k_new = CMediumProperties::KozenyCarman(KC_permeability_initial, KC_porosity_initial, n_new);
-
-			// save new permeability
-			pcs_tmp->SetElementValue(index, idx_k + 1, k_new);
-
-			// now gives the newly calculated value to tensor[]
-			tensor[0] = k_new;
-		}
-		else if (permeability_model == 4)
-		{ // HS: 11.2008, for K-C_normalized relationship
-			k_new = tensor[0];
-			CRFProcess* pcs_tmp(NULL);
-			for (size_t i = 0; i < pcs_vector.size(); i++)
-			{
-				pcs_tmp = pcs_vector[i];
-				if (pcs_tmp->getProcessType() == FiniteElement::GROUNDWATER_FLOW
-				    || pcs_tmp->getProcessType() == FiniteElement::LIQUID_FLOW
-				    || pcs_tmp->getProcessType() == FiniteElement::RICHARDS_FLOW)
-					break;
-			}
-			// get indexes
-			idx_k = pcs_tmp->GetElementValueIndex("PERMEABILITY");
-			idx_n = pcs_tmp->GetElementValueIndex("POROSITY");
-
-			// get values of k0, n0, and n.
-			k_new = pcs_tmp->GetElementValue(index, idx_k + 1);
-			n_new = pcs_tmp->GetElementValue(index, idx_n + 1);
-
-			// if first time step, get the k_new from material class
-			if (aktueller_zeitschritt == 1) // for the first time step.....
-			{
-				// get the permeability.
-				//				KC_permeability_initial = k_new = tensor[0];
-				//				KC_porosity_initial = n_new;
-			}
-			// save old permeability
-			pcs_tmp->SetElementValue(index, idx_k, k_new);
-
-			// calculate new permeability
-			k_new = CMediumProperties::KozenyCarman_normalized(KC_permeability_initial, KC_porosity_initial, n_new);
-
-			// save new permeability
-			pcs_tmp->SetElementValue(index, idx_k + 1, k_new);
-
-			// now gives the newly calculated value to tensor[]
-			tensor[0] = k_new;
-		}
-		else if (permeability_model == 5)
-		{ // HS: 11.2008, for Clement clogging model
-			// if first time step, do nothing. otherwise,
-			if (aktueller_zeitschritt > 1)
-			{
+			break;
+			case 3:
+			{ // HS: 11.2008, for K-C relationship
+				k_new = tensor[0];
 				CRFProcess* pcs_tmp(NULL);
 				for (size_t i = 0; i < pcs_vector.size(); i++)
 				{
 					pcs_tmp = pcs_vector[i];
 					if (pcs_tmp->getProcessType() == FiniteElement::GROUNDWATER_FLOW
-					    || pcs_tmp->getProcessType() == FiniteElement::LIQUID_FLOW)
+					    || pcs_tmp->getProcessType() == FiniteElement::LIQUID_FLOW
+					    || pcs_tmp->getProcessType() == FiniteElement::RICHARDS_FLOW)
 						break;
 				}
-				// get index
+				// get indexes
 				idx_k = pcs_tmp->GetElementValueIndex("PERMEABILITY");
 				idx_n = pcs_tmp->GetElementValueIndex("POROSITY");
 
-				// get values of n.
+				// get values of k0, n0, and n.
+				k_new = pcs_tmp->GetElementValue(index, idx_k + 1);
 				n_new = pcs_tmp->GetElementValue(index, idx_n + 1);
 
+				// if first time step, get the k_new from material class
+				if (aktueller_zeitschritt == 1) // for the first time step.....
+				{
+					// get the permeability.
+					//				KC_permeability_initial = k_new = tensor[0];
+					//				KC_porosity_initial = n_new;
+				}
+				// save old permeability
+				pcs_tmp->SetElementValue(index, idx_k, k_new);
+
 				// calculate new permeability
-				// k_rel(n) = n_rel^{19/6}
-				// first relative porosity change
-				n_rel = n_new / permeability_porosity_model_values[0];
-				// then relative permeability change
-				k_rel = pow(n_rel, 19.0 / 6.0);
-				// finially permeability
-				k_new = k_rel * permeability_porosity_model_values[1];
+				k_new = CMediumProperties::KozenyCarman(KC_permeability_initial, KC_porosity_initial, n_new);
+
 				// save new permeability
-				m_pcs->SetElementValue(index, idx_k + 1, k_new);
+				pcs_tmp->SetElementValue(index, idx_k + 1, k_new);
 
 				// now gives the newly calculated value to tensor[]
 				tensor[0] = k_new;
 			}
-		}
-		else if (permeability_model == 6)
-		{ // HS: 11.2008, for Clement biomass colony clogging
-			// if first time step, do nothing. otherwise,
-			if (aktueller_zeitschritt > 1)
-			{
+			break;
+			case 4:
+			{ // HS: 11.2008, for K-C_normalized relationship
+				k_new = tensor[0];
 				CRFProcess* pcs_tmp(NULL);
 				for (size_t i = 0; i < pcs_vector.size(); i++)
 				{
 					pcs_tmp = pcs_vector[i];
-					//	                if ( m_pcs_tmp->pcs_type_name.compare("GROUNDWATER_FLOW") == 0 ||
-					//                                   m_pcs_tmp->pcs_type_name.compare("LIQUID_FLOW") == 0) TF
 					if (pcs_tmp->getProcessType() == FiniteElement::GROUNDWATER_FLOW
-					    || pcs_tmp->getProcessType() == FiniteElement::LIQUID_FLOW)
+					    || pcs_tmp->getProcessType() == FiniteElement::LIQUID_FLOW
+					    || pcs_tmp->getProcessType() == FiniteElement::RICHARDS_FLOW)
 						break;
 				}
-				// get index
+				// get indexes
 				idx_k = pcs_tmp->GetElementValueIndex("PERMEABILITY");
 				idx_n = pcs_tmp->GetElementValueIndex("POROSITY");
 
-				// get values of n.
+				// get values of k0, n0, and n.
+				k_new = pcs_tmp->GetElementValue(index, idx_k + 1);
 				n_new = pcs_tmp->GetElementValue(index, idx_n + 1);
 
-				// calculate new permeability
-				// k_rel(n) = n_rel^{19/6}
-				// first relative porosity change
-				n_rel = n_new / permeability_porosity_model_values[0];
-
-				// then relative permeability change
-				const double temp((n_rel - permeability_porosity_model_values[0])
-				                  / (1 - permeability_porosity_model_values[0]));
-				k_rel = permeability_porosity_model_values[2]
-				            * MathLib::fastpow((n_rel - permeability_porosity_model_values[0])
-				                                   / (1 - permeability_porosity_model_values[0]),
-				                               3)
-				        + (1 - permeability_porosity_model_values[2]) * temp * temp;
-				// finially permeability
-				k_new = k_rel * permeability_porosity_model_values[1];
-				// save new permeability
-				m_pcs->SetElementValue(index, idx_k + 1, k_new);
-
-				// now gives the newly calculated value to tensor[]
-				tensor[0] = k_new;
-			}
-		}
-		else if (permeability_model == 7)
-		{ // HS: 11.2008, for Clement biofilm clogging
-			// if first time step, do nothing. otherwise,
-			if (aktueller_zeitschritt > 1)
-			{
-				CRFProcess* pcs_tmp(NULL);
-				for (size_t i = 0; i < pcs_vector.size(); i++)
+				// if first time step, get the k_new from material class
+				if (aktueller_zeitschritt == 1) // for the first time step.....
 				{
-					pcs_tmp = pcs_vector[i];
-					//	                if ( m_pcs_tmp->pcs_type_name.compare("GROUNDWATER_FLOW") == 0 ||
-					//	                                m_pcs_tmp->pcs_type_name.compare("LIQUID_FLOW") == 0) TF
-					if (pcs_tmp->getProcessType() == FiniteElement::GROUNDWATER_FLOW
-					    || pcs_tmp->getProcessType() == FiniteElement::LIQUID_FLOW)
-						break;
+					// get the permeability.
+					//				KC_permeability_initial = k_new = tensor[0];
+					//				KC_porosity_initial = n_new;
 				}
-				// get index
-				idx_k = pcs_tmp->GetElementValueIndex("PERMEABILITY");
-				idx_n = pcs_tmp->GetElementValueIndex("POROSITY");
-
-				// get values of n.
-				n_new = pcs_tmp->GetElementValue(index, idx_n + 1);
+				// save old permeability
+				pcs_tmp->SetElementValue(index, idx_k, k_new);
 
 				// calculate new permeability
-				// k_rel(n) = n_rel^{19/6}
-				// first relative porosity change
-				n_rel = n_new / permeability_porosity_model_values[0];
+				k_new = CMediumProperties::KozenyCarman_normalized(KC_permeability_initial, KC_porosity_initial, n_new);
 
-				// then relative permeability change
-				k_rel = (pow((n_rel - permeability_porosity_model_values[0])
-				                 / (1 - permeability_porosity_model_values[0]),
-				             permeability_porosity_model_values[2]) + permeability_porosity_model_values[3])
-				        / (1 + permeability_porosity_model_values[3]);
-				// finially permeability
-				k_new = k_rel * permeability_porosity_model_values[1];
 				// save new permeability
-				m_pcs->SetElementValue(index, idx_k + 1, k_new);
+				pcs_tmp->SetElementValue(index, idx_k + 1, k_new);
 
 				// now gives the newly calculated value to tensor[]
 				tensor[0] = k_new;
 			}
-		}
-		else if ((permeability_model == 8) && (porosity_model == 13))
-		{ // ABM 11.2010
-			idx_k = m_pcs_tmp->GetElementValueIndex("PERMEABILITY");
-			tensor[0] = m_pcs_tmp->GetElementValue(index, idx_k + 1);
+			break;
+			case 5:
+			{ // HS: 11.2008, for Clement clogging model
+				// if first time step, do nothing. otherwise,
+				if (aktueller_zeitschritt > 1)
+				{
+					CRFProcess* pcs_tmp(NULL);
+					for (size_t i = 0; i < pcs_vector.size(); i++)
+					{
+						pcs_tmp = pcs_vector[i];
+						if (pcs_tmp->getProcessType() == FiniteElement::GROUNDWATER_FLOW
+						    || pcs_tmp->getProcessType() == FiniteElement::LIQUID_FLOW)
+							break;
+					}
+					// get index
+					idx_k = pcs_tmp->GetElementValueIndex("PERMEABILITY");
+					idx_n = pcs_tmp->GetElementValueIndex("POROSITY");
+
+					// get values of n.
+					n_new = pcs_tmp->GetElementValue(index, idx_n + 1);
+
+					// calculate new permeability
+					// k_rel(n) = n_rel^{19/6}
+					// first relative porosity change
+					n_rel = n_new / permeability_porosity_model_values[0];
+					// then relative permeability change
+					k_rel = pow(n_rel, 19.0 / 6.0);
+					// finially permeability
+					k_new = k_rel * permeability_porosity_model_values[1];
+					// save new permeability
+					m_pcs->SetElementValue(index, idx_k + 1, k_new);
+
+					// now gives the newly calculated value to tensor[]
+					tensor[0] = k_new;
+				}
+			}
+			break;
+			case 6:
+			{ // HS: 11.2008, for Clement biomass colony clogging
+				// if first time step, do nothing. otherwise,
+				if (aktueller_zeitschritt > 1)
+				{
+					CRFProcess* pcs_tmp(NULL);
+					for (size_t i = 0; i < pcs_vector.size(); i++)
+					{
+						pcs_tmp = pcs_vector[i];
+						//	                if ( m_pcs_tmp->pcs_type_name.compare("GROUNDWATER_FLOW") == 0 ||
+						//                                   m_pcs_tmp->pcs_type_name.compare("LIQUID_FLOW") == 0) TF
+						if (pcs_tmp->getProcessType() == FiniteElement::GROUNDWATER_FLOW
+						    || pcs_tmp->getProcessType() == FiniteElement::LIQUID_FLOW)
+							break;
+					}
+					// get index
+					idx_k = pcs_tmp->GetElementValueIndex("PERMEABILITY");
+					idx_n = pcs_tmp->GetElementValueIndex("POROSITY");
+
+					// get values of n.
+					n_new = pcs_tmp->GetElementValue(index, idx_n + 1);
+
+					// calculate new permeability
+					// k_rel(n) = n_rel^{19/6}
+					// first relative porosity change
+					n_rel = n_new / permeability_porosity_model_values[0];
+
+					// then relative permeability change
+					const double temp((n_rel - permeability_porosity_model_values[0])
+					                  / (1 - permeability_porosity_model_values[0]));
+					k_rel = permeability_porosity_model_values[2]
+					            * MathLib::fastpow((n_rel - permeability_porosity_model_values[0])
+					                                   / (1 - permeability_porosity_model_values[0]),
+					                               3)
+					        + (1 - permeability_porosity_model_values[2]) * temp * temp;
+					// finially permeability
+					k_new = k_rel * permeability_porosity_model_values[1];
+					// save new permeability
+					m_pcs->SetElementValue(index, idx_k + 1, k_new);
+
+					// now gives the newly calculated value to tensor[]
+					tensor[0] = k_new;
+				}
+			}
+			break;
+			case 7:
+			{ // HS: 11.2008, for Clement biofilm clogging
+				// if first time step, do nothing. otherwise,
+				if (aktueller_zeitschritt > 1)
+				{
+					CRFProcess* pcs_tmp(NULL);
+					for (size_t i = 0; i < pcs_vector.size(); i++)
+					{
+						pcs_tmp = pcs_vector[i];
+						//	                if ( m_pcs_tmp->pcs_type_name.compare("GROUNDWATER_FLOW") == 0 ||
+						//	                                m_pcs_tmp->pcs_type_name.compare("LIQUID_FLOW") == 0) TF
+						if (pcs_tmp->getProcessType() == FiniteElement::GROUNDWATER_FLOW
+						    || pcs_tmp->getProcessType() == FiniteElement::LIQUID_FLOW)
+							break;
+					}
+					// get index
+					idx_k = pcs_tmp->GetElementValueIndex("PERMEABILITY");
+					idx_n = pcs_tmp->GetElementValueIndex("POROSITY");
+
+					// get values of n.
+					n_new = pcs_tmp->GetElementValue(index, idx_n + 1);
+
+					// calculate new permeability
+					// k_rel(n) = n_rel^{19/6}
+					// first relative porosity change
+					n_rel = n_new / permeability_porosity_model_values[0];
+
+					// then relative permeability change
+					k_rel = (pow((n_rel - permeability_porosity_model_values[0])
+					                 / (1 - permeability_porosity_model_values[0]),
+					             permeability_porosity_model_values[2])
+					         + permeability_porosity_model_values[3])
+					        / (1 + permeability_porosity_model_values[3]);
+					// finially permeability
+					k_new = k_rel * permeability_porosity_model_values[1];
+					// save new permeability
+					m_pcs->SetElementValue(index, idx_k + 1, k_new);
+
+					// now gives the newly calculated value to tensor[]
+					tensor[0] = k_new;
+				}
+			}
+			break;
+			case 8:
+				if (porosity_model == 13)
+				{ // ABM 11.2010
+					idx_k = m_pcs_tmp->GetElementValueIndex("PERMEABILITY");
+					tensor[0] = m_pcs_tmp->GetElementValue(index, idx_k + 1);
+				}
+				break;
+			default:
+				break;
 		}
 		// end of K-C relationship-----------------------------------------------------------------------------------
 	}
