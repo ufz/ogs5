@@ -6323,6 +6323,7 @@ void DATWriteParticleVTPFile(int current_time_step)
 	CRFProcess* m_pcs = NULL;
 	CTimeDiscretization* m_tim = NULL;
 
+	int counter=0; 
 	double time_end = -1.0;
 	// Gather the momentum mesh
 	size_t pcs_vector_size(pcs_vector.size());
@@ -6358,7 +6359,7 @@ void DATWriteParticleVTPFile(int current_time_step)
 	sprintf(now, "%i", current_time_step);
 	string nowstr = now;
 	string vtk_file_name = pathJoin(defaultOutputPath, pathBasename(FileName));
-	vtk_file_name += "_RWPT_" + nowstr + ".particles.vtk";
+	vtk_file_name += "_RWPT_particles" + nowstr + ".vpt";
 	fstream vtk_file(vtk_file_name.data(), ios::out);
 	vtk_file.setf(ios::scientific, ios::floatfield);
 	vtk_file.precision(12);
@@ -6404,47 +6405,111 @@ void DATWriteParticleVTPFile(int current_time_step)
 	fin.close();
 
 
-	// Write VTK Header
-	vtk_file << "# vtk DataFile Version 3.6.2" << "\n";
-	vtk_file << "Particle file: OpenGeoSys->Paraview. Current time (s) = " <<
-		RW->CurrentTime << "\n";
-	vtk_file << "ASCII" << "\n";
-	vtk_file << "\n";
-	vtk_file << "DATASET POLYDATA" << "\n"; //KR vtk_file << "DATASET PARTICLES"  << "\n";
-	vtk_file << "POINTS " << RW->numOfParticles << " double" << "\n";
+	// Write VTP Header
+	vtk_file << "<VTKFile type=\"PolyData\" version=\"1.0\" byte_order=\"LittleEndian\" header_type=\"UInt64\">" << endl;
+	// Write PolyData
+	vtk_file << " <PolyData>" << endl;
+	vtk_file << "  <Piece NumberOfPoints = \"" << np;
+	vtk_file << " <NumberOfVerts = \"" << np;
+	vtk_file << " <NumberOfLines = \"0\"";
+	vtk_file << " <NumberOfStrips = \"0\"";
+	vtk_file << " <NumberOfPolys = \"0\">";
+	vtk_file << " <NumberOfPolys = \"0\">" << endl;
+	// Write PointData
+	vtk_file << "   <PointData Scalars = \"identity\" Vectors = \"velocity\">" << endl;
 
-	// Write particle locations
+	// Find RangeMin & RangeMax
+	int identity_min =0;
+	int identity_max = 0;
+	int on_boundary_min = 0;
+	int on_boundary_max = 0;
+	double velocity_xyz_min = 0;
+	double velocity_xyz_max = 0;
 	for (int i = 0; i < np; ++i)
 	{
-		vtk_file << RW->X[i].Now.x << " " << RW->X[i].Now.y << " " << RW->X[i].Now.z << endl;
-	}
-	// KR add "vertices" block to create a correct VTK file
-	vtk_file << "VERTICES " << np << " " << (2 * np) << "\n";
-	for (int i = 0; i < np; ++i)
-		vtk_file << 1 << " " << i << "\n";
+		if (RW->X[i].Now.identity <= identity_min);
+		identity_min = RW->X[i].Now.identity;
+		if (RW->X[i].Now.identity >= identity_max);
+		identity_max = RW->X[i].Now.identity;
 
+		if (RW->X[i].Now.on_boundary <= on_boundary_min);
+		on_boundary_min = RW->X[i].Now.on_boundary;
+		if (RW->X[i].Now.on_boundary >= on_boundary_max);
+		on_boundary_max = RW->X[i].Now.on_boundary;
+
+		if (RW->X[i].Now.Vx <= velocity_xyz_min);
+		velocity_xyz_min = RW->X[i].Now.Vx;
+		if (RW->X[i].Now.Vx >= velocity_xyz_max);
+		velocity_xyz_max = RW->X[i].Now.Vx;
+		if (RW->X[i].Now.Vy <= velocity_xyz_min);
+		velocity_xyz_min = RW->X[i].Now.Vy;
+		if (RW->X[i].Now.Vy >= velocity_xyz_max);
+		velocity_xyz_max = RW->X[i].Now.Vy;
+		if (RW->X[i].Now.Vz <= velocity_xyz_min);
+		velocity_xyz_min = RW->X[i].Now.Vz;
+		if (RW->X[i].Now.Vz >= velocity_xyz_max);
+		velocity_xyz_max = RW->X[i].Now.Vz;
+
+	}
 	// Write particle identities
-	vtk_file << "\n";
-	vtk_file << "POINT_DATA " << RW->numOfParticles << "\n";
-	vtk_file << "SCALARS identity int 1" << "\n";
-	vtk_file << "LOOKUP_TABLE default" << "\n";
+	vtk_file << "    <DataArray type = \"Int32\" Name = \"identity\" format = \"ascii \" ";
+	vtk_file << "RangeMin = " << identity_min << "\" ";
+	vtk_file << "RangeMax = " << identity_max << "\"> " << endl;
+
+	counter=0;
 	for (int i = 0; i < np; ++i)
-		vtk_file << RW->X[i].Now.identity << "\n";
+	{
+		vtk_file << RW->X[i].Now.identity << " ";
+		counter++;
+		if (counter == 6)
+		{
+			vtk_file << endl;
+		}
+		else {counter = 0;}
+	}
+	vtk_file << "    </DataArray>" << endl;
+
 
 	// Write particle on_boundary or not
-	vtk_file << endl;
-	vtk_file << "SCALARS on_boundary int 1" << endl;
-	vtk_file << "LOOKUP_TABLE default" << endl;
-	for (int i = 0; i < np; ++i)
-		vtk_file << RW->X[i].Now.on_boundary << endl;
+	vtk_file << "    <DataArray type = \"Int32\" Name = \"on_boundary\" format = \"ascii \" ";
+	vtk_file << "RangeMin = " << on_boundary_min << "\" ";
+	vtk_file << "RangeMax = " << on_boundary_max << "\"> " << endl;
 
-	// Write particle vectors
-	vtk_file << endl;
-	vtk_file << "VECTORS velocity double" << endl;
+	counter = 0;
 	for (int i = 0; i < np; ++i)
-		vtk_file << RW->X[i].Now.Vx << " " << RW->X[i].Now.Vy << " " << RW->X[i].Now.Vz << endl;
+	{
+		vtk_file << RW->X[i].Now.on_boundary << " ";
+		counter++;
+		if (counter == 6)
+		{
+			vtk_file << endl;
+		}
+		else { counter = 0; }
+	}
+	vtk_file << "    </DataArray>" << endl;
 
-	// Let's close it, now
+	// Write particle velocity vectors
+
+	vtk_file << "    <DataArray type = \"Float64\" Name = \"velocity\" format = \"ascii \" ";
+	vtk_file << "RangeMin = " << velocity_xyz_min << "\" ";
+	vtk_file << "RangeMax = " << velocity_xyz_max << "\"> " << endl;
+
+	counter = 0;
+	for (int i = 0; i < np; ++i)
+	{
+		vtk_file << RW->X[i].Now.on_boundary << " ";
+		vtk_file << RW->X[i].Now.Vx << " " << RW->X[i].Now.Vy << " " << RW->X[i].Now.Vz << " ";
+		counter++;
+		if (counter == 2)
+		{
+			vtk_file << endl;
+		}
+		else { counter = 0; }
+	}
+	vtk_file << "    </DataArray>" << endl;
+
+
+
 	vtk_file.close();
 }
 
