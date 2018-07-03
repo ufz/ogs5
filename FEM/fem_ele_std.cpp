@@ -1602,13 +1602,13 @@ double CFiniteElementStd::CalCoefMass()
 			// Se = 1/M = poro/Kf + (alpha-poro)/Ks    ::    Cf = 1/Kf = 1/rho * drho/dp    ::    alpha = 1 - K/Ks
 			// Second term (of Se) below vanishes for incompressible grains
 			// WW if(D_Flag > 0  && rho_val > MKleinsteZahl)
-			if (dm_pcs && MediaProp->storage_model == 7) // Add MediaProp->storage_model.  29.09.2011. WW
+			if (dm_pcs && MediaProp->storage_model == 8) // Add MediaProp->storage_model.  29.09.2011. WW
 			{
 				biot_val = SolidProp->biot_const;
 				poro_val = MediaProp->Porosity(Index, pcs->m_num->ls_theta);
 				val = 0.; // WX:04.2013
 
-				// WW if(SolidProp->K == 0) //WX: if HM Partitioned, K still 0 here
+				SolidProp->Calculate_Lame_Constant();
 				if (fabs(SolidProp->K) < DBL_MIN) // WW 29.09.2011
 				{
 					if (SolidProp->Youngs_mode < 10 || SolidProp->Youngs_mode > 13) // JM,WX: 2013
@@ -1637,6 +1637,7 @@ double CFiniteElementStd::CalCoefMass()
 						SolidProp->K = E_av / 3 / (1 - 2 * nu_av);
 					}
 				}
+				// Ks = K / (1-alpha_B)
 				val += poro_val * drho_dp_rho + (biot_val - poro_val) * (1.0 - biot_val) / SolidProp->K;
 
 				// Will handle the dual porosity version later...

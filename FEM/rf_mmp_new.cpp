@@ -769,17 +769,21 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 				case 11:
 					storage_model_values[0] = 1;
 					break;
-				default:
-					cout << "Error in MMPRead: no valid storativity model"
-					     << "\n";
-					break;
 				case 7: // RW/WW
+				{
 					in >> storage_model_values[0]; // Biot's alpha
 					in >> storage_model_values[1]; // Skempton's B coefficient
 					in >> storage_model_values[2]; // macroscopic drained bulk modulus
 					double val_l = storage_model_values[0] * (1. - storage_model_values[0] * storage_model_values[1])
 					               / storage_model_values[1] / storage_model_values[2];
 					storage_model_values[1] = val_l;
+					break;
+				}
+				case 8:
+					break;
+				default:
+					cout << "Error in MMPRead: no valid storativity model"
+					     << "\n";
 					break;
 			}
 			in.clear();
@@ -7391,6 +7395,8 @@ double CMediumProperties::StorageFunction(long index, double* gp, double theta)
 		case 7: // poroelasticity RW
 			storage = storage_model_values[1];
 			break;
+		case 8:
+			return 0.0;
 		case 10:
 			if (permeability_saturation_model[0] == 10) // MW
 				storage = porosity_model_values[0] / (gravity_constant * gravity_constant * mfp_vector[0]->Density());
