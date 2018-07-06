@@ -2834,11 +2834,6 @@ void RandomWalk::RandomWalkOutput(double dbl_time, int current_time_step)
 	{
 		current_name = rwpt_out_strings[i];
 		COutput* out = OUTGetRWPT(current_name);
-
-		if (out->dat_type_name.compare("PVD")==0)
-		OutputOption = 1;
-		else OutputOption = 0;
-
 		if (!out)
 			continue;
 
@@ -6101,13 +6096,15 @@ void DATWriteParticleFile(int current_time_step)
 	int np = RW->numOfParticles;
 
 
-
-	if (RW->OutputOption == 1)
+	COutput* out = OUTGetRWPT("PARTICLES");
+	if (out != NULL)
 	{
-		DATWriteParticleVTPFile(current_time_step);
-		return;
+		if (out->dat_type_name.compare("PVD") == 0)
+		{
+			DATWriteParticleVTPFile(current_time_step);
+			return;
+		}
 	}
-
 	
 
 	// file naming
@@ -6359,7 +6356,7 @@ void DATWriteParticleVTPFile(int current_time_step)
 	sprintf(now, "%i", current_time_step);
 	string nowstr = now;
 	string vtk_file_name = pathJoin(defaultOutputPath, pathBasename(FileName));
-	vtk_file_name += "_RWPT_particles" + nowstr + ".vpt";
+	vtk_file_name += "_RWPT_particles" + nowstr + ".vtp";
 	fstream vtk_file(vtk_file_name.data(), ios::out);
 	vtk_file.setf(ios::scientific, ios::floatfield);
 	vtk_file.precision(12);
@@ -6368,18 +6365,14 @@ void DATWriteParticleVTPFile(int current_time_step)
 	vtk_file.seekg(0L, ios::beg);
 
 	// PVD
-
 	string pvd_file_name = pathJoin(defaultOutputPath, pathBasename(FileName));
-	pvd_file_name += "_RWPT.particles.pvd";
+	pvd_file_name += "_RWPT_particles.pvd";
 	char c_dummy[10];
 	string istr = c_dummy;
 	double time_past = 0.0;
 
 	fstream fin(pvd_file_name.data(), ios::out);
 	WriteHeaderOf_RWPT_PVD(fin);
-
-
-
 
 	for (int i = 0; i <= current_time_step; ++i)
 	{
@@ -6394,29 +6387,26 @@ void DATWriteParticleVTPFile(int current_time_step)
 					time_past = time_past + m_tim->time_step_vector[i - 1];
 				else
 					time_past = 0.0;
-				WriteDatasetOf_RWPT_PVD(fin, time_past, pathJoin(defaultOutputPath, pathBasename(FileName)) + "_RWPT_" + istr.data() + ".particles.vtk");
+				WriteDatasetOf_RWPT_PVD(fin, time_past, pathJoin(defaultOutputPath, pathBasename(FileName)) + "_RWPT_particles" + istr.data() + ".vtp");
 			}
 		}
-
-
 	}
 
 	WriteEndOf_RWPT_PVD(fin);
 	fin.close();
 
-
 	// Write VTP Header
+	vtk_file << "<!--Time step: " << current_time_step << " -->" << endl;
 	vtk_file << "<VTKFile type=\"PolyData\" version=\"1.0\" byte_order=\"LittleEndian\" header_type=\"UInt64\">" << endl;
 	// Write PolyData
 	vtk_file << " <PolyData>" << endl;
-	vtk_file << "  <Piece NumberOfPoints = \"" << np;
-	vtk_file << " <NumberOfVerts = \"" << np;
-	vtk_file << " <NumberOfLines = \"0\"";
-	vtk_file << " <NumberOfStrips = \"0\"";
-	vtk_file << " <NumberOfPolys = \"0\">";
-	vtk_file << " <NumberOfPolys = \"0\">" << endl;
+	vtk_file << "  <Piece NumberOfPoints=\"" << np;
+	vtk_file << "\" NumberOfVerts=\"" << np;
+	vtk_file << "\" NumberOfLines=\"0\"";
+	vtk_file << " NumberOfStrips=\"0\"";
+	vtk_file << " NumberOfPolys=\"0\">" << endl;
 	// Write PointData
-	vtk_file << "   <PointData Scalars = \"identity\" Vectors = \"velocity\">" << endl;
+	vtk_file << "   <PointData Scalars =\"identity\" Vectors =\"velocity\">" << endl;
 
 	// Find RangeMin & RangeMax
 	int identity_min =0;
@@ -6425,36 +6415,52 @@ void DATWriteParticleVTPFile(int current_time_step)
 	int on_boundary_max = 0;
 	double velocity_xyz_min = 0;
 	double velocity_xyz_max = 0;
+	double xyz_coord_min = 0;
+	double xyz_coord_max = 0;
+
 	for (int i = 0; i < np; ++i)
 	{
-		if (RW->X[i].Now.identity <= identity_min);
+		if (RW->X[i].Now.identity <= identity_min)
 		identity_min = RW->X[i].Now.identity;
-		if (RW->X[i].Now.identity >= identity_max);
+		if (RW->X[i].Now.identity >= identity_max)
 		identity_max = RW->X[i].Now.identity;
 
-		if (RW->X[i].Now.on_boundary <= on_boundary_min);
+		if (RW->X[i].Now.on_boundary <= on_boundary_min)
 		on_boundary_min = RW->X[i].Now.on_boundary;
-		if (RW->X[i].Now.on_boundary >= on_boundary_max);
+		if (RW->X[i].Now.on_boundary >= on_boundary_max)
 		on_boundary_max = RW->X[i].Now.on_boundary;
 
-		if (RW->X[i].Now.Vx <= velocity_xyz_min);
+		if (RW->X[i].Now.Vx <= velocity_xyz_min)
 		velocity_xyz_min = RW->X[i].Now.Vx;
-		if (RW->X[i].Now.Vx >= velocity_xyz_max);
+		if (RW->X[i].Now.Vx >= velocity_xyz_max)
 		velocity_xyz_max = RW->X[i].Now.Vx;
-		if (RW->X[i].Now.Vy <= velocity_xyz_min);
+		if (RW->X[i].Now.Vy <= velocity_xyz_min)
 		velocity_xyz_min = RW->X[i].Now.Vy;
-		if (RW->X[i].Now.Vy >= velocity_xyz_max);
+		if (RW->X[i].Now.Vy >= velocity_xyz_max)
 		velocity_xyz_max = RW->X[i].Now.Vy;
-		if (RW->X[i].Now.Vz <= velocity_xyz_min);
+		if (RW->X[i].Now.Vz <= velocity_xyz_min)
 		velocity_xyz_min = RW->X[i].Now.Vz;
-		if (RW->X[i].Now.Vz >= velocity_xyz_max);
+		if (RW->X[i].Now.Vz >= velocity_xyz_max)
 		velocity_xyz_max = RW->X[i].Now.Vz;
+
+		if (RW->X[i].Now.x <= xyz_coord_min)
+		xyz_coord_min = RW->X[i].Now.x;
+		if (RW->X[i].Now.x >= xyz_coord_max)
+		xyz_coord_max = RW->X[i].Now.x;
+		if (RW->X[i].Now.y <= xyz_coord_min)
+		xyz_coord_min = RW->X[i].Now.y;
+		if (RW->X[i].Now.y >= xyz_coord_max)
+		xyz_coord_max = RW->X[i].Now.y;
+		if (RW->X[i].Now.z <= xyz_coord_min)
+		xyz_coord_min = RW->X[i].Now.z;
+		if (RW->X[i].Now.z >= xyz_coord_max)
+		xyz_coord_max = RW->X[i].Now.z;
 
 	}
 	// Write particle identities
 	vtk_file << "    <DataArray type = \"Int32\" Name = \"identity\" format = \"ascii \" ";
-	vtk_file << "RangeMin = " << identity_min << "\" ";
-	vtk_file << "RangeMax = " << identity_max << "\"> " << endl;
+	vtk_file << "RangeMin = \"" << identity_min << "\" ";
+	vtk_file << "RangeMax = \"" << identity_max << "\"> " << endl;
 
 	counter=0;
 	for (int i = 0; i < np; ++i)
@@ -6464,16 +6470,17 @@ void DATWriteParticleVTPFile(int current_time_step)
 		if (counter == 6)
 		{
 			vtk_file << endl;
+			counter = 0;
 		}
-		else {counter = 0;}
 	}
+	if (counter < 6 && counter != 0) vtk_file << endl;
 	vtk_file << "    </DataArray>" << endl;
 
 
 	// Write particle on_boundary or not
 	vtk_file << "    <DataArray type = \"Int32\" Name = \"on_boundary\" format = \"ascii \" ";
-	vtk_file << "RangeMin = " << on_boundary_min << "\" ";
-	vtk_file << "RangeMax = " << on_boundary_max << "\"> " << endl;
+	vtk_file << "RangeMin = \"" << xyz_coord_min << "\" ";
+	vtk_file << "RangeMax = \"" << xyz_coord_max << "\"> " << endl;
 
 	counter = 0;
 	for (int i = 0; i < np; ++i)
@@ -6483,32 +6490,58 @@ void DATWriteParticleVTPFile(int current_time_step)
 		if (counter == 6)
 		{
 			vtk_file << endl;
+			counter = 0;
 		}
-		else { counter = 0; }
 	}
+	if (counter < 6 && counter != 0) vtk_file << endl;
 	vtk_file << "    </DataArray>" << endl;
 
 	// Write particle velocity vectors
 
-	vtk_file << "    <DataArray type = \"Float64\" Name = \"velocity\" format = \"ascii \" ";
-	vtk_file << "RangeMin = " << velocity_xyz_min << "\" ";
-	vtk_file << "RangeMax = " << velocity_xyz_max << "\"> " << endl;
+	vtk_file << "    <DataArray type = \"Float64\" Name = \"velocity\" NumberOfComponents=\"3\" format = \"ascii \" ";
+	vtk_file << "RangeMin = \""<< velocity_xyz_min <<"\" ";
+	vtk_file << "RangeMax = \""<< velocity_xyz_max <<"\"> " << endl;
 
 	counter = 0;
 	for (int i = 0; i < np; ++i)
 	{
-		vtk_file << RW->X[i].Now.on_boundary << " ";
 		vtk_file << RW->X[i].Now.Vx << " " << RW->X[i].Now.Vy << " " << RW->X[i].Now.Vz << " ";
 		counter++;
 		if (counter == 2)
 		{
 			vtk_file << endl;
+			counter = 0;
 		}
-		else { counter = 0; }
 	}
+	if (counter < 2 && counter != 0) vtk_file << endl;
 	vtk_file << "    </DataArray>" << endl;
 
+	vtk_file << "   </PointData>" << endl; 	// End Write PointData
 
+	// Write Points Coordinates
+	vtk_file << "   <Points>" << endl; 
+	vtk_file << "    <DataArray type = \"Float64\" Name = \"Points\" NumberOfComponents=\"3\" format = \"ascii \" ";
+	vtk_file << "RangeMin = \"" << xyz_coord_min << "\" ";
+	vtk_file << "RangeMax = \"" << xyz_coord_max << "\"> " << endl;
+
+	counter = 0;
+	for (int i = 0; i < np; ++i)
+	{
+		vtk_file << RW->X[i].Now.x << " " << RW->X[i].Now.y << " " << RW->X[i].Now.z << " ";
+		counter++;
+		if (counter == 2)
+		{
+			vtk_file << endl;
+			counter = 0;
+		}
+	}
+	if (counter < 2 && counter != 0) vtk_file << endl;
+	vtk_file << "    </DataArray>" << endl;
+	vtk_file << "   </Points>" << endl;
+
+	vtk_file << "  </Piece>" << endl;
+	vtk_file << " </PolyData>" << endl;
+	vtk_file << "</VTKFile>" << endl;
 
 	vtk_file.close();
 }

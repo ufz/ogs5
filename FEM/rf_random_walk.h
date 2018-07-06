@@ -125,7 +125,6 @@ public:
 	// 2: Velocity solved as in FDM approach
 	int FDMIndexSwitch; // 0: Build
 	// 1: No need to build
-	int OutputOption;
 	int GridOption;
 	double CurrentTime;
 	double* ChanceOfIrreversed;
