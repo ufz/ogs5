@@ -6539,6 +6539,47 @@ void DATWriteParticleVTPFile(int current_time_step)
 	vtk_file << "    </DataArray>" << endl;
 	vtk_file << "   </Points>" << endl;
 
+	vtk_file << "   <Verts>" << endl;
+
+	// Write conncectivity
+	vtk_file << "    <DataArray type = \"Int64\" Name = \"connectivity\" format = \"ascii \" ";
+	vtk_file << "RangeMin =\"0\" ";
+	vtk_file << "RangeMax = \"" << np-1 << "\"> " << endl;
+
+	counter = 0;
+	for (int i = 0; i < np; ++i)
+	{
+		vtk_file << i << " ";
+		counter++;
+		if (counter == 6)
+		{
+			vtk_file << endl;
+			counter = 0;
+		}
+	}
+	if (counter < 6 && counter != 0) vtk_file << endl;
+	vtk_file << "    </DataArray>" << endl;
+
+	// Write offset
+	vtk_file << "    <DataArray type = \"Int64\" Name = \"offsets\" format = \"ascii \" ";
+	vtk_file << "RangeMin =\"1\" ";
+	vtk_file << "RangeMax = \"" << np << "\"> " << endl;
+
+	counter = 0;
+	for (int i = 0; i < np; ++i)
+	{
+		vtk_file << i+1 << " ";
+		counter++;
+		if (counter == 6)
+		{
+			vtk_file << endl;
+			counter = 0;
+		}
+	}
+	if (counter < 6 && counter != 0) vtk_file << endl;
+
+	vtk_file << "    </DataArray>" << endl;
+	vtk_file << "   </Verts>" << endl;
 	vtk_file << "  </Piece>" << endl;
 	vtk_file << " </PolyData>" << endl;
 	vtk_file << "</VTKFile>" << endl;
