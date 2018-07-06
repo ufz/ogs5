@@ -199,11 +199,7 @@ public:
 	std::vector<double> _control_plane_x_normal_vector;
 	std::vector<double> _control_plane_y_normal_vector;
 	std::vector<double> _control_plane_z_normal_vector;
-	// DAT
-	/**
-	* this attribute stores the output format
-	*/
-	std::string dat_type_name;
+	std::string dat_type_name; 	/*this attribute stores the output format*/
 
 private:
 	friend void OUTData(double, int step, bool force_output);
