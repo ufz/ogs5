@@ -6364,7 +6364,7 @@ void DATWriteParticleVTPFile(int current_time_step)
 		return;
 	vtk_file.seekg(0L, ios::beg);
 
-	// PVD
+	// PVD-File
 	string pvd_file_name = pathJoin(defaultOutputPath, pathBasename(FileName));
 	pvd_file_name += "_RWPT_particles.pvd";
 	char c_dummy[10];
@@ -6394,6 +6394,8 @@ void DATWriteParticleVTPFile(int current_time_step)
 
 	WriteEndOf_RWPT_PVD(fin);
 	fin.close();
+	// End writing pvd-file. PVD needs to be rewritten for each time step. Same procedure as for the VTU output
+
 
 	// Write VTP Header
 	vtk_file << "<!--Time step: " << current_time_step << " -->" << endl;
