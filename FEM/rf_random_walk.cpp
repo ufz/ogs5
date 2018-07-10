@@ -6396,7 +6396,6 @@ void DATWriteParticleVTPFile(int current_time_step)
 	fin.close();
 	// End writing pvd-file. PVD needs to be rewritten for each time step. Same procedure as for the VTU output
 
-
 	// Write VTP Header
 	vtk_file << "<!--Time step: " << current_time_step << " -->" << endl;
 	vtk_file << "<VTKFile type=\"PolyData\" version=\"1.0\" byte_order=\"LittleEndian\" header_type=\"UInt64\">" << endl;
