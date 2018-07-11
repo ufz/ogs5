@@ -753,7 +753,16 @@ inline int Problem::AssignProcessIndex(CRFProcess* m_pcs, bool activefunc)
 			return 10;
 		total_processes[10] = m_pcs;
 		active_processes[10] = &Problem::RandomWalker;
-		DATWriteParticleFile(0); // YS
+		COutput* out = OUTGetRWPT("PARTICLES");
+		if (out != NULL)
+		{
+			if (out->dat_type_name.compare("PVD") == 0)
+				DATWriteParticleVTPFile(0);
+			else
+				DATWriteParticleFile(0);
+		}
+		else
+			DATWriteParticleFile(0); // YS
 		return 10;
 		//	} else if (m_pcs->pcs_type_name.compare("MASS_TRANSPORT") == 0) {
 	}
