@@ -4,7 +4,7 @@ Benchmark(AUTHOR YS
 	RUNTIME 2
 	OUTPUT_FILES
 		colloid_t_LIQUID_FLOW60.vtu
-		colloid_t_RWPT_60.particles.vtk
+		colloid_t_RWPT_particles60.vtp
 		colloid_t_time_BC_DOWN_RANDOM_WALK.tec
 )
 
