@@ -1190,7 +1190,6 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs, int ShiftInNodeVector, const
 				m_polyline = GEOGetPLYByName(bc->geo_name);
 				// 08/2010 TF get the polyline data structure
 				GEOLIB::Polyline const* ply(static_cast<const GEOLIB::Polyline*>(bc->getGeoObj()));
-
 				if (m_polyline)
 				{
 					if (bc->getProcessDistributionType() == FiniteElement::CONSTANT
