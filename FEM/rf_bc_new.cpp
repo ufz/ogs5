@@ -1378,11 +1378,12 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs, int ShiftInNodeVector, const
 					//					debug_out.close();
 					//#endif
 					std::vector<size_t> msh_nod_vec;
-					//double computed_search_length = m_msh->getSearchLength();
+					double computed_search_length = m_msh->getSearchLength();
 					//if (bc->epsilon != -1) 
 						//m_msh->setSearchLength(bc->epsilon);
 					m_msh->GetNODOnSFC(sfc, msh_nod_vec);
 					//m_msh->setSearchLength(computed_search_length);
+					//ANother Test
 
 #ifndef NDEBUG
 #ifdef DEBUGMESHNODESEARCH
