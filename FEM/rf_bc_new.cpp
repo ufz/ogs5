@@ -149,7 +149,7 @@ CBoundaryCondition::CBoundaryCondition() : GeoInfo(), geo_name(""), _curve_index
 	// FCT
 	conditional = false;
 	time_dep_interpol = false;
-	epsilon = 1e-9; // NW
+	epsilon = -1; // NW
 	time_contr_curve = -1; // WX
 	bcExcav = -1; // WX
 	MatGr = -1; // WX
@@ -1378,6 +1378,8 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs, int ShiftInNodeVector, const
 					//					debug_out.close();
 					//#endif
 					std::vector<size_t> msh_nod_vec;
+					if (bc->epsilon != -1) 
+						m_msh->setSearchLength(bc->epsilon);
 					m_msh->GetNODOnSFC(sfc, msh_nod_vec);
 #ifndef NDEBUG
 #ifdef DEBUGMESHNODESEARCH
