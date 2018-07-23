@@ -1802,9 +1802,10 @@ void CBoundaryCondition::SurfaceInterpolation(CRFProcess* m_pcs,
 	// Interpolation of polygon values to nodes_on_sfc
 	int nPointsPly = 0;
 	double Area1, Area2;
+	double Tol = 1e-9;
 	// NW. Default tolerance is 1e-9 but it can be changed in a BC file.
-	double Tol = this->epsilon;
-	Tol = 1e-9; // just a test: if this works, then I have to change the input files of the benchmarks
+	if (this->epsilon != -1)
+		Tol = this->epsilon;
 	bool Passed;
 	double gC[3], p1[3], p2[3], vn[3], unit[3], NTri[3];
 	//
