@@ -22,7 +22,7 @@ namespace MaterialLib
 TheoreticalPorosity::TheoreticalPorosity(const CRFProcess& process_T, const CRFProcess& process_H,
 	                    const CRFProcess& process_M, const double n0, const double K,
 	                    const double alpha_B, double alpha_T)
-    : _process_T(process_T), _process_H(process_H), _process_M(process_M), _n_min(0.001), _n_max(0.999), _n0(n0),
+    : _process_T(process_T), _process_H(process_H), _process_M(process_M), _n_min(0.01), _n_max(0.99), _n0(n0),
       _Ks( K / (1.0 - alpha_B)), _alpha_B(alpha_B), _alpha_T(alpha_T),
       _index_T(_process_T.GetNodeValueIndex(_process_T.GetPrimaryVName(0))),
       _index_p(_process_H.GetNodeValueIndex(_process_H.GetPrimaryVName(0)))

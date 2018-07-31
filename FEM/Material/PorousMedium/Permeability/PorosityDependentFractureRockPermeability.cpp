@@ -48,10 +48,10 @@ PorosityDependentFractureRockPermeability::PorosityDependentFractureRockPermeabi
 
 double PorosityDependentFractureRockPermeability::getPermeability(const std::size_t element_id, const double porosity)
 {
-	const double omega = _omega[element_id];
-	return std::pow(10.0,
-	                (1. - omega) * std::log10(4.979 * 1.e-11 * std::pow(porosity, 3.11))
-	                    + omega * std::log10(1.143 * 1.e-11 * std::pow(porosity, 0.64)));
+	const double omega = _omega[element_id];		
+	return std::pow(2.7182818284590451,
+	                (1. - omega) * std::log(4.979e-11 * std::pow(porosity, 3.11))
+	                    + omega * std::log(1.143e-11 * std::pow(porosity, 0.64)));
 }
 
 } // End of name space
