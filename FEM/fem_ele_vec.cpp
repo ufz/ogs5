@@ -737,10 +737,10 @@ double CFiniteElementVec::CalDensity()
 		// Assume solid density is constant. (*smat->data_Density)(0)
 		if (smat->Density() > 0.0)
 		{
-			const double density_fluid = (mfp_vector.empty()) ?  m_mfp->Density() : 0.0;
+			const double density_fluid = m_mfp->Density();
 			const double porosity = m_mmp->Porosity(this);
 
-			double rho = (1. - porosity) * fabs(smat->Density())
+			double rho = (1. - porosity) * smat->Density()
 				+ porosity * _wettingS * density_fluid;
 
 			if (_flow_type == FiniteElement::MULTI_PHASE_FLOW
@@ -755,8 +755,8 @@ double CFiniteElementVec::CalDensity()
 			return 0.0;
 	}
 
-    // If negative value is given in the .msp file, gravity by solid is skipped
-    if (smat->Density() > 0.0)
+	// If negative value is given in the .msp file, gravity by solid is skipped
+	if (smat->Density() > 0.0)
 	{
 		return smat->Density();
 	}
@@ -1081,6 +1081,8 @@ void CFiniteElementVec::LocalAssembly(const int update)
 		if (_flow_type == FiniteElement::RICHARDS_FLOW
 		|| _flow_type == FiniteElement::MULTI_PHASE_FLOW)
 		{
+			// If Richards flow, the capillary pressure is
+			// the nagative value of fluid pressure.
 			const double fac = (_flow_type == FiniteElement::RICHARDS_FLOW) ? -1. : 1.;
 			for (int i = 0; i < nnodes; i++)
 			{
