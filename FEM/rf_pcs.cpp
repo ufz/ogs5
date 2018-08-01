@@ -4345,6 +4345,22 @@ void CRFProcess::CheckMarkedElement()
 	}
 }
 
+bool CRFProcess::isPointInExcavatedDomain(double const* point, double&max_excavation_range,
+                                               double& min_excavation_range)
+{
+	int valid;
+	const double expected_coordinate = GetCurveValue(ExcavCurve, 0, aktuelle_zeit, &valid) + ExcavBeginCoordinate;
+	const double element_center_x_in_excavation_direction = point[ExcavDirection];
+	max_excavation_range = std::max(expected_coordinate, ExcavBeginCoordinate);
+	min_excavation_range = std::min(expected_coordinate, ExcavBeginCoordinate);
+	if (element_center_x_in_excavation_direction > min_excavation_range
+	    && element_center_x_in_excavation_direction < max_excavation_range)
+	{
+		return true;
+	}
+	return false;
+}
+
 /**************************************************************************
    FEMLib-Method:
    Task:  check the excavation state of each aktive element
@@ -4353,24 +4369,16 @@ void CRFProcess::CheckMarkedElement()
 **************************************************************************/
 void CRFProcess::CheckExcavedElement()
 {
-	int valid;
-	long l;
-	// bool done;
-	CElem* elem = NULL;
-	// CNode *node = NULL;
-	for (l = 0; l < (long)m_msh->ele_vector.size(); l++)
+	for (long l = 0; l < (long)m_msh->ele_vector.size(); l++)
 	{
-		elem = m_msh->ele_vector[l];
+		CElem* elem = m_msh->ele_vector[l];
 		if ((int)elem->GetPatchIndex() == ExcavMaterialGroup && elem->GetExcavState() == -1) // WX:04.2012
 		{
 			double const* ele_center(elem->GetGravityCenter());
-			const double expected_coordinate =
-				GetCurveValue(ExcavCurve, 0, aktuelle_zeit, &valid) + ExcavBeginCoordinate;
-			const double element_center_x_in_excavation_direction = ele_center[ExcavDirection];
-			const double max_excavation_range = std::max(expected_coordinate, ExcavBeginCoordinate);
-			const double min_excavation_range = std::min(expected_coordinate, ExcavBeginCoordinate);
-			if ( element_center_x_in_excavation_direction > min_excavation_range &&
-				 element_center_x_in_excavation_direction < max_excavation_range )
+			double max_excavation_range = 0;
+			double min_excavation_range = 0;
+			if (isPointInExcavatedDomain(ele_center,
+				max_excavation_range, min_excavation_range))
 			{
 				elem->SetExcavState(1);
 			}
@@ -6259,14 +6267,10 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
 
 			node = m_msh->nod_vector[m_bc_node->geo_node_number];
 			double const* node_coordinate(node->getData()); // Coordinates(node_coordinate);
-
-			const double expected_coordinate =
-				GetCurveValue(ExcavCurve, 0, aktuelle_zeit, &valid) + ExcavBeginCoordinate;
-			const double max_excavation_range = std::max(expected_coordinate, ExcavBeginCoordinate);
-			const double min_excavation_range = std::min(expected_coordinate, ExcavBeginCoordinate);
-
-			if (node_coordinate[ExcavDirection] > min_excavation_range &&
-			     node_coordinate[ExcavDirection] < max_excavation_range)
+			double max_excavation_range = 0;
+			double min_excavation_range = 0;
+			if (isPointInExcavatedDomain(node_coordinate,
+				max_excavation_range, min_excavation_range))
 			{
 				excavated = true;
 #ifndef USE_PETSC
