@@ -97,7 +97,7 @@ private:
 	Math_Group::Matrix* scalar_aniso_tens; // WX:11.2011 for aniso. plas.
 };
 
-// Derived element for deformation caculation
+// Derived element for deformation calculation
 class CFiniteElementVec : public CElement
 {
 public:
@@ -109,7 +109,7 @@ public:
 
 	// Compute the local finite element matrices and vectors
 	void LocalAssembly(const int update);
-	// Assemble local matrics and vectors to the global system
+	// Assemble local matrices and vectors to the global system
 	bool GlobalAssembly();
 
 	// Compute strains
@@ -163,7 +163,7 @@ private:
 	// Consistent tangential matrix
 	Matrix* ConsistDep;
 
-	// Local matricies and vectors
+	// Local matrices and vectors
 	Matrix* AuxMatrix;
 	Matrix* AuxMatrix2; // NW
 	Matrix* Stiffness;
@@ -238,9 +238,9 @@ private:
 	// Temporarily used variables
 	double* Sxx, *Syy, *Szz, *Sxy, *Sxz, *Syz, *pstr;
 
-	/// Extropolation
+	/// Extrapolation
 	bool RecordGuassStrain(const int gp, const int gp_r, const int gp_s, int gp_t);
-	// Effictive strain
+	// Effective strain
 	double CalcStrain_v();
 	void ExtropolateGuassStrain();
 	void ExtropolateGuassStress();
@@ -269,7 +269,7 @@ private:
 	double* _nodal_cp0; /// capillary pressure.
 	double* _nodal_dcp; /// capillary pressure increment.
 
-	// Auxillarary vector
+	// Auxiliary vector
 	double* _nodal_S0;
 	double* _nodal_S;
 	double* AuxNodal1;
@@ -279,7 +279,7 @@ private:
 	const bool dynamic;
 	Matrix* Mass; // For dynamic analysis
 	int* Idx_Vel;
-	// Auxillarary vector
+	// Auxiliary vector
 	Vec* dAcceleration;
 	const double beta2, bbeta1;
 	void ComputeMass();

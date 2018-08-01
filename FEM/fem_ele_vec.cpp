@@ -641,7 +641,7 @@ void CFiniteElementVec::setB_Matrix(const int LocalIndex)
            CFiniteElementVec:: setTransB_Matrix(const int LocalIndex)
 
    Aufgabe:
-          Form the tanspose of B matric
+          Form the transpose of B matric
    Formalparameter:
            E:
              const int LocalIndex   : Local node index
@@ -725,7 +725,7 @@ void CFiniteElementVec::ComputeStrain(const int ip)
            CFiniteElementVec:: CalDensity()
 
    Aufgabe:
-          Caculate density of porous medium
+          Calculate density of porous medium
    Programming:
    05/2005     WW        Erste Version
  **************************************************************************/
@@ -772,7 +772,7 @@ double CFiniteElementVec::CalDensity()
    Programming:
    07/2004   WW
    08/2004   OK   MFP implementation
-   01/2010   NW   use chache of B,B^T matrices
+   01/2010   NW   use cache of B,B^T matrices
  **************************************************************************/
 void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 {
@@ -1013,7 +1013,7 @@ void CFiniteElementVec::LocalAssembly(const int update)
 			eqs_number[i] = MeshElement->nodes[i]->GetEquationIndex();
 	}
 #endif
-	// For strain and stress extropolation all element types
+	// For strain and stress extrapolation all element types
 	// Number of elements associated to nodes
 	for (int i = 0; i < nnodes; i++)
 		dbuff[i] = (double)MeshElement->nodes[i]->getConnectedElementIDs().size();
@@ -1177,14 +1177,14 @@ void CFiniteElementVec::LocalAssembly(const int update)
 }
 
 /***************************************************************************
-   GeoSys - Funktion:
+   GeoSys - Function:
            CFiniteElementVec::  GlobalAssembly()
    Aufgabe:
-           Assemble local matrics and vectors to the global system
+           Assemble local matrices and vectors to the global system
 
    Programming:
    02/2005   WW
-   12/2009   WW New excavtion approach
+   12/2009   WW New excavation approach
  **************************************************************************/
 bool CFiniteElementVec::GlobalAssembly()
 {
@@ -1274,7 +1274,7 @@ bool CFiniteElementVec::GlobalAssembly()
    GeoSys - Funktion:
            CFiniteElementVec::  GlobalAssembly_Stiffness()
    Aufgabe:
-           Assemble local matrics and vectors to the global system
+           Assemble local matrices and vectors to the global system
 
    Programming:
    02/2005   WW
@@ -1344,7 +1344,7 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
    GeoSys - Funktion:
            CFiniteElementVec::  GlobalAssembly_Stiffness()
    Aufgabe:
-           Assemble local matrics and vectors to the global system
+           Assemble local matrices and vectors to the global system
 
    Programming:
    02/2005   WW
@@ -1543,7 +1543,7 @@ void CFiniteElementVec::ComputeMass()
    GeoSys - Funktion:
            CFiniteElementVec::  GlobalAssembly_RHS()
    Aufgabe:
-           Assemble local matrics and vectors to the global system
+           Assemble local matrices and vectors to the global system
 
    Programming:
    02/2005   WW
@@ -1863,9 +1863,9 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 
 	   Programming:
 	   02/2000   OK   Elastische Elemente
-	   09/2002   WW   Local assemby of stiffness matrix of elasto-plastic
+	   09/2002   WW   Local assembly of stiffness matrix of elasto-plastic
 	   tangential model
-	   Local assemby of residual
+	   Local assembly of residual
 	   07/2003   WW   Quadratic triangle element
 	   06/2004   WW   Generalize for different element types as a member of class
 	   12/2005   WW   Creep
@@ -2431,7 +2431,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	   GeoSys - Funktion:
 	           CFiniteElementVec::ExtropolateGuassStrain()
 	   Aufgabe:
-	           Extropolate the Gauss point strains to nodes
+	           Extrapolate the Gauss point strains to nodes
 	   Formalparameter:
 	           E:
 
@@ -2564,17 +2564,17 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	   GeoSys - Funktion:
 	           CFiniteElementVec::ExtropolateGuassStress()
 	   Aufgabe:
-	           Extropolate the Gauss point strains to nodes
+	           Extrapolate the Gauss point strains to nodes
 	   Formalparameter:
 	           E:
 
 	   Programming:
 	   06/2004   WW
-	   03/2007   WW  Generize for all 2nd variables
+	   03/2007   WW  For all 2nd variables
 	 **************************************************************************/
 	void CFiniteElementVec::ExtropolateGuassStress()
 	{
-		// For strain and stress extropolation all element types
+		// For strain and stress extrapolation all element types
 		// Number of elements associated to nodes
 		nnodes = MeshElement->nnodes;
 		// Node indices
@@ -2862,7 +2862,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	         E:
 	   const double *Stresses: Stresses
 
-	   Return: Angle of maxium principle stress component to x direction
+	   Return: Angle of maximum principle stress component to x direction
 	   sig2<sig1
 
 	   Programming:
@@ -2912,7 +2912,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	   0, dilatancy
 	   1, frictional
 	   2, Poission ratio
-	   Return: Angle of maxium principle stress component to x direction
+	   Return: Angle of maximum principle stress component to x direction
 
 	   Programming:
 	   06/2004     WW        Erste Version
@@ -3198,7 +3198,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	   0 do not update
 
 	   Ergebnis:
-	   - double* - Deviatoric effetive stresses, s11,s22,s12,s33
+	   - double* - Deviatoric effective stresses, s11,s22,s12,s33
 
 	   Programmaenderungen:
 	   06/2004   WW  Erste Version
@@ -3519,7 +3519,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	   GeoSys - Funktion:
 	            CFiniteElementVec:: CalcStrain_v()
 	   Aufgabe:
-	           Calculate effictive strain at Gauss points
+	           Calculate effective strain at Gauss points
 	   Formalparameter:
 	           E:
 
