@@ -1116,13 +1116,9 @@ void CFiniteElementVec::LocalAssembly(const int update)
 			if (static_cast<size_t>(pcs->ExcavMaterialGroup) == MeshElement->GetPatchIndex())
 			{
 				double const* ele_center(MeshElement->GetGravityCenter());
-				const double expected_coordinate =
-					GetCurveValue(pcs->ExcavCurve, 0, aktuelle_zeit, &valid) + pcs->ExcavBeginCoordinate;
-				const double element_center_x_in_excavation_direction = ele_center[pcs->ExcavDirection];
-				const double max_excavation_range = std::max(expected_coordinate, pcs->ExcavBeginCoordinate);
-				const double min_excavation_range = std::min(expected_coordinate, pcs->ExcavBeginCoordinate);
-				if ( element_center_x_in_excavation_direction > min_excavation_range &&
-					 element_center_x_in_excavation_direction < max_excavation_range )
+				double max_excavation_range = 0;
+				double min_excavation_range = 0;
+				if (pcs->isPointInExcavatedDomain(ele_center, max_excavation_range, min_excavation_range))
 				{
 					excavation = true;
 					*(eleV_DM->Stress) = 0.;
