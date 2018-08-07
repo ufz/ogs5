@@ -894,6 +894,10 @@ public:
 	int ExcavCurve; // WX
 	double ExcavBeginCoordinate; // WX
 	int PCS_ExcavState; // WX
+	bool isPointInExcavatedDomain(
+		double const* point, double&max_excavation_range,
+		double& min_excavation_range);
+
 	int Neglect_H_ini; // WX
 	int UpdateIniState; // WX
 #if defined(USE_MPI) || defined(USE_PETSC) // WW

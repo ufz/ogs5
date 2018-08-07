@@ -16,6 +16,7 @@
 
 #include <cfloat>
 #include <algorithm>
+
 #include "mathlib.h"
 #include "matrix_class.h"
 #include "matrix_routines.h"
@@ -62,13 +63,13 @@ const int max_nnodes_QE_3D = 20;
 CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	const int C_Sys_Flad, const int order)
     : CElement(C_Sys_Flad, order), pcs(dm_pcs), h_pcs(NULL), t_pcs(NULL), excavation(false),
-	  ns((dim == 3)? 6: 4),  Flow_Type(-1),
+	  ns((dim == 3)? 6: 4),  _flow_type(NO_PCS),
       idx_P(-1), idx_P0(-1), idx_P1(-1), idx_P1_0(-1), idx_P2(-1),
 	  idx_T0(-1), idx_T1(-1), idx_S0(-1), idx_S(-1), idx_Snw(-1), idx_pls(-1),
 	  idx_p1_ini(-1), idx_p2_ini(-1),
 	  PressureC(NULL), PressureC_S(NULL), PressureC_S_dp(NULL), b_rhs(NULL),
 	  smat(NULL), m_mfp(NULL), m_mmp(NULL),
-	  Temp(NULL), T1(NULL), Tem(273.15 + 23.0), S_Water(1.), eleV_DM(NULL),
+	  Temp(NULL), T1(NULL), Tem(273.15 + 23.0), _wettingS(1.), eleV_DM(NULL),
 	  _nodal_p1(NULL), _nodal_p2(NULL), _nodal_cp0(NULL), _nodal_dcp(NULL),
 	  _nodal_S0(NULL), _nodal_S(NULL), AuxNodal1(NULL),
 	  dynamic((dm_pcs->pcs_type_name_vector[0].find("DYNAMIC") != std::string::npos)
@@ -211,42 +212,24 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 		// TF
 		if (isFlowProcess(pcs_vector[i]->getProcessType()))
 		{
-			h_pcs = pcs_vector[i];
 			// 25.04.2008, 04.09.2008  WW
-			if (h_pcs->type == 1 || h_pcs->type == 41)
+			h_pcs = pcs_vector[i];
+			_flow_type = h_pcs->getProcessType();
+			if (_flow_type == FiniteElement::DEFORMATION_FLOW
+				|| _flow_type == FiniteElement::DEFORMATION_DYNAMIC)
+				_flow_type =  FiniteElement::LIQUID_FLOW;
+			if (_flow_type == FiniteElement::DEFORMATION_H2)
 			{
-				//				if (h_pcs->pcs_type_name.find("GROUND") != string::npos)
-				// TF
-				if (h_pcs->getProcessType() == GROUNDWATER_FLOW)
-					Flow_Type = 10;
-				else
-					Flow_Type = 0;
-				// 25.08.2005.  WW
-			}
-			else if (h_pcs->type == 14 || h_pcs->type == 22)
-				Flow_Type = 1;
-			else if (h_pcs->type == 1212 || h_pcs->type == 42)
-			{
-				Flow_Type = 2; // 25.04.2008.  WW
-
+				_flow_type =  FiniteElement::MULTI_PHASE_FLOW;
 				// 07.2011. WW
 				PressureC_S = new Matrix(60, 20);
-				if (pcs->m_num->nls_method == 1 && h_pcs->type == 42) // Newton-raphson. WW
+				if (pcs->m_num->nls_method == 1) // Newton-raphson. WW
 					PressureC_S_dp = new Matrix(60, 20);
 			}
-			// WW idx_P0 = pcs->GetNodeValueIndex("POROPRESSURE0");
-			break;
-			//		} else if (pcs_vector[i]->pcs_type_name.find("PS_GLOBAL") != string::npos) {
 		} // TF
-		else if (pcs_vector[i]->getProcessType() == PS_GLOBAL)
-		{
-			h_pcs = pcs_vector[i];
-			if (h_pcs->type == 1313)
-				Flow_Type = 3; // 05.05.2009.  PCH
-			break;
-		}
 	}
-	if (Flow_Type == 0)
+
+	if (_flow_type == FiniteElement::LIQUID_FLOW)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
 		idx_p1_ini = h_pcs->GetNodeValueIndex("PRESSURE1_Ini");
@@ -257,12 +240,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 			idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE_RATE1");
 		}
 	}
-	if (Flow_Type == 10)
-	{
-		idx_P1 = h_pcs->GetNodeValueIndex("HEAD") + 1;
-		_nodal_p1 = new double[max_nnodes_LE];
-	}
-	else if (Flow_Type == 1)
+	else if (_flow_type == FiniteElement::RICHARDS_FLOW)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
 		_nodal_p1 = new double[max_nnodes_LE];
@@ -279,7 +257,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 		_nodal_cp0 = new double[max_nnodes_LE];
 		_nodal_dcp = new double[max_nnodes_LE];
 	}
-	else if (Flow_Type == 2)
+	else if (_flow_type == FiniteElement::MULTI_PHASE_FLOW)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
 		_nodal_p1 = new double[max_nnodes_LE];
@@ -298,7 +276,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 		_nodal_cp0 = new double[max_nnodes_LE];
 		_nodal_dcp = new double[max_nnodes_LE];
 	}
-	else if (Flow_Type == 3)
+	else if (_flow_type == FiniteElement::PS_GLOBAL)
 	{
 		idx_P1 = h_pcs->GetNodeValueIndex("PRESSURE1") + 1;
 		_nodal_p1 = new double[max_nnodes_LE];
@@ -663,7 +641,7 @@ void CFiniteElementVec::setB_Matrix(const int LocalIndex)
            CFiniteElementVec:: setTransB_Matrix(const int LocalIndex)
 
    Aufgabe:
-          Form the tanspose of B matric
+          Form the transpose of B matric
    Formalparameter:
            E:
              const int LocalIndex   : Local node index
@@ -747,61 +725,43 @@ void CFiniteElementVec::ComputeStrain(const int ip)
            CFiniteElementVec:: CalDensity()
 
    Aufgabe:
-          Caculate density of porous medium
+          Calculate density of porous medium
    Programming:
    05/2005     WW        Erste Version
  **************************************************************************/
 double CFiniteElementVec::CalDensity()
 {
-	double rho;
-	// OK_MFP
-	//--------------------------------------------------------------------
-	// MFP fluid properties
-	double density_fluid = 0.0;
-	double porosity = 0.0;
-	// double p_g = 0.0;
-	double Sw = 0.0;
-	int no_phases = (int)mfp_vector.size();
-	int i = 0, phase = 0;
-
-	rho = 0.0;
 	if (F_Flag)
 	{
-		if ((no_phases > 0) && (no_phases > phase))
-			density_fluid = m_mfp->Density();
-
-		// OK_MMP
 		//--------------------------------------------------------------------
-		// MMP medium properties
-		porosity = m_mmp->Porosity(this);
 		// Assume solid density is constant. (*smat->data_Density)(0)
 		if (smat->Density() > 0.0)
 		{
-			Sw = 1.0; // JT, should be 1.0, unless multiphase (calculate below) (if unsaturated, fluid density would be
-			          // negligible... so still works)
-			if (Flow_Type > 0 && Flow_Type != 10)
-			{
-				Sw = 0.; // WW
-				for (i = 0; i < nnodes; i++)
-					Sw += shapefct[i] * _nodal_S[i];
-			}
-			rho = (1. - porosity) * fabs(smat->Density()) + porosity * Sw * density_fluid;
+			const double density_fluid = m_mfp->Density();
+			const double porosity = m_mmp->Porosity(this);
 
-			if (Flow_Type == 2 || Flow_Type == 3)
+			double rho = (1. - porosity) * smat->Density()
+				+ porosity * _wettingS * density_fluid;
+
+			if (_flow_type == FiniteElement::MULTI_PHASE_FLOW
+				|| _flow_type == FiniteElement::PS_GLOBAL)
 			{
-				CFluidProperties* GasProp;
-				GasProp = MFPGet("GAS");
-				rho += porosity * (1.0 - Sw) * GasProp->Density();
+				CFluidProperties* const GasProp = MFPGet("GAS");
+				rho += porosity * (1.0 - _wettingS) * GasProp->Density();
 			}
+			return rho;
 		}
 		else
-			rho = 0.0;
+			return 0.0;
 	}
-	else
-	    // If negative value is given in the .msp file, gravity by solid is skipped
-	    if (smat->Density() > 0.0)
-		rho = smat->Density();
-	return rho;
+
+	// If negative value is given in the .msp file, gravity by solid is skipped
+	if (smat->Density() > 0.0)
+	{
+		return smat->Density();
+	}
+
+	return 0.0;
 }
 /***************************************************************************
    GeoSys - Funktion:
@@ -812,22 +772,16 @@ double CFiniteElementVec::CalDensity()
    Programming:
    07/2004   WW
    08/2004   OK   MFP implementation
-   01/2010   NW   use chache of B,B^T matrices
+   01/2010   NW   use cache of B,B^T matrices
  **************************************************************************/
 void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 {
-	int i, j, k, l;
-	double rho, fac, fac1, fac2, dN_dx, f_buff;
-	fac = fac1 = fac2 = f_buff = 0.0;
-	dN_dx = 0.0;
-	rho = CalDensity();
 	const int nnodesHQ = this->nnodesHQ;
 	const int nnodes = this->nnodes;
 	const int ele_dim = this->ele_dim;
-	const int ns = this->ns;
 
 	// NW cache B, B^T
-	for (i = 0; i < nnodesHQ; i++)
+	for (int i = 0; i < nnodesHQ; i++)
 	{
 		setTransB_Matrix(i);
 		(*this->vec_B_matrix[i]) = *B_matrix;
@@ -842,15 +796,18 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 	Matrix* tmp_AuxMatrix2 = AuxMatrix2;
 	Matrix* tmp_Stiffness = Stiffness;
 
-	for (i = 0; i < nnodesHQ; i++)
+	for (int i = 0; i < nnodesHQ; i++)
 	{
 		// NW      setTransB_Matrix(i);
 		tmp_B_matrix_T = this->vec_B_matrix_T[i];
 		// Local assembly of A*u=int(B^t*sigma) for Newton-Raphson method
-		for (j = 0; j < ele_dim; j++)
-			for (k = 0; k < ns; k++)
-				(*RHS)[j * nnodesHQ + i] += (*tmp_B_matrix_T)(j, k) * (dstress[k] - stress0[k]) * fkt;
+		for (int j = 0; j < ele_dim; j++)
+		{
+			const int jj = j * nnodesHQ;
+			for (int k = 0; k < ns; k++)
+				(*RHS)[jj + i] += (*tmp_B_matrix_T)(j, k) * (dstress[k] - stress0[k]) * fkt;
 		// TEST             (*B_matrix_T)(j,k)*dstress[k]*fkt;
+		}
 		if (PreLoad == 11)
 			continue;
 		if (excavation)
@@ -864,7 +821,7 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 		(*tmp_AuxMatrix2) = 0.0;
 		// NW
 		tmp_B_matrix_T->multi(*p_D, *tmp_AuxMatrix2);
-		for (j = 0; j < nnodesHQ; j++)
+		for (int j = 0; j < nnodesHQ; j++)
 		{
 			// NW          setB_Matrix(j);
 			tmp_B_matrix = this->vec_B_matrix[j];
@@ -874,10 +831,10 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 			// NW          B_matrix_T->multi(*p_D, *B_matrix, *AuxMatrix);
 
 			// Local assembly of stiffness matrix
-			for (k = 0; k < ele_dim; k++)
+			for (int k = 0; k < ele_dim; k++)
 			{
 				const int kia = i + k * nnodesHQ;
-				for (l = 0; l < ele_dim; l++)
+				for (int l = 0; l < ele_dim; l++)
 					(*tmp_Stiffness)(kia, j + l * nnodesHQ) += (*tmp_AuxMatrix)(k, l) * fkt;
 			}
 		} // loop j
@@ -895,65 +852,77 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 	// 07.2011 WW
 	if ((PressureC || PressureC_S || PressureC_S_dp) && !PreLoad)
 	{
-		fac = LoadFactor * fkt;
+		double fac = LoadFactor * fkt;
+		double S1 = 0;
+		double fac2 = 0;
 
 		// 07.2011. WW
 		if (PressureC_S || PressureC_S_dp)
 		{
 			// Pressure 1
-			fac2 = interpolate(_nodal_p1);
+			const double pc = interpolate(_nodal_p1);
 			// Saturation of phase 1
-			fac1 = m_mmp->SaturationCapillaryPressureFunction(fac2);
+			S1 = m_mmp->SaturationCapillaryPressureFunction(pc);
 			if (PressureC_S_dp)
-				fac2 = fac1 - fac2 * m_mmp->PressureSaturationDependency(fac1, true);
+				fac2 = S1 - pc * m_mmp->PressureSaturationDependency(S1, true);
 			// JT: dSdP now returns actual sign (<0)
 		}
 
 		if (axisymmetry)
 		{
-			for (k = 0; k < nnodesHQ; k++)
+			for (int j = 0; j < ele_dim; j++)
 			{
-				for (l = 0; l < nnodes; l++)
-					for (j = 0; j < ele_dim; j++)
+				const int jj = nnodesHQ * j;
+				for (int k = 0; k < nnodesHQ; k++)
+				{
+					const int jk = jj + k;
+					for (int l = 0; l < nnodes; l++)
 					{
-						dN_dx = dshapefctHQ[nnodesHQ * j + k];
-						if (j == 0)
-							dN_dx += shapefctHQ[k] / Radius;
+						const double dN_dx = (j == 0) ?
+							dshapefctHQ[jk] + shapefctHQ[k] / Radius
+							: dshapefctHQ[jk];
 
-						f_buff = fac * dN_dx * shapefct[l];
-						(*PressureC)(nnodesHQ* j + k, l) += f_buff;
+						const double f_buff = fac * dN_dx * shapefct[l];
+						(*PressureC)(jk, l) += f_buff;
 						if (PressureC_S)
-							(*PressureC_S)(nnodesHQ* j + k, l) += f_buff * fac1;
+							(*PressureC_S)(jk, l) += f_buff * S1;
 						if (PressureC_S_dp)
-							(*PressureC_S_dp)(nnodesHQ* j + k, l) += f_buff * fac2;
+							(*PressureC_S_dp)(jk, l) += f_buff * fac2;
 					}
+				}
 			}
 		}
 		else
 		{
-			for (k = 0; k < nnodesHQ; k++)
+			for (int j = 0; j < ele_dim; j++)
 			{
-				for (l = 0; l < nnodes; l++)
-					for (j = 0; j < ele_dim; j++)
+				const int jj = nnodesHQ * j;
+				for (int k = 0; k < nnodesHQ; k++)
+				{
+					const int jk = jj + k;
+					const double f_buff = fac * dshapefctHQ[jk];
+					for (int l = 0; l < nnodes; l++)
 					{
-						f_buff = fac * dshapefctHQ[nnodesHQ * j + k] * shapefct[l];
-						(*PressureC)(nnodesHQ* j + k, l) += f_buff;
+						(*PressureC)(jk, l) += f_buff * shapefct[l];
+
 						if (PressureC_S)
-							(*PressureC_S)(nnodesHQ* j + k, l) += f_buff * fac1;
+							(*PressureC_S)(jk, l) += f_buff * S1 * shapefct[l];
 						if (PressureC_S_dp)
-							(*PressureC_S_dp)(nnodesHQ* j + k, l) += f_buff * fac2;
+							(*PressureC_S_dp)(jk, l) += f_buff * fac2 * shapefct[l];
 					}
+				}
 			}
 		}
 	}
 	//---------------------------------------------------------
 	// Assemble gravity force vector
 	//---------------------------------------------------------
+	const double rho = CalDensity();
 	if (rho > 0.0 && GravityForce)
 	{
 		// 2D, in y-direction
 		// 3D, in z-direction
-		i = (ele_dim - 1) * nnodesHQ;
+		const int i = (ele_dim - 1) * nnodesHQ;
 		double timeFactor = 1.;
 		if (smat->gravity_ramp)
 		{
@@ -965,10 +934,9 @@ void CFiniteElementVec::ComputeMatrix_RHS(const double fkt, const Matrix* p_D)
 		}
 
 		const double coeff = LoadFactor * rho * smat->grav_const * fkt * timeFactor;
-		for (k = 0; k < nnodesHQ; k++)
+		for (int k = 0; k < nnodesHQ; k++)
 		{
 			(*RHS)[i + k] += coeff * shapefctHQ[k];
-			//        (*RHS)(i+ka) += LoadFactor * rho * smat->grav_const * shapefctHQ[ka] * fkt;
 		}
 	}
 }
@@ -1045,7 +1013,7 @@ void CFiniteElementVec::LocalAssembly(const int update)
 			eqs_number[i] = MeshElement->nodes[i]->GetEquationIndex();
 	}
 #endif
-	// For strain and stress extropolation all element types
+	// For strain and stress extrapolation all element types
 	// Number of elements associated to nodes
 	for (int i = 0; i < nnodes; i++)
 		dbuff[i] = (double)MeshElement->nodes[i]->getConnectedElementIDs().size();
@@ -1108,24 +1076,23 @@ void CFiniteElementVec::LocalAssembly(const int update)
 	}
 
 	// Get saturation of element nodes
-	if (Flow_Type > 0 && Flow_Type != 10)
+	if (smat->SwellingPressureType == 3 || smat->SwellingPressureType == 4)
 	{
-		// 12.03.2008 WW
-		if ((Flow_Type == 1 || Flow_Type == 2) && (smat->SwellingPressureType == 3 || smat->SwellingPressureType == 4))
+		if (_flow_type == FiniteElement::RICHARDS_FLOW
+		|| _flow_type == FiniteElement::MULTI_PHASE_FLOW)
 		{
-			double fac = 1.0;
-			if (Flow_Type == 1)
-				fac = -1.0;
+			// If Richards flow, the capillary pressure is
+			// the nagative value of fluid pressure.
+			const double fac = (_flow_type == FiniteElement::RICHARDS_FLOW) ? -1. : 1.;
 			for (int i = 0; i < nnodes; i++)
 			{
 				// Pc
 				_nodal_cp0[i] = fac * h_pcs->GetNodeValue(nodes[i], idx_P1 - 1);
 				// dPc
-				_nodal_dcp[i] = fac * (h_pcs->GetNodeValue(nodes[i], idx_P1) - h_pcs->GetNodeValue(nodes[i], idx_P1 - 1));
+				_nodal_dcp[i] = fac * h_pcs->GetNodeValue(nodes[i], idx_P1) - _nodal_cp0[i];
 			}
 		}
 	}
-	//
 
 	// -------------------------------12.2009.  WW
 	if (pcs->ite_steps == 1)
@@ -1149,9 +1116,9 @@ void CFiniteElementVec::LocalAssembly(const int update)
 			if (static_cast<size_t>(pcs->ExcavMaterialGroup) == MeshElement->GetPatchIndex())
 			{
 				double const* ele_center(MeshElement->GetGravityCenter());
-				if ((GetCurveValue(pcs->ExcavCurve, 0, aktuelle_zeit, &valid) + pcs->ExcavBeginCoordinate)
-				        > (ele_center[pcs->ExcavDirection])
-				    && (ele_center[pcs->ExcavDirection] - pcs->ExcavBeginCoordinate) > -0.001)
+				double max_excavation_range = 0;
+				double min_excavation_range = 0;
+				if (pcs->isPointInExcavatedDomain(ele_center, max_excavation_range, min_excavation_range))
 				{
 					excavation = true;
 					*(eleV_DM->Stress) = 0.;
@@ -1206,14 +1173,14 @@ void CFiniteElementVec::LocalAssembly(const int update)
 }
 
 /***************************************************************************
-   GeoSys - Funktion:
+   GeoSys - Function:
            CFiniteElementVec::  GlobalAssembly()
    Aufgabe:
-           Assemble local matrics and vectors to the global system
+           Assemble local matrices and vectors to the global system
 
    Programming:
    02/2005   WW
-   12/2009   WW New excavtion approach
+   12/2009   WW New excavation approach
  **************************************************************************/
 bool CFiniteElementVec::GlobalAssembly()
 {
@@ -1303,7 +1270,7 @@ bool CFiniteElementVec::GlobalAssembly()
    GeoSys - Funktion:
            CFiniteElementVec::  GlobalAssembly_Stiffness()
    Aufgabe:
-           Assemble local matrics and vectors to the global system
+           Assemble local matrices and vectors to the global system
 
    Programming:
    02/2005   WW
@@ -1373,18 +1340,13 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
    GeoSys - Funktion:
            CFiniteElementVec::  GlobalAssembly_Stiffness()
    Aufgabe:
-           Assemble local matrics and vectors to the global system
+           Assemble local matrices and vectors to the global system
 
    Programming:
    02/2005   WW
  **************************************************************************/
 void CFiniteElementVec::GlobalAssembly_Stiffness()
 {
-	int i, j;
-	double f1, f2;
-	f1 = 1.0;
-	f2 = -1.0;
-
 #if defined(NEW_EQS) && defined(JFNK_H2M)
 	/// If not JFNK. 02.2011. WW
 	if (pcs->m_num->nls_method == 2)
@@ -1392,15 +1354,14 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 		if (!pcs->JFNK_precond)
 			return;
 
-		long kk = 0;
 		// Assemble Jacobi preconditioner
 		for (size_t k = 0; k < ele_dim; k++)
 		{
 			for (size_t l = 0; l < ele_dim; l++)
-				for (i = 0; i < nnodesHQ; i++)
+				for (int i = 0; i < nnodesHQ; i++)
 				{
-					kk = eqs_number[i] + NodeShift[k];
-					for (j = 0; j < nnodesHQ; j++)
+					const long kk = eqs_number[i] + NodeShift[k];
+					for (int j = 0; j < nnodesHQ; j++)
 					{
 						if (kk != eqs_number[j] + NodeShift[l])
 							continue;
@@ -1422,14 +1383,16 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 		A = pcs->eqs_new->A;
 #endif
 
+	double f1 = 1.0;
+	double f2 = -1.0;
 	if (dynamic)
 	{
 		f1 = 0.5 * beta2 * dt * dt;
 		f2 = -0.5 * bbeta1 * dt;
 		// Assemble stiffness matrix
-		for (i = 0; i < nnodesHQ; i++)
+		for (int i = 0; i < nnodesHQ; i++)
 		{
-			for (j = 0; j < nnodesHQ; j++)
+			for (int j = 0; j < nnodesHQ; j++)
 			{
 				// Local assembly of stiffness matrix
 				for (size_t k = 0; k < ele_dim; k++)
@@ -1445,9 +1408,9 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 	}
 
 	// Assemble stiffness matrix
-	for (i = 0; i < nnodesHQ; i++)
+	for (int i = 0; i < nnodesHQ; i++)
 	{
-		for (j = 0; j < nnodesHQ; j++)
+		for (int j = 0; j < nnodesHQ; j++)
 		{
 			// Local assembly of stiffness matrix
 			for (size_t k = 0; k < ele_dim; k++)
@@ -1474,9 +1437,7 @@ void CFiniteElementVec::GlobalAssembly_Stiffness()
 
 	if (PressureC)
 	{
-		i = 0; // phase
-		if (Flow_Type == 2) // Multi-phase-flow
-			i = 1;
+		const int i = (_flow_type == FiniteElement::MULTI_PHASE_FLOW) ? 1 : 0;
 		GlobalAssembly_PressureCoupling(PressureC, f2 * biot, i);
 	}
 	// H2: p_g- S_w*p_c
@@ -1578,7 +1539,7 @@ void CFiniteElementVec::ComputeMass()
    GeoSys - Funktion:
            CFiniteElementVec::  GlobalAssembly_RHS()
    Aufgabe:
-           Assemble local matrics and vectors to the global system
+           Assemble local matrices and vectors to the global system
 
    Programming:
    02/2005   WW
@@ -1587,7 +1548,7 @@ void CFiniteElementVec::ComputeMass()
 void CFiniteElementVec::GlobalAssembly_RHS()
 {
 	bool Residual = false;
-	if (Flow_Type >= 0)
+	if (_flow_type != FiniteElement::NO_PCS)
 	{
 		if (pcs->type / 10 == 4) // Monolithic scheme
 		{
@@ -1634,8 +1595,10 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				else if (pcs->ExcavMaterialGroup > -1)
 				{
 					double const* ele_center(elem->GetGravityCenter());
-					if ((GetCurveValue(pcs->ExcavCurve, 0, aktuelle_zeit, &valid) + pcs->ExcavBeginCoordinate)
-					    < (ele_center[pcs->ExcavDirection]))
+					const double expected_coordinate =
+						GetCurveValue(pcs->ExcavCurve, 0, aktuelle_zeit, &valid) + pcs->ExcavBeginCoordinate;
+					const double max_excavation_range = std::max(expected_coordinate, pcs->ExcavBeginCoordinate);
+					if ( ele_center[pcs->ExcavDirection] > max_excavation_range)
 					{
 						onExBoundary = true;
 						break;
@@ -1664,11 +1627,9 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 		const int dim_times_nnodesHQ(dim * nnodesHQ);
 		for (int i = 0; i < dim_times_nnodesHQ; i++)
 			AuxNodal1[i] = 0.0;
-		switch (Flow_Type)
+		switch (_flow_type)
 		{
-			//case 10: // Ground_flow. Will be merged to case 0
-			case 0:  // Liquid flow
-				// For monolithic scheme and liquid flow, the limit of positive pressure must be removed
+			case FiniteElement::LIQUID_FLOW:
 				for (int i = 0; i < nnodes; i++)
 					nodal_pore_p[i] = LoadFactor * _nodal_p1[i];
 				if (excavation)
@@ -1698,14 +1659,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 				}
 				PressureC->multi(nodal_pore_p, AuxNodal1);
 				break;
-			case 1: // Richards flow
+			case FiniteElement::RICHARDS_FLOW:
 				{
 					if (smat->bishop_model < 0) // Without Bishop
 					{
 						for (int i = 0; i < nnodes; i++)
 						{
-							nodal_pore_p[i] = (biot < 0.0 && _nodal_p1[i] < 0.0) ?
-								 0.0 : LoadFactor * S_Water * _nodal_p1[i];
+							nodal_pore_p[i] = LoadFactor * _nodal_S[i] * _nodal_p1[i];
 						}
 						if (excavation)
 						{
@@ -1721,7 +1681,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							{
 								const double p0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
 								const double Sat0 = LoadFactor * m_mmp->SaturationCapillaryPressureFunction(-p0);
-								nodal_pore_p[i] -= (p0 > 0.0) ? LoadFactor * Sat0 * p0 : 0.0;
+								nodal_pore_p[i] -= LoadFactor * Sat0 * p0;
 							}
 						}
 						PressureC->multi(nodal_pore_p, AuxNodal1);
@@ -1733,13 +1693,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						for (int i = 0; i < nnodes; i++)
 						{
 							const double val_n = _nodal_p1[i];
-							if (biot < 0.0 &&  val_n < 0.0)
-								nodal_pore_p[i] = 0.0;
-							else
-							{
-								const double S_e = m_mmp->GetEffectiveSaturationForPerm(_nodal_S[i], 0);
-								nodal_pore_p[i] = LoadFactor * smat->getBishopCoefficient(S_e, val_n) * val_n;
-							} // WX:12.2012 end if(biot<0.0&&val_n<0.0) else
+							const double S_e = m_mmp->GetEffectiveSaturationForPerm(_nodal_S[i], 0);
+							nodal_pore_p[i] = LoadFactor * smat->getBishopCoefficient(S_e, val_n) * val_n;
 						}
 
 						if (excavation)
@@ -1765,7 +1720,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					PressureC->multi(nodal_pore_p, AuxNodal1);
 				}
 				break;
-			case 2:
+			case FiniteElement::MULTI_PHASE_FLOW:
 				{ // Multi-phase-flow: p_g-Sw*p_c
 					// 07.2011. WW
 					const int dim_times_nnodesHQ(dim * nnodesHQ);
@@ -1774,17 +1729,33 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 
 					if (smat->bishop_model < 0) // No bishop model
 					{
+						for (int i = 0; i < nnodes; i++)
+						{
+							const double pore_p = _nodal_p2[i] - _nodal_S[i] * _nodal_p1[i];
+							nodal_pore_p[i] = pore_p * LoadFactor;
+						}
+
+						if (excavation)
+						{
+							for (int i = 0; i < nnodes; i++)
+							{
+								if (onExBoundaryState[i] == 1) // WX:02.2013
+									nodal_pore_p[i] = 0.;
+							}
+						}
+
 						if (pcs->Neglect_H_ini == 2)
 						{
 							for (int i = 0; i < nnodes; i++)
 							{
-								_nodal_p1[i] -= h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-								_nodal_p2[i] -= h_pcs->GetNodeValue(nodes[i], idx_p2_ini);
+								const double pc0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
+								const double Sw0 = m_mmp->SaturationCapillaryPressureFunction(pc0);
+								const double pore_p0 = h_pcs->GetNodeValue(nodes[i], idx_p2_ini)
+									   - Sw0 * pc0;
+								nodal_pore_p[i] -= pore_p0 * LoadFactor;
 							}
 						}
-
-						PressureC->multi(_nodal_p2, AuxNodal1, LoadFactor);
-						PressureC_S->multi(_nodal_p1, AuxNodal1, -1.0 * LoadFactor);
+						PressureC->multi(nodal_pore_p, AuxNodal1, LoadFactor);
 						break;
 					}
 
@@ -1794,7 +1765,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						const double S_e = m_mmp->GetEffectiveSaturationForPerm(_nodal_S[i], 0);
 						const double bishop_coef = smat->getBishopCoefficient(S_e, _nodal_p1[i]);
 						const double pore_p = _nodal_p2[i] - bishop_coef * _nodal_p1[i];
-						nodal_pore_p[i] = (biot < 0.0 &&  pore_p < 0.0) ? 0. : pore_p * LoadFactor;
+						nodal_pore_p[i] = pore_p * LoadFactor;
 					}
 
 					if (excavation)
@@ -1810,13 +1781,13 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 					{
 						for (int i = 0; i < nnodes; i++)
 						{
-							const double p0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-							const double Sw0 = m_mmp->SaturationCapillaryPressureFunction(p0);
+							const double pc0 = h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
+							const double Sw0 = m_mmp->SaturationCapillaryPressureFunction(pc0);
 							const double S_e0 =  m_mmp->GetEffectiveSaturationForPerm(Sw0, 0);
-							const double bishop_coef = smat->getBishopCoefficient(S_e0, p0);
+							const double bishop_coef = smat->getBishopCoefficient(S_e0, pc0);
 							const double pore_p0 = h_pcs->GetNodeValue(nodes[i], idx_p2_ini)
-								   - bishop_coef * h_pcs->GetNodeValue(nodes[i], idx_p1_ini);
-							nodal_pore_p[i] -= (biot < 0.0 && pore_p0 < 0.) ? 0. : bishop_coef * LoadFactor;
+								   - bishop_coef * pc0;
+							nodal_pore_p[i] -= pore_p0 * LoadFactor;
 						}
 					}
 
@@ -1824,7 +1795,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 
 					break;
 				}
-				case 3: // Multi-phase-flow: SwPw+SgPg	// PCH 05.05.2009
+			case FiniteElement::PS_GLOBAL:
 				{
 					for (int i = 0; i < nnodes; i++)
 					{
@@ -1832,49 +1803,50 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						double Sw = 1.0 - Snw;
 						double Pw = _nodal_p1[i];
 						double Pnw = _nodal_p2[i];
-						const double val_n = Sw * Pw + Snw * Pnw;
-						nodal_pore_p[i] = (biot < 0.0 && val_n < 0.0) ? 0.0 : val_n * LoadFactor;
+						nodal_pore_p[i] = (Sw * Pw + Snw * Pnw) * LoadFactor;
 					}
 					PressureC->multi(nodal_pore_p, AuxNodal1);
 					break;
 				}
+			default:
+				break;
 
-			} // end switch
+		} // end switch
 
-			for (int i = 0; i < dim_times_nnodesHQ; i++)
-				(*RHS)[i] -= fabs(biot) * AuxNodal1[i];
-		} // End if partioned
+		for (int i = 0; i < dim_times_nnodesHQ; i++)
+			(*RHS)[i] -= biot * AuxNodal1[i];
+	} // End if partioned
 
-		// If dynamic
-		if (dynamic)
-		{
-			double const* const	a_n = pcs->GetAuxArray();
-			for (std::size_t i = 0; i < dim; i++)
-				for (int j = 0; j < nnodesHQ; j++)
-					for (int k = 0; k < nnodesHQ; k++)
-						(*RHS)[i * nnodesHQ + j]
-						    += (*Mass)(j, k) * ((*dAcceleration)(i* nnodesHQ + k) + a_n[nodes[k] + NodeShift[i]]);
-		}
+	// If dynamic
+	if (dynamic)
+	{
+		double const* const	a_n = pcs->GetAuxArray();
+		for (std::size_t i = 0; i < dim; i++)
+			for (int j = 0; j < nnodesHQ; j++)
+				for (int k = 0; k < nnodesHQ; k++)
+					(*RHS)[i * nnodesHQ + j]
+					    += (*Mass)(j, k) * ((*dAcceleration)(i* nnodesHQ + k) + a_n[nodes[k] + NodeShift[i]]);
+	}
 
 // RHS->Write();
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//06.2013. WW
-		for (std::size_t i = 0; i < dim; i++)
-			for (int j = 0; j < nnodesHQ; j++)
-				b_rhs[eqs_number[j] + NodeShift[i]] -= (*RHS)[i * nnodesHQ + j];
+	for (std::size_t i = 0; i < dim; i++)
+		for (int j = 0; j < nnodesHQ; j++)
+			b_rhs[eqs_number[j] + NodeShift[i]] -= (*RHS)[i * nnodesHQ + j];
 
-		if (excavation)
+	if (excavation)
+	{
+		for (int i = 0; i < nnodesHQ; i++)
 		{
-			for (int i = 0; i < nnodesHQ; i++)
+			if (!onExBoundaryState[i])
 			{
-				if (!onExBoundaryState[i])
-				{
-					for (std::size_t j = 0; j < dim; j++)
-						b_rhs[eqs_number[i] + NodeShift[j]] = 0.0;
-				}
+				for (std::size_t j = 0; j < dim; j++)
+					b_rhs[eqs_number[i] + NodeShift[j]] = 0.0;
 			}
 		}
-#endif
 	}
+#endif
+}
 	/***************************************************************************
 	   GeoSys - Funktion:
 	           CFiniteElementVec:: LocalAssembly_continuum()
@@ -1887,9 +1859,9 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 
 	   Programming:
 	   02/2000   OK   Elastische Elemente
-	   09/2002   WW   Local assemby of stiffness matrix of elasto-plastic
+	   09/2002   WW   Local assembly of stiffness matrix of elasto-plastic
 	   tangential model
-	   Local assemby of residual
+	   Local assembly of residual
 	   07/2003   WW   Quadratic triangle element
 	   06/2004   WW   Generalize for different element types as a member of class
 	   12/2005   WW   Creep
@@ -2003,10 +1975,17 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			}
 
 			ComputeStrain(gp);
+
 			if (update)
 				RecordGuassStrain(gp, gp_r, gp_s, gp_t);
 			if (F_Flag || T_Flag)
 				getShapefunctValues(gp, 1); // Linear order interpolation function
+
+			_wettingS = 1.0;
+			if (_flow_type != FiniteElement::NO_PCS
+				&& _flow_type != FiniteElement::LIQUID_FLOW)
+				_wettingS = interpolate(_nodal_S, 1);
+
 			//---------------------------------------------------------
 			// Material properties (Integration of the stress)
 			//---------------------------------------------------------
@@ -2032,9 +2011,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 			{
 				for (i = 0; i < ns; i++)
 					dstress[i] += (*eleV_DM->Stress)(i, gp);
-				S_Water = 1.0; // WX:02.2013
-				if (Flow_Type > 0 && Flow_Type != 10)
-					S_Water = interpolate(_nodal_S, 1);
 			}
 			else
 			{
@@ -2106,8 +2082,8 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 						//
 						if (smat->SwellingPressureType == 3)
 						{
-							double suc = interpolate(_nodal_cp0);
-							double dsuc = interpolate(_nodal_dcp);
+							const double suc = interpolate(_nodal_cp0);
+							const double dsuc = interpolate(_nodal_dcp);
 							(*smat->data_Youngs)(7) = suc;
 							(*smat->data_Youngs)(8) = dsuc;
 							smat->CalStress_and_TangentialMatrix_CC_SubStep(gp, eleV_DM, dstress, ConsistDep, update);
@@ -2117,16 +2093,15 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 							// de_vsw = -smat->TEPSwellingParameter(pn,suc)*dsuc/(suc+1.0e5);
 						}
 						/*
-						   else if (smat->SwellingPressureType==4)  //Power. 07.05.2008 WW
-						   {
-						   double suc = interpolate(AuxNodal1);
-						   double dsuc = interpolate(AuxNodal);
-						   smat->TEPSwellingParameter_kis(suc);
-						   S_Water = m_mmp->SaturationCapillaryPressureFunction(suc);
-						   dS = S_Water - m_mmp->SaturationCapillaryPressureFunction(suc-dsuc);
-						   de_vsw = pow(S_Water, (*smat->data_Youngs)(2) )*dS;
-						   }
-						 */
+						else if (smat->SwellingPressureType==4)  //Power. 07.05.2008 WW
+						{
+							const double suc = interpolate(_nodal_cp0);
+							cont double dsuc = interpolate(_nodal_dcp);
+							smat->TEPSwellingParameter_kis(suc);
+							dS = _wettingS - m_mmp->SaturationCapillaryPressureFunction(suc-dsuc);
+							de_vsw = pow(_wettingS, (*smat->data_Youngs)(2) )*dS;
+						}
+						*/
 						else
 							smat->CalStress_and_TangentialMatrix_CC(gp, eleV_DM, dstress, ConsistDep, update);
 
@@ -2329,21 +2304,18 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 
 
 			// Fluid coupling;
-			S_Water = 1.0;
-			if (Flow_Type > 0 && Flow_Type != 10)
-				S_Water = interpolate(_nodal_S, 1);
 			// Decovalex. Swelling pressure
 			if (smat->SwellingPressureType == 1)
 			{
 				dS = -interpolate(_nodal_S0, 1);
-				dS += S_Water;
+				dS += _wettingS;
 				for (i = 0; i < 3; i++)
-					dstress[i] -= 2.0 * S_Water * dS * smat->Max_SwellingPressure;
+					dstress[i] -= 2.0 * _wettingS * dS * smat->Max_SwellingPressure;
 			}
 			else if (smat->SwellingPressureType == 2) // LBNL's model
 			{
 				dS = -interpolate(_nodal_S0, 1);
-				dS += S_Water;
+				dS += _wettingS;
 				for (i = 0; i < 3; i++)
 					dstress[i] -= dS * smat->Max_SwellingPressure;
 			}
@@ -2455,7 +2427,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	   GeoSys - Funktion:
 	           CFiniteElementVec::ExtropolateGuassStrain()
 	   Aufgabe:
-	           Extropolate the Gauss point strains to nodes
+	           Extrapolate the Gauss point strains to nodes
 	   Formalparameter:
 	           E:
 
@@ -2588,17 +2560,17 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	   GeoSys - Funktion:
 	           CFiniteElementVec::ExtropolateGuassStress()
 	   Aufgabe:
-	           Extropolate the Gauss point strains to nodes
+	           Extrapolate the Gauss point strains to nodes
 	   Formalparameter:
 	           E:
 
 	   Programming:
 	   06/2004   WW
-	   03/2007   WW  Generize for all 2nd variables
+	   03/2007   WW  For all 2nd variables
 	 **************************************************************************/
 	void CFiniteElementVec::ExtropolateGuassStress()
 	{
-		// For strain and stress extropolation all element types
+		// For strain and stress extrapolation all element types
 		// Number of elements associated to nodes
 		nnodes = MeshElement->nnodes;
 		// Node indices
@@ -2886,7 +2858,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	         E:
 	   const double *Stresses: Stresses
 
-	   Return: Angle of maxium principle stress component to x direction
+	   Return: Angle of maximum principle stress component to x direction
 	   sig2<sig1
 
 	   Programming:
@@ -2936,7 +2908,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	   0, dilatancy
 	   1, frictional
 	   2, Poission ratio
-	   Return: Angle of maxium principle stress component to x direction
+	   Return: Angle of maximum principle stress component to x direction
 
 	   Programming:
 	   06/2004     WW        Erste Version
@@ -3222,7 +3194,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	   0 do not update
 
 	   Ergebnis:
-	   - double* - Deviatoric effetive stresses, s11,s22,s12,s33
+	   - double* - Deviatoric effective stresses, s11,s22,s12,s33
 
 	   Programmaenderungen:
 	   06/2004   WW  Erste Version
@@ -3543,7 +3515,7 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 	   GeoSys - Funktion:
 	            CFiniteElementVec:: CalcStrain_v()
 	   Aufgabe:
-	           Calculate effictive strain at Gauss points
+	           Calculate effective strain at Gauss points
 	   Formalparameter:
 	           E:
 
