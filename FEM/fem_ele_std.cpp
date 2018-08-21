@@ -9554,6 +9554,12 @@ void CFiniteElementStd::CalcSaturation(MeshLib::CElem& elem)
 	MediaProp = mmp_vector[mmp_index];
 	MediaProp->m_pcs = pcs;
 	MediaProp->Fem_Ele_Std = this;
+	// For variable dependent fluid models, which needs variable interpolation.
+	for (std::size_t i=0; i < mfp_vector.size(); i++)
+	{
+		mfp_vector[i]->Fem_Ele_Std = this;
+	}
+
 	// CB_merge_0513
 	double* tens = MediaProp->PermeabilityTensor(Index);
 	//
