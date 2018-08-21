@@ -882,7 +882,7 @@ void CFEMesh::ConstructGrid()
 
 	// computeSearchLength();
 	computeMinEdgeLength();
-	setSearchLength(_min_edge_length / 2);
+	setSearchLength(0.375 * _min_edge_length / 2);
 	constructMeshGrid();
 }
 
@@ -1738,9 +1738,10 @@ void CFEMesh::GetNODOnSFC(const GEOLIB::Surface* sfc,
 	const size_t nodes_in_usage((size_t)NodesInUsage());
 	for (size_t j(0); j < nodes_in_usage; j++)
 	{
-		if (sfc->isPntInBV((nod_vector[j])->getData(), _search_length * 0.375))
+		// Multiplicator * 0.375 should only be used if _search_length was calculated automatically. 
+		if (sfc->isPntInBV((nod_vector[j])->getData(), _search_length))
 		{
-			if (sfc->isPntInSfc((nod_vector[j])->getData(), _search_length * 0.375))
+			if (sfc->isPntInSfc((nod_vector[j])->getData(), _search_length))
 			{
 				msh_nod_vector.push_back(nod_vector[j]->GetIndex());
 			}

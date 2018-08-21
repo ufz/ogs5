@@ -149,7 +149,7 @@ CBoundaryCondition::CBoundaryCondition() : GeoInfo(), geo_name(""), _curve_index
 	// FCT
 	conditional = false;
 	time_dep_interpol = false;
-	epsilon = 1e-9; // NW
+	epsilon = -1; // NW
 	time_contr_curve = -1; // WX
 	bcExcav = -1; // WX
 	MatGr = -1; // WX
@@ -1378,7 +1378,12 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs, int ShiftInNodeVector, const
 					//					debug_out.close();
 					//#endif
 					std::vector<size_t> msh_nod_vec;
+					double computed_search_length = m_msh->getSearchLength();
+					if (bc->epsilon != -1) 
+						m_msh->setSearchLength(bc->epsilon);
 					m_msh->GetNODOnSFC(sfc, msh_nod_vec);
+					m_msh->setSearchLength(computed_search_length);
+
 #ifndef NDEBUG
 #ifdef DEBUGMESHNODESEARCH
 					{
@@ -1797,8 +1802,10 @@ void CBoundaryCondition::SurfaceInterpolation(CRFProcess* m_pcs,
 	// Interpolation of polygon values to nodes_on_sfc
 	int nPointsPly = 0;
 	double Area1, Area2;
+	double Tol = 1e-9;
 	// NW. Default tolerance is 1e-9 but it can be changed in a BC file.
-	double Tol = this->epsilon;
+	if (this->epsilon != -1)
+		Tol = this->epsilon;
 	bool Passed;
 	double gC[3], p1[3], p2[3], vn[3], unit[3], NTri[3];
 	//
