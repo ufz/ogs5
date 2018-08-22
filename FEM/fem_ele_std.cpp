@@ -9539,26 +9539,7 @@ void CFiniteElementStd::CalcSaturation(MeshLib::CElem& elem)
 	Index = MeshElement->GetIndex();
 
 	//----------------------------------------------------------------------
-	// Media
-	int mmp_index = 0;
-	long group = MeshElement->GetPatchIndex();
-	mmp_index = group;
-	//
-	if (pcs->type == 22)
-	{
-		if (pcs->GetContinnumType() == 0) // Matrix //WW
-			mmp_index = 2 * group;
-		else // fracture //WW
-			mmp_index = 2 * group + 1;
-	}
-	MediaProp = mmp_vector[mmp_index];
-	MediaProp->m_pcs = pcs;
-	MediaProp->Fem_Ele_Std = this;
-	// For variable dependent fluid models, which needs variable interpolation.
-	for (std::size_t i=0; i < mfp_vector.size(); i++)
-	{
-		mfp_vector[i]->Fem_Ele_Std = this;
-	}
+        SetMaterial();
 
 	// CB_merge_0513
 	double* tens = MediaProp->PermeabilityTensor(Index);
