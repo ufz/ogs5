@@ -73,8 +73,9 @@ using MeshLib::CNode;
 using namespace std;
 
 COutput::COutput()
-    : GeoInfo(GEOLIB::GEODOMAIN), ProcessInfo(), _id(0), out_amplifier(0.0), m_msh(NULL), nSteps(-1),
-      _new_file_opened(false), dat_type_name("TECPLOT")
+    : GeoInfo(GEOLIB::GEODOMAIN), ProcessInfo(), DistributionInfo(),
+      dat_type_name("TECPLOT"), _id(0), out_amplifier(0.0), m_msh(NULL),
+      nSteps(-1), _new_file_opened(false)
 {
 	tim_type_name = "TIMES";
 	m_pcs = NULL;
@@ -89,8 +90,8 @@ COutput::COutput()
 }
 
 COutput::COutput(size_t id)
-    : GeoInfo(GEOLIB::GEODOMAIN), ProcessInfo(), _id(id), out_amplifier(0.0), m_msh(NULL), nSteps(-1),
-      _new_file_opened(false), dat_type_name("TECPLOT")
+    : GeoInfo(GEOLIB::GEODOMAIN), ProcessInfo(), dat_type_name("TECPLOT"), _id(id), out_amplifier(0.0), m_msh(NULL), nSteps(-1),
+      _new_file_opened(false)
 {
 	tim_type_name = "TIMES";
 	m_pcs = NULL;
