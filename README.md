@@ -3,35 +3,72 @@
 [![Travis](https://img.shields.io/travis/ufz/ogs5.svg?style=flat-square)](https://travis-ci.org/ufz/ogs5)
 [![Shippable](https://api.shippable.com/projects/553ff718edd7f2c052d6b180/badge?branchName=develop)](https://app.shippable.com/projects/553ff718edd7f2c052d6b180/builds/latest)
 
-# OGS-5 #
+# OGS-5
 
-- General homepage: http://www.opengeosys.org
+- General homepage: https://www.opengeosys.org/ogs-5
 - Wiki: https://svn.ufz.de/ogs
+- Benchmarks: https://github.com/ufz/ogs5-benchmarks
+- [ogs-users](https://groups.google.com/forum/#!forum/ogs-users) mailing list
 
-## Quickstart ##
+## Quickstart option 1: binary download
 
-``` bash
+- Go to the [GitHub release page](https://github.com/ufz/ogs5/releases)
+- Download the appropriate archive (`*.zip` for Windows, `*.tar.gz` for Linux, `*.dmg` for macOS) and unpack it
+- You will find the `ogs`-binary inside the `bin`-folder
+- *Optional:* [Download](https://github.com/ufz/ogs5/releases/tag/data-explorer-5) and unpack the Data Explorer for OGS-5 too
+- [Download](https://github.com/ufz/ogs5-benchmarks/archive/master.zip) and unpack benchmark files
+
+## Quickstart option 2: build from source
+
+### Prerequisites
+
+- Install a compiler
+  - Win: Download and install [Visual Studio Community 2017](https://www.visualstudio.com/de/thank-you-downloading-visual-studio/?sku=Community&rel=15), during installation select the *workload* `Desktop Development with C++`, uncheck everything else
+  - Linux: Install the following packages: `make` and `build-essential`
+  - macOS: Install Xcode from the AppStore and run the following in the command line: `xcode-select --install`
+- Install [Git](https://git-scm.com)
+- Install [CMake](https://cmake.org/download/)
+
+### Source code
+
+Get the source code either by [downloading as a zip-file](https://github.com/ufz/ogs5/archive/master.zip) or with Git:
+
+```bash
+git clone https://github.com/ufz/ogs5.git
+```
+
+### Build
+
+Then set-up a build directory, configure your build and compile the code:
+
+```bash
 cd [source-directory]
 mkdir build
 cd build
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Release # Configures your build
+cmake --build . --config Release    # Compiles the code
 ```
 
-Open the Visual Studio solution which was created in the build-directory or just type `make` on Linux.
+### Further info
 
-# Using Git and GitHub #
+- [How to Build a CMake-Based Project](http://preshing.com/20170511/how-to-build-a-cmake-based-project/), a nice overview how CMake works, contains also information for building with [Visual Studio](http://preshing.com/20170511/how-to-build-a-cmake-based-project/#building-with-visual-studio)
+- [Running CMake](https://cmake.org/runningcmake/) describes various to run CMake also from a GUI and how to set configuration options
+- [Git tutorial](https://www.atlassian.com/git/tutorials) and [Git FAQs](https://github.com/k88hudson/git-flight-rules)
 
-Following ["A successful Git branching model"](http://nvie.com/posts/a-successful-git-branching-model/), we suggest to have the following two main branches
-- ***master*** - the main branch where the source code of HEAD always reflects the latest official codes (i.e. trunk in SVN repository)
-- ***development*** - the main branch where the source code of HEAD always reflects a state with the latest delivered development changes for the next release.
+## Quickstart: Run an OGS benchmark
+
+Open a command prompt and run the following:
+
+```bash
+cd [benchmark-directory] # e.g. ogs5-benchmarks-master/H/Theis/GWF_Theis_2D
+[path-to-ogs-exe-folder]/ogs [benchmark name] # e.g. ../../build/bin/ogs GWF_Theis_2d
+```
+
+## Contributing: Using Git and GitHub
 
 To implement new features, every developer
-1. forks this repository to have their own (your repository is still private)
-2. makes a branch from master or development branch, and implement their stuff
-3. pushes the local branch to its GitHub repository
-4. makes a pull request from its GitHub repository to development branch in the `envinf/ogs5-trunk` repository
-
-Once the development branch is ready to release a new version (this can also be done by one of the OGS core developers)
-1. merge the development branch into master
-2. push all new commits in master to the SVN repository using `git svn dcommit`
+1. [forks](https://help.github.com/articles/fork-a-repo/) this repository to have their own repo
+2. creates a [branch](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging) from master and implement their stuff
+3. [pushes](https://help.github.com/articles/pushing-to-a-remote/) the local branch to its GitHub repository
+4. makes a [pull request](https://help.github.com/articles/creating-a-pull-request/) from its GitHub repository to the `master` branch in the `ufz/ogs5` repository
 
