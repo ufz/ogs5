@@ -1888,6 +1888,8 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 			in >> ElementVolumeMultiplyer;
 			std::cout << " Setting ElementVolumeMultiplyer to " << ElementVolumeMultiplyer
 			          << "- times the grid value \n";
+			in.clear();
+			continue;
 		}
 	}
 	return position;
