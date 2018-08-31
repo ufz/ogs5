@@ -1341,17 +1341,19 @@ double CSolidProperties::Heat_Capacity(double refence)
 			double C = refence / lower_solid_density_limit - 1.0;
 			val = lower_solid_density_limit / refence * ((*data_Capacity)(0) + C * (*data_Capacity)(1));
 		}
-		break;
+			break;
 		case 7:
 			//linear density average (compare model 5)
 			val = lower_solid_density_limit*(*data_Capacity)(0);
 			val += (upper_solid_density_limit*(*data_Capacity)(1)-lower_solid_density_limit*(*data_Capacity)(0))/
 				(upper_solid_density_limit  - lower_solid_density_limit)*(refence - lower_solid_density_limit);
 			val /= refence;
-		break;
-		default:
-			val = (*data_Capacity)(0);
 			break;
+		default:
+		{
+			cout << "***Error in CSolidProperties::Heat_Capacity(double refence):"
+				"heat capacity mode " << Capacity_mode <<" is not supported";
+		}
 	}
 	return val;
 }
@@ -1527,6 +1529,12 @@ double CSolidProperties::Heat_Conductivity(double reference)
 			CalPrimaryVariable(capacity_pcs_name_vector);
 			val = GetMatrixValue(primary_variable[0] + T_0, primary_variable[1], name, &gueltig);
 			break;
+		default:
+		{
+			cout << "***Error in CSolidProperties::Heat_Conductivity(double reference):"
+				"heat conductivity mode " << Conductivity_mode <<" is not supported";
+			abort();
+		}
 	}
 	return val;
 }
@@ -1583,9 +1591,11 @@ void CSolidProperties::HeatConductivityTensor(const int dim, double* tensor, int
 			base_thermal_conductivity = GetMatrixValue(primary_variable[1], primary_variable[0] + T_0, name, &gueltig);
 			break;
 		default: // Normal case
+		{
 			cout << "***Error in CSolidProperties::HeatConductivityTensor(): conductivity mode is not supported "
 			     << "\n";
-			// base_thermal_conductivity = Heat_Conductivity();
+			abort();
+		}
 	}
 
 	//--------------------------------------------------------------------
