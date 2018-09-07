@@ -979,6 +979,10 @@ void CFEMesh::GenerateHighOrderNodes()
 					if (ee == e)
 						continue;
 					thisElem = ele_vector[ee];
+
+					if (thisElem->GetElementType() == MshElemType::LINE)
+						continue;
+
 					nedges = thisElem->GetEdgesNumber();
 					// Edges of neighbors
 					for (ii = 0; ii < nedges; ii++)
@@ -1065,6 +1069,9 @@ void CFEMesh::GenerateHighOrderNodes()
 			for (size_t i = 0; i < thisElem0->GetFacesNumber(); i++)
 			{
 				thisElem = thisElem0->GetNeighbor(i);
+				if (!thisElem)
+					continue;
+
 				// look for adjacent solid elements
 				if (thisElem->GetElementType() == MshElemType::LINE)
 					continue;
