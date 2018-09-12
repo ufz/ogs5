@@ -8180,6 +8180,8 @@ double CSolidProperties::E_Function(int dim, const ElementValue_DM* ele_val, int
 			return_value = GetCurveValue((int)E_Function_Model_Value[0], 0, prin_str[0], &valid);
                         break;
 		}
+		case 3:
+			return  GetCurveValue((int)E_Function_Model_Value[0], 0, aktuelle_zeit, &valid);
 		default:
 			return_value = 1.;
 			break;
