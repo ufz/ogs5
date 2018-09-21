@@ -1741,7 +1741,8 @@ void Problem::PostCouplingLoop()
 			            // the first pcs process is the flow process...if reload not defined for every process,
 			            // restarting with gems will not work in any case
 
-				if ((m_pcs->reload == 1 || m_pcs->reload == 3)
+				if ((   m_pcs->GetRestartFlag() == FiniteElement::WRITE
+				     || m_pcs->GetRestartFlag() == FiniteElement::READ_WRITE)
 				    && !((aktueller_zeitschritt % m_pcs->nwrite_restart) > 0))
 					m_vec_GEM->WriteReloadGem();
 

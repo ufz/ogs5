@@ -18,6 +18,7 @@
 
 #include <vector>
 
+#include "FEMEnums.h"
 #include "rf_pcs.h"
 
 // Strong discontinuity
@@ -43,22 +44,6 @@ class CPARDomain;
 
 namespace process
 {
-enum InitDataReadWriteType
-{
-	none,
-	read_write,
-	read_all_binary,
-	write_all_binary,
-	read_all_asci,
-	write_all_asci,
-	read_stress_binary,
-	write_stress_binary,
-	read_displacement,
-	write_displacement,
-	read_pressure,
-	write_pressure
-};
-
 // Elasto-plastic Deformation
 class CRFProcessDeformation : public CRFProcess
 {
@@ -138,14 +123,12 @@ private:
 	double InitialNormU;
 	double InitialNormU0;
 
-	InitDataReadWriteType idata_type;
-
 	bool _has_initial_stress_data;
 
 	//
 	double error_k0;
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012. WW
-	// Domain decompisition
+	// Domain decomposition
 	void DomainAssembly(CPARDomain* m_dom);
 #endif
 

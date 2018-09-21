@@ -320,11 +320,8 @@ public:
 	int WriteSourceNBC_RHS;
 	int WriteProcessed_BC;
 	// Write the current solutions/Read the previous solutions WW
-	// -1, default. Do nothing
-	// 1. Write
-	// 2. Read
-	// 3 read and write
-	int reload;
+	FiniteElement::InitDataReadWriteType _init_domain_data_type;
+
 	long nwrite_restart;
 	void WriteRHS_of_ST_NeumannBC();
 	void ReadRHS_of_ST_NeumannBC();
@@ -746,7 +743,8 @@ public:
 // WW void CheckSTGroup(); //OK
 #ifdef GEM_REACT
 	void IncorporateSourceTerms_GEMS(void); // HS: dC/dt from GEMS chemical solver.
-	int GetRestartFlag() const { return reload; }
+	FiniteElement::InitDataReadWriteType GetRestartFlag() const
+	    { return _init_domain_data_type; }
 #endif
 	// BC
 	void IncorporateBoundaryConditions(const int rank = -1);

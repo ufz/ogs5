@@ -283,6 +283,14 @@ enum SolidReactiveSystem
 SolidReactiveSystem convertSolidReactiveSystem(const std::string& reactive_string);
 std::string convertSolidReactiveSystemToString(SolidReactiveSystem reactive_system);
 
+enum InitDataReadWriteType
+{
+	NO_IO = 0,
+	READ,
+	WRITE,
+	READ_WRITE,
+};
+
 } // end namespace FiniteElement
 
 struct TimType
