@@ -1524,29 +1524,22 @@ double CFiniteElementStd::CalCoefMass()
 {
 	const int Index = MeshElement->GetIndex();
 	double val = 0.0;
-	double humi = 1.0;
-	double rhov = 0.0;
-	double arg[2];
-	double rho_val = 0.0, Se;
-	int tr_phase = 0; // SB, BG
-	double saturation = 0.0; // SB, BG
-	CompProperties* m_cp = NULL;
-	double drho_dp_rho = 0.0; // drho/dp * 1/rho
-
 	switch (PcsType)
 	{
 		default:
 			std::cout << "Fatal error in CalCoefMass: No valid PCS type"
 			          << "\n";
+			exit(EXIT_FAILURE);
 			break;
 		case EPT_LIQUID_FLOW: // Liquid flow
 			{
 				val = MediaProp->StorageFunction(Index, unit, pcs->m_num->ls_theta);
-
+				double drho_dp_rho = 0.0;
 				// get drho/dp/rho from material model or direct input
 				if (FluidProp->compressibility_model_pressure > 0)
 				{
-					rho_val = FluidProp->Density();
+					const double rho_val = FluidProp->Density();
+					double arg[2];
 					arg[0] = interpolate(NodalVal1); //   p
 					arg[1] = interpolate(NodalValC1); //   T
 					drho_dp_rho = FluidProp->drhodP(arg) / rho_val;
@@ -1595,12 +1588,12 @@ double CFiniteElementStd::CalCoefMass()
 
 				// JT 2010, generalized poroelastic storage. See single phase version in case "L".
 				// Se = 1/M = poro/Kf + (alpha-poro)/Ks
-				rho_val = FluidProp->Density();
+				const double rho_val = FluidProp->Density();
 				if (D_Flag > 0 && rho_val > MKleinsteZahl)
 				{
 					const double biot_val = SolidProp->biot_const;
 					const double poro_val = MediaProp->Porosity(Index, pcs->m_num->ls_theta);
-					Se = poro_val * FluidProp->drho_dp + (biot_val - poro_val) * (1.0 - biot_val) / SolidProp->K;
+					const double Se = poro_val * FluidProp->drho_dp + (biot_val - poro_val) * (1.0 - biot_val) / SolidProp->K;
 					// The poroelastic portion
 					val += Se * MMax(0., Sw);
 				}
@@ -1638,65 +1631,71 @@ double CFiniteElementStd::CalCoefMass()
 			break;
 		//....................................................................
 		case EPT_MASS_TRANSPORT: // Mass transport //SB4200
-			// Porosity
-			val = MediaProp->Porosity(Index, pcs->m_num->ls_theta);
-			// SB Transport in both phases
-			tr_phase = cp_vec[this->pcs->pcs_component_number]->transport_phase;
-			// Multi phase transport of components
-			saturation = PCSGetEleMeanNodeSecondary_2(Index, pcs->flow_pcs_type, "SATURATION1", 1);
-			if (tr_phase == 0) // Water phase
-				val *= saturation;
-			else if (tr_phase == 10) // non wetting phase
-				val *= (1.0 - saturation);
-			m_cp = cp_vec[pcs->pcs_component_number];
-			// Retardation Factor
-			val *= m_cp->CalcElementRetardationFactorNew(Index, unit, pcs);
+			{
+				// Porosity
+				val = MediaProp->Porosity(Index, pcs->m_num->ls_theta);
+				// SB Transport in both phases
+				const double tr_phase = cp_vec[this->pcs->pcs_component_number]->transport_phase;
+				// Multi phase transport of components
+				const double saturation = PCSGetEleMeanNodeSecondary_2(Index, pcs->flow_pcs_type, "SATURATION1", 1);
+				if (tr_phase == 0) // Water phase
+					val *= saturation;
+				else if (tr_phase == 10) // non wetting phase
+					val *= (1.0 - saturation);
+				CompProperties* const m_cp = cp_vec[pcs->pcs_component_number];
+				// Retardation Factor
+				val *= m_cp->CalcElementRetardationFactorNew(Index, unit, pcs);
+			}
 			break;
 		case EPT_OVERLAND_FLOW: // Liquid flow
 			val = 1.0;
 			break;
 		case EPT_RICHARDS_FLOW: // Richards
-			Sw = 1.0;
-			dSdp = 0.;
-			PG = interpolate(NodalVal1); // 12.02.2007.  Important! WW
-
-			if (PG < 0.0) // JM skip to call these two functions in saturated case
 			{
-				Sw = MediaProp->SaturationCapillaryPressureFunction(-PG);
-				dSdp = -MediaProp->PressureSaturationDependency(Sw, true); // JT: dSdp now returns actual sign (i.e. <0)
-			}
+				Sw = 1.0;
+				dSdp = 0.;
+				PG = interpolate(NodalVal1); // 12.02.2007.  Important! WW
 
-			poro = MediaProp->Porosity(Index, pcs->m_num->ls_theta);
-			rhow = FluidProp->Density();
+				if (PG < 0.0) // JM skip to call these two functions in saturated case
+				{
+					Sw = MediaProp->SaturationCapillaryPressureFunction(-PG);
+					dSdp = -MediaProp->PressureSaturationDependency(Sw, true); // JT: dSdp now returns actual sign (i.e. <0)
+				}
 
-			if (FluidProp->compressibility_model_pressure > 0)
-			{ // drho_dp from rho-p-T relation
-				arg[0] = PG;
-				arg[1] = interpolate(NodalValC1); // T
-				drho_dp_rho = FluidProp->drhodP(arg) / rhow;
-			}
-			else
-				drho_dp_rho = FluidProp->drho_dp;
+				poro = MediaProp->Porosity(Index, pcs->m_num->ls_theta);
+				rhow = FluidProp->Density();
 
-			// Storativity
-			val = MediaProp->StorageFunction(Index, unit, pcs->m_num->ls_theta) * Sw;
+				double drho_dp_rho = 0.0;
+				if (FluidProp->compressibility_model_pressure > 0)
+				{ // drho_dp from rho-p-T relation
+					double arg[2];
+					arg[0] = PG;
+					arg[1] = interpolate(NodalValC1); // T
+					drho_dp_rho = FluidProp->drhodP(arg) / rhow;
+				}
+				else
+					drho_dp_rho = FluidProp->drho_dp;
 
-			// Fluid compressibility
-			if (rhow > 0.0)
-				val += poro * Sw * drho_dp_rho;
-			// Capillarity
-			if (PG < 0.0) // dSdp gives always a value>0, even if p>0!
-				val += poro * dSdp;
-			// WW
-			if (MediaProp->heat_diffusion_model == 1)
-			{
-				//           PG = fabs(interpolate(NodalVal1));
-				TG = interpolate(NodalValC) + PhysicalConstant::CelsiusZeroInKelvin;
-				humi = exp(PG / (SpecificGasConstant::WaterVapour * TG * rhow));
-				rhov = humi * FluidProp->vaporDensity(TG);
-				//
-				val -= poro * rhov * dSdp / rhow;
-				val += (1.0 - Sw) * poro * rhov / (rhow * rhow * SpecificGasConstant::WaterVapour * TG);
+				// Storativity
+				val = MediaProp->StorageFunction(Index, unit, pcs->m_num->ls_theta) * Sw;
+
+				// Fluid compressibility
+				if (rhow > 0.0)
+					val += poro * Sw * drho_dp_rho;
+				// Capillarity
+				if (PG < 0.0) // dSdp gives always a value>0, even if p>0!
+					val += poro * dSdp;
+				// WW
+				if (MediaProp->heat_diffusion_model == 1)
+				{
+					//           PG = fabs(interpolate(NodalVal1));
+					TG = interpolate(NodalValC) + PhysicalConstant::CelsiusZeroInKelvin;
+					const double humi = exp(PG / (SpecificGasConstant::WaterVapour * TG * rhow));
+					const double rhov = humi * FluidProp->vaporDensity(TG);
+					//
+					val -= poro * rhov * dSdp / rhow;
+					val += (1.0 - Sw) * poro * rhov / (rhow * rhow * SpecificGasConstant::WaterVapour * TG);
+				}
 			}
 			break;
 		case EPT_FLUID_MOMENTUM: // Fluid Momentum
