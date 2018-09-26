@@ -611,7 +611,8 @@ void CElement::computeJacobian(const int gp, const int order, const bool need_in
 			DetJac = _Jacobian[0] * _Jacobian[3] - _Jacobian[1] * _Jacobian[2];
 			if (fabs(DetJac) < MKleinsteZahl)
 			{
-				std::cout << "\n*** Jacobian: Det == 0 " << DetJac << "\n";
+				std::cout << "\n*** Jacobian: Det == 0 " << DetJac
+				          << " in element " << MeshElement->GetIndex() << "\n";
 				abort();
 			}
 			invJacobian[0] = _Jacobian[3];
@@ -662,7 +663,8 @@ void CElement::computeJacobian(const int gp, const int order, const bool need_in
 
 			if (fabs(DetJac) < MKleinsteZahl)
 			{
-				std::cout << "\n*** Jacobian: DetJac == 0 " << DetJac << "\n";
+				std::cout << "\n*** Jacobian: DetJac == 0 " << DetJac
+				          << " in element " << MeshElement->GetIndex() << "\n";
 				abort();
 			}
 			invJacobian[0] = _Jacobian[4] * _Jacobian[8] - _Jacobian[7] * _Jacobian[5];
