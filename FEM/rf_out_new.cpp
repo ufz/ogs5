@@ -269,8 +269,14 @@ void OUTData(double time_current, int time_step_number, bool force_output)
 		if (!m_pcs)
 			m_pcs = m_out->GetPCS(); // OK
 		if (!m_pcs)
+		{
+			// In case an output is defined for an undefined procsse, i.e. not given in pcs file.
+			if (m_out->getProcessType() != FiniteElement::INVALID_PROCESS)
+				continue;
+
 			cout << "Warning in OUTData - no PCS data"
 			     << "\n";
+		}
 		// OK4704 continue;
 		//--------------------------------------------------------------------
 		m_out->setTime(time_current);
