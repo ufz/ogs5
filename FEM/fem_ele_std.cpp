@@ -1583,87 +1583,38 @@ double CFiniteElementStd::CalCoefMass()
 			          << "\n";
 			break;
 		case EPT_LIQUID_FLOW: // Liquid flow
-			// Is this really needed?
-			val = MediaProp->StorageFunction(Index, unit, pcs->m_num->ls_theta);
-
-			// get drho/dp/rho from material model or direct input
-#ifdef USE_FREESTEAM
-			if (FluidProp->compressibility_model_pressure > 0 || FluidProp->density_model == 8)
-#else
-			if (FluidProp->compressibility_model_pressure > 0)
-#endif
 			{
-				rho_val = FluidProp->Density();
-				arg[0] = interpolate(NodalVal1); //   p
-				arg[1] = interpolate(NodalValC1); //   T
-				drho_dp_rho = FluidProp->drhodP(arg) / rho_val;
-			}
-			else
-				drho_dp_rho = FluidProp->drho_dp;
-
-			// JT 2010, needed storage term and fluid compressibility...
-			// We derive here the storage at constant strain, or the inverse of Biot's "M" coefficient
-			// Assumptions are the most general possible::  Invarience under "pi" (Detournay & Cheng) loading.
-			// Se = 1/M = poro/Kf + (alpha-poro)/Ks    ::    Cf = 1/Kf = 1/rho * drho/dp    ::    alpha = 1 - K/Ks
-			// Second term (of Se) below vanishes for incompressible grains
-			// WW if(D_Flag > 0  && rho_val > MKleinsteZahl)
-			if (dm_pcs && MediaProp->storage_model == 8) // Add MediaProp->storage_model.  29.09.2011. WW
-			{
-				biot_val = SolidProp->biot_const;
-				poro_val = MediaProp->Porosity(Index, pcs->m_num->ls_theta);
-				val = 0.; // WX:04.2013
-
-				SolidProp->Calculate_Lame_Constant();
-				if (fabs(SolidProp->K) < DBL_MIN) // WW 29.09.2011
+				val = MediaProp->StorageFunction(Index, unit, pcs->m_num->ls_theta);
+				double drho_dp_rho = 0.0;
+				// get drho/dp/rho from material model or direct input
+				if (FluidProp->compressibility_model_pressure > 0)
 				{
-					if (SolidProp->Youngs_mode < 10 || SolidProp->Youngs_mode > 13) // JM,WX: 2013
-						SolidProp->K = SolidProp->E / 3 / (1 - 2 * SolidProp->PoissonRatio);
-					else
-					{
-						double E_av; // average Youngs modulus
-						double nu_av; // average Poisson ratio
-						double nu_ai; // Poisson ratio perpendicular to the plane of isotropie, due to strain in the
-						              // plane of isotropie
-						double nu_ia; // Poisson ratio in the plane of isotropie, due to strain perpendicular to the
-						              // plane of isotropie
-						double nu_i; // Poisson ratio in the plane of isotropy
-
-						E_av = 2. / 3. * (*SolidProp->data_Youngs)(0) + 1. / 3. * (*SolidProp->data_Youngs)(1);
-
-						nu_ia = (*SolidProp->data_Youngs)(2);
-						nu_ai = nu_ia * (*SolidProp->data_Youngs)(1)
-						        / (*SolidProp->data_Youngs)(0); //  nu_ai=nu_ia*Ea/Ei
-
-						nu_i = SolidProp->Poisson_Ratio();
-						//           12     13    21   23   31    32
-						//           ai     ai    ia   ii   ia    ii
-						nu_av = 1. / 3. * (nu_ai + nu_ia + nu_i);
-
-						SolidProp->K = E_av / 3 / (1 - 2 * nu_av);
-					}
+					const double rho_val = FluidProp->Density();
+					double arg[2];
+					arg[0] = interpolate(NodalVal1); //   p
+					arg[1] = interpolate(NodalValC1); //   T
+					drho_dp_rho = FluidProp->drhodP(arg) / rho_val;
 				}
-				// Ks = K / (1-alpha_B)
-				val += poro_val * drho_dp_rho + (biot_val - poro_val) * (1.0 - biot_val) / SolidProp->K;
+				else
+				{
+					drho_dp_rho = FluidProp->drho_dp;
+				}
 
-				// Will handle the dual porosity version later...
-			}
-			else
-			{
-				poro_val = MediaProp->Porosity(Index, pcs->m_num->ls_theta);
+				const double poro_val = MediaProp->Porosity(Index, pcs->m_num->ls_theta);
 				val += poro_val * drho_dp_rho;
-			}
 
-			// AS,WX: 08.2012 storage function eff stress
-			if (MediaProp->storage_effstress_model > 0)
-			{
-				double storage_effstress = 1.;
-				CFiniteElementStd* h_fem;
-				h_fem = this;
-				storage_effstress = MediaProp->StorageFunctionEffStress(Index, nnodes, h_fem);
-				val *= storage_effstress;
-			}
+				// AS,WX: 08.2012 storage function eff stress
+				if (MediaProp->storage_effstress_model > 0)
+				{
+					double storage_effstress = 1.;
+					CFiniteElementStd* h_fem;
+					h_fem = this;
+					storage_effstress = MediaProp->StorageFunctionEffStress(Index, nnodes, h_fem);
+					val *= storage_effstress;
+				}
 
-			val /= time_unit_factor;
+				//val /= time_unit_factor;
+			}
 			break;
 		case EPT_UNCONFINED_FLOW: // Unconfined flow
 			break;

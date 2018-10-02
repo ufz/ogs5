@@ -93,8 +93,6 @@ public:
 	int GetConductModel() const { return Conductivity_mode; }
 	double Thermal_Expansion() const { return ThermalExpansion; }
 	double Poisson_Ratio() const { return PoissonRatio; }
-	double getBulkModulus() const { return K; }
-	double getBiotsConstant() const { return biot_const; }
 
 	// Elasticity
 	void Calculate_Lame_Constant();
@@ -166,6 +164,10 @@ public:
 							std::vector<double>& eps_K_curr, std::vector<double>& eps_M_curr,
 							std::vector<double>& eps_pl_curr, double& e_pl_v, double& e_pl_eff, double& lam,
 							Math_Group::Matrix& Consistent_Tangent, double Temperature, double& local_res);
+
+	double getBulkModulus() const;
+	double getBiotsConstant() const { return biot_const; }
+
 private:
 	// CMCD
 	FiniteElement::CFiniteElementStd* Fem_Ele_Std;
