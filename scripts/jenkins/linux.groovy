@@ -29,7 +29,8 @@ stage('Build Configs') {
         def defaultCMakeOptions =
             ' -DOGS_CONFIG=' + config.name +
             ' -DCMAKE_BUILD_TYPE=Release' +
-            ' -DNUMDIFF_TOOL_PATH=/usr/local/numdiff/5.8.1-1/bin/numdiff '
+            ' -DNUMDIFF_TOOL_PATH=/usr/local/numdiff/5.8.1-1/bin/numdiff' +
+            ' -DOGS_CPU_ARCHITECTURE=generic'
         def cmakeOptions = defaultCMakeOptions +
             (config.cmakeOptions ? config.cmakeOptions : '')
 
