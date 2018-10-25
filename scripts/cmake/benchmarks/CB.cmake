@@ -132,12 +132,13 @@ Benchmark(AUTHOR CB
 #		pds_EquilibriumConstants.dump
 #)
 
-Benchmark(AUTHOR CB
-	PATH C/Engesgaard/Kin/slow_kin_pqc/pds
-	CONFIG FEM
-	RUNTIME 2
-	OUTPUT_FILES pds_ply_OUT_LINE_t1.tec
-)
+# TODO
+# Benchmark(AUTHOR CB
+# 	PATH C/Engesgaard/Kin/slow_kin_pqc/pds
+# 	CONFIG FEM
+# 	RUNTIME 2
+# 	OUTPUT_FILES pds_ply_OUT_LINE_t1.tec
+# )
 
 #Benchmark(AUTHOR CB
 #	PATH C/Engesgaard/Kin/slow_kin_pqc_krc/pds
