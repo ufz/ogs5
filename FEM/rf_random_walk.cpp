@@ -6317,17 +6317,14 @@ void DATWriteParticleVTPFile(int current_time_step)
 {
 	CFEMesh* m_msh = NULL;
 	RandomWalk* RW = NULL;
-	CRFProcess* m_pcs = NULL;
 	CTimeDiscretization* m_tim = NULL;
 
 	int counter=0; 
-	double time_end = -1.0;
 	// Gather the momentum mesh
 	size_t pcs_vector_size(pcs_vector.size());
 	for (size_t i = 0; i < pcs_vector_size; ++i)
 	{
-		m_pcs = pcs_vector[i];
-		time_end = m_pcs->GetTimeStepping()->time_end;
+		//time_end = m_pcs->GetTimeStepping()->time_end;
 		const FiniteElement::ProcessType pcs_type(pcs_vector[i]->getProcessType());
 		//		if( m_pcs->pcs_type_name.find("RICHARDS_FLOW")!=string::npos){
 		if (pcs_type == FiniteElement::RICHARDS_FLOW)
@@ -6378,7 +6375,7 @@ void DATWriteParticleVTPFile(int current_time_step)
 	{
 		sprintf(c_dummy, "%i", i);
 		istr = c_dummy;
-		for (int t = 0; t < time_vector.size(); ++t)
+		for (std::size_t t = 0; t < time_vector.size(); ++t)
 		{
 			m_tim = time_vector[t];
 			if (m_tim->pcs_type_name.compare("RANDOM_WALK") == 0)

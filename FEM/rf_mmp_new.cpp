@@ -2589,49 +2589,28 @@ double CMediumProperties::HeatCapacity(long number, double theta, CFiniteElement
 **************************************************************************/
 double* CMediumProperties::HeatConductivityTensor(int number)
 {
-	int i, dimen;
-	SolidProp::CSolidProperties* m_msp = NULL;
-	double heat_conductivity_fluids, Kx[3];
-	// TF unused variable - comment fix compile warning
-	//   double *tensor = NULL;
-	// double a, b, Pc, T, Mw, rhow, rho_gw,rho_ga,rho_g, p_gw, mat_fac_w, mat_fac_g, A, B,H_vap, dp_gw, dPc, dA, dB,
-	// dT, q,Tc=647.3,expfactor;
-	double a, b, rhow, rho_gw, rho_ga, rho_g, p_gw, mat_fac_w, mat_fac_g, A, B, H_vap, dp_gw, dPc, dA, dB, dT, q;
-	// TF unused variable - comment fix compile warning
-	//   double Tc=647.3;
-	double expfactor;
-	double dens_arg[3]; // AKS
-	// TF unused variable - comment fix compile warning
-	//   ElementValue* gp_ele = ele_gp_value[Fem_Ele_Std->Index];
-	//  double porosity =  this->porosity;  //MX
-	double Sw, porosity = this->porosity_model_values[0];
-	bool FLOW = false; // WW
-	//  int heat_capacity_model = 0;
-	CFluidProperties* m_mfp; // WW
-	// long group = Fem_Ele_Std->GetMeshElement()->GetPatchIndex();
-	m_mfp = Fem_Ele_Std->FluidProp; // WW
+	const int group = m_pcs->m_msh->ele_vector[number]->GetPatchIndex();
+	SolidProp::CSolidProperties* const m_msp = msp_vector[group];
 
-	// if (Fem_Ele_Std->PcsType==S)     // Multi-phase WW
-	//{
-	///*m_mfp = mfp_vector[0];
-	// eos_arg[0] = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalVal0);
-	// eos_arg[1] = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalVal_t0);
-	// eos_arg[2] = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalVal_X0);
-	// heat_conductivity_fluids = m_mfp->HeatConductivity(eos_arg);*/
-	//}
-	// else
-	//	{
+	bool FLOW = false; // WW
 	for (size_t ii = 0; ii < pcs_vector.size(); ii++)
+	{
 		//		if (pcs_vector[ii]->pcs_type_name.find("FLOW") != string::npos) TF
 		if (isFlowProcess(pcs_vector[ii]->getProcessType()))
 			FLOW = true;
+	}
+
+	double heat_conductivity_fluids = 0.0;
+	double porosity = 0.0;
 	if (FLOW) // WW
 	{
+		CFluidProperties* m_mfp = Fem_Ele_Std->FluidProp; // WW
+		porosity = this->porosity_model_values[0];
 		CRFProcess const* cpl_pcs = Fem_Ele_Std->cpl_pcs;
 		if (cpl_pcs && cpl_pcs->type == 1212) // Multi-phase WW
 		{
-			double PG = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalValC1); // Capillary pressure
-			double Sw = Fem_Ele_Std->MediaProp->SaturationCapillaryPressureFunction(PG);
+			const double PG = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalValC1); // Capillary pressure
+			const double Sw = Fem_Ele_Std->MediaProp->SaturationCapillaryPressureFunction(PG);
 			//
 			m_mfp = mfp_vector[0];
 			heat_conductivity_fluids = Sw * m_mfp->HeatConductivity();
@@ -2643,6 +2622,7 @@ double* CMediumProperties::HeatConductivityTensor(int number)
 			if (Fem_Ele_Std->FluidProp->density_model == 14 && Fem_Ele_Std->MediaProp->heat_diffusion_model == 1
 			    && Fem_Ele_Std->cpl_pcs)
 			{
+				double dens_arg[3];
 				dens_arg[0] = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalValC1); // Pressure
 				dens_arg[1] = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalVal1) + 273.15; // Temperature
 				dens_arg[2] = Fem_Ele_Std->Index; // ELE index
@@ -2650,7 +2630,6 @@ double* CMediumProperties::HeatConductivityTensor(int number)
 			}
 			else
 				heat_conductivity_fluids = Fem_Ele_Std->FluidProp->HeatConductivity();
-			Sw = 1;
 
 			if (cpl_pcs && cpl_pcs->type != 1)
 			{
@@ -2658,7 +2637,7 @@ double* CMediumProperties::HeatConductivityTensor(int number)
 
 				if (PG < 0.0)
 				{
-					Sw = Fem_Ele_Std->MediaProp->SaturationCapillaryPressureFunction(-PG);
+					const double Sw = Fem_Ele_Std->MediaProp->SaturationCapillaryPressureFunction(-PG);
 					heat_conductivity_fluids *= Sw;
 					if (Fem_Ele_Std->GasProp != 0)
 						heat_conductivity_fluids += (1. - Sw) * Fem_Ele_Std->GasProp->HeatConductivity();
@@ -2666,29 +2645,22 @@ double* CMediumProperties::HeatConductivityTensor(int number)
 			}
 		}
 	}
-	else
-	{
-		heat_conductivity_fluids = 0.0;
-		porosity = 0.0;
-	}
-	//}
 
-	dimen = m_pcs->m_msh->GetCoordinateFlag() / 10;
-	int group = m_pcs->m_msh->ele_vector[number]->GetPatchIndex();
-
-	for (i = 0; i < dimen * dimen; i++) // MX
+	const int dimen = m_pcs->m_msh->GetCoordinateFlag() / 10;
+	for (int i = 0; i < dimen * dimen; i++) // MX
 		heat_conductivity_tensor[i] = 0.0;
 
-	m_msp = msp_vector[group];
 	m_msp->HeatConductivityTensor(dimen, heat_conductivity_tensor, group); // MX
 
-	for (i = 0; i < dimen * dimen; i++)
+	for (int i = 0; i < dimen * dimen; i++)
 		heat_conductivity_tensor[i] *= (1.0 - porosity);
-	for (i = 0; i < dimen; i++)
+	for (int i = 0; i < dimen; i++)
 		heat_conductivity_tensor[i * dimen + i] += porosity * heat_conductivity_fluids;
 
 	if (evaporation == 647)
 	{
+		double a, b, rhow, rho_gw, rho_ga, rho_g, p_gw, mat_fac_w;
+		double mat_fac_g, A, B, H_vap, dp_gw, dPc, dA, dB, dT, q;
 		int GravityOn = 1;
 		if ((Fem_Ele_Std->coordinate_system) % 10 != 2 && (!Fem_Ele_Std->axisymmetry))
 			GravityOn = 0;
@@ -2702,12 +2674,13 @@ double* CMediumProperties::HeatConductivityTensor(int number)
 		H_vap = 2257000; // pow((Tc - TG),0.38)*2.65E+5;
 		a = 19.81;
 		b = 4975.9;
-		m_mfp = mfp_vector[0];
+		CFluidProperties* m_mfp = mfp_vector[0];
 		rhow = m_mfp->Density();
 		const double Rv = SpecificGasConstant::WaterVapour;
-		expfactor = 1.0 / (rhow * Rv * TG);
+		const double expfactor = 1.0 / (rhow * Rv * TG);
 		rho_gw = m_mfp->vaporDensity(TG) * exp(-PG * expfactor);
 		p_gw = rho_gw * Rv * TG;
+		double dens_arg[3]; // AKS
 		dens_arg[0] = PG2 - p_gw;
 		dens_arg[1] = TG;
 		m_mfp = mfp_vector[1];
@@ -2721,7 +2694,8 @@ double* CMediumProperties::HeatConductivityTensor(int number)
 		B = a - log(p_gw / 30024.895431831395);
 		q = heatflux;
 
-		for (i = 0; i < dimen; i++)
+		double Kx[3];
+		for (int i = 0; i < dimen; i++)
 			Kx[i] = 0.0;
 		dPc = (q / (H_vap * 1.0e-13)) * ((1 / (rhow * mat_fac_w)) + (1 / (rho_g * mat_fac_g)));
 		dA = dPc / (rhow * Rv);
@@ -2740,9 +2714,9 @@ double* CMediumProperties::HeatConductivityTensor(int number)
 			heat_conductivity_fluids = 2 * q / dT;
 			Kx[dimen - 1] = heat_conductivity_fluids;
 		}
-		for (i = 0; i < dimen * dimen; i++)
+		for (int i = 0; i < dimen * dimen; i++)
 			heat_conductivity_tensor[i] = 0.0;
-		for (i = 0; i < dimen; i++)
+		for (int i = 0; i < dimen; i++)
 			heat_conductivity_tensor[i * dimen + i] = Kx[i];
 	}
 	return heat_conductivity_tensor;

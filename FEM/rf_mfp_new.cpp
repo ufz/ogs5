@@ -3366,6 +3366,8 @@ double CFluidProperties::drhodT(double* variables)
 
 			drhodT = (rho1 - rho2) / compressibility_temperature;
 			break;
+		case 6: // rho(p,T) = rho_0*(1+beta_p*(p-p_0)+beta_T*(T-T_0))
+			return drho_dT;
 		case 7: // use of fct file
 			drhodT = 1.0 / T;
 			break;
