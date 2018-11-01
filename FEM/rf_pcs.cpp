@@ -1035,12 +1035,20 @@ void CRFProcess::SetBoundaryConditionAndSourceTerm()
 				// OK
 				m_bc_group->setProcessTypeName(pcs_type_name);
 				m_bc_group->setProcessPrimaryVariableName(pcs_primary_function_name[i]); // OK
-				m_bc_group->Set(this, Shift[i]);
+
+				const std::string primary_name = pcs_primary_function_name[i];
+				const double value_offset
+				    = (primary_name.compare("TEMPERATURE1") == 0 && _temp_unit == FiniteElement::CELSIUS)
+				          ? PhysicalConstant::CelsiusZeroInKelvin
+				          : 0.0;
+
+				m_bc_group->Set(this, Shift[i], value_offset);
 
 				bc_group_list.push_back(m_bc_group); // Useless, to be removed. WW
 				m_bc_group = NULL;
 				// OK}
 			}
+
 #ifndef USE_PETSC
 			if (bc_node_value.size() < 1) // WW
 				cout << "Warning: no boundary conditions specified for " << pcs_type_name << endl;
@@ -1478,7 +1486,7 @@ void CRFProcess::setBC_danymic_problems()
 		m_bc_group->setProcessTypeName(pcs_type_name);
 		// OK
 		m_bc_group->setProcessPrimaryVariableName(function_name[i]);
-		m_bc_group->Set(this, Shift[i], function_name[i]);
+		m_bc_group->Set(this, Shift[i], 0.0, function_name[i]);
 		bc_group_list.push_back(m_bc_group); // Useless, to be removed. WW
 	}
 }
@@ -6620,7 +6628,7 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
 						continue;
 				}
 //////////////////////////////////
-
+				bc_value += m_bc_node->node_value_offset;
 #if defined(USE_PETSC) // || defined(other parallel libs)//03~04.3012. WW
 				bc_eqs_id.push_back(
 				    static_cast<int>(m_msh->nod_vector[bc_msh_node]->GetEquationIndex() * dof_per_node + shift));
@@ -8504,6 +8512,7 @@ void CRFProcess::SetIC()
 	// it is not necessary to use PrimaryVarible as second check.
 	// nidx will give the proper IC pointer.
 	if (this->getProcessType() == FiniteElement::MASS_TRANSPORT)
+	{
 		for (int i = 0; i < pcs_number_of_primary_nvals; i++)
 		{
 			int nidx = GetNodeValueIndex(pcs_primary_function_name[i]);
@@ -8521,8 +8530,9 @@ void CRFProcess::SetIC()
 				}
 			}
 		}
+	}
 	else // otherwise PrimaryVariable check is still performed.
-
+	{
 		for (int i = 0; i < pcs_number_of_primary_nvals; i++)
 		{
 			int nidx = GetNodeValueIndex(pcs_primary_function_name[i]);
@@ -8544,7 +8554,20 @@ void CRFProcess::SetIC()
 			} // end of for j
 		} // end of for i
 
-	// end of if-else
+	} // end of if-else
+
+	// Take the temperature unit
+	const int temerature_var_id = GetNodeValueIndex("TEMPERATURE1");
+	if (_temp_unit == FiniteElement::CELSIUS && temerature_var_id >= 0)
+	{
+		double* T0 = nod_val_vector[temerature_var_id];
+		double* T1 = nod_val_vector[temerature_var_id + 1];
+		for (std::size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
+		{
+			T0[i] += PhysicalConstant::CelsiusZeroInKelvin;
+			T1[i] += PhysicalConstant::CelsiusZeroInKelvin;
+		}
+	}
 }
 
 /**************************************************************************
@@ -10914,7 +10937,7 @@ void CRFProcess::CreateBCGroup()
 		m_bc_group->setProcessTypeName(pcs_type_name);
 		// OK
 		m_bc_group->setProcessPrimaryVariableName(pcs_primary_function_name[i]);
-		m_bc_group->Set(this, Shift[i]);
+		m_bc_group->Set(this, Shift[i], 0.0);
 		bc_group_list.push_back(m_bc_group);
 	}
 }
@@ -12478,7 +12501,7 @@ bool CRFProcess::NODRelations()
 			// OK
 			m_bc_group->setProcessTypeName(pcs_type_name);
 			m_bc_group->setProcessPrimaryVariableName(pcs_primary_function_name[i]); // OK
-			m_bc_group->Set(this, Shift[i]);
+			m_bc_group->Set(this, Shift[i], 0,0);
 		}
 	}
 

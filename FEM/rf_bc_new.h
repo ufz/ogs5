@@ -213,6 +213,7 @@ public:
 	long msh_node_number_subst; // WW
 
 	double node_value;
+	double node_value_offset;
 	double node_value_pre_calc;
 	int CurveIndex; // Time dependent function index
 	std::string pcs_pv_name; // YD/WW
@@ -241,7 +242,7 @@ public:
 	CBoundaryConditionsGroup(void);
 	~CBoundaryConditionsGroup(void);
 
-	void Set(CRFProcess* pcs, int ShiftInNodeVector, const std::string& this_pv_name = "");
+	void Set(CRFProcess* pcs, int ShiftInNodeVector, const double value_offset, const std::string& this_pv_name = "");
 	CBoundaryConditionsGroup* Get(const std::string&);
 
 	const std::string& getProcessTypeName() const { return _pcs_type_name; }
