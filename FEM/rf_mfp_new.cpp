@@ -2143,7 +2143,7 @@ double MFPCalcFluidsHeatCapacity(CFiniteElementStd* assem)
 		PG = assem->interpolate(assem->NodalValC1);
 		Sw = assem->MediaProp->SaturationCapillaryPressureFunction(PG);
 		double PG2 = assem->interpolate(assem->NodalVal_p2);
-		TG = assem->interpolate(assem->NodalVal1) + PhysicalConstant::CelsiusZeroInKelvin;
+		TG = assem->interpolate(assem->NodalVal1);
 		rhow = assem->FluidProp->Density();
 		rho_gw = assem->FluidProp->vaporDensity(TG) * exp(-PG / (rhow * SpecificGasConstant::WaterVapour * TG));
 		p_gw = rho_gw * SpecificGasConstant::WaterVapour * TG;
