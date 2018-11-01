@@ -18,6 +18,12 @@
 
 namespace FiniteElement
 {
+enum TemperatureUnit
+{
+	KELVIN,
+	CELSIUS
+};
+
 /** \brief Types of physical processes supported by OpenGeoSys.
  * If you change this enum, make sure you apply the changes to
  * the functions convertPorcessType(), convertProcessTypeToString(),

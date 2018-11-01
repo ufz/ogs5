@@ -13,12 +13,13 @@
 #include "rf_pcs.h"
 #include <ProcessInfo.h>
 
-ProcessInfo::ProcessInfo() : _pcs_type(FiniteElement::INVALID_PROCESS), _pcs_pv(FiniteElement::INVALID_PV), _pcs(NULL)
+ProcessInfo::ProcessInfo() : _pcs_type(FiniteElement::INVALID_PROCESS), _pcs_pv(FiniteElement::INVALID_PV),
+	_pcs(NULL), _temp_unit(FiniteElement::KELVIN)
 {
 }
 
 ProcessInfo::ProcessInfo(FiniteElement::ProcessType pcs_type, FiniteElement::PrimaryVariable pcs_pv, CRFProcess* pcs)
-    : _pcs_type(pcs_type), _pcs_pv(pcs_pv), _pcs(pcs)
+    : _pcs_type(pcs_type), _pcs_pv(pcs_pv), _pcs(pcs), _temp_unit(FiniteElement::KELVIN)
 {
 }
 

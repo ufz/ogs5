@@ -55,11 +55,8 @@
 // GEOLib
 #include "PointWithID.h"
 
-/*------------------------------------------------------------------------*/
-/* MshLib */
-//#include "msh_elem.h"
-//#include "msh_lib.h"
-/*-----------------------------------------------------------------------*/
+#include "PhysicalConstant.h"
+
 /* Objects */
 #include "pcs_dm.h"
 #include "rf_pcs.h"
@@ -1963,6 +1960,17 @@ std::ios::pos_type CRFProcess::Read(std::ifstream* pcs_file)
 			pcs_file->ignore(MAX_ZEILE, '\n');
 			continue;
 		}
+
+		if (line_string.find("$TEMPERATURE_UNIT") != string::npos)
+		{
+			std::string T_unit_name;
+			*pcs_file >> T_unit_name;
+			pcs_file->ignore(MAX_ZEILE, '\n');
+			_temp_unit = (T_unit_name.find("CELSIUS") != std::string::npos ) ?
+						FiniteElement::CELSIUS : FiniteElement::KELVIN;
+			continue;
+		}
+
 		//....................................................................
 		// subkeyword found
 		if (line_string.find("$ELEMENT_MATRIX_OUTPUT") != string::npos)
