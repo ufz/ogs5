@@ -9,14 +9,15 @@
 
 #include "pcs_dm.h"
 
-#include "makros.h"
-
 #include <cfloat>
 #include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <time.h>
+
+#include "display.h"
+#include "makros.h"
 
 #include "StringTools.h"
 
@@ -89,7 +90,7 @@ using Math_Group::Matrix;
 namespace process
 {
 CRFProcessDeformation::CRFProcessDeformation()
-    : CRFProcess(), fem_dm(NULL), ARRAY(NULL), counter(0), InitialNorm(0.0), idata_type(none),
+    : CRFProcess(), fem_dm(NULL), ARRAY(NULL), counter(0), InitialNorm(0.0),
       _has_initial_stress_data(false), error_k0(1.0e10)
 
 {
@@ -102,7 +103,8 @@ CRFProcessDeformation::~CRFProcessDeformation()
     if (myrank == 0)
 #endif
 	WriteGaussPointStress(last_step);
-	if (type == 41 && (idata_type == write_all_binary || idata_type == read_write))
+	if (type == 41 && (_init_domain_data_type == FiniteElement::WRITE
+                        || _init_domain_data_type == FiniteElement::READ_WRITE))
 	{
 		// mono-deformation-liquid
 		WriteSolution();
@@ -152,16 +154,6 @@ CRFProcessDeformation::~CRFProcessDeformation()
  **************************************************************************/
 void CRFProcessDeformation::Initialization()
 {
-	//-- NW 25.10.2011
-	// this section has to be executed at latest before calling InitGauss()
-	// Control for reading and writing solution
-	if (reload == 1)
-		idata_type = write_all_binary;
-	if (reload == 2)
-		idata_type = read_all_binary;
-	if (reload == 3)
-		idata_type = read_write;
-
 	// Local assembliers
 	// An instaniate of CFiniteElementVec
 	int i, Axisymm = 1; // ani-axisymmetry
@@ -1214,7 +1206,8 @@ void CRFProcessDeformation::InitGauss(void)
 		}
 	}
 	// Reload the stress results of the previous simulation
-	if (idata_type == read_all_binary || idata_type == read_write)
+	if (   _init_domain_data_type == FiniteElement::READ
+            || _init_domain_data_type == FiniteElement::READ_WRITE)
 	{
 		ReadGaussPointStress();
 		if (type == 41) // mono-deformation-liquid
@@ -2986,7 +2979,8 @@ void CRFProcessDeformation::UpdateStress()
 **************************************************************************/
 void CRFProcessDeformation::WriteGaussPointStress(const bool last_step)
 {
-	if (!(idata_type == write_all_binary || idata_type == read_write))
+	if (!(_init_domain_data_type == FiniteElement::WRITE
+           || _init_domain_data_type == FiniteElement::READ_WRITE))
 		return;
 
 	if ((aktueller_zeitschritt % nwrite_restart) > 0 && (!last_step))
@@ -2997,7 +2991,7 @@ void CRFProcessDeformation::WriteGaussPointStress(const bool last_step)
 #else
 	const std::string StressFileName = FileName + ".sts";
 #endif
-
+	ScreenMessage("-> Write initial stress \n");
 	fstream file_stress(StressFileName.data(), ios::binary | ios::out | ios::trunc);
 	ElementValue_DM* eleV_DM = NULL;
 
@@ -3049,6 +3043,7 @@ void CRFProcessDeformation::ReadGaussPointStress()
 	const std::string StressFileName = FileName + ".sts";
 #endif
 
+	ScreenMessage("-> Read initial stress \n");
 	fstream file_stress(StressFileName.data(), ios::binary | ios::in);
 	ElementValue_DM* eleV_DM = NULL;
 	//

@@ -235,7 +235,7 @@ T* resize(T* array, size_t old_size, size_t new_size);
 CRFProcess::CRFProcess(void)
     : _problem(NULL), p_var_index(NULL), num_nodes_p_var(NULL),
       fem(NULL), Memory_Type(0), Write_Matrix(false), matrix_file(NULL),
-      WriteSourceNBC_RHS(0),
+      WriteSourceNBC_RHS(0), _init_domain_data_type(FiniteElement::NO_IO),
 #ifdef JFNK_H2M
       JFNK_precond(false), norm_u_JFNK(NULL), array_u_JFNK(NULL), array_Fu_JFNK(NULL),
 #endif
@@ -322,8 +322,6 @@ CRFProcess::CRFProcess(void)
 	selected = true; // OK
 	// MSH OK
 	m_msh = NULL;
-	// Reload solutions
-	reload = -1;
 	nwrite_restart = 1; // kg44 write every timestep is default
 	pcs_nval_data = NULL;
 	pcs_eval_data = NULL;
@@ -544,6 +542,13 @@ CRFProcess::~CRFProcess(void)
 	delete eqs_new;
 	eqs_new = NULL;
 #endif
+	if (_init_domain_data_type == FiniteElement::READ)
+	{
+		ScreenMessage("!!!Waning: Reading and writing solutions (reload=3)\
+                                  are selected in this computation.\n");
+		ScreenMessage("\t Please make sure that the original initial\
+                                data files are used.\n");
+	}
 }
 
 /**************************************************************************
@@ -870,7 +875,9 @@ void CRFProcess::Create()
 			}
 	}
 	//
-	if (reload >= 2 && type != 4 && type / 10 != 4) // Modified at 03.08.2010. WW
+	if ((   _init_domain_data_type == FiniteElement::READ
+             || _init_domain_data_type == FiniteElement::READ_WRITE)
+            && type != 4 && type / 10 != 4) // Modified at 03.08.2010. WW
 	{
 		// PCH
 		cout << "Reloading the primary variables... "
@@ -878,7 +885,8 @@ void CRFProcess::Create()
 		ReadSolution(); // WW
 	}
 
-	if (reload < 2) // PCH: If reload is set, no need to have ICs
+	if (   _init_domain_data_type == FiniteElement::NO_IO
+            || _init_domain_data_type == FiniteElement::WRITE ) // PCH: If reload is set, no need to have ICs
 	{
 		// IC
 		cout << "->Assign IC" << '\n';
@@ -886,8 +894,8 @@ void CRFProcess::Create()
 	}
 	else
 		// Bypassing IC
-		cout << "RELOAD is set to be " << reload << ". So, bypassing IC's"
-		     << "\n";
+		cout << "RELOAD is set to be " << _init_domain_data_type
+                     << ". So, bypassing IC's" << "\n";
 
 	if (pcs_type_name_vector.size() && pcs_type_name_vector[0].find("DYNAMIC") != string::npos) // WW
 		setIC_danymic_problems();
@@ -1235,7 +1243,8 @@ void CRFProcess::Write_Processed_BC()
 **************************************************************************/
 void CRFProcess::WriteSolution()
 {
-	if (reload == 2 || reload <= 0)
+	if (   _init_domain_data_type == FiniteElement::NO_IO
+            || _init_domain_data_type == FiniteElement::READ)
 		return;
 	// kg44 write out only between nwrite_restart timesteps
 	if ((aktueller_zeitschritt % nwrite_restart) > 0)
@@ -1719,7 +1728,7 @@ CRFProcess* CRFProcess::CopyPCStoDM_PCS()
 	dm_pcs->num_type_name = num_type_name;
 	dm_pcs->Memory_Type = Memory_Type;
 	dm_pcs->NumDeactivated_SubDomains = NumDeactivated_SubDomains;
-	dm_pcs->reload = reload;
+	dm_pcs->_init_domain_data_type = _init_domain_data_type;
 	dm_pcs->nwrite_restart = nwrite_restart;
 	dm_pcs->isPCSDeformation = true;
 	dm_pcs->isPCSFlow = this->isPCSFlow; // JT
@@ -2003,7 +2012,14 @@ std::ios::pos_type CRFProcess::Read(std::ifstream* pcs_file)
 		// subkeyword found
 		if (line_string.find("$RELOAD") != string::npos)
 		{
+			int reload;
 			*pcs_file >> reload; // WW
+			if (reload == 1)
+				_init_domain_data_type = FiniteElement::WRITE;
+			if (reload == 2)
+				_init_domain_data_type = FiniteElement::READ;
+			if (reload == 3)
+				_init_domain_data_type = FiniteElement::READ_WRITE;
 			if (reload == 1 || reload == 3)
 				*pcs_file >> nwrite_restart; // kg44 read number of timesteps between writing restart files
 			pcs_file->ignore(MAX_ZEILE, '\n');
@@ -12530,7 +12546,9 @@ bool CRFProcess::NODRelations()
 
 	// IC
 	cout << "->Assign IC" << '\n';
-	if (reload == 2 && type != 4 && type != 41)
+	if (  (   _init_domain_data_type == FiniteElement::READ
+               || _init_domain_data_type == FiniteElement::READ_WRITE)
+            && type != 4 && type != 41)
 		ReadSolution(); // WW
 	SetIC();
 

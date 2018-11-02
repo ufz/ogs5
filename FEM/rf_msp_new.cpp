@@ -8180,6 +8180,8 @@ double CSolidProperties::E_Function(int dim, const ElementValue_DM* ele_val, int
 			return_value = GetCurveValue((int)E_Function_Model_Value[0], 0, prin_str[0], &valid);
                         break;
 		}
+		case 3:
+			return  GetCurveValue((int)E_Function_Model_Value[0], 0, aktuelle_zeit, &valid);
 		default:
 			return_value = 1.;
 			break;
@@ -8213,6 +8215,38 @@ double CSolidProperties::getBishopCoefficient(const double effectiveS, const dou
 	}
 	return p;
 }
+
+double CSolidProperties::getBulkModulus() const
+{
+	if (K > DBL_MIN)
+		return K;
+
+	if (Youngs_mode < 10 || Youngs_mode > 13)
+		return E / 3 / (1 - 2 * PoissonRatio);
+
+	// average Youngs modulus
+	double const E_av = 2. / 3. * (*data_Youngs)(0) + 1. / 3. * (*data_Youngs)(1);
+
+	// Poisson ratio perpendicular to the plane of isotropie, due to strain in the
+	// plane of isotropie
+	const double nu_ia = (*data_Youngs)(2);
+
+	// Poisson ratio in the plane of isotropie, due to strain perpendicular to the
+	// plane of isotropie
+	const double nu_ai = nu_ia * (*data_Youngs)(1)
+				        / (*data_Youngs)(0); //  nu_ai=nu_ia*Ea/Ei
+
+	// Poisson ratio in the plane of isotropy
+	const double nu_i = Poisson_Ratio();
+
+	// average Poisson ratio
+	//    12     13    21   23   31    32
+	//    ai     ai    ia   ii   ia    ii
+	const double nu_av = 1. / 3. * (nu_ai + nu_ia + nu_i);
+
+	return E_av / 3 / (1 - 2 * nu_av);
+}
+
 } // end namespace
 
 /////////////////////////////////////////////////////////////////////////////

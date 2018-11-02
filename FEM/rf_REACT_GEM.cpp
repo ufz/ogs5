@@ -794,7 +794,9 @@ short REACT_GEM::Init_RUN(string Project_path)
 		// TODO for petsc we may need to synchronize saturations ...have to check!
 	}
 
-	if ((m_flow_pcs->GetRestartFlag() >= 2)) // get the restart data specific for gems
+        // get the restart data specific for gems
+	if (    m_flow_pcs->GetRestartFlag() == FiniteElement::READ
+	     || m_flow_pcs->GetRestartFlag() == FiniteElement::READ_WRITE)
 	{
 		if (!ReadReloadGem())
 		{
@@ -964,7 +966,9 @@ short REACT_GEM::GetInitialReactInfoFromMassTransport(int timelevel)
 		// get pressure from MT
 		m_P[node_i] = REACT_GEM::GetPressureValue_MT(node_i, timelevel);
 		// get Independent and dependent Component value from MT
-		if ((flag_transport_b == 1) && (m_flow_pcs->GetRestartFlag() < 2))
+		if ((flag_transport_b == 1) &&
+		    (  m_flow_pcs->GetRestartFlag() == FiniteElement::WRITE
+		    || m_flow_pcs->GetRestartFlag() == FiniteElement::NO_IO))
 			REACT_GEM::GetBValue_MT(node_i, timelevel,
 			                        m_bIC + node_i * nIC); // do this not for restart...overwrites values!!!
 	}
@@ -3197,9 +3201,9 @@ int REACT_GEM::CalcLimitsInitial(long in, TNode* m_Node)
 		m_dll[in * nDC + j] = 0.0; // set to zero
 		m_dul[in * nDC + j] = 1.0e+10; // very high number
 	}
-
-	if ((m_flow_pcs->GetRestartFlag()
-	     >= 2)) // we test if restart flag is set....if not this will not work, as x_dc might be not correct
+	// we test if restart flag is set....if not this will not work, as x_dc might be not correct
+	if (    m_flow_pcs->GetRestartFlag() == FiniteElement::READ
+	     || m_flow_pcs->GetRestartFlag() == FiniteElement::READ_WRITE)
 	{
 		for (ii = 0; ii < (int)m_kin.size(); ii++)
 		{
@@ -4201,16 +4205,16 @@ void REACT_GEM::gems_worker(int tid, string m_Project_path)
 		//       rwmutex.lock();
 		//        cout << "GEMS3K MPI Processe / Thread: " << myrank << " " << tid << " in " << in << "\n";
 		//        rwmutex.unlock();
-
-		if ((m_flow_pcs->GetRestartFlag()
-		     >= 2)) // everything is stored in concentrations for restart ...moved it to here from init_gems
-
+		// everything is stored in concentrations for restart ...moved it to here from init_gems
+		if (    m_flow_pcs->GetRestartFlag() == FiniteElement::READ
+		     || m_flow_pcs->GetRestartFlag() == FiniteElement::READ_WRITE)
 			// Convert from concentration
 			REACT_GEM::ConcentrationToMass(in, 1); // I believe this is save for MPI
 		// this we have already
 
 		// now we calculate kinetic constraints for GEMS!
-		if (!(m_flow_pcs->GetRestartFlag() >= 2))
+		if (    m_flow_pcs->GetRestartFlag() == FiniteElement::WRITE
+		     || m_flow_pcs->GetRestartFlag() == FiniteElement::NO_IO)
 			REACT_GEM::CalcLimitsInitial(
 			    in, t_Node); // kg44 16.05.2013 new version, restart files contain upper and lower limits
 		// Manipulate some kinetic contstraints for special initial conditions
@@ -4292,8 +4296,9 @@ void REACT_GEM::gems_worker(int tid, string m_Project_path)
 		// calculate density of fluid phase, which is normally the first phase
 		m_fluid_density[in] = m_mPS[in * nPS + 0] / m_vPS[in * nPS + 0];
 
-		if ((m_flow_pcs->GetRestartFlag() < 2)) // we do not need the second pass for complete restart
-
+		// we do not need the second pass for complete restart
+		if (    m_flow_pcs->GetRestartFlag() == FiniteElement::WRITE
+		     || m_flow_pcs->GetRestartFlag() == FiniteElement::NO_IO)
 			// scale data so that second pass gives the normalized volume of 1m^3
 			if (m_Vs[in] >= 0.0)
 			{ // this should be not done for restart,  decoupled porosity runs do not change volumes and the other runs
@@ -4372,7 +4377,8 @@ void REACT_GEM::gems_worker(int tid, string m_Project_path)
 		//        } // end if for restart
 
 		// calculate the chemical porosity
-		if (m_flow_pcs->GetRestartFlag() < 2)
+		if (    m_flow_pcs->GetRestartFlag() == FiniteElement::WRITE
+		     || m_flow_pcs->GetRestartFlag() == FiniteElement::NO_IO)
 			REACT_GEM::CalcPorosity(in, t_Node); // during init it should be always done, except for restart !!!
 
 		REACT_GEM::CalcReactionRate(

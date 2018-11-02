@@ -774,12 +774,13 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 					     << "\n";
 					break;
 				case 7: // RW/WW
-					in >> storage_model_values[0]; // Biot's alpha
-					in >> storage_model_values[1]; // Skempton's B coefficient
-					in >> storage_model_values[2]; // macroscopic drained bulk modulus
-					double val_l = storage_model_values[0] * (1. - storage_model_values[0] * storage_model_values[1])
-					               / storage_model_values[1] / storage_model_values[2];
-					storage_model_values[1] = val_l;
+					{
+						if(!PCSGet("DEFORMATION"))
+						{
+							ScreenMessage("Error: Porosity model 7 must be combined with deformation process");
+							exit(EXIT_FAILURE);
+						}
+					}
 					break;
 			}
 			in.clear();
@@ -7351,8 +7352,19 @@ double CMediumProperties::StorageFunction(long index, double* gp, double theta)
 			 */
 			break;
 		case 7: // poroelasticity RW
-			storage = storage_model_values[1];
-			break;
+			{
+				// Moved the following comment from double CFiniteElementStd::CalCoefMass() to here by WW
+				// JT 2010, needed storage term and fluid compressibility...
+				// We derive here the storage at constant strain, or the inverse of Biot's "M" coefficient
+				// Assumptions are the most general possible::  Invarience under "pi" (Detournay & Cheng) loading.
+				// Se = 1/M = poro/Kf + (alpha-poro)/Ks    ::    Cf = 1/Kf = 1/rho * drho/dp    ::    alpha = 1 - K/Ks
+				// Second term (of Se) below vanishes for incompressible grains
+
+				SolidProp::CSolidProperties* solid_prop = msp_vector[Fem_Ele_Std->GetMeshElement()->GetPatchIndex()];
+				const double biots_constant = solid_prop->getBiotsConstant();
+				const double porosity = Porosity(index, theta);
+				return  (biots_constant - porosity) * (1.0 - biots_constant) / solid_prop->getBulkModulus();
+			}
 		case 10:
 			if (permeability_saturation_model[0] == 10) // MW
 				storage = porosity_model_values[0] / (gravity_constant * gravity_constant * mfp_vector[0]->Density());
