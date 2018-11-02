@@ -2625,7 +2625,7 @@ double* CMediumProperties::HeatConductivityTensor(int number)
 			{
 				double dens_arg[3];
 				dens_arg[0] = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalValC1); // Pressure
-				dens_arg[1] = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalVal1) + 273.15; // Temperature
+				dens_arg[1] = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalVal1); // Temperature
 				dens_arg[2] = Fem_Ele_Std->Index; // ELE index
 				heat_conductivity_fluids = Fem_Ele_Std->FluidProp->HeatConductivity(dens_arg);
 			}
@@ -2669,7 +2669,7 @@ double* CMediumProperties::HeatConductivityTensor(int number)
 		// Capillary pressure
 		double PG = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalValC1);
 		// Temperature
-		double TG = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalVal1) + 273.15;
+		double TG = Fem_Ele_Std->interpolate(Fem_Ele_Std->NodalVal1);
 		double Sw = Fem_Ele_Std->MediaProp->SaturationCapillaryPressureFunction(PG);
 		heat_conductivity_fluids = 0.0;
 		H_vap = 2257000; // pow((Tc - TG),0.38)*2.65E+5;
@@ -3724,7 +3724,7 @@ double CMediumProperties::Porosity(long number, double theta)
 	   int i;
 	   double w[3], TG = 0.0;
 	   if(assem->cpl_pcs)
-	      TG = assem->interpolate(assem->NodalValC1)+273.15;
+	      TG = assem->interpolate(assem->NodalValC1);
 	   else
 	      TG = 296.0;
 	   CalStressPermeabilityFactor(w, TG);
@@ -4055,7 +4055,7 @@ double CMediumProperties::PorosityEffectiveConstrainedSwellingConstantIonicStren
 	/* Interlayer Porositaet berechnen */
 	if (temperature < 0.0 || temperature > 600.0)
 		temperature = 298.0; // ToDo, MX
-	epsilon = 87.0 + exp(-0.00456 * (temperature - 273.0));
+	epsilon = 87.0 + exp(-0.00456 * (temperature - PhysicalConstant::CelsiusZeroInKelvin));
 	porosity_n = porosity_model_values[0];
 
 	/* Maximal inter layer porosity */
@@ -6403,7 +6403,7 @@ double CMediumProperties::PorosityVolumetricFreeSwellingConstantIonicstrength(lo
 	   //--------------------------------------------------------------------
 	   // Interlayer porosity calculation
 	   if (abs(temperature)>1.0e10) temperature=298.0;  //TODO MX
-	   epsilon = 87.0 + exp(-0.00456*(temperature-273.0));
+	   epsilon = 87.0 + exp(-0.00456*(temperature-PhysicalConstant::CelsiusZeroInKelvin));
 	   porosity_n = porosity_model_values[0];
 	   // Maximal inter layer porosity
 	   porosity_IL = fmon * psi * mat_mp_m * S_0 * (density_rock * 1.0e3) \
@@ -6493,7 +6493,7 @@ double CMediumProperties::PorosityEffectiveConstrainedSwelling(long index,
 	   //-----------------------------------------------------------------------
 	   // Interlayer Porositaet berechnen
 	   if (abs(temperature)>1.0e10) temperature=298.0;  //TODO MX
-	   epsilon =87.0+exp(-0.00456*(temperature-273.0));
+	   epsilon =87.0+exp(-0.00456*(temperature-PhysicalConstant::CelsiusZeroInKelvin));
 	   porosity_n = porosity_model_values[0];
 
 	   // Maximal inter layer porosity
@@ -6588,7 +6588,7 @@ double CMediumProperties::PorosityVolumetricFreeSwelling(long index, double satu
 	   satu_0 =       porosity_model_values[5];       // Initial saturation, if the sample is homogenous [-]
 	   //--------------------------------------------------------------------
 	   // Interlayer porosity calculation
-	   epsilon = 87.0 + exp(-0.00456*(temperature-273.0));
+	   epsilon = 87.0 + exp(-0.00456*(temperature-PhysicalConstant::CelsiusZeroInKelvin));
 	   porosity_n = porosity_model_values[0];
 	   // Maximal inter layer porosity
 	   porosity_IL = fmon * psi * mat_mp_m * S_0 * (density_rock * 1.0e3) \
