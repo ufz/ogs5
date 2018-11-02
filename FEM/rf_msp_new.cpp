@@ -7858,19 +7858,19 @@ void CSolidProperties::AddStain_by_Creep(const int ns, double* stress_n, double*
 		case 2:
 			// gas constant = R = 8.314472(15) J ?K-1 ?mol-1
 			// ec= A*exp(-G/RT)s^n
-			fac = 1.5 * dt * (*data_Creep)(0) * exp(-(*data_Creep)(2) / (8.314472 * temperature))
+			fac = 1.5 * dt * (*data_Creep)(0) * exp(-(*data_Creep)(2) / (PhysicalConstant::IdealGasConstant * temperature))
 			      * pow(norn_S, (*data_Creep)(1));
 			break;
 		// TN: BGRb
 		case 3:
-			fac = 1.5 * dt * ((*data_Creep)(0) * exp(-(*data_Creep)(2) / (8.314472 * temperature))
+			fac = 1.5 * dt * ((*data_Creep)(0) * exp(-(*data_Creep)(2) / (PhysicalConstant::IdealGasConstant * temperature))
 			                      * pow(norn_S, (*data_Creep)(1))
-			                  + (*data_Creep)(3) * exp(-(*data_Creep)(5) / (8.314472 * temperature))
+			                  + (*data_Creep)(3) * exp(-(*data_Creep)(5) / (PhysicalConstant::IdealGasConstant * temperature))
 			                        * pow(norn_S, (*data_Creep)(4)));
 			break;
 		// TN: BGRsf
 		case 4:
-			fac = 1.5 * dt * ((*data_Creep)(0) * exp(-(*data_Creep)(2) / (8.314472 * temperature))
+			fac = 1.5 * dt * ((*data_Creep)(0) * exp(-(*data_Creep)(2) / (PhysicalConstant::IdealGasConstant * temperature))
 			                      * pow(norn_S, (*data_Creep)(1))
 			                  + (*data_Creep)(4) * pow(norn_S, 2));
 			break;
