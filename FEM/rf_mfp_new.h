@@ -96,6 +96,7 @@ public:
 	double PhaseDiffusion(double* variables = NULL);
 	double SpecificHeatCapacity(double* variables = NULL);
 	void therm_prop(std::string caption); // NB 4.9.05
+	double PhaseChange(); // JOD
 	double HeatConductivity(double* variables = NULL);
 	double CalcEnthalpy(double temperature);
 
