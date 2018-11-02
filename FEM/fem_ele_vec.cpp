@@ -21,6 +21,9 @@
 #include "matrix_class.h"
 #include "matrix_routines.h"
 #include "pcs_dm.h"
+
+#include "PhysicalConstant.h"
+
 #include "rf_mfp_new.h"
 #include "rf_msp_new.h"
 #include "tools.h" //12.2009. WW
@@ -64,12 +67,13 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
 	const int C_Sys_Flad, const int order)
     : CElement(C_Sys_Flad, order), pcs(dm_pcs), h_pcs(NULL), t_pcs(NULL), excavation(false),
 	  ns((dim == 3)? 6: 4),  _flow_type(NO_PCS),
-      idx_P(-1), idx_P0(-1), idx_P1(-1), idx_P1_0(-1), idx_P2(-1),
+	  idx_P(-1), idx_P0(-1), idx_P1(-1), idx_P1_0(-1), idx_P2(-1),
 	  idx_T0(-1), idx_T1(-1), idx_S0(-1), idx_S(-1), idx_Snw(-1), idx_pls(-1),
 	  idx_p1_ini(-1), idx_p2_ini(-1),
 	  PressureC(NULL), PressureC_S(NULL), PressureC_S_dp(NULL), b_rhs(NULL),
 	  smat(NULL), m_mfp(NULL), m_mmp(NULL),
-	  Temp(NULL), T1(NULL), Tem(273.15 + 23.0), _wettingS(1.), eleV_DM(NULL),
+	  Temp(NULL), T1(NULL), Tem(PhysicalConstant::CelsiusZeroInKelvin + 20.0),
+	  _wettingS(1.), eleV_DM(NULL),
 	  _nodal_p1(NULL), _nodal_p2(NULL), _nodal_cp0(NULL), _nodal_dcp(NULL),
 	  _nodal_S0(NULL), _nodal_S(NULL), AuxNodal1(NULL),
 	  dynamic((dm_pcs->pcs_type_name_vector[0].find("DYNAMIC") != std::string::npos)

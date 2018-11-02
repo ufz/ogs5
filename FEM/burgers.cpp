@@ -39,7 +39,7 @@ SolidBurgers::SolidBurgers(const Math_Group::Matrix& data)
 		m_KM = 0.;
 		B = 1.;
 		Q = 0.; // for cutting off Arrhenius term
-		T_ref = 273.15;
+		T_ref = PhysicalConstant::CelsiusZeroInKelvin;
 	}
 }
 
