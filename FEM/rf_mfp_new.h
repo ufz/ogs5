@@ -96,7 +96,6 @@ public:
 	double PhaseDiffusion(double* variables = NULL);
 	double SpecificHeatCapacity(double* variables = NULL);
 	void therm_prop(std::string caption); // NB 4.9.05
-	double PhaseChange(); // JOD
 	double HeatConductivity(double* variables = NULL);
 	double CalcEnthalpy(double temperature);
 
@@ -210,7 +209,6 @@ private:
 	double viscosity;
 	double viscosity0;
 	double viscosity_T_star;
-	double viscosity_T_shift; // JM in order to use some viscosity functions, based on total temperature, within
 	// Richards
 	double my_0;
 	double dmy_dp;

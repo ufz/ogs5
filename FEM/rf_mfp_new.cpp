@@ -73,7 +73,6 @@ CFluidProperties::CFluidProperties() : name("WATER")
 	drho_dC = 0.;
 	// Viscosity
 	viscosity_model = 1;
-	viscosity_T_shift = 0.0;
 	my_0 = 1e-3;
 	dmy_dp = 0.;
 	dmy_dT = 0.;
@@ -89,7 +88,7 @@ CFluidProperties::CFluidProperties() : name("WATER")
 	diffusion = 2.13e-6;
 	// State variables
 	p_0 = 101325.;
-	T_0 = 293.;
+	T_0 = PhysicalConstant::CelsiusZeroInKelvin + 20.0;
 	C_0 = 0.;
 	Z = 1.;
 	cal_gravity = true;
@@ -461,10 +460,6 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 			{ // optional: read reference temperature for viscosity model
 				std::string arg1;
 				in >> arg1; // get one optional argument
-				if (arg1.length() > 0)
-					if (isdigit(arg1[0]) != 0) // first argument is temperature shift for viscosity, in order to allow
-						// the use of deg Celsius
-						viscosity_T_shift = atof(arg1.c_str());
 				viscosity_pcs_name_vector.push_back("PRESSURE1"); // JM dummy wird benoetigt!
 				// OK4704
 				viscosity_pcs_name_vector.push_back("TEMPERATURE1");
@@ -973,6 +968,8 @@ double CFluidProperties::Density(double* variables)
 	//----------------------------------------------------------------------
 	if (variables) // This condition is added by WW
 	{
+		if (!T_Process)
+			variables[1] = T_0;
 		//----------------------------------------------------------------------
 		// Duplicate the following lines just to enhance computation. WW
 		switch (density_model)
@@ -1007,29 +1004,16 @@ double CFluidProperties::Density(double* variables)
 				density = MATCalcFluidDensityMethod8(variables[0], variables[1], variables[2]);
 				break;
 			case 10: // Get density from temperature-pressure values from fct-file	NB 4.8.01
-				if (!T_Process)
-					variables[1] = T_0;
-				else
-					variables[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				density = GetMatrixValue(variables[1], variables[0], fluid_name, &gueltig);
 				break;
 			case 11: // Redlich-Kwong EOS for different fluids NB 4.9.05
-				if (!T_Process)
-					variables[1] = T_0;
-				else
-					variables[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				density = rkeos(variables[1], variables[0], fluid_id);
 				break;
 			case 12: // Peng-Robinson EOS for different fluids NB 4.9.05
-				if (!T_Process)
-					variables[1] = T_0;
-				else
-					variables[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				// NB
 				density = preos(this, variables[1], variables[0]);
 				break;
 			case 13: // Helmholtz free Energy NB JUN 09
-				variables[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				// NB
 				density = zero(variables[1], variables[0], fluid_id, 1e-8);
 				break;
@@ -1126,6 +1110,9 @@ double CFluidProperties::Density(double* variables)
 	else
 	{
 		CalPrimaryVariable(density_pcs_name_vector);
+
+		if (!T_Process)
+			primary_variable[1] = T_0;
 		//----------------------------------------------------------------------
 		switch (density_model)
 		{
@@ -1168,31 +1155,15 @@ double CFluidProperties::Density(double* variables)
 				density = MATCalcFluidDensityMethod8(primary_variable[0], primary_variable[1], primary_variable[2]);
 				break;
 			case 10: // Get density from temperature-pressure values from fct-file NB
-				if (!T_Process)
-					primary_variable[1] = T_0;
-				else
-					primary_variable[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				density = GetMatrixValue(primary_variable[1], primary_variable[0], fluid_name, &gueltig);
 				break;
 			case 11: // Peng-Robinson equation of state NB
-				if (!T_Process)
-					primary_variable[1] = T_0;
-				else
-					primary_variable[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				density = rkeos(primary_variable[1], primary_variable[0], fluid_id);
 				break;
 			case 12: // Redlich-Kwong equation of state NB
-				if (!T_Process)
-					primary_variable[1] = T_0;
-				else
-					primary_variable[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				density = preos(this, primary_variable[1], primary_variable[0]);
 				break;
 			case 13: // Helmholtz free Energy NB JUN 09
-				if (!T_Process)
-					primary_variable[1] = T_0;
-				else
-					primary_variable[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				// NB
 				density = zero(primary_variable[1], primary_variable[0], fluid_id, 1e-8);
 				break;
@@ -1604,9 +1575,7 @@ double CFluidProperties::Viscosity(double* variables)
 			}
 			// ToDo pcs_name
 			if (!T_Process)
-				primary_variable[1] = T_0 + viscosity_T_shift;
-			else
-				primary_variable[1] += viscosity_T_shift; // JM if viscosity_T_shift==273 (user defined), Celsius can be
+				primary_variable[1] = T_0;
 			// used within this model
 			viscosity = LiquidViscosity_Yaws_1976(primary_variable[1]);
 			break;
@@ -2152,8 +2121,6 @@ double MFPCalcFluidsHeatCapacity(CFiniteElementStd* assem)
 		m_mfp = mfp_vector[1];
 		// 2 Dec 2010 AKS
 		rho_g = rho_gw + m_mfp->Density(dens_aug);
-		// double rho_g = PG2*FluidConstant::ComponentMolarMassAir()
-		// /(FluidConstant::GasConstant()*(assem->TG+273.15));\\WW
 		//
 		m_mfp = mfp_vector[0];
 		heat_capacity_fluids = Sw * m_mfp->Density() * m_mfp->SpecificHeatCapacity();
