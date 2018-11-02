@@ -193,6 +193,18 @@ vector<int> pcs_number_mass; // JT2012
 namespace process
 {
 class CRFProcessDeformation;
+
+bool isTemperatureUnitCesius()
+{
+	for (std::size_t i = 0; i < pcs_vector.size(); i++)
+	{
+		if (pcs_vector[i]->getTemperatureUnit() == FiniteElement::CELSIUS)
+		{
+			return true;
+		}
+	}
+	return false;
+}
 }
 using process::CRFProcessDeformation;
 using MeshLib::CNode;
