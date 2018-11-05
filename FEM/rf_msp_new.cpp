@@ -1333,8 +1333,7 @@ double CSolidProperties::Heat_Capacity(double refence)
 			val = (*data_Capacity)(0);
 			break;
 		case 3:
-			// WW        val=1.38*(273.15+refence)+732.5;
-			val = 1.38 * refence + 732.5;
+			val = 1.38 * (refence - PhysicalConstant::CelsiusZeroInKelvin) + 732.5;
 			break;
 		case 4: // solid capacity depending on solid density (for thermochemical heat storage) - TN
 			// refence contains value of solid density (current)
