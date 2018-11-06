@@ -194,16 +194,17 @@ namespace process
 {
 class CRFProcessDeformation;
 
+// For the condition of the default temperature being CELSIUS
 bool isTemperatureUnitCesius()
 {
 	for (std::size_t i = 0; i < pcs_vector.size(); i++)
 	{
-		if (pcs_vector[i]->getTemperatureUnit() == FiniteElement::CELSIUS)
+		if (pcs_vector[i]->getTemperatureUnit() == FiniteElement::KELVIN)
 		{
-			return true;
+			return false;
 		}
 	}
-	return false;
+	return true;
 }
 }
 using process::CRFProcessDeformation;
