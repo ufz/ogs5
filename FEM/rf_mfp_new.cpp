@@ -67,7 +67,8 @@ double TemperatureUnitOffset()
    Programing:
    08/2004 OK Implementation
 **************************************************************************/
-CFluidProperties::CFluidProperties() : name("WATER")
+CFluidProperties::CFluidProperties() : name("WATER"),
+	_reference_temperature(PhysicalConstant::CelsiusZeroInKelvin + 20.0)
 {
 	phase = 0;
 	// Density
@@ -331,7 +332,6 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 				in >> T_0;
 				T_0 += TemperatureUnitOffset();
 				in >> drho_dT;
-				T_0 += TemperatureUnitOffset();
 				density_pcs_name_vector.push_back("TEMPERATURE1");
 			}
 			if (density_model == 5) // rho(C,T) = rho_0*(1+beta_C*(C-C_0)+beta_T*(T-T_0))
@@ -926,7 +926,7 @@ void CFluidProperties::CalPrimaryVariable(std::vector<std::string>& pcs_name_vec
 		return;
 
 	primary_variable[0] = 0;
-	primary_variable[1] = T_0;
+	primary_variable[1] = 0.;
 	primary_variable[2] = 0;
 
 	for (int i = 0; i < (int)pcs_name_vector.size(); i++)
@@ -952,9 +952,17 @@ void CFluidProperties::CalPrimaryVariable(std::vector<std::string>& pcs_name_vec
 			primary_variable_t0[i] = Fem_Ele_Std->elemnt_average(nidx0, m_pcs);
 			primary_variable_t1[i] = Fem_Ele_Std->elemnt_average(nidx1, m_pcs);
 		}
-		if (mode == 3) // NB, just testing
-
+		else if (mode == 3) // NB, just testing
+		{
 			primary_variable[i] = Fem_Ele_Std->interpolate(nidx0, m_pcs);
+		}
+		else
+		{
+			if (pcs_name_vector[i].compare("TEMPERATURE1") == 0)
+			{
+				primary_variable[i] = _reference_temperature;
+			}
+		}
 	}
 }
 

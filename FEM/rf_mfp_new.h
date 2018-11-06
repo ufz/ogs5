@@ -225,6 +225,8 @@ private:
 	double heat_conductivity;
 	double temperature_buffer; // YD, shifted to public JOD
 
+	const double _reference_temperature;
+
 	// State variables
 	double p_0;
 	/**
