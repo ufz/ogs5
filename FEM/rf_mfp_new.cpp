@@ -926,7 +926,7 @@ void CFluidProperties::CalPrimaryVariable(std::vector<std::string>& pcs_name_vec
 		return;
 
 	primary_variable[0] = 0;
-	primary_variable[1] = 0;
+	primary_variable[1] = T_0;
 	primary_variable[2] = 0;
 
 	for (int i = 0; i < (int)pcs_name_vector.size(); i++)
@@ -983,8 +983,6 @@ double CFluidProperties::Density(double* variables)
 	//----------------------------------------------------------------------
 	if (variables) // This condition is added by WW
 	{
-		if (!T_Process)
-			variables[1] = T_0;
 		//----------------------------------------------------------------------
 		// Duplicate the following lines just to enhance computation. WW
 		switch (density_model)
@@ -1126,8 +1124,6 @@ double CFluidProperties::Density(double* variables)
 	{
 		CalPrimaryVariable(density_pcs_name_vector);
 
-		if (!T_Process)
-			primary_variable[1] = T_0;
 		//----------------------------------------------------------------------
 		switch (density_model)
 		{
@@ -1589,8 +1585,6 @@ double CFluidProperties::Viscosity(double* variables)
 				primary_variable[1] = m_pcs->GetNodeValue(node, m_pcs->GetNodeValueIndex("TEMPERATURE1") + 1);
 			}
 			// ToDo pcs_name
-			if (!T_Process)
-				primary_variable[1] = T_0;
 			// used within this model
 			viscosity = LiquidViscosity_Yaws_1976(primary_variable[1]);
 			break;
@@ -1611,9 +1605,6 @@ double CFluidProperties::Viscosity(double* variables)
 		case 9: // viscosity as function of density and temperature, NB
 		{
 			double mfp_arguments[2];
-
-			if (!T_Process)
-				primary_variable[1] = T_0;
 			// TODO: switch case different models...
 			// Problem.cpp 3 PS_GLOBAL, 1212,1313 pcs_type
 			// TODO: default fluid_ID, if not specified
