@@ -15,10 +15,7 @@
    last modified:
 **************************************************************************/
 #include "makros.h"
-// C++ STL
-//#include <math.h>
-//#include <fstream>
-//#include <iostream>
+
 #include <cfloat>
 
 // FEM-Makros
@@ -469,8 +466,6 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 			}
 			if (viscosity_model == 3) // my(T), Yaws et al. (1976)
 			{ // optional: read reference temperature for viscosity model
-				std::string arg1;
-				in >> arg1; // get one optional argument
 				viscosity_pcs_name_vector.push_back("PRESSURE1"); // JM dummy wird benoetigt!
 				// OK4704
 				viscosity_pcs_name_vector.push_back("TEMPERATURE1");
