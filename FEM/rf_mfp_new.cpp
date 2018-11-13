@@ -17,6 +17,7 @@
 #include "makros.h"
 
 #include <cfloat>
+#include <limits>
 
 // FEM-Makros
 //#include "mathlib.h"
@@ -1067,9 +1068,10 @@ double CFluidProperties::Density(double* variables)
 			case 8: // M14 von JdJ // 25.1.12 Added by CB for density output AB-model
 				{
 					const double T = variables[1];
-					density = densityIAPWS->getValue(variables[0], T);
+					const double p = std::max(0.0, variables[0]);
+					density = densityIAPWS->getValue(p, T);
 					// // M14 von JdJ // 25.1.12 Added by CB for density output AB-model, 
-					//MATCalcFluidDensityMethod8(variables[0], variables[1], variables[2]);
+					//MATCalcFluidDensityMethod8(p, T, variables[2]);
 				}
 				break;
 			case 10: // Get density from temperature-pressure values from fct-file	NB 4.8.01
@@ -1221,9 +1223,10 @@ double CFluidProperties::Density(double* variables)
 			case 8: // M14 von JdJ
 				{
 					const double T = primary_variable[1];
-					density = densityIAPWS->getValue(primary_variable[0], T);
+					const double p = std::max(0.0, primary_variable[0]);
+					density = densityIAPWS->getValue(p, T);
 					// // M14 von JdJ // 25.1.12 Added by CB for density output AB-model, 
-					//MATCalcFluidDensityMethod8(primary_variable[0], primary_variable[1], primary_variable[2]);
+					//MATCalcFluidDensityMethod8(p, T, primary_variable[2]);
 				}
 				break;
 			case 10: // Get density from temperature-pressure values from fct-file NB
@@ -3419,7 +3422,8 @@ double CFluidProperties::drhodT(double* variables)
 		case 8:
 			{
 				const double T = variables[1];
-				drhodT = densityIAPWS->getdValuedT(variables[0], T);
+				const double p = std::max(0.0, variables[0]);
+				drhodT = densityIAPWS->getdValuedT(p, T);
 				/*
 				const double perturbation = 1.e-4;
 				drhodT = (MATCalcFluidDensityMethod8(p, T+perturbation, 0.0)
