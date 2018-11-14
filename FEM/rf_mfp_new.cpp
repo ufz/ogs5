@@ -15,10 +15,7 @@
    last modified:
 **************************************************************************/
 #include "makros.h"
-// C++ STL
-//#include <math.h>
-//#include <fstream>
-//#include <iostream>
+
 #include <cfloat>
 
 // FEM-Makros
@@ -56,13 +53,19 @@ using namespace std;
 //==========================================================================
 std::vector<CFluidProperties*> mfp_vector;
 
+double TemperatureUnitOffset()
+{
+	return process::isTemperatureUnitCesius() ? PhysicalConstant::CelsiusZeroInKelvin : 0.0;
+}
+
 /**************************************************************************
    FEMLib-Method:
    Task: OBJ constructor
    Programing:
    08/2004 OK Implementation
 **************************************************************************/
-CFluidProperties::CFluidProperties() : name("WATER")
+CFluidProperties::CFluidProperties() : name("WATER"),
+	_reference_temperature(PhysicalConstant::CelsiusZeroInKelvin + 20.0)
 {
 	phase = 0;
 	// Density
@@ -73,7 +76,6 @@ CFluidProperties::CFluidProperties() : name("WATER")
 	drho_dC = 0.;
 	// Viscosity
 	viscosity_model = 1;
-	viscosity_T_shift = 0.0;
 	my_0 = 1e-3;
 	dmy_dp = 0.;
 	dmy_dT = 0.;
@@ -89,7 +91,7 @@ CFluidProperties::CFluidProperties() : name("WATER")
 	diffusion = 2.13e-6;
 	// State variables
 	p_0 = 101325.;
-	T_0 = 293.;
+	T_0 = PhysicalConstant::CelsiusZeroInKelvin + 20.0;
 	C_0 = 0.;
 	Z = 1.;
 	cal_gravity = true;
@@ -325,6 +327,7 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 			{
 				in >> rho_0;
 				in >> T_0;
+				T_0 += TemperatureUnitOffset();
 				in >> drho_dT;
 				density_pcs_name_vector.push_back("TEMPERATURE1");
 			}
@@ -334,6 +337,7 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 				in >> C_0;
 				in >> drho_dC;
 				in >> T_0;
+				T_0 += TemperatureUnitOffset();
 				in >> drho_dT;
 				density_pcs_name_vector.push_back("CONCENTRATION1");
 				density_pcs_name_vector.push_back("TEMPERATURE1");
@@ -344,6 +348,7 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 				in >> p_0;
 				in >> drho_dp;
 				in >> T_0;
+				T_0 += TemperatureUnitOffset();
 				in >> drho_dT;
 				density_pcs_name_vector.push_back("PRESSURE1");
 				density_pcs_name_vector.push_back("TEMPERATURE1");
@@ -374,12 +379,13 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 					if (isdigit(arg1[0]) != 0) // first argument is reference temperature
 					{
 						T_0 = atof(arg1.c_str());
+						T_0 += TemperatureUnitOffset();
 						arg1 = arg2;
 						arg2 = arg3;
 					}
 				}
 				else
-					T_0 = 0.0;
+					T_0 = TemperatureUnitOffset();
 
 				if (arg1.length() == 0) // if no arguments are given use standard
 				{
@@ -434,6 +440,7 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 		{
 			in.str(GetLineFromFile1(mfp_file));
 			in >> T_0 >> T_0;
+			T_0 += TemperatureUnitOffset();
 			in.clear();
 			continue;
 		}
@@ -459,12 +466,6 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 			}
 			if (viscosity_model == 3) // my(T), Yaws et al. (1976)
 			{ // optional: read reference temperature for viscosity model
-				std::string arg1;
-				in >> arg1; // get one optional argument
-				if (arg1.length() > 0)
-					if (isdigit(arg1[0]) != 0) // first argument is temperature shift for viscosity, in order to allow
-						// the use of deg Celsius
-						viscosity_T_shift = atof(arg1.c_str());
 				viscosity_pcs_name_vector.push_back("PRESSURE1"); // JM dummy wird benoetigt!
 				// OK4704
 				viscosity_pcs_name_vector.push_back("TEMPERATURE1");
@@ -561,7 +562,9 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 			if (heat_capacity_model == 3) // YD: improved phase change
 			{
 				in >> T_Latent1; // Tmin for phase change
+				T_Latent1 += TemperatureUnitOffset();
 				in >> T_Latent2; // Tmax for phase change
+				T_Latent2 += TemperatureUnitOffset();
 				in >> heat_phase_change_curve;
 				specific_heat_capacity_pcs_name_vector.push_back("PRESSURE1");
 				specific_heat_capacity_pcs_name_vector.push_back("TEMPERATURE1");
@@ -571,7 +574,9 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 			if (heat_capacity_model == 4) // YD: improved phase change, function
 			{
 				in >> T_Latent1; // Tmin for phase change
+				T_Latent1 += TemperatureUnitOffset();
 				in >> T_Latent2; // Tmax for phase change
+				T_Latent1 += TemperatureUnitOffset();
 				in >> specific_heat_capacity; // ^c
 				in >> latent_heat; // L
 				specific_heat_capacity_pcs_name_vector.push_back("PRESSURE1");
@@ -916,7 +921,7 @@ void CFluidProperties::CalPrimaryVariable(std::vector<std::string>& pcs_name_vec
 		return;
 
 	primary_variable[0] = 0;
-	primary_variable[1] = 0;
+	primary_variable[1] = 0.;
 	primary_variable[2] = 0;
 
 	for (int i = 0; i < (int)pcs_name_vector.size(); i++)
@@ -942,9 +947,17 @@ void CFluidProperties::CalPrimaryVariable(std::vector<std::string>& pcs_name_vec
 			primary_variable_t0[i] = Fem_Ele_Std->elemnt_average(nidx0, m_pcs);
 			primary_variable_t1[i] = Fem_Ele_Std->elemnt_average(nidx1, m_pcs);
 		}
-		if (mode == 3) // NB, just testing
-
+		else if (mode == 3) // NB, just testing
+		{
 			primary_variable[i] = Fem_Ele_Std->interpolate(nidx0, m_pcs);
+		}
+		else
+		{
+			if (pcs_name_vector[i].compare("TEMPERATURE1") == 0)
+			{
+				primary_variable[i] = _reference_temperature;
+			}
+		}
 	}
 }
 
@@ -1007,29 +1020,16 @@ double CFluidProperties::Density(double* variables)
 				density = MATCalcFluidDensityMethod8(variables[0], variables[1], variables[2]);
 				break;
 			case 10: // Get density from temperature-pressure values from fct-file	NB 4.8.01
-				if (!T_Process)
-					variables[1] = T_0;
-				else
-					variables[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				density = GetMatrixValue(variables[1], variables[0], fluid_name, &gueltig);
 				break;
 			case 11: // Redlich-Kwong EOS for different fluids NB 4.9.05
-				if (!T_Process)
-					variables[1] = T_0;
-				else
-					variables[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				density = rkeos(variables[1], variables[0], fluid_id);
 				break;
 			case 12: // Peng-Robinson EOS for different fluids NB 4.9.05
-				if (!T_Process)
-					variables[1] = T_0;
-				else
-					variables[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				// NB
 				density = preos(this, variables[1], variables[0]);
 				break;
 			case 13: // Helmholtz free Energy NB JUN 09
-				variables[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				// NB
 				density = zero(variables[1], variables[0], fluid_id, 1e-8);
 				break;
@@ -1126,6 +1126,7 @@ double CFluidProperties::Density(double* variables)
 	else
 	{
 		CalPrimaryVariable(density_pcs_name_vector);
+
 		//----------------------------------------------------------------------
 		switch (density_model)
 		{
@@ -1168,31 +1169,15 @@ double CFluidProperties::Density(double* variables)
 				density = MATCalcFluidDensityMethod8(primary_variable[0], primary_variable[1], primary_variable[2]);
 				break;
 			case 10: // Get density from temperature-pressure values from fct-file NB
-				if (!T_Process)
-					primary_variable[1] = T_0;
-				else
-					primary_variable[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				density = GetMatrixValue(primary_variable[1], primary_variable[0], fluid_name, &gueltig);
 				break;
 			case 11: // Peng-Robinson equation of state NB
-				if (!T_Process)
-					primary_variable[1] = T_0;
-				else
-					primary_variable[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				density = rkeos(primary_variable[1], primary_variable[0], fluid_id);
 				break;
 			case 12: // Redlich-Kwong equation of state NB
-				if (!T_Process)
-					primary_variable[1] = T_0;
-				else
-					primary_variable[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				density = preos(this, primary_variable[1], primary_variable[0]);
 				break;
 			case 13: // Helmholtz free Energy NB JUN 09
-				if (!T_Process)
-					primary_variable[1] = T_0;
-				else
-					primary_variable[1] += T_0; // JM if T_0==273 (user defined), Celsius can be used within this model
 				// NB
 				density = zero(primary_variable[1], primary_variable[0], fluid_id, 1e-8);
 				break;
@@ -1603,10 +1588,6 @@ double CFluidProperties::Viscosity(double* variables)
 				primary_variable[1] = m_pcs->GetNodeValue(node, m_pcs->GetNodeValueIndex("TEMPERATURE1") + 1);
 			}
 			// ToDo pcs_name
-			if (!T_Process)
-				primary_variable[1] = T_0 + viscosity_T_shift;
-			else
-				primary_variable[1] += viscosity_T_shift; // JM if viscosity_T_shift==273 (user defined), Celsius can be
 			// used within this model
 			viscosity = LiquidViscosity_Yaws_1976(primary_variable[1]);
 			break;
@@ -1627,9 +1608,6 @@ double CFluidProperties::Viscosity(double* variables)
 		case 9: // viscosity as function of density and temperature, NB
 		{
 			double mfp_arguments[2];
-
-			if (!T_Process)
-				primary_variable[1] = T_0;
 			// TODO: switch case different models...
 			// Problem.cpp 3 PS_GLOBAL, 1212,1313 pcs_type
 			// TODO: default fluid_ID, if not specified
@@ -2143,7 +2121,7 @@ double MFPCalcFluidsHeatCapacity(CFiniteElementStd* assem)
 		PG = assem->interpolate(assem->NodalValC1);
 		Sw = assem->MediaProp->SaturationCapillaryPressureFunction(PG);
 		double PG2 = assem->interpolate(assem->NodalVal_p2);
-		TG = assem->interpolate(assem->NodalVal1) + PhysicalConstant::CelsiusZeroInKelvin;
+		TG = assem->interpolate(assem->NodalVal1);
 		rhow = assem->FluidProp->Density();
 		rho_gw = assem->FluidProp->vaporDensity(TG) * exp(-PG / (rhow * SpecificGasConstant::WaterVapour * TG));
 		p_gw = rho_gw * SpecificGasConstant::WaterVapour * TG;
@@ -2152,8 +2130,6 @@ double MFPCalcFluidsHeatCapacity(CFiniteElementStd* assem)
 		m_mfp = mfp_vector[1];
 		// 2 Dec 2010 AKS
 		rho_g = rho_gw + m_mfp->Density(dens_aug);
-		// double rho_g = PG2*FluidConstant::ComponentMolarMassAir()
-		// /(FluidConstant::GasConstant()*(assem->TG+273.15));\\WW
 		//
 		m_mfp = mfp_vector[0];
 		heat_capacity_fluids = Sw * m_mfp->Density() * m_mfp->SpecificHeatCapacity();
@@ -2393,7 +2369,7 @@ double CFluidProperties::LiquidViscosity_CMCD(double Press, double TempK, double
 	A8 = 0.0005218684;
 
 	/*Unit conversions*/
-	TempC = TempK - 273.15;
+	TempC = TempK - PhysicalConstant::CelsiusZeroInKelvin;
 	TempF = TempC * 1.8 + 32.0;
 	Pbar = Press / 100000.0;
 	/*end of units conversion*/
@@ -2732,7 +2708,7 @@ double CFluidProperties::MATCalcHeatConductivityMethod2(double Press, double Tem
 	A8 = 0.0005218684;
 
 	/*Unit conversions*/
-	TempC = TempK - 273.15;
+	TempC = TempK - PhysicalConstant::CelsiusZeroInKelvin;
 	TempF = TempC * 1.8 + 32.0;
 	if (TempF < 0.0)
 		TempF = 0.0;
@@ -3062,29 +3038,29 @@ double CFluidProperties::CalcEnthalpy(double temperature)
 		case 5:
 			MFPGet("LIQUID");
 			//------------PART 1--------------------------------
-			T0_integrate = 273.15;
-			T1_integrate = T_Latent1 + 273.15;
+			T0_integrate = PhysicalConstant::CelsiusZeroInKelvin;
+			T1_integrate = T_Latent1;
 			int npoint = 100; // Gauss point
 			double DT = (T1_integrate - T0_integrate) / npoint;
 			for (int i = 0; i < npoint; i++)
 			{
-				temperature_buffer = T0_integrate + i * DT - 273.15;
+				temperature_buffer = T0_integrate + i * DT;
 				heat_capacity_all = Fem_Ele_Std->FluidProp->SpecificHeatCapacity();
-				temperature_buffer = T0_integrate + (i + 1) * DT - 273.15;
+				temperature_buffer = T0_integrate + (i + 1) * DT;
 				heat_capacity_all += Fem_Ele_Std->FluidProp->SpecificHeatCapacity();
 				val += 0.5 * DT * heat_capacity_all;
 			}
 
 			//------------PART 2--------------------------------
 			npoint = 500;
-			T0_integrate = T_Latent1 + 273.15;
-			T1_integrate = temperature + 273.15;
+			T0_integrate = T_Latent1;
+			T1_integrate = temperature;
 			DT = (T1_integrate - T0_integrate) / npoint;
 			for (int i = 0; i < npoint; i++)
 			{
-				temperature_buffer = T0_integrate + i * DT - 273.15;
+				temperature_buffer = T0_integrate + i * DT;
 				heat_capacity_all = Fem_Ele_Std->FluidProp->SpecificHeatCapacity();
-				temperature_buffer = T0_integrate + (i + 1) * DT - 273.15;
+				temperature_buffer = T0_integrate + (i + 1) * DT;
 				heat_capacity_all += Fem_Ele_Std->FluidProp->SpecificHeatCapacity();
 				val += 0.5 * DT * heat_capacity_all;
 			}

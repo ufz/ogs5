@@ -54,6 +54,12 @@ using namespace std;
 using FiniteElement::ElementValue_DM;
 using Math_Group::Matrix;
 
+
+double TemperatureUnitOffset()
+{
+	return process::isTemperatureUnitCesius() ? PhysicalConstant::CelsiusZeroInKelvin : 0.0;
+}
+
 /**************************************************************************
    FEMLib-Method:
    Task: OBJ read function
@@ -214,6 +220,8 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 					data_Capacity = new Matrix(5);
 					for (i = 0; i < 5; i++)
 						in_sd >> (*data_Capacity)(i);
+					(*data_Capacity)(2) += TemperatureUnitOffset();
+					(*data_Capacity)(3) += TemperatureUnitOffset();
 					in_sd.clear();
 					break;
 				case 3: // DECOVALEX THM1, Bentonite
@@ -291,6 +299,8 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 					data_Conductivity = new Matrix(4);
 					for (i = 0; i < 4; i++)
 						in_sd >> (*data_Conductivity)(i);
+					(*data_Capacity)(2) += TemperatureUnitOffset();
+					(*data_Capacity)(3) += TemperatureUnitOffset();
 					in_sd.clear();
 					capacity_pcs_name_vector.push_back("TEMPERATURE1");
 					capacity_pcs_name_vector.push_back("SATURATION1");
@@ -323,6 +333,7 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 					break;
 				case 5: // DECOVALEX2015, Task B2, Buffer: f(S,T) by matrix function
 					in_sd >> T_0;
+					T_0 += TemperatureUnitOffset();
 					in_sd.clear();
 					conductivity_pcs_name_vector.push_back("TEMPERATURE1");
 					conductivity_pcs_name_vector.push_back("SATURATION1");
@@ -604,6 +615,7 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 					(*data_Creep)(i) = 0.;
 					in_sd >> (*data_Creep)(i);
 				}
+				(*data_Creep)(10) += TemperatureUnitOffset();
 				in_sd.clear();
 
 				// Local Newton scheme for Burgers model. TN 06.06.2014
@@ -641,6 +653,7 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 					(*data_Creep)(i) = 0.;
 					in_sd >> (*data_Creep)(i);
 				}
+				(*data_Creep)(15) += TemperatureUnitOffset();
 				in_sd.clear();
 
 				// Local Newton scheme for Burgers model. TN 06.06.2014
@@ -906,6 +919,7 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
 		{
 			in_sd.str(GetLineFromFile1(msp_file));
 			in_sd >> T_ref_enthalpy_correction;
+			T_ref_enthalpy_correction += TemperatureUnitOffset();
 			in_sd.clear();
 		}
 
@@ -1319,8 +1333,7 @@ double CSolidProperties::Heat_Capacity(double refence)
 			val = (*data_Capacity)(0);
 			break;
 		case 3:
-			// WW        val=1.38*(273.15+refence)+732.5;
-			val = 1.38 * refence + 732.5;
+			val = 1.38 * (refence - PhysicalConstant::CelsiusZeroInKelvin) + 732.5;
 			break;
 		case 4: // solid capacity depending on solid density (for thermochemical heat storage) - TN
 			// refence contains value of solid density (current)
@@ -7844,19 +7857,19 @@ void CSolidProperties::AddStain_by_Creep(const int ns, double* stress_n, double*
 		case 2:
 			// gas constant = R = 8.314472(15) J ?K-1 ?mol-1
 			// ec= A*exp(-G/RT)s^n
-			fac = 1.5 * dt * (*data_Creep)(0) * exp(-(*data_Creep)(2) / (8.314472 * (temperature + 273.15)))
+			fac = 1.5 * dt * (*data_Creep)(0) * exp(-(*data_Creep)(2) / (PhysicalConstant::IdealGasConstant * temperature))
 			      * pow(norn_S, (*data_Creep)(1));
 			break;
 		// TN: BGRb
 		case 3:
-			fac = 1.5 * dt * ((*data_Creep)(0) * exp(-(*data_Creep)(2) / (8.314472 * (temperature + 273.15)))
+			fac = 1.5 * dt * ((*data_Creep)(0) * exp(-(*data_Creep)(2) / (PhysicalConstant::IdealGasConstant * temperature))
 			                      * pow(norn_S, (*data_Creep)(1))
-			                  + (*data_Creep)(3) * exp(-(*data_Creep)(5) / (8.314472 * (temperature + 273.15)))
+			                  + (*data_Creep)(3) * exp(-(*data_Creep)(5) / (PhysicalConstant::IdealGasConstant * temperature))
 			                        * pow(norn_S, (*data_Creep)(4)));
 			break;
 		// TN: BGRsf
 		case 4:
-			fac = 1.5 * dt * ((*data_Creep)(0) * exp(-(*data_Creep)(2) / (8.314472 * (temperature + 273.15)))
+			fac = 1.5 * dt * ((*data_Creep)(0) * exp(-(*data_Creep)(2) / (PhysicalConstant::IdealGasConstant * temperature))
 			                      * pow(norn_S, (*data_Creep)(1))
 			                  + (*data_Creep)(4) * pow(norn_S, 2));
 			break;
@@ -7936,7 +7949,7 @@ void CSolidProperties::AddStain_by_HL_ODS(const ElementValue_DM* ele_val, double
 	double max_etr = norn_S / ((*data_Creep)(6, 0) * exp((*data_Creep)(4, 0) * norn_S)); // WX:12.2012 bug fixed
 	double eta_k = (*data_Creep)(3, 0) * exp((*data_Creep)(5, 0) * norn_S);
 	double eta_m
-	    = (*data_Creep)(0, 0) * exp((*data_Creep)(1, 0) * norn_S) * exp((temperature + 273.16) * (*data_Creep)(2, 0));
+	    = (*data_Creep)(0, 0) * exp((*data_Creep)(1, 0) * norn_S) * exp(temperature * (*data_Creep)(2, 0));
 	if (max_etr < DBL_EPSILON)
 		return;
 	if (threshold_dev_str >= 0)

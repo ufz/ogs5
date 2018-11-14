@@ -28,6 +28,8 @@
 #include "GeoType.h"
 #include "makros.h" // JT
 
+#include "PhysicalConstant.h"
+
 // PCSLib
 #include "rf_pcs.h"
 
@@ -120,9 +122,9 @@ public:
 	// WW
 	double KozenyCarmanNew(double k_init, double n_init, double n_t); // AB
 	double VermaPruess(double k_init, double n_init, double n_t); // AB
-	void CalStressPermeabilityFactor(double* kfac, const double T = 273.0);
+	void CalStressPermeabilityFactor(double* kfac, const double T = PhysicalConstant::CelsiusZeroInKelvin);
 	// WW
-	void CalStressPermeabilityFactor2(double* kfac, const double T = 273.0);
+	void CalStressPermeabilityFactor2(double* kfac, const double T = PhysicalConstant::CelsiusZeroInKelvin);
 	// WW
 	void CalStressPermeabilityFactor3(double* kfac);
 	void CalStressPermeabilityFactor3_Coef(); // WW

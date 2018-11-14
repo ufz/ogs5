@@ -250,10 +250,32 @@ void OUTData(double time_current, int time_step_number, bool force_output)
 	bool OutputBySteps = false;
 	double tim_value;
 
+	// Unit conversion for temperature
+	CRFProcess* T_process = NULL;
+	for (size_t i = 0; i < out_vector.size(); i++)
+	{
+		m_out = out_vector[i];
+		if (m_out->doesTheVariableExist("TEMPERATURE1"))
+		{
+			T_process = m_out->GetPCS("TEMPERATURE1");
+			if (T_process && T_process->getTemperatureUnit() == FiniteElement::CELSIUS)
+			{
+				const int T_idx = T_process->GetNodeValueIndex("TEMPERATURE1") + 1;
+				for (std::size_t i = 0; i < T_process->m_msh->GetNodesNumber(false); i++)
+				{
+					T_process->SetNodeValue(
+					    i, T_idx, T_process->GetNodeValue(i, T_idx) - PhysicalConstant::CelsiusZeroInKelvin);
+				}
+				break;
+			}
+		}
+	}
+
 	for (size_t i = 0; i < out_vector.size(); i++)
 	{
 		OutputBySteps = false; // reset this flag for each COutput
 		m_out = out_vector[i];
+
 		// MSH
 		//		m_msh = m_out->GetMSH();
 		m_msh = m_out->getMesh();
@@ -607,6 +629,17 @@ void OUTData(double time_current, int time_step_number, bool force_output)
 			m_out->CalcELEFluxes();
 	} // OUT loop
 	//======================================================================
+
+	// Unit conversion for temperature. Recovery the original unit.
+	if (T_process && T_process->getTemperatureUnit() == FiniteElement::CELSIUS)
+	{
+		const int T_idx = T_process->GetNodeValueIndex("TEMPERATURE1") + 1;
+		for (std::size_t i = 0; i < T_process->m_msh->GetNodesNumber(false); i++)
+		{
+			T_process->SetNodeValue(
+			    i, T_idx, T_process->GetNodeValue(i, T_idx) + PhysicalConstant::CelsiusZeroInKelvin);
+		}
+	}
 }
 
 /**************************************************************************

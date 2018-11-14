@@ -683,10 +683,8 @@ int REACT::WriteInputPQCString(long index, /*ifstream *pqc_iinfile,*/ stringstre
 						m_pcs = PCSGet("HEAT_TRANSPORT");
 						idx = m_pcs->GetNodeValueIndex("TEMPERATURE1");
 						dval = m_pcs->GetNodeValue(index, idx);
-						if (dval < 273.0)
-							dval += 273.15; // change from °C to Kelvin if necessary
-						dval -= 273.15; // Input to PHREEQC is in °C
-						*out_buff << "temp " << dval << "  # temp "
+						// Input to PHREEQC is in °C
+						*out_buff << "temp " << dval - PhysicalConstant::CelsiusZeroInKelvin << "  # temp "
 						          << "\n";
 						temp = dval; // save for gas phase input
 					}
@@ -843,7 +841,7 @@ int REACT::WriteInputPQCString(long index, /*ifstream *pqc_iinfile,*/ stringstre
 				mm += dval;
 			}
 			//  calculate Volume of gas phase in [mol * Pa * m^3 / K / mol * K / Pa = m^3 ]
-			volume = mm * 8.314472 * (273.15 + temp) / press;
+			volume = mm * 8.314472 * temp / press;
 			while (line_string.find("#ende") == string::npos)
 			{
 				pqc_infile.getline(line, MAX_ZEILE);
@@ -856,7 +854,7 @@ int REACT::WriteInputPQCString(long index, /*ifstream *pqc_iinfile,*/ stringstre
 					*out_buff << "        -volume       " << volume * 1000.0 << "\n";
 				else if (line_string.find("-temperature") != string::npos)
 					// temperature in °Celsius
-					*out_buff << "        -temperature       " << temp << "\n";
+					*out_buff << "        -temperature       " << temp - PhysicalConstant::CelsiusZeroInKelvin << "\n";
 				else if (line_string.find("# comp") != string::npos)
 				{
 					count++;
@@ -2240,6 +2238,7 @@ int REACT::ReadReactionModelNew(ifstream* pqc_infile)
 						in.str(line_string);
 						// save temperature
 						in >> speciesname >> this->temperature;
+						temperature += process::isTemperatureUnitCesius() ? PhysicalConstant::CelsiusZeroInKelvin : 0.0; 
 						in.clear();
 					}
 			}
@@ -2585,9 +2584,7 @@ int REACT::ReadInputPhreeqc(long index, FILE* fpqc, FILE* Fphinp)
 								//                        printf("Temperature is %lf", val_in[iheat][index]);
 								/* convert temperature from Kelvin to degree celsius for PHREEQC */
 								// MX 03.05
-								if (val_in[iheat][index] < 273.0)
-									val_in[iheat][index] += 273.15;
-								FilePrintDouble(f, val_in[iheat][index] - 273.15);
+								FilePrintDouble(f, val_in[iheat][index] - PhysicalConstant::CelsiusZeroInKelvin);
 								FilePrintString(f, " # temp ");
 								LineFeed(f);
 							}
@@ -3158,10 +3155,7 @@ int REACT::WriteInputPhreeqc(long index, /*ifstream *pqc_iinfile,*/ ofstream* ou
 						m_pcs = PCSGet("HEAT_TRANSPORT");
 						idx = m_pcs->GetNodeValueIndex("TEMPERATURE1");
 						dval = m_pcs->GetNodeValue(index, idx);
-						if (dval < 273.0)
-							dval += 273.15; // change from °C to Kelvin if necessary
-						dval -= 273.15; // Input to PHREEQC is in °C
-						*out_file << "temp " << dval << "  # temp "
+						*out_file << "temp " << dval - PhysicalConstant::CelsiusZeroInKelvin << "  # temp "
 						          << "\n";
 						temp = dval; // save for gas phase input
 					}
@@ -3359,7 +3353,7 @@ int REACT::WriteInputPhreeqc(long index, /*ifstream *pqc_iinfile,*/ ofstream* ou
 			}
 
 			//  calculate Volume of gas phase in [mol * Pa * m^3 / K / mol * K / Pa = m^3 ]
-			volume = mm * 8.314472 * (273.15 + temp) / press;
+			volume = mm * 8.314472 * temp / press;
 
 			while (line_string.find("#ende") == string::npos)
 			{
@@ -4871,10 +4865,8 @@ int REACT::WriteInputPhreeqcLib(long index, stringstream* out_buff, int* nl)
 						m_pcs = PCSGet("HEAT_TRANSPORT");
 						idx = m_pcs->GetNodeValueIndex("TEMPERATURE1");
 						dval = m_pcs->GetNodeValue(index, idx);
-						if (dval < 273.0)
-							dval += 273.15; // change from °C to Kelvin if necessary
-						dval -= 273.15; // Input to PHREEQC is in °C
-						*out_buff << "temp " << dval << "\n";
+						// Input to PHREEQC is in °C
+						*out_buff << "temp " << dval - PhysicalConstant::CelsiusZeroInKelvin << "\n";
 						nline++;
 						temp = dval; // save for gas phase input
 					}
@@ -5020,7 +5012,7 @@ int REACT::WriteInputPhreeqcLib(long index, stringstream* out_buff, int* nl)
 			}
 
 			//  calculate Volume of gas phase in [mol * Pa * m^3 / K / mol * K / Pa = m^3 ]
-			volume = mm * 8.314472 * (273.15 + temp) / press;
+			volume = mm * 8.314472 * temp / press;
 
 			while (line_string.find("#ende") == string::npos)
 			{

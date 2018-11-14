@@ -42,6 +42,7 @@
 #include "tools.h"
 #include "rf_react.h"
 #include "rf_react_int.h"
+#include "PhysicalConstant.h"
 
 #ifdef OGS_FEM_CAP // CAP_REACT  //CB merge CAP 0311
 #include "rf_react_cap.h"
@@ -7710,7 +7711,7 @@ void CKinReactData::PreprocessMinKin()
 
 		// then calculate T dependent parameters A & B, from Groundwater Geochemistry, Broder Merkel
 		// Todo: get T
-		TC = T - 273.15;
+		TC = T - PhysicalConstant::CelsiusZeroInKelvin;
 		dens = 1 - (TC - 3.9863) * (TC - 3.9863) * (TC + 288.9414) / 508929.2 / (TC + 68.12963)
 		       + 0.011445 * exp(-374.3 / TC);
 		epsi = 2727.586 + 0.6224107 * T - 466.9151 * log(T) - 52000.87 / T;

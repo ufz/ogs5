@@ -11,17 +11,18 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-#include "makros.h"
-#include "DistributionInfo.h"
-#include "GeoInfo.h"
-#include "ProcessInfo.h"
-
+#include <algorithm>
 #include <iostream>
 #include <vector>
 
 #if defined(USE_PETSC) || defined(USE_MPI) //|| defined(other parallel libs)//03.3012. WW
-#include "mpi.h"
+#include <mpi.h>
 #endif
+
+#include "makros.h"
+#include "DistributionInfo.h"
+#include "GeoInfo.h"
+#include "ProcessInfo.h"
 
 namespace MeshLib
 {
@@ -100,6 +101,12 @@ public:
 	std::ios::pos_type Read(std::ifstream& in, const GEOLIB::GEOObjects& geo_obj, const std::string& unique_name);
 
 	void Write(std::fstream*);
+
+	bool doesTheVariableExist(const std::string& variable_name)
+	{
+		return std::find(_nod_value_vector.begin(), _nod_value_vector.end(), variable_name)
+			!=  _nod_value_vector.end();
+	}
 
 	// TF not used (at the moment?) REMOVE CANDIDATE
 	//    int GetPointClose(CGLPoint);

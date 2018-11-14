@@ -310,7 +310,7 @@ double conversion_rate::get_ps(const double Tads)
 // Evaporation enthalpy of water from Nunez
 double conversion_rate::get_hv(double Tads) // in kJ/kg
 {
-	Tads -= 273.15;
+	Tads -= PhysicalConstant::CelsiusZeroInKelvin;
 	if (Tads <= 10.)
 	{
 		const double c[] = {2.50052e3,  -2.1068,     -3.57500e-1, 1.905843e-1, -5.11041e-2,

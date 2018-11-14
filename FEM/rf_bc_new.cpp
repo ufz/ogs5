@@ -82,7 +82,7 @@ double cputime(double x)
 }
 #endif
 
-CBoundaryConditionNode::CBoundaryConditionNode()
+CBoundaryConditionNode::CBoundaryConditionNode() : node_value_offset(0.0)
 {
 	conditional = false;
 	for (std::size_t i = 0; i < 3; i++)
@@ -1020,7 +1020,10 @@ CBoundaryConditionsGroup::~CBoundaryConditionsGroup(void)
    10/2008 WW/CB SetTransientBCtoNodes
    last modification:
 **************************************************************************/
-void CBoundaryConditionsGroup::Set(CRFProcess* pcs, int ShiftInNodeVector, const std::string& this_pv_name)
+void CBoundaryConditionsGroup::Set(CRFProcess* pcs,
+                                   int ShiftInNodeVector,
+                                   const double value_offset,
+                                   const std::string& this_pv_name)
 {
 	//	long number_of_nodes = 0;
 	long i, j; // WX
@@ -1038,6 +1041,8 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs, int ShiftInNodeVector, const
 		_pcs_pv_name = this_pv_name;
 	CFEMesh* m_msh = pcs->m_msh;
 	// Tests //OK
+
+	const std::size_t previous_size = pcs->bc_node_value.size();
 
 	if (!m_msh)
 		std::cout << "Warning in CBoundaryConditionsGroup::Set - no MSH data"
@@ -1658,6 +1663,14 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs, int ShiftInNodeVector, const
 	   if(no_bc<1)
 	   cout << "Warning: no boundary conditions specified for " << pcs_type_name << "\n";
 	 */
+	if (std::fabs(value_offset) > 0.0)
+	{
+		for (std::size_t i = previous_size; i < pcs->bc_node_value.size(); i++)
+		{
+			pcs->bc_node_value[i]->node_value_offset = value_offset;
+		}
+	}
+
 	end_time = clock();
 	std::cout << "\t[BC] set transient BC took " << (end_time - start_time) / (double)(CLOCKS_PER_SEC) << "\n";
 }

@@ -1063,4 +1063,9 @@ extern REACT_BRNS* m_vec_BRNS;
 #endif
 
 extern bool hasAnyProcessDeactivatedSubdomains; // NW
+
+namespace process
+{
+bool isTemperatureUnitCesius();
+}
 #endif

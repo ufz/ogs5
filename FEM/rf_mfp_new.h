@@ -210,7 +210,6 @@ private:
 	double viscosity;
 	double viscosity0;
 	double viscosity_T_star;
-	double viscosity_T_shift; // JM in order to use some viscosity functions, based on total temperature, within
 	// Richards
 	double my_0;
 	double dmy_dp;
@@ -225,6 +224,8 @@ private:
 	double beta_T;
 	double heat_conductivity;
 	double temperature_buffer; // YD, shifted to public JOD
+
+	const double _reference_temperature;
 
 	// State variables
 	double p_0;

@@ -5953,12 +5953,8 @@ int CECLIPSEData::WriteDataBackToEclipse(CRFProcess* m_pcs, std::string folder)
 						// add it up
 						ele_temp += temp_temp * weight;
 					}
-					// depending on the temperature unit used in Geosys it has to be converted to °C for Ecl
-					if (ele_temp < 273.15)
-						ele_temp += 273.15;
-					// or: if(temperature_unit != Celsius)
-					// ele_temp += 273.15;
-					sstream << fixed << scientific << ele_temp; //+ 273.15;
+
+					sstream << fixed << scientific << ele_temp;
 					tempstring += sstream.str();
 					count++;
 					sstream.str("");

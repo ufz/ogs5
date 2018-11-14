@@ -26,6 +26,7 @@
 //#include "rf_num_new.h"
 #include "eos.h"
 #include "tools.h"
+#include "PhysicalConstant.h"
 
 using namespace std;
 
@@ -2724,7 +2725,7 @@ void CFluidProperties::therm_prop(string caption)
 			rhoc = 322; //[kg/m3]
 			Tc = 647.096; //[K]
 			pc = 22064000; // [Pa]
-			Tt = 273.16; //  [K]
+			Tt = PhysicalConstant::CelsiusZeroInKelvin; //  [K]
 			pt = 611.657; //  [Pa]
 			Rs = 461.51805; //  [J/kg/K]
 			molar_mass = 18.01528; //  [g/mol]
