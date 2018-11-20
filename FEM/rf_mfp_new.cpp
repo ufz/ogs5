@@ -369,7 +369,7 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
 				densityIAPWS = new MaterialLib::Fluid::WaterDensityIAPWSIF97Region1();
 				compressibility_model_temperature = 8;
 				compressibility_model_pressure = 8;
-                                density_pcs_name_vector.push_back("PRESSURE1");
+				density_pcs_name_vector.push_back("PRESSURE1");
 				density_pcs_name_vector.push_back("TEMPERATURE1");
 			}
 			if (density_model == 9) // WW
