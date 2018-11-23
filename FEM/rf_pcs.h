@@ -437,11 +437,7 @@ public:
 	// Construction / destruction
 	CRFProcess(void);
 	void Create(void);
-#if !defined(USE_PETSC) && !defined(NEW_EQS) // && defined(other parallel libs)//03~04.3012. WW
-	void CreateNew(void);
-	void CreateFDMProcess();
-	void DestroyFDMProcess();
-#endif
+
 	virtual ~CRFProcess();
 	//....................................................................
 	// IO
@@ -458,12 +454,9 @@ public:
 	// 4-IC
 	//....................................................................
 	// 5-BC
-	void CreateBCGroup();
 	void SetBC(); // OK
 	void WriteBC(); // 15.01.2008. WW
 	//....................................................................
-	// 6-ST
-	void CreateSTGroup();
 
 	void SetBoundaryConditionAndSourceTerm();
 
@@ -868,10 +861,6 @@ public:
 	void Calc2DElementGradient(MeshLib::CElem* ele, double ElementConcentration[4], double* grad);
 	// NEW
 	CRFProcess* CopyPCStoDM_PCS();
-	bool OBJRelations(); // OK
-	void OBJRelationsDelete(); // OK
-	bool NODRelations(); // OK
-	bool ELERelations(); // OK
 #if !defined(USE_PETSC) && !defined(NEW_EQS) // && defined(other parallel libs)//03~04.3012. WW
 	bool CreateEQS(); // OK
 	void EQSDelete(); // OK
@@ -879,14 +868,6 @@ public:
 	void DumpEqs(std::string file_name);
 #endif
 	bool Check(); // OK
-	void NODRelationsDelete(); // OK
-	void ELERelationsDelete(); // OK
-	bool m_bCheckOBJ; // OK
-	bool m_bCheckNOD; // OK
-	bool m_bCheckELE; // OK
-	bool m_bCheckEQS; // OK
-	void Delete(); // OK
-	bool m_bCheck; // OK
 	int ExcavMaterialGroup; // WX
 	int ExcavDirection; // WX
 	int ExcavCurve; // WX
@@ -1041,10 +1022,6 @@ extern std::vector<LINEAR_SOLVER*> PCS_Solver; // WW
 extern void MMPCalcSecondaryVariablesNew(CRFProcess* m_pcs, bool NAPLdiss);
 extern void SetFlowProcessType(); // CB 01/08
 extern void CopyTimestepNODValuesSVTPhF(); // CB 13/08
-#if !defined(USE_PETSC) && !defined(NEW_EQS) // && defined(other parallel libs)//03~04.3012. WW
-//#ifndef NEW_EQS                                   //WW. 07.11.2008
-extern void PCSCreateNew(); // OK
-#endif
 extern bool PCSCheck(); // OK
 // New solvers WW
 // Create sparse graph for each mesh    //1.11.2007 WW
