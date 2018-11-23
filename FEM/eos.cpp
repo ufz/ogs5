@@ -3645,7 +3645,7 @@ double k_ch4_h2o(int number, double T)
 //*
 //* Programming: NB, Sep10
 //*****************************************************************************/
-void DuansParameter(int fluid, double a[14], double* Tc, double* Pc, double* M)
+void DuansParameter(int fluid, double a[15], double* Tc, double* Pc, double* M)
 {
 	switch (fluid)
 	{
