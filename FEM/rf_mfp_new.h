@@ -24,6 +24,13 @@
 class CompProperties;
 class CRFProcess;
 
+namespace MaterialLib
+{
+namespace Fluid
+{
+class WaterDensityIAPWSIF97Region1;
+}
+}
 /*!
    \class hash_table
 
@@ -272,6 +279,8 @@ private:
 	double PhaseDiffusion_Yaws_1976(double);
 	double MATCalcHeatConductivityMethod2(double p, double T, double C);
 	double MATCalcFluidHeatCapacityMethod2(double p, double T, double C);
+
+	MaterialLib::Fluid::WaterDensityIAPWSIF97Region1* densityIAPWS;
 
 	friend class FiniteElement::CFiniteElementStd;
 	friend class Problem;
