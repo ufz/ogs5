@@ -386,24 +386,6 @@ public:
 
 	/** @} */ // close doxygen group
 
-//....................................................................
-#ifdef ObsoleteGUI // WW 03.2012
-	// QUAD->HEX
-	void CreateHexELEFromQuad(int, double);
-	// QUAD->LINE
-	void CreateLineELEFromQuad(int, double, int);
-	void SetActiveElements(std::vector<long>&);
-	// MB
-	void SetMSHPart(std::vector<long>&, long);
-	bool NodeExists(size_t node);
-	// LINE->LINE
-	void AppendLineELE();
-
-	// TRI->PRIS
-	void CreatePriELEFromTri(int, double);
-
-#endif
-
 	// Coordinate system
 	int GetCoordinateFlag() const { return coordinate_system; }
 	void FillTransformMatrix();
