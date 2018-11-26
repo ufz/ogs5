@@ -64,7 +64,7 @@ double TemperatureUnitOffset()
    FEMLib-Method:
    Task: OBJ read function
    Programing:
-   08/2004 OK Implementation for fuild properties
+   08/2004 OK Implementation for fluid properties
    08/2004 WW Modification for solid properties
    12/2005 WW Creep properties
 **************************************************************************/
@@ -1280,7 +1280,7 @@ double CSolidProperties::CalulateValue(const Matrix* data, const double x) const
 		return 0.0;
 
 	const int Size = data->Rows();
-	// If given varial is not in the range of data
+	// If the given variable is not in the range of data
 	if (x < (*data)(0, 0))
 		Val = (*data)(0, 1);
 	else if (x >= (*data)(Size - 1, 0))
@@ -2469,7 +2469,7 @@ void CSolidProperties::CalculateTransformMatrixFromNormalVector(const int Dimens
 double CSolidProperties::GetAngleCoefficent_DP(const double Angle)
 {
 	double val = 0.0;
-	// Input as a coefficent
+	// Input as a coefficient
 	if (Angle < 0.0)
 		val = fabs(Angle);
 	else // Input as a dialatant angle
@@ -2483,13 +2483,13 @@ double CSolidProperties::GetAngleCoefficent_DP(const double Angle)
 	}
 	return val;
 }
-// WW. 09/02. Cumpute yield coefficient, beta
+// WW. 09/02. Compute yield coefficient, beta
 // For plane strain
 // al = 6.0*c*cos(a)/sqrt(3)/(3-sin(a))
 double CSolidProperties::GetYieldCoefficent_DP(const double Angle)
 {
 	double val = 0.0;
-	// Input as a coefficent
+	// Input as a coefficient
 	if (Angle < 0.0 || Angle < MKleinsteZahl)
 		val = 1.0;
 	else // Input as a dialatant angle
@@ -2573,7 +2573,7 @@ void CSolidProperties::CalculateCoefficent_HOEKBROWN() // WX: 02.2011
    ROCKFLOW - Funktion: StressIntegrationDP
 
    Aufgabe:
-   Computing the stresses at a point and return the plastical status of this
+   Computing the stresses at a point and return the plastic status of this
    point (Return mapping method)
 
    Formalparameter: (E: Eingabe; R: Rueckgabe; X: Beides)
@@ -2592,7 +2592,7 @@ void CSolidProperties::CalculateCoefficent_HOEKBROWN() // WX: 02.2011
    const int Update                    :   Indicator to store the stress or not.
 
    Ergebnis:
-   - double* - Deviatoric effetive stresses, s11,s22,s12,s33
+   - double* - Deviatoric effective stresses, s11,s22,s12,s33
 
    Programmaenderungen:
    09/2002   WW  Erste Version
@@ -4913,7 +4913,7 @@ int CSolidProperties::DirectStressIntegrationMOHR(const int GPiGPj, ElementValue
 	return yield;
 }
 
-// WX: calculte prin. stress and direc.
+// WX: calculate prin. stress and direc.
 void CSolidProperties::CalPrinStrDir(double* stress, double* prin_str, double* prin_dir, int Dim)
 {
 	int i, j, p, q, u, w, t, s, l;
@@ -5433,7 +5433,7 @@ void CSolidProperties::AllocateMemoryforSYS()
 {
 	d2G_dSdS = new Matrix(6, 6);
 	d2G_dSdM = new Matrix(6, 4);
-	// Stresses, 0-5, xi, 6-10, mat, 11-17, plastci multiplier, 18.
+	// Stresses, 0-5, xi, 6-10, mat, 11-17, plastic multiplier, 18.
 	LocalJacobi = new Matrix(19, 19);
 	inv_Jac = new Matrix(18, 18);
 	sumA_Matrix = new Matrix(18, 6);
@@ -5466,7 +5466,7 @@ void CSolidProperties::ResizeMatricesSYS(const int Dim)
    ROCKFLOW - Funktion: CSolidProperties::CalStress_and_TangentialMatrix_SYS
 
    Aufgabe:
-     Using the substteping techniques to compute the integral of stresses and
+     Using the substepping techniques to compute the integral of stresses and
    the consistent tangential matrix.
    (Weimar's model)
 
@@ -5482,7 +5482,7 @@ void CSolidProperties::ResizeMatricesSYS(const int Dim)
    1: Save Gauss points values
 
    Ergebnis:
-   - double* - Deviatoric effetive stresses, s11,s22,s12,s33
+   - double* - Deviatoric effective stresses, s11,s22,s12,s33
 
    Programmaenderungen:
    04/2003   WW  Erste Version
@@ -6633,7 +6633,7 @@ void CSolidProperties::dG__dStress_dStress(const double* DevS, const double* Rot
 
    Aufgabe:
    Computing the second derivatives of the plastic potential with respect to
-   stresses and with recpect to material parameters (Weimar's model)
+   stresses and with respect to material parameters (Weimar's model)
 
    Formalparameter: (E: Eingabe; R: Rueckgabe; X: Beides)
    E :
@@ -6925,7 +6925,7 @@ void CSolidProperties::Gauss_Back(const int DimE, Matrix& AA, double* rhs, int* 
    ROCKFLOW - Funktion: CSolidProperties::CalStress_and_TangentialMatrix_CC
 
    Aufgabe:
-   Computing the stresses at Gauss point and return the plastical status of this
+   Computing the stresses at Gauss point and return the plastic status of this
    point. Plastic model: Cam-Clay.
    (Explicit integration of elastic model)
 
@@ -6939,7 +6939,7 @@ void CSolidProperties::Gauss_Back(const int DimE, Matrix& AA, double* rhs, int* 
    values
 
    Ergebnis:
-   - double* - Deviatoric effetive stresses, s11,s22,s12,s33
+   - double* - Deviatoric effective stresses, s11,s22,s12,s33
 
    Programmaenderungen:
    11/2003   WW  Erste Version
@@ -7411,10 +7411,10 @@ void CSolidProperties::CalStress_and_TangentialMatrix_CC(const int GPiGPj, const
                                              values
 
    Ergebnis:
-   - double* - Deviatoric effetive stresses, s11,s22,s12,s33
+   - double* - Deviatoric effective stresses, s11,s22,s12,s33
 
    Programmaenderungen:
-   06/2008   WW  Programming
+   06/2008   WW  Programing
 **************************************************************************/
 void CSolidProperties::CalStress_and_TangentialMatrix_CC_SubStep(const int GPiGPj, const ElementValue_DM* ele_val,
                                                                  double* dStrain, Matrix* Dep, const int Update)
@@ -7891,7 +7891,7 @@ void CSolidProperties::CleanTrBuffer_HL_ODS()
 }
 /**************************************************************************
    FEMLib-Method:
-   Task: Caculate increment of strain induced by HL creep model
+   Task: Calculate increment of strain induced by HL creep model
    Programing:
    10/2008 UJG/WW
    last modified:
@@ -7921,7 +7921,7 @@ void CSolidProperties::CalcYoungs_SVV(const double strain_v)
 }
 /**************************************************************************
    FEMLib-Method:
-   Task: Caculate increment of strain induced by HL creep model
+   Task: Calculate increment of strain induced by HL creep model
    Programing:
    10/2008 UJG/WW
    last modified:
@@ -8350,7 +8350,7 @@ double TensorMutiplication2(const double* s1, const double* s2, const int Dim)
 
 /**************************************************************************
    GeoSys: Norm of stress
-   06/2008   WW  Programming
+   06/2008   WW  Programing
 
 **************************************************************************/
 double StressNorm(const double* s, const int Dim)

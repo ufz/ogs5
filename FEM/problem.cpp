@@ -1787,7 +1787,7 @@ const std::string& Problem::getGeoObjName() const
 
 /*-------------------------------------------------------------------------
    GeoSys - Function: LiquidFlow
-   Task: Similate liquid flow
+   Task: Simulate liquid flow
    Return: error
    Programming:
    07/2008 WW Extract from LOPTimeLoop_PCS();

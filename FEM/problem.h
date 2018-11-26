@@ -69,7 +69,7 @@ public:
 	/**
 	 * Get the name of the project. The name is used by GEOLIB::GEOObjects
 	 * to access the geometric data.
-	 * @return the name to acces geometric data
+	 * @return the name to access geometric data
 	 */
 	const std::string& getGeoObjName() const;
 
