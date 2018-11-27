@@ -27,9 +27,9 @@ FILE(GLOB mHM2OGS_CPP RELATIVE  ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 add_executable(mHM2OGS ${mHM2OGS_H} ${mHM2OGS_CPP})
 
 target_link_libraries( mHM2OGS
-	FileIO
 	MSH
 	MSHGEOTOOLS
+	FileIO
 )
 
 if (WIN32)

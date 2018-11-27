@@ -48,16 +48,3 @@ MshElemType::type String2MshElemType(const std::string& s)
 		return MshElemType::PYRAMID;
 	return MshElemType::INVALID;
 }
-
-const std::string MshQualityType2String(const MshQualityType::type t)
-{
-	if (t == MshQualityType::AREA)
-		return "Area";
-	if (t == MshQualityType::EDGERATIO)
-		return "EdgeRatio";
-	if (t == MshQualityType::EQUIANGLESKEW)
-		return "EquiAngleSkew";
-	if (t == MshQualityType::VOLUME)
-		return "Volume";
-	return "none";
-}

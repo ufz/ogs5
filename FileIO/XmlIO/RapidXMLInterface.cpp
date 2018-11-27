@@ -46,6 +46,7 @@ std::vector<GEOLIB::Point*>* RapidXMLInterface::readStationFile(const std::strin
 	{
 		std::cout << "XmlStnInterface::readFile() - Unexpected XML root."
 		          << "\n";
+		delete stations;
 		return NULL;
 	}
 

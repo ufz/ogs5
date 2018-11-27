@@ -367,15 +367,7 @@ public:
 	Problem* getProblemObjectPointer() const;
 	std::string geo_type; // OK
 	std::string geo_type_name; // OK
-	//....................................................................
-	// 2-MSH
-	//....................................................................
-	// 3-TIM
-	//....................................................................
-	// 4-IC
-	//....................................................................
-	// 5-BC
-	// WW
+
 	std::vector<CBoundaryConditionNode*> bc_node_value;
 	std::vector<CBoundaryCondition*> bc_node; // WW
 #if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012. WW
@@ -388,7 +380,6 @@ public:
 	void UpdateTransientBC(); // WW/CB
 	void UpdateTransientST(); // WW/CB...BG
 	//....................................................................
-	// 6-ST
 	// Node values from sourse/sink or Neumann BC. WW
 	std::vector<CNodeValue*> st_node_value; // WW
 	// Contains only pointers to CSourceTerm (held by st_vector).
@@ -412,78 +403,32 @@ public:
 
 	FiniteElement::CFiniteElementStd* getLinearFEMAssembler() { return fem; }
 
-	//....................................................................
-	// 7-MFP
-	//....................................................................
-	// 8-MSP
-	//....................................................................
-	// 9-MMP
 	int GetContinnumType() const { return continuum; }
 	// const int number_continuum=1;
 	std::vector<double> continuum_vector;
-	//....................................................................
-	// 10-MCP
-	//....................................................................
-	// 11-OUT
+
 	void WriteSolution(); // WW
 	void ReadSolution(); // WW
-	//....................................................................
-	// 12-NUM
-	//....................................................................
-	// 13-ELE
-	//----------------------------------------------------------------------
-	// Methods
 	//....................................................................
 	// Construction / destruction
 	CRFProcess(void);
 	void Create(void);
-#if !defined(USE_PETSC) && !defined(NEW_EQS) // && defined(other parallel libs)//03~04.3012. WW
-	void CreateNew(void);
-	void CreateFDMProcess();
-	void DestroyFDMProcess();
-#endif
+
 	virtual ~CRFProcess();
 	//....................................................................
 	// IO
 	std::ios::pos_type Read(std::ifstream*);
 	void PCSReadConfigurations();
 	void Write(std::fstream*);
-	//....................................................................
-	// 1-GEO
-	//....................................................................
-	// 2-MSH
-	//....................................................................
-	// 3-TIM
-	//....................................................................
-	// 4-IC
-	//....................................................................
-	// 5-BC
-	void CreateBCGroup();
+
 	void SetBC(); // OK
 	void WriteBC(); // 15.01.2008. WW
 	//....................................................................
-	// 6-ST
-	void CreateSTGroup();
 
 	void SetBoundaryConditionAndSourceTerm();
 
-	//....................................................................
-	// 7-MFP
-	//....................................................................
-	// 8-MSP
-	//....................................................................
-	// 9-MMP
-	//....................................................................
-	// 10-MCP
-	//....................................................................
-	// 11-OUT
 	void WriteAllVariables(); // OK
-	//....................................................................
-	// 12-NUM
-	//....................................................................
-	// 13-ELE
-	//....................................................................
-	// 14-CPL
+
 	void SetCPL(); // OK8 OK4310
 	//....................................................................
 	// 15-EQS
@@ -693,18 +638,18 @@ public:
 	//---WW
 	CFiniteElementStd* GetAssember() { return fem; }
 	void AllocateLocalMatrixMemory();
-	virtual void GlobalAssembly(); // Make as a virtul function. //10.09.201l. WW
+	virtual void GlobalAssembly(); // Make as a virtual function. //10.09.201l. WW
 	/// For all PDEs excluding that for deformation. 24.11.2010l. WW
 	void GlobalAssembly_std(const bool is_mixed_order, bool Check2D3D = false);
 	/// Assemble EQS for deformation process.
 	virtual void GlobalAssembly_DM(){};
 #if defined(NEW_EQS) && defined(JFNK_H2M)
-	/// Jacobian free methid to calculate J*v.
+	/// Jacobian free method to calculate J*v.
 	// 11.08.2010.
 	void Jacobian_Multi_Vector_JFNK(double* v = NULL, double* Jv = NULL);
 	/// Recovery du from the temporary vector.
 	void Recovery_du_JFNK(); // 02.11.2010.
-	/// Line serach for Newton method.
+	/// Line search for Newton method.
 	double LineSearch(); // 10.12.2010.
 	/// Force term control for inexact Newton method. 01.2011.
 	bool ForceTermCriterion(double* Jdx, const int num_iteration);
@@ -799,7 +744,7 @@ public:
 	inline void setBC_danymic_problems();
 	inline void setST_danymic_problems();
 	inline void setIC_danymic_problems();
-	// Extropolate Gauss point values to node values. WW
+	// Extrapolate Gauss point values to node values. WW
 	void Extropolation_GaussValue();
 	void Extropolation_MatValue(); // WW
 	// WW. 05.2009
@@ -823,8 +768,6 @@ public:
 	// Remove argument. WW
 	void CalcSecondaryVariables(bool initial = false);
 	void MMPCalcSecondaryVariablesRichards(int timelevel, bool update);
-	// WW Reomve int timelevel, bool update
-	// WW
 
 	void CalcSecondaryVariablesTNEQ(); // HS
 	void CalcSecondaryVariablesTES(); // HS
@@ -868,10 +811,6 @@ public:
 	void Calc2DElementGradient(MeshLib::CElem* ele, double ElementConcentration[4], double* grad);
 	// NEW
 	CRFProcess* CopyPCStoDM_PCS();
-	bool OBJRelations(); // OK
-	void OBJRelationsDelete(); // OK
-	bool NODRelations(); // OK
-	bool ELERelations(); // OK
 #if !defined(USE_PETSC) && !defined(NEW_EQS) // && defined(other parallel libs)//03~04.3012. WW
 	bool CreateEQS(); // OK
 	void EQSDelete(); // OK
@@ -879,14 +818,6 @@ public:
 	void DumpEqs(std::string file_name);
 #endif
 	bool Check(); // OK
-	void NODRelationsDelete(); // OK
-	void ELERelationsDelete(); // OK
-	bool m_bCheckOBJ; // OK
-	bool m_bCheckNOD; // OK
-	bool m_bCheckELE; // OK
-	bool m_bCheckEQS; // OK
-	void Delete(); // OK
-	bool m_bCheck; // OK
 	int ExcavMaterialGroup; // WX
 	int ExcavDirection; // WX
 	int ExcavCurve; // WX
@@ -914,7 +845,7 @@ public:
 	/// Initialize the RHS array of the system of equations with the previous solution.
 	void InitializeRHS_with_u0(const bool quad = false); // in rf_pcs1.cpp
 
-	/// Initialize the unknows of equations with existing solutions within a index range.
+	/// Initialize the unknowns of equations with existing solutions within a index range.
 	void initializeRHS_with_u0(const int min_id, const int max_id); // in rf_pcs1.cpp
 #endif
 
@@ -954,7 +885,7 @@ extern void PCSDestroyAllProcesses(void);
 
 extern CRFProcess* PCSGet(const std::string&);
 /**
- * Function searchs in the global pcs_vector for a process with the process type pcs_type.
+ * Function searches in the global pcs_vector for a process with the process type pcs_type.
  * @param pcs_type process type
  * @return a pointer the the appropriate process or NULL (if not found)
  */
@@ -970,7 +901,7 @@ extern int PCSGetPCSIndex(const std::string&, const std::string&);
 extern CRFProcess* PCSGet(const std::string&, const std::string&);
 
 /**
- * Function searchs in the global pcs_vector for a process
+ * Function searches in the global pcs_vector for a process
  * with the process type pcs_type and the primary function name
  * pv_name
  * @param pcs_type the process type
@@ -1041,10 +972,6 @@ extern std::vector<LINEAR_SOLVER*> PCS_Solver; // WW
 extern void MMPCalcSecondaryVariablesNew(CRFProcess* m_pcs, bool NAPLdiss);
 extern void SetFlowProcessType(); // CB 01/08
 extern void CopyTimestepNODValuesSVTPhF(); // CB 13/08
-#if !defined(USE_PETSC) && !defined(NEW_EQS) // && defined(other parallel libs)//03~04.3012. WW
-//#ifndef NEW_EQS                                   //WW. 07.11.2008
-extern void PCSCreateNew(); // OK
-#endif
 extern bool PCSCheck(); // OK
 // New solvers WW
 // Create sparse graph for each mesh    //1.11.2007 WW
