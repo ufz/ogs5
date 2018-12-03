@@ -911,7 +911,7 @@ void MSHSelectFreeSurfaceNodes(MeshLib::CFEMesh* m_msh)
 	size_t NumberOfNodesPerLayer = m_msh->nod_vector.size() / (m_msh->getNumberOfMeshLayers() + 1);
 	size_t no_unconfined_layer = 0;
 	// create array with nodes in vertical column
-	size_t* strang(new size_t[m_msh->getNumberOfMeshLayers()]);
+	size_t* strang(new size_t[m_msh->getNumberOfMeshLayers()*2]);
 	for (size_t i = 0; i < NumberOfNodesPerLayer; i++)
 	{
 		if (m_msh->nod_vector[i]->free_surface == 4)
@@ -926,6 +926,7 @@ void MSHSelectFreeSurfaceNodes(MeshLib::CFEMesh* m_msh)
 				nextnode = MSHGetNextNode(startnode, m_msh);
 				if (m_msh->nod_vector[nextnode]->free_surface == 4)
 				{
+					
 					strang[j + 1] = nextnode;
 					no_unconfined_layer++;
 				}
