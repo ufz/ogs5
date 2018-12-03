@@ -926,7 +926,6 @@ void MSHSelectFreeSurfaceNodes(MeshLib::CFEMesh* m_msh)
 				nextnode = MSHGetNextNode(startnode, m_msh);
 				if (m_msh->nod_vector[nextnode]->free_surface == 4)
 				{
-					
 					strang[j + 1] = nextnode;
 					no_unconfined_layer++;
 				}
