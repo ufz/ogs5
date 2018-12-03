@@ -232,6 +232,7 @@ private: // TF, KR
 	void DeleteHistoryNodeMemory();
 
 	double geo_node_value;
+	double epsilon;
 
 	/**
 	 * is the source term coupled with another source term
@@ -385,8 +386,8 @@ private:
 	                                std::vector<double>& ply_nod_val_vector) const;
 
 	// JOD
-	void SetSurfaceNodeVector(Surface* m_sfc, std::vector<long>& sfc_nod_vector);
-	void SetSurfaceNodeVector(GEOLIB::Surface const* sfc, std::vector<std::size_t>& sfc_nod_vector);
+	void SetSurfaceNodeVector(Surface* m_sfc, std::vector<long>& sfc_nod_vector, CSourceTerm* st);
+	void SetSurfaceNodeVector(GEOLIB::Surface const* sfc, std::vector<std::size_t>& sfc_nod_vector, CSourceTerm* st);
 	void SetSurfaceNodeValueVector(CSourceTerm* m_st,
 	                               Surface* m_sfc,
 	                               std::vector<long> const& sfc_nod_vector,
