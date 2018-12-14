@@ -118,6 +118,7 @@ CSourceTerm::CSourceTerm()
 	//  display_mode = false; //OK
 	this->TimeInterpolation = 0; // BG
 	_isConstrainedST = false;
+	epsilon = -1;
 }
 
 // KR: Conversion from GUI-ST-object to CSourceTerm
@@ -319,6 +320,13 @@ std::ios::pos_type CSourceTerm::Read(std::ifstream* st_file, const GEOLIB::GEOOb
 		{
 			ReadGeoType(st_file, geo_obj, unique_name);
 			continue;
+		}
+
+		if (line_string.find("$EPSILON") != std::string::npos)
+		{
+			in.str(readNonBlankLineFromInputStream(*st_file));
+			in >> epsilon;
+			in.clear();
 		}
 
 		// 05.09.2008 WW
@@ -3284,11 +3292,8 @@ void CSourceTermGroup::SetSFC(CSourceTerm* m_st, const int ShiftInNodeVector)
 	{
 		GEOLIB::Surface const& sfc(*(dynamic_cast<GEOLIB::Surface const*>(m_st->getGeoObj())));
 		std::cout << "Surface " << m_st->geo_name << ": " << sfc.getNTriangles() << "\n";
-		SetSurfaceNodeVector(&sfc, sfc_node_ids);
+		SetSurfaceNodeVector(&sfc, sfc_node_ids, m_st->epsilon);
 
-		/*
-		      SetSurfaceNodeVector(m_sfc, sfc_nod_vector);
-		*/
 		sfc_nod_vector.insert(sfc_nod_vector.begin(), sfc_node_ids.begin(), sfc_node_ids.end());
 		if (m_st->isCoupled())
 			m_st->SetSurfaceNodeVectorConditional(sfc_nod_vector, sfc_nod_vector_cond);
@@ -3371,16 +3376,25 @@ void CSourceTerm::SetNOD()
  11/2007 JOD
  last modification:
  **************************************************************************/
-void CSourceTermGroup::SetSurfaceNodeVector(Surface* m_sfc, std::vector<long>& sfc_nod_vector)
+void CSourceTermGroup::SetSurfaceNodeVector(Surface* m_sfc, std::vector<long>& sfc_nod_vector, const double epsilon)
 {
+	double computed_search_length = m_msh->getSearchLength();
+	if (epsilon != -1)
+		m_msh->setSearchLength(epsilon);
 	const bool for_source = true;
 	m_msh->GetNODOnSFC(m_sfc, sfc_nod_vector, for_source);
+	m_msh->setSearchLength(computed_search_length);
 }
 
-void CSourceTermGroup::SetSurfaceNodeVector(GEOLIB::Surface const* sfc, std::vector<std::size_t>& sfc_nod_vector)
+void CSourceTermGroup::SetSurfaceNodeVector(GEOLIB::Surface const* sfc, std::vector<std::size_t>& sfc_nod_vector, const double epsilon)
 {
+	double computed_search_length = m_msh->getSearchLength();
+	if (epsilon != -1)
+		m_msh->setSearchLength(epsilon);
 	const bool for_source = true;
 	m_msh->GetNODOnSFC(sfc, sfc_nod_vector, for_source);
+	m_msh->setSearchLength(computed_search_length);
+
 }
 
 /**************************************************************************
