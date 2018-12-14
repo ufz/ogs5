@@ -3292,11 +3292,8 @@ void CSourceTermGroup::SetSFC(CSourceTerm* m_st, const int ShiftInNodeVector)
 	{
 		GEOLIB::Surface const& sfc(*(dynamic_cast<GEOLIB::Surface const*>(m_st->getGeoObj())));
 		std::cout << "Surface " << m_st->geo_name << ": " << sfc.getNTriangles() << "\n";
-		SetSurfaceNodeVector(&sfc, sfc_node_ids, m_st);
+		SetSurfaceNodeVector(&sfc, sfc_node_ids, m_st->epsilon);
 
-		/*
-		      SetSurfaceNodeVector(m_sfc, sfc_nod_vector,m_st);
-		*/
 		sfc_nod_vector.insert(sfc_nod_vector.begin(), sfc_node_ids.begin(), sfc_node_ids.end());
 		if (m_st->isCoupled())
 			m_st->SetSurfaceNodeVectorConditional(sfc_nod_vector, sfc_nod_vector_cond);
@@ -3379,21 +3376,21 @@ void CSourceTerm::SetNOD()
  11/2007 JOD
  last modification:
  **************************************************************************/
-void CSourceTermGroup::SetSurfaceNodeVector(Surface* m_sfc, std::vector<long>& sfc_nod_vector, CSourceTerm* st)
+void CSourceTermGroup::SetSurfaceNodeVector(Surface* m_sfc, std::vector<long>& sfc_nod_vector, const double epsilon)
 {
 	double computed_search_length = m_msh->getSearchLength();
-	if (st->epsilon != -1)
-		m_msh->setSearchLength(st->epsilon);
+	if (epsilon != -1)
+		m_msh->setSearchLength(epsilon);
 	const bool for_source = true;
 	m_msh->GetNODOnSFC(m_sfc, sfc_nod_vector, for_source);
 	m_msh->setSearchLength(computed_search_length);
 }
 
-void CSourceTermGroup::SetSurfaceNodeVector(GEOLIB::Surface const* sfc, std::vector<std::size_t>& sfc_nod_vector, CSourceTerm* st)
+void CSourceTermGroup::SetSurfaceNodeVector(GEOLIB::Surface const* sfc, std::vector<std::size_t>& sfc_nod_vector, const double epsilon)
 {
 	double computed_search_length = m_msh->getSearchLength();
-	if (st->epsilon != -1)
-		m_msh->setSearchLength(st->epsilon);
+	if (epsilon != -1)
+		m_msh->setSearchLength(epsilon);
 	const bool for_source = true;
 	m_msh->GetNODOnSFC(sfc, sfc_nod_vector, for_source);
 	m_msh->setSearchLength(computed_search_length);
