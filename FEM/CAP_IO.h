@@ -10,7 +10,7 @@
 #include <vector>
 // using namespace std;
 
-#ifndef OGS_FEM_CAP // CAP_REACT
+#ifndef OGS_FEM_CAP  // CAP_REACT
 #ifdef UNIX
 #define LI long
 #define LIP long*
@@ -22,14 +22,14 @@
 #define VDP void*
 #define ftnlen long /* FORTRAN string length type */
 #else
-#define LI long /* unsigned int		*/
-#define LIP long* /* unsigned int*	*/
-#define LNT long /* unsigned int		*/
-#define DB double /* double		*/
-#define DBP double* /* double*		*/
-#define CHP char* /* char*		*/
+#define LI long            /* unsigned int		*/
+#define LIP long*          /* unsigned int*	*/
+#define LNT long           /* unsigned int		*/
+#define DB double          /* double		*/
+#define DBP double*        /* double*		*/
+#define CHP char*          /* char*		*/
 #define CMT void __stdcall /* void __stdcall	*/
-#define VDP void* /* void*		*/
+#define VDP void*          /* void*		*/
 #endif
 #endif
 
@@ -38,7 +38,8 @@ extern std::vector<std::vector<std::string> > CHEM_STATE, CHEM_STATE_AP;
 extern std::vector<std::vector<int> > PHASE_CONSTI_MAP;
 
 extern bool CAP_check_file(void);
-extern int OGS_keyword_check(std::string in_file_new, std::string in_file_old, std::string ext_name);
+extern int OGS_keyword_check(std::string in_file_new, std::string in_file_old,
+                             std::string ext_name);
 
 extern int CAP_tqini(LIP NOERR);
 extern int CAP_tqopen(CHP FILE, LI LUN, LIP NOERR);
@@ -64,7 +65,8 @@ extern int CAP_tqgsp(LI INDEXP, CHP OPTION, LIP NOERR);
 extern int CAP_tqcsp(LI INDEXP, CHP OPTION, LIP NOERR);
 extern int CAP_tqgspc(LI INDEXP, LI INDEXC, CHP OPTION, LIP NOERR);
 extern int CAP_tqcspc(LI INDEXP, LI INDEXC, CHP OPTION, LIP NOERR);
-extern int CAP_tqsetc(CHP OPTION, LI INDEXP, LI INDEX, DB VAL, LIP NUMCON, LIP NOERR);
+extern int CAP_tqsetc(CHP OPTION, LI INDEXP, LI INDEX, DB VAL, LIP NUMCON,
+                      LIP NOERR);
 extern int CAP_tqremc(LI NUMCON, LIP NOERR);
 extern int CAP_tqsttp(CHP IDENTS, DBP VALS, LIP NOERR);
 extern int CAP_tqstca(CHP IDENTS, LI INDEXP, LI INDEXC, DB VAL, LIP NOERR);
@@ -80,14 +82,16 @@ extern int CAP_tqerr(CHP MESS, LIP NOERR);
 
 extern int CAP_tqcprt(LIP NOERR);
 extern int CAP_tqvers(LIP NVERS, LIP NOERR);
-extern int CAP_tqsize(LIP NA, LIP NB, LIP NC, LIP ND, LIP NE, LIP NF, LIP NG, LIP NH, LIP NI, LIP NJ, LIP NK,
-                      LIP NOERR);
+extern int CAP_tqsize(LIP NA, LIP NB, LIP NC, LIP ND, LIP NE, LIP NF, LIP NG,
+                      LIP NH, LIP NI, LIP NJ, LIP NK, LIP NOERR);
 extern int CAP_tqmodl(LI INDEXP, CHP NAME, LIP NOERR);
 extern int CAP_tqstxp(CHP IDENTS, CHP OPTION, DBP VAL, LIP NOERR);
 extern int CAP_tqlite(LIP LITE, LIP NOERR);
 extern int CAP_tqrbin(LIP NOERR);
-extern int CAP_tqmap(CHP OPTION, LI INDEXP, LI INDEXC, DBP VALS, LIP ICONT, LIP NOERR);
-extern int CAP_tqmapl(CHP OPTION, LI INDEXP, LI INDEXC, DBP VALS, LIP ICONT, LIP NOERR);
+extern int CAP_tqmap(CHP OPTION, LI INDEXP, LI INDEXC, DBP VALS, LIP ICONT,
+                     LIP NOERR);
+extern int CAP_tqmapl(CHP OPTION, LI INDEXP, LI INDEXC, DBP VALS, LIP ICONT,
+                      LIP NOERR);
 extern int CAP_tqpcis(LI INDEXP, LI INDEXC, LIP ISPERM, LIP NOERR);
 extern int CAP_tqopna(CHP FILE, LI LUN, LIP NOERR);
 extern int CAP_tqopnb(CHP FILE, LI LUN, LIP NOERR);
@@ -101,9 +105,10 @@ extern int CAP_tqgtlc(LI INDEXP, LI INDEXL, LI INDEXC, DBP VAL, LIP NOERR);
 extern int CAP_tqgopn (CHP FILE,LI LUN,CHP FFORM,CHP FSTAT,CHP FACC,LI RECL,
         LIP IOSTAT,LIP NOERR);
 */
-extern int CAP_tqbond(LI INDEXP, LI INDEXA, LI INDEXB, LI INDEXC, LI INDEXD, DBP VAL, LIP NOERR);
-extern int CAP_tqused(LIP NA, LIP NB, LIP NC, LIP ND, LIP NE, LIP NF, LIP NG, LIP NH, LIP NI, LIP NJ, LIP NK,
-                      LIP NOERR);
+extern int CAP_tqbond(LI INDEXP, LI INDEXA, LI INDEXB, LI INDEXC, LI INDEXD,
+                      DBP VAL, LIP NOERR);
+extern int CAP_tqused(LIP NA, LIP NB, LIP NC, LIP ND, LIP NE, LIP NF, LIP NG,
+                      LIP NH, LIP NI, LIP NJ, LIP NK, LIP NOERR);
 extern int CAP_tqgtrh(LIP TFHVER,
                       CHP TFHNWP,
                       LIP TFHVNW,
@@ -129,5 +134,7 @@ extern int CAP_tqwasc(CHP FILE, LIP NOERR);
 extern int CAP_tqcdat(LI I1, LI I2, LI I3, LI I4, LI I5, DB VAL, LIP NOERR);
 extern int CAP_tqchar(LI INDEXP, LI INDEXC, DBP VAL, LIP NOERR);
 extern int CAP_tqcnsc(LI INDEXS, CHP NAME, LIP NOERR);
-extern int CAP_tqlpar(LI INDEXP, CHP OPTION, LIP NOPAR, CHP CHRPAR, LIP LGTPAR, LIP NOERR);
-extern int CAP_tqgpar(LI INDEXP, CHP OPTION, LI INDEXX, LIP NOEXPR, LIP NVALA, DBP VALA, LIP NOERR);
+extern int CAP_tqlpar(LI INDEXP, CHP OPTION, LIP NOPAR, CHP CHRPAR, LIP LGTPAR,
+                      LIP NOERR);
+extern int CAP_tqgpar(LI INDEXP, CHP OPTION, LI INDEXX, LIP NOEXPR, LIP NVALA,
+                      DBP VALA, LIP NOERR);

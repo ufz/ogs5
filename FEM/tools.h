@@ -20,31 +20,43 @@
 #ifndef tools_INC
 #define tools_INC
 
-#include "rf_mmp_new.h" //MB
+#include "rf_mmp_new.h"  //MB
 #include "rf_pcs.h"
 #include <sstream>
 
 typedef struct /* fuer Kurven (Stuetzstellen) */
 {
-	double punkt;
-	double wert;
+    double punkt;
+    double wert;
 } StuetzStellen;
 
 typedef struct /* fuer Kurven (Kurven) */
 {
-	long anz_stuetzstellen;
-	/* Anzahl der Stuetzstellen */
-	StuetzStellen* stuetzstellen;
-	/* Feld mit den eingelesenen Stuetzstellen */
+    long anz_stuetzstellen;
+    /* Anzahl der Stuetzstellen */
+    StuetzStellen* stuetzstellen;
+    /* Feld mit den eingelesenen Stuetzstellen */
 } Kurven;
 
 // NB
 // extern double GetMatrixValue (double, double, std::string, int*);
-double GetMatrixValue(double var1, double var2, std::string caption, int* gueltig);
+double GetMatrixValue(double var1,
+                      double var2,
+                      std::string caption,
+                      int* gueltig);
 extern double GetCurveValue(int kurve, int methode, double punkt, int* gueltig);
-extern double GetCurveValueInverse(int kurve, int methode, double wert, int* gueltig);
-extern double GetCurveDerivative(int kurve, int methode, double punkt, int* gueltig);
-extern double GetCurveInverseDerivative(int kurve, int methode, double wert, int* gueltig);
+extern double GetCurveValueInverse(int kurve,
+                                   int methode,
+                                   double wert,
+                                   int* gueltig);
+extern double GetCurveDerivative(int kurve,
+                                 int methode,
+                                 double punkt,
+                                 int* gueltig);
+extern double GetCurveInverseDerivative(int kurve,
+                                        int methode,
+                                        double wert,
+                                        int* gueltig);
 extern Kurven* kurven; /* Feld mit Kurven */
 extern int anz_kurven; /* Anzahl der Kurven */
 
@@ -72,10 +84,15 @@ extern double CalcCourantTimeStep(long index, long ndx, double dc);
 extern double CalcSystemCourantTimeStep(long ndx, double dc);
 
 /* Sucht den zulaessigen Courant/Neumann-Zeitschritt im System */
-extern double GetSystemCourantNeumannTimeStep(long ndx, int dtidx, double acknowledge);
+extern double GetSystemCourantNeumannTimeStep(long ndx,
+                                              int dtidx,
+                                              double acknowledge);
 
 /* Testet, ob sich Knotenwerte im Element geaendert haben */
-extern int TestElementDirtyness(long index, long ndx1, long ndx2, double acknowledge);
+extern int TestElementDirtyness(long index,
+                                long ndx1,
+                                long ndx2,
+                                double acknowledge);
 /* Ermittelt das Vorzeichen */
 extern int Signum(double);
 /* Bildet den arithmetischen Mittel einer Elementgroesse durch Interpolation
@@ -89,25 +106,28 @@ long GetNearestElement(double x, double y, double z, int* help);
 // SB
 long GetNearestHetVal(long EleIndex, CFEMesh*, long no_values, double** invals);
 // MB
-double GetAverageHetVal(long EleIndex, CFEMesh*, long no_values, double** invals);
-extern double GetHetValue(int, char*); // SB
+double GetAverageHetVal(long EleIndex,
+                        CFEMesh*,
+                        long no_values,
+                        double** invals);
+extern double GetHetValue(int, char*);  // SB
 
 typedef struct
 {
-	int nof; // number of field values
-	char* filename; // Name of input file for heterogeneous values
-	char** names; // Names of field variables
-	double* convertfact; // conversion factors
-} hetfields; // SB
+    int nof;              // number of field values
+    char* filename;       // Name of input file for heterogeneous values
+    char** names;         // Names of field variables
+    double* convertfact;  // conversion factors
+} hetfields;              // SB
 
-extern hetfields* hf; // SB
+extern hetfields* hf;  // SB
 // SB
 extern hetfields* Createhetfields(int n, char* name_file);
 // SB
 extern void set_hetfields_name(hetfields* hf, int i, char* name);
 // SB
 extern char* get_hetfields_name(hetfields* hf, int i);
-extern int get_hetfields_number(hetfields* hf); // SB
+extern int get_hetfields_number(hetfields* hf);  // SB
 // MB
 extern int FctReadHeterogeneousFields(char* name_file, CMediumProperties*);
 extern long DampOscillations(int ndx1,
@@ -116,8 +136,8 @@ extern long DampOscillations(int ndx1,
                              double (*NodeCalcLumpedMass)(long));
 extern int GetLineFromFile(char*, std::ifstream*);
 
-extern double FindMin(std::vector<double> Vec); // NB 4.9.05
-extern double FindMax(std::vector<double> Vec); // NB 4.9.05
+extern double FindMin(std::vector<double> Vec);  // NB 4.9.05
+extern double FindMax(std::vector<double> Vec);  // NB 4.9.05
 
 /**
  * Author: NB 4.9.05
@@ -137,9 +157,9 @@ extern void NsPol3(double p, double q, double r, std::vector<double>* t);
 template <class num>
 void DeleteArray(num* an_array)
 {
-	if (an_array)
-		delete[] an_array;
-	an_array = NULL;
+    if (an_array)
+        delete[] an_array;
+    an_array = NULL;
 }
 
 #endif

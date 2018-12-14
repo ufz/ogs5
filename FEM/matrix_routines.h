@@ -91,7 +91,8 @@ extern void MXEstimateStartVector(double*, double*);
 
 extern void MXRandbed(long, double, double*);
 /* Einarbeiten einer Randbedingung in Matrix und Rechte Seite */
-extern void MXEliminateIrrNode(long index, int anz_nachbarn, long* nachbarn_index, double* rechts);
+extern void MXEliminateIrrNode(long index, int anz_nachbarn,
+                               long* nachbarn_index, double* rechts);
 /* Elimieren irr. Knoten aus dem Gesamtsystem */
 extern void MXResiduum(double* x, double* b, double* ergebnis);
 /* Berechnet das Residuum "r = b - A x"  mit der zuvor mit
@@ -147,7 +148,8 @@ typedef void (*MXPMatTVek)(double* vektor, double* ergebnis);
    wird komplett ueberschrieben; der Speicher muss bereits allokiert sein. */
 typedef void (*MXPVorkond)(int aufgabe, double* x, double* b);
 /* Vorkonditionierer nach dem mit vorkond gewaehlten Verfahren */
-typedef int (*MXPCopyToAMG1R5Structure)(double* A, int* IA, int* JA, int NDA, int NDIA, int NDJA, double*, double*,
+typedef int (*MXPCopyToAMG1R5Structure)(double* A, int* IA, int* JA, int NDA,
+                                        int NDIA, int NDJA, double*, double*,
                                         double*, double*);
 /* Umkopieren einer Matrix auf AMG1R5-Speicherstruktur */
 

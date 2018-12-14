@@ -6,9 +6,9 @@
 class SplitMPI_Communicator
 {
 public:
-	static bool CreateCommunicator(MPI_Comm Comm, int np, int nb_ddc);
+    static bool CreateCommunicator(MPI_Comm Comm, int np, int nb_ddc);
 #ifdef OGS_FEM_IPQC
-	static void Call_IPhreeqc(void);
+    static void Call_IPhreeqc(void);
 #endif
 };
 

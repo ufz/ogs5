@@ -27,24 +27,25 @@ class Triangle;
 class SurfaceGrid : public AABB
 {
 public:
-	SurfaceGrid(Surface const* const sfc);
-	virtual ~SurfaceGrid();
+    SurfaceGrid(Surface const* const sfc);
+    virtual ~SurfaceGrid();
 
-	bool isPntInSurface(const double* pnt, double eps = 0) const;
+    bool isPntInSurface(const double* pnt, double eps = 0) const;
 
 private:
 #ifndef NDEBUG
 #ifdef DEBUGMESHNODESEARCH
-	void writeSurfaceGridData(std::ostream& os) const;
-	void writeTrianglesInGridCell(std::size_t i, std::size_t j, std::size_t k, std::ostream& os) const;
+    void writeSurfaceGridData(std::ostream& os) const;
+    void writeTrianglesInGridCell(std::size_t i, std::size_t j, std::size_t k,
+                                  std::ostream& os) const;
 #endif
 #endif
-	double _step_sizes[3];
-	double _inverse_step_sizes[3];
-	size_t _n_steps[3];
-	std::vector<GEOLIB::Triangle const*>* _triangles_in_grid_box;
+    double _step_sizes[3];
+    double _inverse_step_sizes[3];
+    size_t _n_steps[3];
+    std::vector<GEOLIB::Triangle const*>* _triangles_in_grid_box;
 };
 
-} // end namespace GEOLIB
+}  // end namespace GEOLIB
 
 #endif /* SURFACEGRID_H_ */

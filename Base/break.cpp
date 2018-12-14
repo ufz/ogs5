@@ -42,8 +42,8 @@ int abbruch = 0;
 /**************************************************************************/
 void NoBreak(void)
 {
-	signal(SIGINT, SIG_IGN);
-	abbruch = 0;
+    signal(SIGINT, SIG_IGN);
+    abbruch = 0;
 }
 
 /**************************************************************************/
@@ -64,8 +64,8 @@ void NoBreak(void)
 /**************************************************************************/
 void StandardBreak(void)
 {
-	signal(SIGINT, SIG_DFL);
-	abbruch = 0;
+    signal(SIGINT, SIG_DFL);
+    abbruch = 0;
 }
 
 /**************************************************************************/
@@ -86,8 +86,8 @@ void StandardBreak(void)
 /**************************************************************************/
 void SaveBreak(void)
 {
-	signal(SIGINT, BreakFunc);
-	abbruch = 0;
+    signal(SIGINT, BreakFunc);
+    abbruch = 0;
 }
 
 /**************************************************************************/
@@ -108,7 +108,7 @@ void SaveBreak(void)
 /**************************************************************************/
 void ClearBreak(void)
 {
-	abbruch = 0;
+    abbruch = 0;
 }
 
 /**************************************************************************/
@@ -129,6 +129,6 @@ void ClearBreak(void)
 /**************************************************************************/
 void BreakFunc(int sig)
 {
-	if (sig == SIGINT)
-		abbruch = 1;
+    if (sig == SIGINT)
+        abbruch = 1;
 }

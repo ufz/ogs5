@@ -18,39 +18,39 @@
 class TokenBuf
 {
 public:
-	enum Types
-	{
-		NONE,
-		INTEGER,
-		REAL,
-		CHARACTER,
-		STRING
-	};
+    enum Types
+    {
+        NONE,
+        INTEGER,
+        REAL,
+        CHARACTER,
+        STRING
+    };
 
-	explicit TokenBuf(std::istream& stream, int internal_buf_size = 1024);
-	~TokenBuf();
+    explicit TokenBuf(std::istream& stream, int internal_buf_size = 1024);
+    ~TokenBuf();
 
-	bool done();
+    bool done();
 
-	Types type();
-	std::string peek(bool ignore_line_break = true);
-	std::string consume(bool ignore_line_break = true);
+    Types type();
+    std::string peek(bool ignore_line_break = true);
+    std::string consume(bool ignore_line_break = true);
 
-	void getline(char* linebuf, int max_num);
-	bool get_non_empty_line(char* linbuf, int max_num);
+    void getline(char* linebuf, int max_num);
+    bool get_non_empty_line(char* linbuf, int max_num);
 
 protected:
-	void readBuf();
-	void getNextToken(bool ignore_line_break);
+    void readBuf();
+    void getNextToken(bool ignore_line_break);
 
-	std::istream& input_stream;
-	std::string last_token;
-	bool last_token_valid;
+    std::istream& input_stream;
+    std::string last_token;
+    bool last_token_valid;
 
-	int buf_max_size;
-	int buf_read_pos;
-	int buf_num_bytes;
-	char* buf;
+    int buf_max_size;
+    int buf_read_pos;
+    int buf_num_bytes;
+    char* buf;
 };
 
 #endif

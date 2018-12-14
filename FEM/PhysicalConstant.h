@@ -47,10 +47,11 @@ namespace MolarMass
  * Source:       http://www.ciaaw.org/pubs/TSAW2013_xls.xls
  * Date visited: 2015-05-28
  *
- * According to the IUPAC report the molar mass of O is in the range [15.999 03, 15.999 77] g/mol
- * and the molar mass of H is in the range [1.007 84, 1.008 11] g/mol
+ * According to the IUPAC report the molar mass of O is in the range [15.999
+ * 03, 15.999 77] g/mol and the molar mass of H is in the range [1.007 84, 1.008
+ * 11] g/mol
  */
-const double Water = 0.018016; ///< kg mol^-1
+const double Water = 0.018016;  ///< kg mol^-1
 
 /**
  * N_2
@@ -58,9 +59,10 @@ const double Water = 0.018016; ///< kg mol^-1
  * Source:       http://www.ciaaw.org/pubs/TSAW2013_xls.xls
  * Date visited: 2015-05-28
  *
- * According to the IUPAC report the molar mass of N is in the range [14.006 43, 14.007 28] g/mol
+ * According to the IUPAC report the molar mass of N is in the range [14.006
+ * 43, 14.007 28] g/mol
  */
-const double N2 = 0.028013; ///< kg mol^-1
+const double N2 = 0.028013;  ///< kg mol^-1
 
 /**
  * O_2
@@ -68,9 +70,10 @@ const double N2 = 0.028013; ///< kg mol^-1
  * Source:       http://www.ciaaw.org/pubs/TSAW2013_xls.xls
  * Date visited: 2015-05-28
  *
- * According to the IUPAC report the molar mass of O is in the range [15.999 03, 15.999 77] g/mol
+ * According to the IUPAC report the molar mass of O is in the range [15.999
+ * 03, 15.999 77] g/mol
  */
-const double O2 = 0.032; ///< kg mol^-1
+const double O2 = 0.032;  ///< kg mol^-1
 
 /**
  * Air
@@ -78,8 +81,8 @@ const double O2 = 0.032; ///< kg mol^-1
  * Source:       http://www.engineeringtoolbox.com/molecular-mass-air-d_679.html
  *
  */
-const double Air = 0.02897; ///< kg mol^-1
-}
+const double Air = 0.02897;  ///< kg mol^-1
+}  // namespace MolarMass
 
 /**
   Specific gas constant (J/(kg K)) defined by
@@ -90,7 +93,7 @@ const double Air = 0.02897; ///< kg mol^-1
 */
 namespace SpecificGasConstant
 {
-const double WaterVapour = IdealGasConstant / MolarMass::Water; //=461.504;
+const double WaterVapour = IdealGasConstant / MolarMass::Water;  //=461.504;
 }
-}
-#endif // OGS_CONSTANTS_H
+}  // namespace PhysicalConstant
+#endif  // OGS_CONSTANTS_H

@@ -28,14 +28,14 @@ namespace FileIO
 class BoundaryConditionIO
 {
 public:
-	//	static CBoundaryCondition* read (std::istream& in,
-	//			GEOLIB::GEOObjects const& geo_obj,
-	//			std::string const& unique_fname);
+    //	static CBoundaryCondition* read (std::istream& in,
+    //			GEOLIB::GEOObjects const& geo_obj,
+    //			std::string const& unique_fname);
 
-	static void write(std::ostream& out, CBoundaryCondition const& bc);
+    static void write(std::ostream& out, CBoundaryCondition const& bc);
 
-	friend class CBoundaryCondition;
+    friend class CBoundaryCondition;
 };
-}
+}  // namespace FileIO
 
 #endif /* BOUNDARYCONDITIONIO_H_ */

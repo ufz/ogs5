@@ -18,10 +18,10 @@ namespace BASELIB
 template <class T>
 void swap(T& arg0, T& arg1)
 {
-	T temp(arg0);
-	arg0 = arg1;
-	arg1 = temp;
+    T temp(arg0);
+    arg0 = arg1;
+    arg1 = temp;
 }
-} // end namespace BASELIB
+}  // end namespace BASELIB
 
-#endif // SWAP_H_
+#endif  // SWAP_H_

@@ -19,9 +19,9 @@
 template <class T>
 T max(const T& arg0, const T& arg1)
 {
-	if (arg0 < arg1)
-		return arg1;
-	return arg0;
+    if (arg0 < arg1)
+        return arg1;
+    return arg0;
 }
 
 #endif /* MAX_H_ */

@@ -21,20 +21,21 @@ namespace MathLib
  * solves the \f$n \times n\f$ triangular linear system \f$L \cdot y = b\f$,
  * assumes \f$L_{ii} = 1.0\f$, \f$i=1,...,n\f$, \f$b\f$ is destroyed
  * @param L the lower triangular matrix
- * @param b at beginning the right hand side vector, at the end the solution vector
+ * @param b at beginning the right hand side vector, at the end the solution
+ * vector
  */
 template <typename FLOAT_TYPE>
 void forwardSolve(const Matrix<FLOAT_TYPE>& L, FLOAT_TYPE* b)
 {
-	size_t m(L.getNRows());
+    size_t m(L.getNRows());
 
-	for (size_t r = 0; r < m; r++)
-	{
-		FLOAT_TYPE t(0.0);
-		for (size_t c = 0; c < r; c++)
-			t += L(r, c) * b[c];
-		b[r] = b[r] - t;
-	}
+    for (size_t r = 0; r < m; r++)
+    {
+        FLOAT_TYPE t(0.0);
+        for (size_t c = 0; c < r; c++)
+            t += L(r, c) * b[c];
+        b[r] = b[r] - t;
+    }
 }
 
 /**
@@ -46,16 +47,16 @@ void forwardSolve(const Matrix<FLOAT_TYPE>& L, FLOAT_TYPE* b)
 template <typename FLOAT_TYPE>
 void backwardSolve(const Matrix<FLOAT_TYPE>& U, FLOAT_TYPE* z)
 {
-	size_t m(U.getNRows()), n(U.getNCols());
-	for (int r = m - 1; r >= 0; r--)
-	{
-		FLOAT_TYPE t(0.0);
-		for (size_t c = r + 1; c < n; c++)
-		{
-			t += U(r, c) * z[c];
-		}
-		z[r] = (z[r] - t) / U(r, r);
-	}
+    size_t m(U.getNRows()), n(U.getNCols());
+    for (int r = m - 1; r >= 0; r--)
+    {
+        FLOAT_TYPE t(0.0);
+        for (size_t c = r + 1; c < n; c++)
+        {
+            t += U(r, c) * z[c];
+        }
+        z[r] = (z[r] - t) / U(r, r);
+    }
 }
 
 // backwardSolve mat * x = y, mat ... upper triangular matrix
@@ -69,16 +70,16 @@ void backwardSolve(const Matrix<FLOAT_TYPE>& U, FLOAT_TYPE* z)
 template <typename FLOAT_TYPE>
 void backwardSolve(Matrix<FLOAT_TYPE> const& mat, FLOAT_TYPE* x, FLOAT_TYPE* b)
 {
-	size_t n_cols(mat.getNCols());
-	for (int r = (n_cols - 1); r >= 0; r--)
-	{
-		FLOAT_TYPE t(0.0);
+    size_t n_cols(mat.getNCols());
+    for (int r = (n_cols - 1); r >= 0; r--)
+    {
+        FLOAT_TYPE t(0.0);
 
-		for (size_t c = r + 1; c < n_cols; c++)
-			t += mat(r, c) * b[c];
-		x[r] = (b[r] - t) / mat(r, r);
-	}
+        for (size_t c = r + 1; c < n_cols; c++)
+            t += mat(r, c) * b[c];
+        x[r] = (b[r] - t) / mat(r, r);
+    }
 }
-} // end namespace MathLib
+}  // end namespace MathLib
 
 #endif /* TRIANGULARSOLVE_H_ */

@@ -21,7 +21,7 @@
 #include "files0.h"
 #include "geo_dom.h"
 // Vector
-std::vector<CGLDomain*> domain_vector; // CC
+std::vector<CGLDomain*> domain_vector;  // CC
 
 /**************************************************************************
    GeoLib-Method: CGLDomain::Insert
@@ -31,8 +31,8 @@ std::vector<CGLDomain*> domain_vector; // CC
 **************************************************************************/
 long CGLDomain::Insert(CGLDomain* m_domain)
 {
-	domain_vector.push_back(m_domain);
-	return (long)domain_vector.size();
+    domain_vector.push_back(m_domain);
+    return (long)domain_vector.size();
 }
 
 /**************************************************************************
@@ -43,18 +43,16 @@ long CGLDomain::Insert(CGLDomain* m_domain)
 **************************************************************************/
 std::vector<CGLDomain*> CGLDomain::GetVector(void)
 {
-	return domain_vector;
+    return domain_vector;
 }
 /*----------------------------------------------------------------------*/
 // constructor
 CGLDomain::CGLDomain(void)
 {
-	name = "DOMAIN";
+    name = "DOMAIN";
 }
 // deconstructor
-CGLDomain::~CGLDomain(void)
-{
-}
+CGLDomain::~CGLDomain(void) {}
 /**************************************************************************
    GeoLib-Method: GEOReadVolume
    Task: Read volume data from file
@@ -63,76 +61,81 @@ CGLDomain::~CGLDomain(void)
 **************************************************************************/
 int CGLDomain::Read(char* data, FILE* f)
 {
-	int pos = 0, pos_s = 0;
-	int p = 0;
-	char* sub;
-	int begin;
-	int ok = 1;
-	int p_sub = 0;
-	char name[80];
-	double ddummy;
+    int pos = 0, pos_s = 0;
+    int p = 0;
+    char* sub;
+    int begin;
+    int ok = 1;
+    int p_sub = 0;
+    char name[80];
+    double ddummy;
 
-	LineFeed(f);
-	FilePrintString(f, "; ------------------------------------------");
-	LineFeed(f);
-	FilePrintString(f, "; GeoLib - Domain");
-	LineFeed(f);
+    LineFeed(f);
+    FilePrintString(f, "; ------------------------------------------");
+    LineFeed(f);
+    FilePrintString(f, "; GeoLib - Domain");
+    LineFeed(f);
 
-	//---------------------------------------------------------------------
-	// Loop over all volumes
-	while (StrTestHash(&data[p += pos], &pos))
-	{
-		CGLDomain* m_domain = NULL;
-		m_domain = new CGLDomain;
-		/* Write keyword */
-		LineFeed(f);
-		FilePrintString(f, "#DOMAIN");
-		LineFeed(f);
-		//-------------------------------------------------------------------
-		// Check sub keywords
-		sub = new char[(int)strlen(data) + 2];
-		while (StrReadSubKeyword(sub, data, p += pos, &begin, &p))
-		{
-			ok = StrReadStr(name, sub, f, /*TFString,*/ &p_sub) && ok;
-			pos = 0;
-			//-----------------------------------------------------------------
-			if (!strcmp(name, "$NAME"))
-			{
-				ok = (StrReadStr(name, &sub[p_sub], f, /*TFString,*/ &pos) && ok);
-				LineFeed(f);
-				m_domain->name = name;
-			}
-			//-----------------------------------------------------------------
-			if (!strcmp(name, "$COORDINATES"))
-			{
-				pos_s = 0;
-				ok = (StrReadDouble(&ddummy, &sub[p_sub += pos_s], f, &pos_s) && ok);
-				m_domain->x_min = ddummy;
-				ok = (StrReadDouble(&ddummy, &sub[p_sub += pos_s], f, &pos_s) && ok);
-				m_domain->x_max = ddummy;
-				ok = (StrReadDouble(&ddummy, &sub[p_sub += pos_s], f, &pos_s) && ok);
-				m_domain->y_min = ddummy;
-				ok = (StrReadDouble(&ddummy, &sub[p_sub += pos_s], f, &pos_s) && ok);
-				m_domain->y_max = ddummy;
-				LineFeed(f);
-			}
-			pos = 0;
-		} // sub-keyword
-		delete (sub);
-		// insert into list
-		Insert(m_domain);
-	}
+    //---------------------------------------------------------------------
+    // Loop over all volumes
+    while (StrTestHash(&data[p += pos], &pos))
+    {
+        CGLDomain* m_domain = NULL;
+        m_domain = new CGLDomain;
+        /* Write keyword */
+        LineFeed(f);
+        FilePrintString(f, "#DOMAIN");
+        LineFeed(f);
+        //-------------------------------------------------------------------
+        // Check sub keywords
+        sub = new char[(int)strlen(data) + 2];
+        while (StrReadSubKeyword(sub, data, p += pos, &begin, &p))
+        {
+            ok = StrReadStr(name, sub, f, /*TFString,*/ &p_sub) && ok;
+            pos = 0;
+            //-----------------------------------------------------------------
+            if (!strcmp(name, "$NAME"))
+            {
+                ok = (StrReadStr(name, &sub[p_sub], f, /*TFString,*/ &pos) &&
+                      ok);
+                LineFeed(f);
+                m_domain->name = name;
+            }
+            //-----------------------------------------------------------------
+            if (!strcmp(name, "$COORDINATES"))
+            {
+                pos_s = 0;
+                ok = (StrReadDouble(&ddummy, &sub[p_sub += pos_s], f, &pos_s) &&
+                      ok);
+                m_domain->x_min = ddummy;
+                ok = (StrReadDouble(&ddummy, &sub[p_sub += pos_s], f, &pos_s) &&
+                      ok);
+                m_domain->x_max = ddummy;
+                ok = (StrReadDouble(&ddummy, &sub[p_sub += pos_s], f, &pos_s) &&
+                      ok);
+                m_domain->y_min = ddummy;
+                ok = (StrReadDouble(&ddummy, &sub[p_sub += pos_s], f, &pos_s) &&
+                      ok);
+                m_domain->y_max = ddummy;
+                LineFeed(f);
+            }
+            pos = 0;
+        }  // sub-keyword
+        delete (sub);
+        // insert into list
+        Insert(m_domain);
+    }
 
-	return 1;
+    return 1;
 }
 
 int GEOReadDomain(char* data, int found, FILE* f)
 {
-	CGLDomain* m_domain = NULL;
-	m_domain->Read(data, f);
-	found = found;
-	// delete(m_domain);
-	return 1;
+    CGLDomain* m_domain = NULL;
+    m_domain->Read(data, f);
+    found = found;
+    // delete(m_domain);
+    return 1;
 }
 /**************************************************************************
    GeoLib-Method: GEOGetVolume
@@ -142,14 +145,14 @@ int GEOReadDomain(char* data, int found, FILE* f)
 **************************************************************************/
 CGLDomain* CGLDomain::Get(std::string name)
 {
-	CGLDomain* m_domain;
-	std::vector<CGLDomain*>::iterator p = domain_vector.begin(); // CC
-	while (p != domain_vector.end())
-	{
-		m_domain = *p;
-		if (m_domain->name == name)
-			return m_domain;
-		++p;
-	}
-	return NULL;
+    CGLDomain* m_domain;
+    std::vector<CGLDomain*>::iterator p = domain_vector.begin();  // CC
+    while (p != domain_vector.end())
+    {
+        m_domain = *p;
+        if (m_domain->name == name)
+            return m_domain;
+        ++p;
+    }
+    return NULL;
 }

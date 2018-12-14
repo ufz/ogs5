@@ -24,6 +24,6 @@ namespace GEOLIB
  * */
 
 typedef TemplateVec<Surface> SurfaceVec;
-} // end namespace
+}  // namespace GEOLIB
 
 #endif /* SURFACEVEC_H_ */

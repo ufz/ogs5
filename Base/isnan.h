@@ -21,14 +21,14 @@ template <typename T>
 inline bool isNAN(T v)
 {
 #if defined(isnan)
-	return isnan(v);
+    return isnan(v);
 #elif defined(_MSC_VER)
-	return _isnan(v) != 0;
+    return _isnan(v) != 0;
 #else
-	// Remark: the following line doesn't work if compiled with --fast-math flag
-	return (v != v);
+    // Remark: the following line doesn't work if compiled with --fast-math flag
+    return (v != v);
 #endif
 }
-}
+}  // namespace BASELIB
 
-#endif // ISNAN_H
+#endif  // ISNAN_H

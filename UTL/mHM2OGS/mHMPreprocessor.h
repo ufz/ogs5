@@ -33,36 +33,35 @@ struct RasterDataGIS;
 class mHMPreprocessor : public CFEMesh
 {
 public:
-	mHMPreprocessor(std::string* geo_name) : CFEMesh(NULL, geo_name), _fem(NULL)
-	{
-	}
+    mHMPreprocessor(std::string* geo_name) : CFEMesh(NULL, geo_name), _fem(NULL)
+    {
+    }
 
-	~mHMPreprocessor();
+    ~mHMPreprocessor();
 
-	/*!
-	   \brief Transform the precipitation data of mHM to the Neumann BC of the
-	 groundwater flow equation.
-	   06/2010  WW
-	 */
-	void transform_mHMData(const std::string& output_path);
+    /*!
+       \brief Transform the precipitation data of mHM to the Neumann BC of the
+     groundwater flow equation.
+       06/2010  WW
+     */
+    void transform_mHMData(const std::string& output_path);
 
 private:
-	FiniteElement::CElement* _fem;
+    FiniteElement::CElement* _fem;
 
-	/*!  \brief Read GIS shapfile that stores the precipitation data.
-	 * This function reads the data of mHM, which is stored in the syntax of
-	 * raster file, finds face elements on the top surface, and then performs
-	 * the numerical integration on the found surface elements to convert the
-	 * mHM data into nodal flux values.
-	 *  \param fname        The input file name.
-	 *  \param ofname       The output file name.
-	 *  \param os_filenames Output stream for file names.
-	 *  \param ratio        The ration of precipitation to the infiltration.
-	 * 03/2010  WW
-	  */
-	RasterDataGIS transfromSingle_mHMdataToNodalFlux(
-	                                        std::string const& fname,
-	                                        std::string const& ofname,
-											double ratio = 0.8);
+    /*!  \brief Read GIS shapfile that stores the precipitation data.
+     * This function reads the data of mHM, which is stored in the syntax of
+     * raster file, finds face elements on the top surface, and then performs
+     * the numerical integration on the found surface elements to convert the
+     * mHM data into nodal flux values.
+     *  \param fname        The input file name.
+     *  \param ofname       The output file name.
+     *  \param os_filenames Output stream for file names.
+     *  \param ratio        The ration of precipitation to the infiltration.
+     * 03/2010  WW
+     */
+    RasterDataGIS transfromSingle_mHMdataToNodalFlux(std::string const& fname,
+                                                     std::string const& ofname,
+                                                     double ratio = 0.8);
 };
 }  // end of namespace MeshLib

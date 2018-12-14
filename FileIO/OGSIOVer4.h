@@ -39,10 +39,13 @@ bool readGLIFileV4(const std::string& fname,
                    std::string& unique_name,
                    std::vector<std::string>& errors);
 
-void writeGLIFileV4(const std::string& fname, const std::string& proj_name, const GEOLIB::GEOObjects& geo);
+void writeGLIFileV4(const std::string& fname,
+                    const std::string& proj_name,
+                    const GEOLIB::GEOObjects& geo);
 
-void writeAllDataToGLIFileV4(const std::string& fname, const GEOLIB::GEOObjects& geo);
+void writeAllDataToGLIFileV4(const std::string& fname,
+                             const GEOLIB::GEOObjects& geo);
 
-} // end namespace
+}  // namespace FileIO
 
 #endif /* OGSIOVER4_H_ */

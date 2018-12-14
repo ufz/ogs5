@@ -20,27 +20,27 @@ namespace FileIO
 class Reader
 {
 public:
-	Reader();
-	virtual ~Reader(){};
+    Reader();
+    virtual ~Reader(){};
 
-	/// @brief Reads the object from a string.
-	void readFromString(std::string str);
+    /// @brief Reads the object from a string.
+    void readFromString(std::string str);
 
-	/// @brief Reads the object from the given file.
-	void readFromFile(std::string filename);
+    /// @brief Reads the object from the given file.
+    void readFromFile(std::string filename);
 
 protected:
-	/// @brief Reads an object from the given stream.
-	/// This method must be implemented by a subclass.
-	virtual void read(std::istream& stream) = 0;
+    /// @brief Reads an object from the given stream.
+    /// This method must be implemented by a subclass.
+    virtual void read(std::istream& stream) = 0;
 
-	/// @brief The stream to read from.
-	std::stringstream _stream;
+    /// @brief The stream to read from.
+    std::stringstream _stream;
 
 private:
-	/* data */
+    /* data */
 };
 
-} // namespace FileIO
+}  // namespace FileIO
 
-#endif // READER_H
+#endif  // READER_H

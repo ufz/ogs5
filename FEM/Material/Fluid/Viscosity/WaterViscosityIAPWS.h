@@ -40,7 +40,7 @@ namespace Fluid
 class WaterViscosityIAPWS
 {
 public:
-	WaterViscosityIAPWS() {}
+    WaterViscosityIAPWS() {}
 
     /// Get model name.
     std::string getName()
@@ -60,14 +60,14 @@ public:
     */
     static double getdValuedT(const double T, const double rho);
 
-	/**  Get density value.
+    /**  Get density value.
          \param rho   Density.
          \param T     Temperature.
     */
-    static double getdValuedRho(const double T, const double rho); 
+    static double getdValuedRho(const double T, const double rho);
 
     // Coefficients Hi and Hij are given in two static arrays in the cpp file.
 };
 
-}  // end namespace
-}  // end namespace
+}  // namespace Fluid
+}  // namespace MaterialLib

@@ -15,7 +15,8 @@
 #include <string>
 
 /**
- * Returns true if given file exists. From http://www.techbytes.ca/techbyte103.html
+ * Returns true if given file exists. From
+ * http://www.techbytes.ca/techbyte103.html
  */
 bool IsFileExisting(std::string const& strFilename);
 
@@ -23,12 +24,14 @@ bool IsFileExisting(std::string const& strFilename);
 bool HasCRInLineEnding(std::string const& strFilename);
 
 /**
- * @brief computes the basename of the given path, i.e. the component after the last diretory separator (/ or \).
+ * @brief computes the basename of the given path, i.e. the component after the
+ * last diretory separator (/ or \).
  */
 std::string pathBasename(const std::string& path);
 
 /**
- * @brief computes the dirname of the given path, i.e. the component before the last diretory separator (/ or \).
+ * @brief computes the dirname of the given path, i.e. the component before the
+ * last diretory separator (/ or \).
  */
 std::string pathDirname(const std::string& path);
 
@@ -37,7 +40,8 @@ std::string pathDirname(const std::string& path);
  *
  * trailing and preceding (back)slashes at the join point are ignored.
  *
- * @returns a string: path1/path2. if any of the paths is empty, only the other one is returned
+ * @returns a string: path1/path2. if any of the paths is empty, only the other
+ * one is returned
  */
 std::string pathJoin(const std::string& path1, const std::string& path2);
 
@@ -46,4 +50,4 @@ std::string getCwd();
 
 char getDirSep();
 
-#endif // FILETOOLS_H
+#endif  // FILETOOLS_H

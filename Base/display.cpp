@@ -18,7 +18,7 @@
    03/1994     MSR        Erste Version
    10/1999     AH         Warnung entfernt
    01/2002     MK         Umleitung der DisplayX-Funktionen in MSG-Datei
-                          Ausnahmen: DisplayStartMsg/DisplayEndMsg                                                  */
+                          Ausnahmen: DisplayStartMsg/DisplayEndMsg */
 /**************************************************************************/
 #include "display.h"
 #include "makros.h"
@@ -45,10 +45,10 @@ extern void CloseMsgFile(FILE*);
 /**************************************************************************/
 void DisplayMsg(const char* s)
 {
-	FILE* f;
-	f = OpenMsgFile();
-	fprintf(f, "%s", s);
-	CloseMsgFile(f);
+    FILE* f;
+    f = OpenMsgFile();
+    fprintf(f, "%s", s);
+    CloseMsgFile(f);
 }
 
 /**************************************************************************
@@ -59,10 +59,10 @@ void DisplayMsg(const char* s)
 void ScreenMessage(const char* message)
 {
 #ifdef USE_MPI
-	if (myrank > 0)
-		return;
+    if (myrank > 0)
+        return;
 #endif
-	printf("%s", message);
+    printf("%s", message);
 }
 
 /**************************************************************************/
@@ -85,11 +85,11 @@ void ScreenMessage(const char* message)
 /**************************************************************************/
 void DisplayMsgLn(const char* s)
 {
-	FILE* f;
-	f = OpenMsgFile();
-	fprintf(f, "%s\n            ", s);
-	fflush(stdout);
-	CloseMsgFile(f);
+    FILE* f;
+    f = OpenMsgFile();
+    fprintf(f, "%s\n            ", s);
+    fflush(stdout);
+    CloseMsgFile(f);
 }
 
 /**************************************************************************/
@@ -112,10 +112,10 @@ void DisplayMsgLn(const char* s)
 /**************************************************************************/
 void DisplayMsgCR(const char* s)
 {
-	FILE* f;
-	f = OpenMsgFile();
-	fprintf(f, "%s\r            ", s);
-	CloseMsgFile(f);
+    FILE* f;
+    f = OpenMsgFile();
+    fprintf(f, "%s\r            ", s);
+    CloseMsgFile(f);
 }
 
 /**************************************************************************/
@@ -142,14 +142,14 @@ void DisplayMsgCR(const char* s)
 /**************************************************************************/
 void DisplayDouble(double x, int i, int j)
 {
-	FILE* f;
-	f = OpenMsgFile();
-	if ((i == 0) && (j == 0))
-		/* printf("%f",x); */
-		fprintf(f, "%g", x);
-	else
-		fprintf(f, "% *.*g", i, j, x);
-	CloseMsgFile(f);
+    FILE* f;
+    f = OpenMsgFile();
+    if ((i == 0) && (j == 0))
+        /* printf("%f",x); */
+        fprintf(f, "%g", x);
+    else
+        fprintf(f, "% *.*g", i, j, x);
+    CloseMsgFile(f);
 }
 
 /**************************************************************************/
@@ -172,10 +172,10 @@ void DisplayDouble(double x, int i, int j)
 /**************************************************************************/
 void DisplayLong(long x)
 {
-	FILE* f;
-	f = OpenMsgFile();
-	fprintf(f, "%ld", x);
-	CloseMsgFile(f);
+    FILE* f;
+    f = OpenMsgFile();
+    fprintf(f, "%ld", x);
+    CloseMsgFile(f);
 }
 
 /**************************************************************************/
@@ -200,19 +200,19 @@ void DisplayLong(long x)
 /**************************************************************************/
 void DisplayDoubleVector(double* vec, long grad, char* text)
 {
-	FILE* f;
-	long i;
-	DisplayMsgLn("");
-	DisplayMsgLn(text);
-	f = OpenMsgFile();
-	for (i = 0; i < grad; i++)
-	{
-		fprintf(f, "| %+e |", vec[i]);
-		fprintf(f, "%s\n            ", "");
-		fflush(stdout);
-	}
-	CloseMsgFile(f);
-	DisplayMsgLn("");
+    FILE* f;
+    long i;
+    DisplayMsgLn("");
+    DisplayMsgLn(text);
+    f = OpenMsgFile();
+    for (i = 0; i < grad; i++)
+    {
+        fprintf(f, "| %+e |", vec[i]);
+        fprintf(f, "%s\n            ", "");
+        fflush(stdout);
+    }
+    CloseMsgFile(f);
+    DisplayMsgLn("");
 }
 
 /**************************************************************************/
@@ -234,10 +234,10 @@ void DisplayDoubleVector(double* vec, long grad, char* text)
 /**************************************************************************/
 void DisplayErrorMsg(const char* s)
 {
-	FILE* f;
-	f = OpenMsgFile();
-	fprintf(f, "\n!!!!!!!!  %s\n\n            ", s);
-	CloseMsgFile(f);
+    FILE* f;
+    f = OpenMsgFile();
+    fprintf(f, "\n!!!!!!!!  %s\n\n            ", s);
+    CloseMsgFile(f);
 }
 
 /**************************************************************************/
@@ -260,8 +260,8 @@ void DisplayErrorMsg(const char* s)
 /**************************************************************************/
 void DisplayTimeMsg(const char* s, double d)
 {
-	FILE* f;
-	f = OpenMsgFile();
-	fprintf(f, "\n            %s%20ld s\n\n            ", s, ((long)d));
-	CloseMsgFile(f);
+    FILE* f;
+    f = OpenMsgFile();
+    fprintf(f, "\n            %s%20ld s\n\n            ", s, ((long)d));
+    CloseMsgFile(f);
 }

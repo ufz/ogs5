@@ -34,10 +34,11 @@
    sozusagen durchgeschleift: */
 /* #include "matrix_routines.h" */
 /* Speichertechnik fuer Matrix des Gesamtgleichungssystems */
-#ifndef NEW_EQS // WW. 11.2008
+#ifndef NEW_EQS  // WW. 11.2008
 #include "solver.h"
 #endif
-/* Iterative GLS-Loeser auf Basis der Speichertechnik aus 'matrix.h' (herkoemmliche Verfahren) */
+/* Iterative GLS-Loeser auf Basis der Speichertechnik aus 'matrix.h'
+ * (herkoemmliche Verfahren) */
 
 // C++
 //#include <vector>
@@ -54,7 +55,7 @@ extern double MMax(double, double);
 extern double MRange(double a, double b, double c);
 double MBtrgVec(double* vec, long n);
 
-#ifndef NEW_EQS // WW. 05.03.2010
+#ifndef NEW_EQS  // WW. 05.03.2010
 /*##########################################################################
     Funktionen fuer Gleichungsloeser (CG)
  ########################################################################*/
@@ -66,7 +67,8 @@ extern double MVekNorm2(double* x, long n);
 /* Maximumnorm */
 extern void MVekSum(double* x, double alpha, double* y, long n);
 /* Fuehrt die Operation x = x + alpha * y durch; n: Vektordimension */
-extern void MVekGle(double alpha, double* x, double beta, double* y, double* z, long n);
+extern void MVekGle(double alpha, double* x, double beta, double* y, double* z,
+                    long n);
 /* Fuehrt die Operation z = alpha * x + beta * y durch; n: Vektordimension */
 extern double MVekDist(double* x, double* y, long n);
 /* Abstand zwischen zwei Vektoren */
@@ -95,27 +97,36 @@ extern void MKopierMat(double* matq, double* matz, long m, long n);
 // extern void MZeigMat (double *mat, long m, long n, char *text);
 // extern void M2FileVec (double *vec, long grad, char *text);
 /* PS: Finger Weg, Michael!!! --> baeeh */
-/*   MAddSkalVektoren      - Vektoren mit Skalar multiplizieren und dann addieren */
-extern int MAddSkalVektoren(double* v1, double m1, double* v2, double m2, double* vout, long g);
-#endif ///////////////////////////
+/*   MAddSkalVektoren      - Vektoren mit Skalar multiplizieren und dann
+ * addieren */
+extern int MAddSkalVektoren(double* v1, double m1, double* v2, double m2,
+                            double* vout, long g);
+#endif  ///////////////////////////
 
 // WW: Only unsed in a member function of CFiniteElementStd implementated by MB
 /*   MMultVecVec           - Multiplikation Vektor mit Vektor */
-extern int MMultVecVec(double* vec1, long gv1, double* vec2, long gv2, double* mato, long mo, long no);
+extern int MMultVecVec(double* vec1, long gv1, double* vec2, long gv2,
+                       double* mato, long mo, long no);
 /*   MMultVecMat           - Multiplikation Vektor mit Matrix */
-extern int MMultVecMat(double* vec, long gv, double* mat, long m, long n, double* veco, long go);
+extern int MMultVecMat(double* vec, long gv, double* mat, long m, long n,
+                       double* veco, long go);
 /*   MMultMatVec           - Multiplikation Matrix mit Vektor */
-extern int MMultMatVec(const double* mat, long m, long n, double* vec, long g, double* veco, long r);
+extern int MMultMatVec(const double* mat, long m, long n, double* vec, long g,
+                       double* veco, long r);
 /*   MMultMatMat           - Multiplikation Matrix mit Matrix */
-extern int MMultMatMat(double* mat1, long m1, long n1, double* mat2, long m2, long n2, double* mato, long mo, long no);
+extern int MMultMatMat(double* mat1, long m1, long n1, double* mat2, long m2,
+                       long n2, double* mato, long mo, long no);
 /*##########################################################################
    Geometrie-Funktionen
  ########################################################################*/
 // extern double MCalcDistancePointToPoint(double *pt1,double *pt2);
 extern double MCalcDistancePointToLine(double* pt, double* l1, double* l2);
-extern double MCalcProjectionOfPointOnLine(double* pt1, double* pt2, double* pt3, double* pt4);
-extern double MCalcDistancePointToPlane(double const* const pt, double* e1, double* e2, double* e3);
-// extern double MCalcProjectionOfPointOnPlane(double *pt, double *e1, double *e2, double *e3, double *proj);
+extern double MCalcProjectionOfPointOnLine(double* pt1, double* pt2,
+                                           double* pt3, double* pt4);
+extern double MCalcDistancePointToPlane(double const* const pt, double* e1,
+                                        double* e2, double* e3);
+// extern double MCalcProjectionOfPointOnPlane(double *pt, double *e1, double
+// *e2, double *e3, double *proj);
 
 /*   MNulleVec             - Setze angegebenen Vektor = 0.0 */
 extern void MNulleVec(double* vec, long g);
@@ -174,7 +185,8 @@ extern long binarySearch(long* arr, long target, long start, long end);
 // WW Cubic spline
 // WW
 double ComputeDetTri(const double* x1, const double* x2, const double* x3);
-double ComputeDetTex(const double* x1, const double* x2, const double* x3, const double* x4);
+double ComputeDetTex(const double* x1, const double* x2, const double* x3,
+                     const double* x4);
 void CrossProduction(const double* x, const double* y, double* z);
 double NormalizeVector(double* x, size_t n);
 

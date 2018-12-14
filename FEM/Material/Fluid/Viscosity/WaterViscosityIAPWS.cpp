@@ -32,9 +32,8 @@ static double computeBarMu0Factor(const double barT);
 
 static std::vector<double> computeSeriesFactorTForMu1(const double barT);
 static std::vector<double> computeSeriesFactorRhoForMu1(const double bar_rho);
-static double computeBarMu1Factor(
-    const std::vector<double>& series_factorT,
-    const std::vector<double>& series_factorRho);
+static double computeBarMu1Factor(const std::vector<double>& series_factorT,
+                                  const std::vector<double>& series_factorRho);
 
 static double computedBarMu_dbarT(const double barT, double bar_rho);
 static double computedBarMu_dbarRho(const double barT, double bar_rho);
@@ -50,8 +49,10 @@ double WaterViscosityIAPWS::getValue(const double T, const double rho)
 
     const double mu0 = 100. * std::sqrt(bar_T) / computeBarMu0Factor(bar_T);
 
-    const std::vector<double>& series_factorT = computeSeriesFactorTForMu1(bar_T);
-    const std::vector<double>& series_factorRho = computeSeriesFactorRhoForMu1(bar_rho);
+    const std::vector<double>& series_factorT =
+        computeSeriesFactorTForMu1(bar_T);
+    const std::vector<double>& series_factorRho =
+        computeSeriesFactorRhoForMu1(bar_rho);
     const double mu1 = std::exp(
         bar_rho * computeBarMu1Factor(series_factorT, series_factorRho));
 
@@ -153,8 +154,10 @@ double computedBarMu_dbarT(const double barT, double bar_rho)
         50. / (mu0_factor * sqrt_barT) -
         100. * sqrt_barT * dmu0_factor_dbarT / (mu0_factor * mu0_factor);
 
-    const std::vector<double>& series_factorT = computeSeriesFactorTForMu1(barT);
-    const std::vector<double>& series_factorRho = computeSeriesFactorRhoForMu1(bar_rho);
+    const std::vector<double>& series_factorT =
+        computeSeriesFactorTForMu1(barT);
+    const std::vector<double>& series_factorRho =
+        computeSeriesFactorRhoForMu1(bar_rho);
 
     double dmu1_factor_dbarT = 0.0;
     for (int i = 1; i < 6; i++)
@@ -179,8 +182,10 @@ double computedBarMu_dbarT(const double barT, double bar_rho)
 
 double computedBarMu_dbarRho(const double barT, double bar_rho)
 {
-    const std::vector<double>& series_factorT = computeSeriesFactorTForMu1(barT);
-    const std::vector<double>& series_factorRho = computeSeriesFactorRhoForMu1(bar_rho);
+    const std::vector<double>& series_factorT =
+        computeSeriesFactorTForMu1(barT);
+    const std::vector<double>& series_factorRho =
+        computeSeriesFactorRhoForMu1(bar_rho);
 
     double dmu1_factor_dbar_rho = 0.0;
     for (int i = 0; i < 6; i++)
@@ -202,5 +207,5 @@ double computedBarMu_dbarRho(const double barT, double bar_rho)
            (mu1_factor + bar_rho * dmu1_factor_dbar_rho);
 }
 
-}  // end namespace
-}  // end namespace
+}  // namespace Fluid
+}  // namespace MaterialLib

@@ -45,26 +45,32 @@ extern int FilePrintLongWB(FILE* f, long x);
 /* Schreibt Long-Wert ohne fuehrende Leerzeichen in Textdatei */
 extern int FilePrintDoubleWB(FILE* f, double x);
 /* Schreibt Double-Wert ohne fuehrende Leerzeichen in Textdatei */
-extern int FileCommentDoubleMatrix(FILE* f, double* d, int adjust, long m, long n);
+extern int FileCommentDoubleMatrix(FILE* f, double* d, int adjust, long m,
+                                   long n);
 /* Schreibt Double-m x n-Matrix als Kommentar mit Einrueckung adjust
    in Textdatei */
 
-extern int StrReadSubSubKeyword(char* x, char* s, int beginn, int* found, int* ende);
+extern int StrReadSubSubKeyword(char* x, char* s, int beginn, int* found,
+                                int* ende);
 /* Liest Sub-Sub-Keyword aus String */
-extern int StrReadSubKeyword(char* x, char* s, int beginn, int* found, int* ende);
+extern int StrReadSubKeyword(char* x, char* s, int beginn, int* found,
+                             int* ende);
 /* Liest Sub-Keyword aus String */
 
 extern int StrReadInt(int* x, char* s, FILE* f, FctTestInt func, int* pos);
 /* Liest Integer-Wert aus String und schreibt Protokoll in Datei */
 extern int StrReadLong(long* x, char* s, FILE* f, FctTestLong func, int* pos);
 /* Liest Long-Wert aus String und schreibt Protokoll in Datei */
-extern int StrReadFloat(float* x, char* s, FILE* f, FctTestFloat func, int* pos);
+extern int StrReadFloat(float* x, char* s, FILE* f, FctTestFloat func,
+                        int* pos);
 /* Liest Float-Wert aus String und schreibt Protokoll in Datei */
 extern int StrReadDouble(double* x, char* s, FILE* f, int* pos);
 /* Liest Double-Wert aus String und schreibt Protokoll in Datei */
-extern int StrReadString(char** x, char* s, FILE* f, /*FctTestString func,*/ int* pos);
+extern int StrReadString(char** x, char* s, FILE* f,
+                         /*FctTestString func,*/ int* pos);
 /* Liest Zeichenkette aus String und schreibt Protokoll in Datei */
-extern int StrReadStr(char* x, char* s, FILE* f, /*FctTestString func,*/ int* pos);
+extern int StrReadStr(char* x, char* s, FILE* f,
+                      /*FctTestString func,*/ int* pos);
 /* Liest Zeichenkette aus String und schreibt Protokoll in Datei */
 extern int StrTestInt(char* s);
 /* Testet, ob in s noch ein Integer kommt; 0:=nein */
@@ -85,8 +91,10 @@ extern int StrTestDollar(char* s, int* pos);
 extern int StrTestInv(char* s, int* pos);
 /* Testet, ob in s ein ? folgt; 0:=nein; 1:=ja, pos liefert Position
    nach dem ? */
-extern int StrReadLongNoComment(long* x, char* s, FILE* f, FctTestLong func, int* pos);
-extern int StrReadStrNoComment(char* x, char* s, FILE* f, FctTestString func, int* pos);
+extern int StrReadLongNoComment(long* x, char* s, FILE* f, FctTestLong func,
+                                int* pos);
+extern int StrReadStrNoComment(char* x, char* s, FILE* f, FctTestString func,
+                               int* pos);
 
 /* zusaetzliche Lesefunktionen fuer RF-SHELL */
 extern int StringReadFloat(float* x, char* s, int* pos);
@@ -114,12 +122,16 @@ extern void GetRFINodesData();
 #define MAX_NAME 80
 
 /*MX*/
-extern int StrOnlyReadStr(char* x, char* s, FILE* f, /*FctTestString func,*/ int* pos);
+extern int StrOnlyReadStr(char* x, char* s, FILE* f,
+                          /*FctTestString func,*/ int* pos);
 
-extern std::string get_sub_string(const std::string&, const std::string&, int, int*);
+extern std::string get_sub_string(const std::string&, const std::string&, int,
+                                  int*);
 extern void remove_white_space(std::string*);
-// extern std::string get_sub_string2(std::string buffer,std::string delimiter,std::string cut_string);
-extern std::string get_sub_string2(const std::string&, const std::string&, std::string*);
+// extern std::string get_sub_string2(std::string buffer,std::string
+// delimiter,std::string cut_string);
+extern std::string get_sub_string2(const std::string&, const std::string&,
+                                   std::string*);
 extern bool SubKeyword(const std::string&);
 extern bool Keyword(const std::string&);
 
@@ -128,5 +140,5 @@ extern std::string GetLineFromFile1(std::ifstream*);
 // SB
 extern std::string GetUncommentedLine(std::string);
 // extern std::string NumberToString(long);
-extern void is_line_empty(std::string*); // OK
+extern void is_line_empty(std::string*);  // OK
 #endif

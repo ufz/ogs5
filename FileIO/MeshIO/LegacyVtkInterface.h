@@ -35,47 +35,51 @@ class ProcessInfo;
 class LegacyVtkInterface
 {
 public:
-	LegacyVtkInterface(MeshLib::CFEMesh* mesh,
-	                   std::vector<std::string>
-	                       pointArrayNames,
-	                   std::vector<std::string>
-	                       cellArrayNames,
-	                   std::vector<std::string>
-	                       materialPropertyArrayNames,
-	                   std::string meshTypeName,
-	                   ProcessInfo* processInfo);
-	virtual ~LegacyVtkInterface();
+    LegacyVtkInterface(MeshLib::CFEMesh* mesh,
+                       std::vector<std::string>
+                           pointArrayNames,
+                       std::vector<std::string>
+                           cellArrayNames,
+                       std::vector<std::string>
+                           materialPropertyArrayNames,
+                       std::string meshTypeName,
+                       ProcessInfo* processInfo);
+    virtual ~LegacyVtkInterface();
 
-	void WriteDataVTK(int number, double simulation_time, std::string baseFilename) const;
+    void WriteDataVTK(int number,
+                      double simulation_time,
+                      std::string baseFilename) const;
 #if defined(USE_PETSC)
-	void WriteDataVTKPETSC(int number, double simulation_time, std::string baseFilename) const;
+    void WriteDataVTKPETSC(int number,
+                           double simulation_time,
+                           std::string baseFilename) const;
 #endif
-	double RoundDoubleVTK(double MyZahl);
+    double RoundDoubleVTK(double MyZahl);
 
 protected:
-	void WriteVTKHeader(std::fstream&, int, double) const;
-	void WriteVTKPointData(std::fstream&) const;
-	void WriteVTKCellData(std::fstream&) const;
-	void WriteVTKDataArrays(std::fstream&) const;
-	void WriteELEVelocity(std::fstream& vtk_file) const;
+    void WriteVTKHeader(std::fstream&, int, double) const;
+    void WriteVTKPointData(std::fstream&) const;
+    void WriteVTKCellData(std::fstream&) const;
+    void WriteVTKDataArrays(std::fstream&) const;
+    void WriteELEVelocity(std::fstream& vtk_file) const;
 #if defined(USE_PETSC)
-	void WriteVTKPointDataPETSC(PetscViewer) const;
-	void WriteVTKCellDataPETSC(PetscViewer) const;
-	void WriteVTKDataArraysPETSC(PetscViewer) const;
+    void WriteVTKPointDataPETSC(PetscViewer) const;
+    void WriteVTKCellDataPETSC(PetscViewer) const;
+    void WriteVTKDataArraysPETSC(PetscViewer) const;
 #endif
 
-	void printScalarArray(std::string arrayName, std::fstream& vtk_file) const;
+    void printScalarArray(std::string arrayName, std::fstream& vtk_file) const;
 
-	// Copied from COutput
-	CRFProcess* GetPCS_ELE(const std::string& var_name) const;
+    // Copied from COutput
+    CRFProcess* GetPCS_ELE(const std::string& var_name) const;
 
-	MeshLib::CFEMesh* _mesh;
-	std::string _processType;
-	std::vector<std::string> _pointArrayNames;
-	std::vector<std::string> _cellArrayNames;
-	std::vector<std::string> _materialPropertyArrayNames;
-	std::string _meshTypeName;
-	ProcessInfo* _processInfo;
+    MeshLib::CFEMesh* _mesh;
+    std::string _processType;
+    std::vector<std::string> _pointArrayNames;
+    std::vector<std::string> _cellArrayNames;
+    std::vector<std::string> _materialPropertyArrayNames;
+    std::string _meshTypeName;
+    ProcessInfo* _processInfo;
 };
 
-#endif // LEGACYVTKINTERFACE_H
+#endif  // LEGACYVTKINTERFACE_H
