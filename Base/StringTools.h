@@ -44,9 +44,9 @@ std::string replaceString(const std::string& searchString,
 template <typename T>
 std::string number2str(T d)
 {
-	std::stringstream out;
-	out << d;
-	return out.str();
+    std::stringstream out;
+    out << d;
+    return out.str();
 }
 
 /**
@@ -58,14 +58,15 @@ std::string number2str(T d)
 template <typename T>
 T str2number(const std::string& str)
 {
-	std::stringstream strs(str, std::stringstream::in | std::stringstream::out);
-	T v;
-	strs >> v;
-	return v;
+    std::stringstream strs(str, std::stringstream::in | std::stringstream::out);
+    T v;
+    strs >> v;
+    return v;
 }
 
 /**
- * Strip whitespace (or other characters) from the beginning and end of a string.
+ * Strip whitespace (or other characters) from the beginning and end of a
+ * string.
  */
 void trim(std::string& str, char ch = ' ');
 
@@ -88,12 +89,15 @@ namespace BaseLib
 /**
  * Extract the filename from a path
  */
-std::string getFileNameFromPath(const std::string& str, bool with_extension = false);
+std::string getFileNameFromPath(const std::string& str,
+                                bool with_extension = false);
 
 /**
- * Checks if file_name already contains a qualified path and if not copies the path from source.
+ * Checks if file_name already contains a qualified path and if not copies the
+ * path from source.
  */
-std::string copyPathToFileName(const std::string& file_name, const std::string& source);
+std::string copyPathToFileName(const std::string& file_name,
+                               const std::string& source);
 
 /**
  * extracts the path of a fully qualified path name of the file
@@ -102,6 +106,6 @@ std::string copyPathToFileName(const std::string& file_name, const std::string& 
  */
 void extractPath(std::string const& fname, std::string& path);
 
-} // end namespace BaseLib
+}  // end namespace BaseLib
 
-#endif // STRINGTOOLS_H
+#endif  // STRINGTOOLS_H

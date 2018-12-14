@@ -35,39 +35,40 @@
 /**************************************************************************/
 void DisplayStartMsg(void)
 {
-	int i, pad_len;
-	char buf[128];
+    int i, pad_len;
+    char buf[128];
 
-	printf("\n");
-	printf("          ###################################################\n");
-	printf("          ##                                               ##\n");
-	printf("          ##               OpenGeoSys-Project              ##\n");
-	printf("          ##                                               ##\n");
-	printf("          ##  Helmholtz Center for Environmental Research  ##\n");
-	printf("          ##    UFZ Leipzig - Environmental Informatics    ##\n");
-	printf("          ##                  TU Dresden                   ##\n");
-	printf("          ##              University of Kiel               ##\n");
-	printf("          ##            University of Edinburgh            ##\n");
-	printf("          ##         University of Tuebingen (ZAG)         ##\n");
-	printf("          ##       Federal Institute for Geosciences       ##\n");
-	printf("          ##          and Natural Resources (BGR)          ##\n");
-	printf("          ##  German Research Centre for Geosciences (GFZ) ##\n");
-	printf("          ##                                               ##\n");
+    printf("\n");
+    printf("          ###################################################\n");
+    printf("          ##                                               ##\n");
+    printf("          ##               OpenGeoSys-Project              ##\n");
+    printf("          ##                                               ##\n");
+    printf("          ##  Helmholtz Center for Environmental Research  ##\n");
+    printf("          ##    UFZ Leipzig - Environmental Informatics    ##\n");
+    printf("          ##                  TU Dresden                   ##\n");
+    printf("          ##              University of Kiel               ##\n");
+    printf("          ##            University of Edinburgh            ##\n");
+    printf("          ##         University of Tuebingen (ZAG)         ##\n");
+    printf("          ##       Federal Institute for Geosciences       ##\n");
+    printf("          ##          and Natural Resources (BGR)          ##\n");
+    printf("          ##  German Research Centre for Geosciences (GFZ) ##\n");
+    printf("          ##                                               ##\n");
 
-	// align the version information to center of the line
-	printf("          ## ");
-	sprintf(buf, "Version %s  Date %s", BuildInfo::OGS_VERSION.c_str(), BuildInfo::OGS_DATE.c_str());
-	pad_len = 45 - (int)strlen(buf);
-	for (i = 0; i < pad_len / 2; i++)
-		printf(" ");
-	printf("%s", buf);
-	for (i = 0; i < pad_len - pad_len / 2; i++)
-		printf(" ");
-	printf(" ##\n");
+    // align the version information to center of the line
+    printf("          ## ");
+    sprintf(buf, "Version %s  Date %s", BuildInfo::OGS_VERSION.c_str(),
+            BuildInfo::OGS_DATE.c_str());
+    pad_len = 45 - (int)strlen(buf);
+    for (i = 0; i < pad_len / 2; i++)
+        printf(" ");
+    printf("%s", buf);
+    for (i = 0; i < pad_len - pad_len / 2; i++)
+        printf(" ");
+    printf(" ##\n");
 
-	printf("          ##                                               ##\n");
-	printf("          ###################################################\n");
-	printf("\n          File name (without extension): ");
+    printf("          ##                                               ##\n");
+    printf("          ###################################################\n");
+    printf("\n          File name (without extension): ");
 }
 
 /**************************************************************************/
@@ -88,5 +89,5 @@ void DisplayStartMsg(void)
 /**************************************************************************/
 void DisplayEndMsg(void)
 {
-	printf("\n          Programm beendet!\n\n\n");
+    printf("\n          Programm beendet!\n\n\n");
 }

@@ -21,19 +21,24 @@
 class SourceTerm : public FEMCondition
 {
 public:
-	SourceTerm(const std::string& geometry_name) : FEMCondition(geometry_name, FEMCondition::SOURCE_TERM), _tim_type(0)
-	{
-	}
-	SourceTerm(const CSourceTerm& st, const std::string& geometry_name);
-	SourceTerm(const FEMCondition& cond) : FEMCondition(cond, FEMCondition::SOURCE_TERM){};
-	~SourceTerm() {}
-	size_t getTimType() const { return _tim_type; }
-	void setTimType(size_t value) { _tim_type = value; }
-	// Legacy function (only required for ascii st-files): reads values for 'direct' source terms
-	static void getDirectNodeValues(const std::string& filename, std::vector<std::pair<size_t, double> >& nodes_values);
+    SourceTerm(const std::string& geometry_name)
+        : FEMCondition(geometry_name, FEMCondition::SOURCE_TERM), _tim_type(0)
+    {
+    }
+    SourceTerm(const CSourceTerm& st, const std::string& geometry_name);
+    SourceTerm(const FEMCondition& cond)
+        : FEMCondition(cond, FEMCondition::SOURCE_TERM){};
+    ~SourceTerm() {}
+    size_t getTimType() const { return _tim_type; }
+    void setTimType(size_t value) { _tim_type = value; }
+    // Legacy function (only required for ascii st-files): reads values for
+    // 'direct' source terms
+    static void getDirectNodeValues(
+        const std::string& filename,
+        std::vector<std::pair<size_t, double> >& nodes_values);
 
 private:
-	size_t _tim_type;
+    size_t _tim_type;
 };
 
-#endif // SOURCETERM_H
+#endif  // SOURCETERM_H

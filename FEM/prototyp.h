@@ -35,7 +35,8 @@ typedef void (*VoidFuncILD)(int, long, double);
 typedef void (*VoidFuncILID)(int, long, int, double);
 typedef void (*VoidFuncILDX)(int, long, double*);
 typedef void (*VoidFuncILDXDX)(int, long, double*, double*);
-typedef void (*VoidFuncILDDDDDX)(int, long, double, double, double, double, double*);
+typedef void (*VoidFuncILDDDDDX)(int, long, double, double, double, double,
+                                 double*);
 typedef void (*VoidFuncLong)(long);
 typedef void (*VoidFuncLD)(long, double);
 typedef void (*VoidFuncLDI)(long, double, int);
@@ -58,7 +59,8 @@ typedef int (*IntFuncVoid)(void);
 typedef int (*IntFuncLong)(long);
 typedef int (*IntFuncFileX)(FILE*);
 typedef int (*IntFuncDXDXL)(double*, double*, long);
-typedef int (*IntFuncDXDXLVXL)(double*, double*, long, void (*)(double*, double*, double), long);
+typedef int (*IntFuncDXDXLVXL)(double*, double*, long,
+                               void (*)(double*, double*, double), long);
 typedef int (*IntFuncII)(int, int);
 typedef int (*IntFuncIII)(int, int, int);
 typedef long* (*LongXFuncLIX)(long, int*);

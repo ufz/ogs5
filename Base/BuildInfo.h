@@ -32,6 +32,6 @@ extern const std::string OGS_VERSION;
 extern const std::string OGS_DATE;
 extern const std::string OGS_EXECUTABLE;
 extern const std::string PUT_TMP_DIR_IN;
-}
+}  // namespace BuildInfo
 
-#endif // BUILDINFO_H
+#endif  // BUILDINFO_H

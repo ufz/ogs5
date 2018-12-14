@@ -17,7 +17,7 @@
 
 #include "files0.h"
 #include "geo_lin.h"
-#include "geo_mathlib.h" //CC
+#include "geo_mathlib.h"  //CC
 #include "geo_pnt.h"
 
 using namespace std;
@@ -33,27 +33,27 @@ vector<CGLLine*> gli_file_lines_vector;
 **************************************************************************/
 CGLLine::CGLLine(void)
 {
-	mesh_index = -1;
-	gli_line_id = -1; // mesh_index: unique index for mesh
-	marked = false;
-	m_point1 = NULL;
-	m_point2 = NULL;
-	point1 = -1;
-	point2 = -1;
-	orientation = -1;
-	epsilon = 0.1;
-	no_msh_nodes = 0;
-	msh_nodes = NULL;
-	mat_group = 0;
+    mesh_index = -1;
+    gli_line_id = -1;  // mesh_index: unique index for mesh
+    marked = false;
+    m_point1 = NULL;
+    m_point2 = NULL;
+    point1 = -1;
+    point2 = -1;
+    orientation = -1;
+    epsilon = 0.1;
+    no_msh_nodes = 0;
+    msh_nodes = NULL;
+    mat_group = 0;
 }
 
 // deconstructor
 CGLLine::~CGLLine(void)
 {
-	int i = 0;
-	for (i = 0; i < (int)nodes_coor_vector.size(); i++)
-		delete nodes_coor_vector[i];
-	nodes_coor_vector.clear();
+    int i = 0;
+    for (i = 0; i < (int)nodes_coor_vector.size(); i++)
+        delete nodes_coor_vector[i];
+    nodes_coor_vector.clear();
 }
 
 /*************************************************************************
@@ -66,7 +66,7 @@ CGLLine::~CGLLine(void)
  **************************************************************************/
 vector<CGLLine*> GEOLIB_GetGLILines_Vector(void)
 {
-	return gli_lines_vector;
+    return gli_lines_vector;
 }
 /*************************************************************************
    GeoLib- Funktion: Clear_LineVector
@@ -78,7 +78,7 @@ vector<CGLLine*> GEOLIB_GetGLILines_Vector(void)
  **************************************************************************/
 void Clear_LineVector()
 {
-	gli_lines_vector.clear();
+    gli_lines_vector.clear();
 }
 
 /**************************************************************************
@@ -89,35 +89,36 @@ void Clear_LineVector()
 **************************************************************************/
 CGLLine* CGLLine::GEOGetLine(long number)
 {
-	return gli_lines_vector[number];
+    return gli_lines_vector[number];
 }
 
 CGLLine* CGLLine::Exists()
 {
-	long i = 0;
-	long node1, node2, node3, node4;
-	long line_vector_length = (long)gli_lines_vector.size();
+    long i = 0;
+    long node1, node2, node3, node4;
+    long line_vector_length = (long)gli_lines_vector.size();
 
-	for (i = 0; i < line_vector_length; i++)
-	{
-		node1 = gli_lines_vector[i]->point1;
-		node2 = gli_lines_vector[i]->point2;
-		node3 = point1;
-		node4 = point2;
-		if ((node1 == node3) && (node2 == node4))
-		{
-			gli_line_id = gli_lines_vector[i]->gli_line_id;
-			m_point1 = gli_lines_vector[i]->m_point1;
-			m_point2 = gli_lines_vector[i]->m_point2;
-			point1 = gli_lines_vector[i]->point1;
-			point2 = gli_lines_vector[i]->point2;
-			orientation = 1;
-			return gli_lines_vector[i];
-		}
-		// if ( ((node1==point1)&&(node2==point2))||((node2==point1)&&(node1==point2)) )
-		// return  gli_lines_vector[i];
-	}
-	return NULL;
+    for (i = 0; i < line_vector_length; i++)
+    {
+        node1 = gli_lines_vector[i]->point1;
+        node2 = gli_lines_vector[i]->point2;
+        node3 = point1;
+        node4 = point2;
+        if ((node1 == node3) && (node2 == node4))
+        {
+            gli_line_id = gli_lines_vector[i]->gli_line_id;
+            m_point1 = gli_lines_vector[i]->m_point1;
+            m_point2 = gli_lines_vector[i]->m_point2;
+            point1 = gli_lines_vector[i]->point1;
+            point2 = gli_lines_vector[i]->point2;
+            orientation = 1;
+            return gli_lines_vector[i];
+        }
+        // if (
+        // ((node1==point1)&&(node2==point2))||((node2==point1)&&(node1==point2))
+        // ) return  gli_lines_vector[i];
+    }
+    return NULL;
 }
 
 /**************************************************************************
@@ -128,18 +129,20 @@ CGLLine* CGLLine::Exists()
 **************************************************************************/
 CGLLine* CGLLine::CheckLineOutPut()
 {
-	const double DistTol = 1.0e-10;
-	CGLLine* CGLn = NULL;
+    const double DistTol = 1.0e-10;
+    CGLLine* CGLn = NULL;
 
-	int Size = (long)gli_lines_vector.size();
-	for (int j = 0; j < Size; j++)
-	{
-		CGLn = gli_lines_vector[j];
-		if (CGLn->marked) // Already being output
+    int Size = (long)gli_lines_vector.size();
+    for (int j = 0; j < Size; j++)
+    {
+        CGLn = gli_lines_vector[j];
+        if (CGLn->marked)  // Already being output
 
-			if (((m_point1->PointDis(CGLn->m_point1) < DistTol) && (m_point2->PointDis(CGLn->m_point2) < DistTol))
-			    || ((m_point1->PointDis(CGLn->m_point2) < DistTol) && (m_point2->PointDis(CGLn->m_point1) < DistTol)))
-				return CGLn;
-	}
-	return NULL;
+            if (((m_point1->PointDis(CGLn->m_point1) < DistTol) &&
+                 (m_point2->PointDis(CGLn->m_point2) < DistTol)) ||
+                ((m_point1->PointDis(CGLn->m_point2) < DistTol) &&
+                 (m_point2->PointDis(CGLn->m_point1) < DistTol)))
+                return CGLn;
+    }
+    return NULL;
 }

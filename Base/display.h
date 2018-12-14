@@ -41,7 +41,8 @@ extern void DisplayLong(long x);
 /* Schreibt Long-Wert ohne Zeilenvorschub auf Standardausgabe */
 extern void DisplayDoubleVector(double* vec, long grad, char* text);
 /* Schreibt Vektor auf Standardausgabe */
-// OK411 extern void DisplayDoubleMatrix ( double *mat, long m, long n, char *text );
+// OK411 extern void DisplayDoubleMatrix ( double *mat, long m, long n, char
+// *text );
 /* Schreibt Matrix auf Standardausgabe */
 extern void DisplayErrorMsg(const char* s);
 /* Schreibt Fehlermeldung auf Standardausgabe */

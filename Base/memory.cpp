@@ -48,17 +48,17 @@
 #ifndef MEMORY_STR
 typedef struct
 {
-	long address;
-	long size;
+    long address;
+    long size;
 } Memory_Table;
 
 #else
 typedef struct
 {
-	long address;
-	long size;
-	char* file;
-	int line;
+    long address;
+    long size;
+    char* file;
+    int line;
 } Memory_Table;
 #endif
 
@@ -96,69 +96,72 @@ void* Malloc(long bytes)
 void* MAlloc(long bytes, char* datei, int zeile)
 #endif
 {
-	void* address = NULL;
+    void* address = NULL;
 #ifdef MEMORY_TEST_IN_TIME
-	long i;
+    long i;
 #endif
 
 #ifdef MEMORY_MANAGEMENT_NOT_ANSI_COMPLIANT
-	/* Laut ANSI nicht noetig, zur Sicherheit eingefuegt. CT */
-	if (bytes == 0)
-		return NULL;
+    /* Laut ANSI nicht noetig, zur Sicherheit eingefuegt. CT */
+    if (bytes == 0)
+        return NULL;
 #endif
 
-	address = (void*)malloc((size_t)bytes);
+    address = (void*)malloc((size_t)bytes);
 #ifdef MEMORY_SHOW_USAGE
-	printf("address %8x %ld  , ", address, (long)address);
+    printf("address %8x %ld  , ", address, (long)address);
 #endif
 
 #ifdef MEMORY_TEST_IN_TIME
-	if (memtab)
-	{
-		/* Nach freiem Platz in der Speichertabelle suchen */
-		i = 0;
-		while ((i < memory_list_size) && (memtab[i].address > 0))
-			i = i + 1;
-		if (i == memory_list_size)
-		{
-			/* Kein freier Platz wurde gefunden, der Ueberhang wird benutzt.
-			   Fuer den naechsten Durchlauf muss ein neuer Platz erzeugt werden. */
-			memory_list_size = memory_list_size + 1;
-			memtab = (Memory_Table*)realloc(memtab, (memory_list_size + 1) * sizeof(Memory_Table));
-			memtab[memory_list_size].address = 0;
-			memtab[memory_list_size].size = 0;
-		}
-		memory_alloced = memory_alloced + bytes;
+    if (memtab)
+    {
+        /* Nach freiem Platz in der Speichertabelle suchen */
+        i = 0;
+        while ((i < memory_list_size) && (memtab[i].address > 0))
+            i = i + 1;
+        if (i == memory_list_size)
+        {
+            /* Kein freier Platz wurde gefunden, der Ueberhang wird benutzt.
+               Fuer den naechsten Durchlauf muss ein neuer Platz erzeugt werden.
+             */
+            memory_list_size = memory_list_size + 1;
+            memtab = (Memory_Table*)realloc(
+                memtab, (memory_list_size + 1) * sizeof(Memory_Table));
+            memtab[memory_list_size].address = 0;
+            memtab[memory_list_size].size = 0;
+        }
+        memory_alloced = memory_alloced + bytes;
 
-		memtab[i].address = (long)address;
-		memtab[i].size = (long)bytes;
+        memtab[i].address = (long)address;
+        memtab[i].size = (long)bytes;
 
 #ifdef MEMORY_STR
-		memtab[i].file = datei;
-		memtab[i].line = zeile;
+        memtab[i].file = datei;
+        memtab[i].line = zeile;
 #endif
-	}
+    }
 #ifdef MEMORY_SHOW_USAGE
 #ifdef MEMORY_STR
-	printf("Malloc aufgerufen von %s Zeile %d.  ", datei, zeile);
+    printf("Malloc aufgerufen von %s Zeile %d.  ", datei, zeile);
 #endif
-	printf("Bytes im Speicher: %ld \n", memory_alloced);
+    printf("Bytes im Speicher: %ld \n", memory_alloced);
 #endif
-	if (memory_alloced > memory_max_alloced)
-		memory_max_alloced = memory_alloced;
+    if (memory_alloced > memory_max_alloced)
+        memory_max_alloced = memory_alloced;
 #endif
 
 #ifdef MEMORY_ALLOCATION_TEST_SUCCESS
-	if ((bytes) && (address == 0)) /* Angeforderter Speicher wurde nicht geliefert */
-	{
+    if ((bytes) &&
+        (address == 0)) /* Angeforderter Speicher wurde nicht geliefert */
+    {
 #ifdef MEMORY_STR
-		printf("Malloc aufgerufen von %s Zeile %d. \n", datei, zeile);
+        printf("Malloc aufgerufen von %s Zeile %d. \n", datei, zeile);
 #endif
-		printf("Malloc ist fehlgeschlagen!!!\n");
-	}
+        printf("Malloc ist fehlgeschlagen!!!\n");
+    }
 #endif
 
-	return address;
+    return address;
 }
 
 /**************************************************************************/
@@ -190,50 +193,50 @@ void* FRee(void* block, char* datei, int zeile)
 #endif
 {
 #ifdef MEMORY_TEST_IN_TIME
-	long i;
+    long i;
 #endif
 
 #ifdef MEMORY_MANAGEMENT_NOT_ANSI_COMPLIANT
-	/* Laut ANSI nicht noetig, zur Sicherheit eingefuegt. CT */
-	if (block == NULL)
-		return NULL;
+    /* Laut ANSI nicht noetig, zur Sicherheit eingefuegt. CT */
+    if (block == NULL)
+        return NULL;
 #endif
 
 #ifdef MEMORY_TEST_IN_TIME
-	if (memtab)
-	{
-		/* Nach "Block" in der Speichertabelle suchen */
-		i = memory_list_size - 1;
-		/* Von hinten anfangen muesste schneller gehen, da sich die "alten"
-		   Addressen (hoffentlich) am Anfang sammeln. */
+    if (memtab)
+    {
+        /* Nach "Block" in der Speichertabelle suchen */
+        i = memory_list_size - 1;
+        /* Von hinten anfangen muesste schneller gehen, da sich die "alten"
+           Addressen (hoffentlich) am Anfang sammeln. */
 
-		while (i >= 0)
-		{
-			if (memtab[i].address == (long)block)
-			{
-				/* Richtiger Block wurde gefunden! Kann freigegeben werden. */
+        while (i >= 0)
+        {
+            if (memtab[i].address == (long)block)
+            {
+                /* Richtiger Block wurde gefunden! Kann freigegeben werden. */
 
-				memory_alloced = memory_alloced - memtab[i].size;
+                memory_alloced = memory_alloced - memtab[i].size;
 
-				memtab[i].address = 0;
-				memtab[i].size = 0;
-				i = 0;
-			}
-			i = i - 1;
-		}
+                memtab[i].address = 0;
+                memtab[i].size = 0;
+                i = 0;
+            }
+            i = i - 1;
+        }
 
 #ifdef MEMORY_SHOW_USAGE
 #ifdef MEMORY_STR
-		printf("Free aufgerufen von %s Zeile %d.  ", datei, zeile);
+        printf("Free aufgerufen von %s Zeile %d.  ", datei, zeile);
 #endif
-		printf("Bytes im Speicher: %ld \n", memory_alloced);
+        printf("Bytes im Speicher: %ld \n", memory_alloced);
 #endif
-	}
+    }
 #endif
 
-	free(block);
+    free(block);
 
-	return NULL;
+    return NULL;
 }
 
 /**************************************************************************/
@@ -266,119 +269,120 @@ void* Realloc(void* block, long bytes)
 void* REalloc(void* block, long bytes, char* datei, int zeile)
 #endif
 {
-	static void* address;
+    static void* address;
 #ifdef MEMORY_REALLOC
-	static char* a;
-	static char* b;
+    static char* a;
+    static char* b;
 #endif
 
 #ifdef MEMORY_TEST_IN_TIME
-	/* Es wird in den folgenden verschiedenen "#ifdef"-Abschnitten
-	   sehr wuest mit den Eingangsgroessen hantiert, darum lege ich sie
-	   erstmal ab ... */
-	long old_block;
-	long new_bytes;
-	long i;
+    /* Es wird in den folgenden verschiedenen "#ifdef"-Abschnitten
+       sehr wuest mit den Eingangsgroessen hantiert, darum lege ich sie
+       erstmal ab ... */
+    long old_block;
+    long new_bytes;
+    long i;
 
-	old_block = (long)block;
-	new_bytes = (long)bytes;
+    old_block = (long)block;
+    new_bytes = (long)bytes;
 #endif
 
 #ifdef MEMORY_MANAGEMENT_NOT_ANSI_COMPLIANT
-	/* Laut ANSI nicht noetig, zur Sicherheit eingefuegt. CT */
-	if (block == NULL)
+    /* Laut ANSI nicht noetig, zur Sicherheit eingefuegt. CT */
+    if (block == NULL)
 #ifndef MEMORY_STR
-		return Malloc(bytes);
+        return Malloc(bytes);
 #else
-		return MAlloc(bytes, datei, zeile);
+        return MAlloc(bytes, datei, zeile);
 #endif
-	if (bytes == 0)
+    if (bytes == 0)
 #ifndef MEMORY_STR
-		return Free(block);
+        return Free(block);
 #else
-		return FRee(block, datei, zeile);
+        return FRee(block, datei, zeile);
 #endif
 #endif
 
 #ifdef MEMORY_REALLOC
 #ifndef MEMORY_STR
-	address = Malloc(bytes);
+    address = Malloc(bytes);
 #else
-	address = MAlloc(bytes, datei, zeile);
+    address = MAlloc(bytes, datei, zeile);
 #endif
-	if (!(block == NULL))
-	{
-		a = (char*)address;
-		b = (char*)block;
-		{
-			/* beim Vergroessern wird ein laengerer Bereich gelesen,
-			   als eigentlich belegt war !
-			   --> nur mit eigener Speichertabelle zu aendern */
-			register long i;
-			i = 0l;
-			while (i < bytes)
-			{
-				a[i] = b[i];
-				i++;
-			}
-		}
-	}
+    if (!(block == NULL))
+    {
+        a = (char*)address;
+        b = (char*)block;
+        {
+            /* beim Vergroessern wird ein laengerer Bereich gelesen,
+               als eigentlich belegt war !
+               --> nur mit eigener Speichertabelle zu aendern */
+            register long i;
+            i = 0l;
+            while (i < bytes)
+            {
+                a[i] = b[i];
+                i++;
+            }
+        }
+    }
 #ifndef MEMORY_STR
-	block = Free(block);
+    block = Free(block);
 #else
-	block = FRee(block, datei, zeile); /* vorher Free msr 0796 */
+    block = FRee(block, datei, zeile); /* vorher Free msr 0796 */
 #endif
-#else // ifdef MEMORY_REALLOC
-	address = (void*)realloc(block, (size_t)bytes);
+#else  // ifdef MEMORY_REALLOC
+    address = (void*)realloc(block, (size_t)bytes);
 #ifdef MEMORY_SHOW_USAGE
-	printf("address %8x %ld  , ", address, (long)address);
+    printf("address %8x %ld  , ", address, (long)address);
 #endif
 #endif
 
 #ifdef MEMORY_ALLOCATION_TEST_SUCCESS
-	if ((bytes) && (address == 0)) /* Angeforderter Speicher wurde nicht geliefert */
-	{
+    if ((bytes) &&
+        (address == 0)) /* Angeforderter Speicher wurde nicht geliefert */
+    {
 #ifdef MEMORY_STR
-		printf("Malloc aufgerufen von %s Zeile %d. \n", datei, zeile);
+        printf("Malloc aufgerufen von %s Zeile %d. \n", datei, zeile);
 #endif
-		printf("Malloc ist fehlgeschlagen!!!\n");
-	}
+        printf("Malloc ist fehlgeschlagen!!!\n");
+    }
 #endif
 
 #ifdef MEMORY_TEST_IN_TIME
-	if (memtab)
-	{
-		/* Nach "Block" in der Speichertabelle suchen */
-		i = memory_list_size - 1;
-		/* Von hinten anfangen muesste schneller gehen, da sich die "alten"
-		   Addressen (hoffentlich) am Anfang sammeln. */
+    if (memtab)
+    {
+        /* Nach "Block" in der Speichertabelle suchen */
+        i = memory_list_size - 1;
+        /* Von hinten anfangen muesste schneller gehen, da sich die "alten"
+           Addressen (hoffentlich) am Anfang sammeln. */
 
-		while (i >= 0)
-		{
-			if (memtab[i].address == old_block)
-			{
-				/* Richtiger Block wurde gefunden! Kann freigegeben werden. */
-				memory_alloced = memory_alloced - memtab[i].size + new_bytes;
-				memtab[i].address = (long)address;
-				memtab[i].size = (long)new_bytes;
+        while (i >= 0)
+        {
+            if (memtab[i].address == old_block)
+            {
+                /* Richtiger Block wurde gefunden! Kann freigegeben werden. */
+                memory_alloced = memory_alloced - memtab[i].size + new_bytes;
+                memtab[i].address = (long)address;
+                memtab[i].size = (long)new_bytes;
 #ifdef MEMORY_STR
-				memtab[i].file = datei;
-				memtab[i].line = zeile;
+                memtab[i].file = datei;
+                memtab[i].line = zeile;
 #endif
-				i = 0;
-			}
-			i = i - 1;
-		}
+                i = 0;
+            }
+            i = i - 1;
+        }
 #ifdef MEMORY_SHOW_USAGE
 #ifdef MEMORY_STR
-		printf("Realloc aufgerufen von %s Zeile %d.  ", datei, zeile);
+        printf("Realloc aufgerufen von %s Zeile %d.  ", datei, zeile);
 #endif
-		printf("Bytes im Speicher: %ld \n", memory_alloced);
+        printf("Bytes im Speicher: %ld \n", memory_alloced);
 #endif
-		if (memory_alloced > memory_max_alloced)
-			memory_max_alloced = memory_alloced;
-	}
+        if (memory_alloced > memory_max_alloced)
+            memory_max_alloced = memory_alloced;
+    }
 #endif
 
-	return address;
+    return address;
 }

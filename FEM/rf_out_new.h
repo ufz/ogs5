@@ -34,13 +34,14 @@ extern std::string defaultOutputPath;
  * @param unique_name unique name to access the geometric entities in geo_obj
  * @return true if file reading was successful, else false
  */
-bool OUTRead(const std::string& file_base_name, const GEOLIB::GEOObjects& geo_obj, const std::string& unique_name);
+bool OUTRead(const std::string& file_base_name,
+             const GEOLIB::GEOObjects& geo_obj, const std::string& unique_name);
 
 extern void OUTWrite(std::string);
 #define OUT_FILE_EXTENSION ".out"
 extern void OUTData(double, const int step, bool force_output);
 extern void OUTDelete();
 extern COutput* OUTGet(const std::string&);
-extern void OUTCheck(void); // new SB
-extern COutput* OUTGetRWPT(const std::string&); // JT
+extern void OUTCheck(void);                      // new SB
+extern COutput* OUTGetRWPT(const std::string&);  // JT
 #endif

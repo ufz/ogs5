@@ -21,10 +21,10 @@
                              uebertragen
    10/1999     AH            Systemzeit
    01/2000     AH            in GetCurveValue: Konstante Kurve beruecksichtigt
-   02/2000     CT            Funktion P0260 von Rainer, CalcIterationError veraendert
-   10/2001     AH            Abfrage if (!kurven) in DestroyFunctionsData.
-   03/2003     RK            Quellcode bereinigt, Globalvariablen entfernt
-   02/2010     OK            Cleaning
+   02/2000     CT            Funktion P0260 von Rainer, CalcIterationError
+   veraendert 10/2001     AH            Abfrage if (!kurven) in
+   DestroyFunctionsData. 03/2003     RK            Quellcode bereinigt,
+   Globalvariablen entfernt 02/2010     OK            Cleaning
  */
 /**************************************************************************/
 #include "makros.h"
@@ -37,7 +37,7 @@
 #include "femlib.h"
 
 #include "mathlib.h"
-#include "rf_fct.h" //NB
+#include "rf_fct.h"  //NB
 #include "rf_mmp_new.h"
 #include "rf_num_new.h"
 #include "rf_tim_new.h"
@@ -70,17 +70,17 @@ long fracture_aperture_anz = 0l;
    vorzeichen
  */
 /* Programmaenderungen:
-   1/1998     C.Thorenz  Erste Version                                                                          */
+   1/1998     C.Thorenz  Erste Version */
 /**************************************************************************/
 int Signum(double x)
 {
-	if (x > 0.)
-		return 1;
-	if (fabs(x) < MKleinsteZahl)
-		return 0;
-	if (x < 0.)
-		return -1;
-	return 0;
+    if (x > 0.)
+        return 1;
+    if (fabs(x) < MKleinsteZahl)
+        return 0;
+    if (x < 0.)
+        return -1;
+    return 0;
 }
 
 /**************************************************************************
@@ -110,61 +110,62 @@ int Signum(double x)
 **************************************************************************/
 double GetCurveValue(int kurve, int methode, double punkt, int* gueltig)
 {
-	static long anz;
-	register long i;
-	static StuetzStellen* s;
+    static long anz;
+    register long i;
+    static StuetzStellen* s;
 
-	if (kurve == 0)
-	{
-		*gueltig = 1;
-		return 1.0;
-	}
+    if (kurve == 0)
+    {
+        *gueltig = 1;
+        return 1.0;
+    }
 
 #ifdef ERROR_CONTROL
-	if ((kurve < 0) || (kurve >= anz_kurven))
-	{
-		DisplayMsgLn("");
-		DisplayMsg("PANIC! Curve ");
-		DisplayLong(kurve);
-		DisplayMsgLn(" is requested but not defined!");
-		abort();
-	}
+    if ((kurve < 0) || (kurve >= anz_kurven))
+    {
+        DisplayMsgLn("");
+        DisplayMsg("PANIC! Curve ");
+        DisplayLong(kurve);
+        DisplayMsgLn(" is requested but not defined!");
+        abort();
+    }
 #endif
 
-	anz = kurven[kurve].anz_stuetzstellen;
-	s = kurven[kurve].stuetzstellen;
-	*gueltig = 1;
+    anz = kurven[kurve].anz_stuetzstellen;
+    s = kurven[kurve].stuetzstellen;
+    *gueltig = 1;
 
-	i = 1l;
-	while (punkt > s[i].punkt)
-		i++;
-	//
-	// Check curve bounds
-	if (punkt < s[0].punkt)
-	{
-		*gueltig = 0;
-		return s[0].wert;
-	}
-	if (punkt > s[anz - 1l].punkt)
-	{
-		*gueltig = 0;
-		return s[anz - 1l].wert;
-	}
-	//
-	// Otherwise, get interpolated value
-	switch (methode)
-	{
-		default:
-			ScreenMessage("ERROR: GetCurveValue() --> Invalid curve.\n");
-			return 0.0;
-		//
-		case 0: // Linear Interpolation
-			return s[i - 1].wert
-			       + (s[i].wert - s[i - 1l].wert) / (s[i].punkt - s[i - 1l].punkt) * (punkt - s[i - 1l].punkt);
-		//
-		case 1: // Piece wise constant
-			return s[i - 1].wert; // BG changed from i to i-1, 2011
-	}
+    i = 1l;
+    while (punkt > s[i].punkt)
+        i++;
+    //
+    // Check curve bounds
+    if (punkt < s[0].punkt)
+    {
+        *gueltig = 0;
+        return s[0].wert;
+    }
+    if (punkt > s[anz - 1l].punkt)
+    {
+        *gueltig = 0;
+        return s[anz - 1l].wert;
+    }
+    //
+    // Otherwise, get interpolated value
+    switch (methode)
+    {
+        default:
+            ScreenMessage("ERROR: GetCurveValue() --> Invalid curve.\n");
+            return 0.0;
+        //
+        case 0:  // Linear Interpolation
+            return s[i - 1].wert + (s[i].wert - s[i - 1l].wert) /
+                                       (s[i].punkt - s[i - 1l].punkt) *
+                                       (punkt - s[i - 1l].punkt);
+        //
+        case 1:                    // Piece wise constant
+            return s[i - 1].wert;  // BG changed from i to i-1, 2011
+    }
 }
 
 /**************************************************************************
@@ -195,74 +196,77 @@ double GetCurveValue(int kurve, int methode, double punkt, int* gueltig)
 **************************************************************************/
 double GetCurveValueInverse(int kurve, int methode, double wert, int* gueltig)
 {
-	static long anz;
-	register long i;
-	static StuetzStellen* s;
+    static long anz;
+    register long i;
+    static StuetzStellen* s;
 
 #ifdef ERROR_CONTROL
-	if ((kurve < 0) || (kurve >= anz_kurven))
-	{
-		DisplayMsgLn("");
-		DisplayMsg("PANIC! Curve ");
-		DisplayLong(kurve);
-		DisplayMsgLn(" is requested but not defined!");
-		abort();
-	}
+    if ((kurve < 0) || (kurve >= anz_kurven))
+    {
+        DisplayMsgLn("");
+        DisplayMsg("PANIC! Curve ");
+        DisplayLong(kurve);
+        DisplayMsgLn(" is requested but not defined!");
+        abort();
+    }
 #endif
 
-	anz = kurven[kurve].anz_stuetzstellen;
-	s = kurven[kurve].stuetzstellen;
-	*gueltig = 1;
-	i = 1l;
+    anz = kurven[kurve].anz_stuetzstellen;
+    s = kurven[kurve].stuetzstellen;
+    *gueltig = 1;
+    i = 1l;
 
-	if (s[0].wert < s[anz - 1l].wert)
-	{
-		/* Monoton steigend */
-		if (wert < s[0].wert)
-		{
-			*gueltig = 0;
-			return s[0].punkt;
-		}
-		if (wert > s[anz - 1].wert)
-		{
-			*gueltig = 0;
-			return s[anz - 1].punkt;
-		}
-		/* Suchen der Stuetzstelle. Vorraussetzung: Zeitpunkte aufsteigend geordnet */
-		while (wert > s[i].wert)
-			i++;
-	}
-	else
-	{
-		/* Monoton fallend */
-		if (wert > s[0].wert)
-		{
-			*gueltig = 0;
-			return s[0].punkt;
-		}
-		if (wert < s[anz - 1].wert)
-		{
-			*gueltig = 0;
-			return s[anz - 1].punkt;
-		}
-		/* Suchen der Stuetzstelle. Vorraussetzung: Zeitpunkte aufsteigend geordnet */
-		while (wert < s[i].wert)
-			i++;
-	}
+    if (s[0].wert < s[anz - 1l].wert)
+    {
+        /* Monoton steigend */
+        if (wert < s[0].wert)
+        {
+            *gueltig = 0;
+            return s[0].punkt;
+        }
+        if (wert > s[anz - 1].wert)
+        {
+            *gueltig = 0;
+            return s[anz - 1].punkt;
+        }
+        /* Suchen der Stuetzstelle. Vorraussetzung: Zeitpunkte aufsteigend
+         * geordnet */
+        while (wert > s[i].wert)
+            i++;
+    }
+    else
+    {
+        /* Monoton fallend */
+        if (wert > s[0].wert)
+        {
+            *gueltig = 0;
+            return s[0].punkt;
+        }
+        if (wert < s[anz - 1].wert)
+        {
+            *gueltig = 0;
+            return s[anz - 1].punkt;
+        }
+        /* Suchen der Stuetzstelle. Vorraussetzung: Zeitpunkte aufsteigend
+         * geordnet */
+        while (wert < s[i].wert)
+            i++;
+    }
 
-	switch (methode)
-	{
-		default:
-			ScreenMessage("ERROR: GetCurveValue() --> Invalid curve.\n");
-			return 0.0;
-		//
-		case 0: // Lineare Interpolation
-			return s[i - 1].punkt
-			       + (s[i].punkt - s[i - 1l].punkt) / (s[i].wert - s[i - 1l].wert) * (wert - s[i - 1l].wert);
-		//
-		case 1: // Piece wise constant
-			return s[i].punkt;
-	}
+    switch (methode)
+    {
+        default:
+            ScreenMessage("ERROR: GetCurveValue() --> Invalid curve.\n");
+            return 0.0;
+        //
+        case 0:  // Lineare Interpolation
+            return s[i - 1].punkt + (s[i].punkt - s[i - 1l].punkt) /
+                                        (s[i].wert - s[i - 1l].wert) *
+                                        (wert - s[i - 1l].wert);
+        //
+        case 1:  // Piece wise constant
+            return s[i].punkt;
+    }
 }
 
 /**************************************************************************
@@ -293,80 +297,85 @@ double GetCurveValueInverse(int kurve, int methode, double wert, int* gueltig)
 **************************************************************************/
 double GetCurveDerivative(int kurve, int methode, double punkt, int* gueltig)
 {
-	static long anz;
-	register long i;
-	static StuetzStellen* s;
-	static double w, s1, s2;
+    static long anz;
+    register long i;
+    static StuetzStellen* s;
+    static double w, s1, s2;
 
-	if (kurve == 0)
-	{
-		*gueltig = 1;
-		return 1.0;
-	}
+    if (kurve == 0)
+    {
+        *gueltig = 1;
+        return 1.0;
+    }
 
 #ifdef ERROR_CONTROL
-	if ((kurve < 0) || (kurve >= anz_kurven))
-	{
-		DisplayMsgLn("");
-		DisplayMsg("PANIC! Curve ");
-		DisplayLong(kurve);
-		DisplayMsgLn(" is requested but not defined!");
-		abort();
-	}
+    if ((kurve < 0) || (kurve >= anz_kurven))
+    {
+        DisplayMsgLn("");
+        DisplayMsg("PANIC! Curve ");
+        DisplayLong(kurve);
+        DisplayMsgLn(" is requested but not defined!");
+        abort();
+    }
 #endif
 
-	anz = kurven[kurve].anz_stuetzstellen;
-	s = kurven[kurve].stuetzstellen;
-	*gueltig = 1;
-	i = 1l;
+    anz = kurven[kurve].anz_stuetzstellen;
+    s = kurven[kurve].stuetzstellen;
+    *gueltig = 1;
+    i = 1l;
 
-	if (punkt < s[0].punkt)
-	{
-		*gueltig = 0;
-		i = 1;
-		punkt = s[0].punkt;
-	}
-	else if (punkt > s[anz - 1l].punkt)
-	{
-		*gueltig = 0;
-		i = anz - 1;
-		punkt = s[anz - 1].punkt;
-	}
-	else
-		/* Suchen der Stuetzstelle. Vorraussetzung: Zeitpunkte aufsteigend geordnet */
-		while (punkt > s[i].punkt)
-			i++;
+    if (punkt < s[0].punkt)
+    {
+        *gueltig = 0;
+        i = 1;
+        punkt = s[0].punkt;
+    }
+    else if (punkt > s[anz - 1l].punkt)
+    {
+        *gueltig = 0;
+        i = anz - 1;
+        punkt = s[anz - 1].punkt;
+    }
+    else
+        /* Suchen der Stuetzstelle. Vorraussetzung: Zeitpunkte aufsteigend
+         * geordnet */
+        while (punkt > s[i].punkt)
+            i++;
 
-	switch (methode)
-	{
-		default:
-		case 0:
-			/* Stueckweise konstant */
-			if (fabs(s[i].punkt - s[i - 1].punkt) > DBL_MIN)
-				return (s[i].wert - s[i - 1].wert) / (s[i].punkt - s[i - 1].punkt);
-			else
-				return Signum(s[i + 1].wert - s[i].wert) / DBL_EPSILON;
-		case 1:
-			/* Gleitend */
-			if ((i > 1) && (i < anz - 2))
-			{
-				s1 = (0.5 * s[i].wert - 0.5 * s[i - 2].wert) / (0.5 * s[i].punkt - 0.5 * s[i - 2].punkt);
+    switch (methode)
+    {
+        default:
+        case 0:
+            /* Stueckweise konstant */
+            if (fabs(s[i].punkt - s[i - 1].punkt) > DBL_MIN)
+                return (s[i].wert - s[i - 1].wert) /
+                       (s[i].punkt - s[i - 1].punkt);
+            else
+                return Signum(s[i + 1].wert - s[i].wert) / DBL_EPSILON;
+        case 1:
+            /* Gleitend */
+            if ((i > 1) && (i < anz - 2))
+            {
+                s1 = (0.5 * s[i].wert - 0.5 * s[i - 2].wert) /
+                     (0.5 * s[i].punkt - 0.5 * s[i - 2].punkt);
 
-				s2 = (0.5 * s[i + 1].wert - 0.5 * s[i - 1].wert) / (0.5 * s[i + 1].punkt - 0.5 * s[i - 1].punkt);
+                s2 = (0.5 * s[i + 1].wert - 0.5 * s[i - 1].wert) /
+                     (0.5 * s[i + 1].punkt - 0.5 * s[i - 1].punkt);
 
-				w = (punkt - s[i - 1].punkt) / (s[i].punkt - s[i - 1].punkt);
+                w = (punkt - s[i - 1].punkt) / (s[i].punkt - s[i - 1].punkt);
 
-				return (1. - w) * s1 + w * s2;
-			}
-			else
-			{
-				/* Stueckweise konstant */
-				if (fabs(s[i].punkt - s[i - 1].punkt) > DBL_MIN)
-					return (s[i].wert - s[i - 1].wert) / (s[i].punkt - s[i - 1].punkt);
-				else
-					return Signum(s[i + 1].wert - s[i].wert) / DBL_EPSILON;
-			}
-	}
+                return (1. - w) * s1 + w * s2;
+            }
+            else
+            {
+                /* Stueckweise konstant */
+                if (fabs(s[i].punkt - s[i - 1].punkt) > DBL_MIN)
+                    return (s[i].wert - s[i - 1].wert) /
+                           (s[i].punkt - s[i - 1].punkt);
+                else
+                    return Signum(s[i + 1].wert - s[i].wert) / DBL_EPSILON;
+            }
+    }
 }
 
 /**************************************************************************
@@ -395,108 +404,117 @@ double GetCurveDerivative(int kurve, int methode, double punkt, int* gueltig)
    03/2012 JT: Implementation. Based on other curve methods existing
 
 **************************************************************************/
-double GetCurveInverseDerivative(int kurve, int methode, double wert, int* gueltig)
+double GetCurveInverseDerivative(int kurve,
+                                 int methode,
+                                 double wert,
+                                 int* gueltig)
 {
-	static long anz;
-	register long i;
-	static StuetzStellen* s;
-	static double w, s1, s2;
+    static long anz;
+    register long i;
+    static StuetzStellen* s;
+    static double w, s1, s2;
 
-	if (kurve == 0)
-	{
-		*gueltig = 1;
-		return 1.0;
-	}
+    if (kurve == 0)
+    {
+        *gueltig = 1;
+        return 1.0;
+    }
 
 #ifdef ERROR_CONTROL
-	if ((kurve < 0) || (kurve >= anz_kurven))
-	{
-		DisplayMsgLn("");
-		DisplayMsg("PANIC! Curve ");
-		DisplayLong(kurve);
-		DisplayMsgLn(" is requested but not defined!");
-		abort();
-	}
+    if ((kurve < 0) || (kurve >= anz_kurven))
+    {
+        DisplayMsgLn("");
+        DisplayMsg("PANIC! Curve ");
+        DisplayLong(kurve);
+        DisplayMsgLn(" is requested but not defined!");
+        abort();
+    }
 #endif
 
-	anz = kurven[kurve].anz_stuetzstellen;
-	s = kurven[kurve].stuetzstellen;
-	*gueltig = 1;
-	i = 1l;
+    anz = kurven[kurve].anz_stuetzstellen;
+    s = kurven[kurve].stuetzstellen;
+    *gueltig = 1;
+    i = 1l;
 
-	if (s[0].wert < s[anz - 1l].wert)
-	{
-		/* Monoton steigend */
-		if (wert < s[0].wert)
-		{
-			*gueltig = 0;
-			i = 1;
-			wert = s[0].wert;
-		}
-		else if (wert > s[anz - 1].wert)
-		{
-			*gueltig = 0;
-			i = anz - 1;
-			wert = s[anz - 1].wert;
-		}
-		else
-		{ /* Suchen der Stuetzstelle. Vorraussetzung: Zeitpunkte aufsteigend geordnet */
-			while (wert > s[i].wert)
-				i++;
-		}
-	}
-	else
-	{
-		/* Monoton fallend */
-		if (wert > s[0].wert)
-		{
-			*gueltig = 0;
-			i = 1;
-			wert = s[0].wert;
-		}
-		else if (wert < s[anz - 1].wert)
-		{
-			*gueltig = 0;
-			i = anz - 1;
-			wert = s[anz - 1].wert;
-		}
-		else
-		{ /* Suchen der Stuetzstelle. Vorraussetzung: Zeitpunkte aufsteigend geordnet */
-			while (wert < s[i].wert)
-				i++;
-		}
-	}
+    if (s[0].wert < s[anz - 1l].wert)
+    {
+        /* Monoton steigend */
+        if (wert < s[0].wert)
+        {
+            *gueltig = 0;
+            i = 1;
+            wert = s[0].wert;
+        }
+        else if (wert > s[anz - 1].wert)
+        {
+            *gueltig = 0;
+            i = anz - 1;
+            wert = s[anz - 1].wert;
+        }
+        else
+        { /* Suchen der Stuetzstelle. Vorraussetzung: Zeitpunkte aufsteigend
+             geordnet */
+            while (wert > s[i].wert)
+                i++;
+        }
+    }
+    else
+    {
+        /* Monoton fallend */
+        if (wert > s[0].wert)
+        {
+            *gueltig = 0;
+            i = 1;
+            wert = s[0].wert;
+        }
+        else if (wert < s[anz - 1].wert)
+        {
+            *gueltig = 0;
+            i = anz - 1;
+            wert = s[anz - 1].wert;
+        }
+        else
+        { /* Suchen der Stuetzstelle. Vorraussetzung: Zeitpunkte aufsteigend
+             geordnet */
+            while (wert < s[i].wert)
+                i++;
+        }
+    }
 
-	switch (methode)
-	{
-		default:
-		case 0:
-			/* Stueckweise konstant */
-			if (fabs(s[i].wert - s[i - 1].wert) > DBL_MIN)
-				return (s[i].punkt - s[i - 1].punkt) / (s[i].wert - s[i - 1].wert);
-			else
-				return Signum(s[i + 1].punkt - s[i].punkt) / DBL_EPSILON;
-		case 1:
-			/* Gleitend */
-			if ((i > 1) && (i < anz - 2))
-			{
-				s1 = (0.5 * s[i].punkt - 0.5 * s[i - 2].punkt) / (0.5 * s[i].wert - 0.5 * s[i - 2].wert);
+    switch (methode)
+    {
+        default:
+        case 0:
+            /* Stueckweise konstant */
+            if (fabs(s[i].wert - s[i - 1].wert) > DBL_MIN)
+                return (s[i].punkt - s[i - 1].punkt) /
+                       (s[i].wert - s[i - 1].wert);
+            else
+                return Signum(s[i + 1].punkt - s[i].punkt) / DBL_EPSILON;
+        case 1:
+            /* Gleitend */
+            if ((i > 1) && (i < anz - 2))
+            {
+                s1 = (0.5 * s[i].punkt - 0.5 * s[i - 2].punkt) /
+                     (0.5 * s[i].wert - 0.5 * s[i - 2].wert);
 
-				s2 = (0.5 * s[i + 1].punkt - 0.5 * s[i - 1].punkt) / (0.5 * s[i + 1].wert - 0.5 * s[i - 1].wert);
+                s2 = (0.5 * s[i + 1].punkt - 0.5 * s[i - 1].punkt) /
+                     (0.5 * s[i + 1].wert - 0.5 * s[i - 1].wert);
 
-				w = (wert - s[i - 1].wert) / (s[i].wert - s[i - 1].wert);
+                w = (wert - s[i - 1].wert) / (s[i].wert - s[i - 1].wert);
 
-				return (1. - w) * s1 + w * s2;
-			}
-			else
-			{
-				/* Stueckweise konstant */
-				if (fabs(s[i].wert - s[i - 1].wert) > DBL_MIN)
-					return (s[i].punkt - s[i - 1].punkt) / (s[i].wert - s[i - 1].wert);
-				else
-					return Signum(s[i + 1].punkt - s[i].punkt) / DBL_EPSILON;
-			}
-	}
+                return (1. - w) * s1 + w * s2;
+            }
+            else
+            {
+                /* Stueckweise konstant */
+                if (fabs(s[i].wert - s[i - 1].wert) > DBL_MIN)
+                    return (s[i].punkt - s[i - 1].punkt) /
+                           (s[i].wert - s[i - 1].wert);
+                else
+                    return Signum(s[i + 1].punkt - s[i].punkt) / DBL_EPSILON;
+            }
+    }
 }
 
 /**************************************************************************/
@@ -525,120 +543,140 @@ double GetCurveInverseDerivative(int kurve, int methode, double wert, int* guelt
 /**************************************************************************/
 int FctCurves(char* data, int found, FILE* f)
 {
-	int ok = 1;
-	int pos = 0;
-	int p = 0;
-	StuetzStellen* stuetz;
-	long anz;
-	double d1, d2;
-	int curve_counter = 0;
-	int i;
+    int ok = 1;
+    int pos = 0;
+    int p = 0;
+    StuetzStellen* stuetz;
+    long anz;
+    double d1, d2;
+    int curve_counter = 0;
+    int i;
 
 #ifdef TESTFILES
-	DisplayMsgLn("Eingabedatenbank, Schluesselwort CURVES");
+    DisplayMsgLn("Eingabedatenbank, Schluesselwort CURVES");
 #endif
 
-	LineFeed(f);
-	FilePrintString(f, "; 9 Functions ----------------------------------------------------------");
-	LineFeed(f);
+    LineFeed(f);
+    FilePrintString(
+        f,
+        "; 9 Functions "
+        "----------------------------------------------------------");
+    LineFeed(f);
 
-	/* Erste Konstante 1-Zeitkurve einfuegen (Index 0) - muss vorhanden sein TODO */
-	if ((found == 0) || (found == 1))
-	{
-		anz_kurven = 1;
-		stuetz = (StuetzStellen*)Malloc(sizeof(StuetzStellen));
-		stuetz[0].punkt = 1.0;
-		stuetz[0].wert = 1.0;
-		kurven = (Kurven*)Malloc(sizeof(Kurven));
-		kurven[anz_kurven - 1].anz_stuetzstellen = 1;
-		kurven[anz_kurven - 1].stuetzstellen = stuetz;
-	}
-	/* einlesen */
-	if (!found)
-	{
+    /* Erste Konstante 1-Zeitkurve einfuegen (Index 0) - muss vorhanden sein
+     * TODO */
+    if ((found == 0) || (found == 1))
+    {
+        anz_kurven = 1;
+        stuetz = (StuetzStellen*)Malloc(sizeof(StuetzStellen));
+        stuetz[0].punkt = 1.0;
+        stuetz[0].wert = 1.0;
+        kurven = (Kurven*)Malloc(sizeof(Kurven));
+        kurven[anz_kurven - 1].anz_stuetzstellen = 1;
+        kurven[anz_kurven - 1].stuetzstellen = stuetz;
+    }
+    /* einlesen */
+    if (!found)
+    {
 #ifdef EXT_RFD
-		FilePrintString(f, "; Schluesselwort: #CURVES (z.B. Zeitkurven)");
-		LineFeed(f);
+        FilePrintString(f, "; Schluesselwort: #CURVES (z.B. Zeitkurven)");
+        LineFeed(f);
 #endif
-	}
-	else
-	{
-		/* CURVES gefunden */
-		while (StrTestHash(&data[p], &pos) || (found == 2))
-		{
-			/* Pruef-Funktion*/
-			if ((found == 2) && (curve_counter >= anz_kurven))
-				break;
-			FilePrintString(f, "#CURVES");
-			LineFeed(f);
+    }
+    else
+    {
+        /* CURVES gefunden */
+        while (StrTestHash(&data[p], &pos) || (found == 2))
+        {
+            /* Pruef-Funktion*/
+            if ((found == 2) && (curve_counter >= anz_kurven))
+                break;
+            FilePrintString(f, "#CURVES");
+            LineFeed(f);
 #ifdef EXT_RFD
-			FilePrintString(f, "; Schluesselwort: #CURVES (z.B. fuer Zeitkurven)");
-			LineFeed(f);
-			FilePrintString(f, "; Das Schluesselwort muss nicht vorhanden sein.");
-			LineFeed(f);
-			FilePrintString(f, "; Es folgen beliebig viele Abschnitte, die jeweils eine eigene Kurve");
-			LineFeed(f);
-			FilePrintString(f, "; darstellen und jeweils mit dem Schluesselwort #CURVES eingeleitet werden");
-			LineFeed(f);
-			FilePrintString(f, "; muessen. Jede Dieser Kurven hat folgendes Aussehen:");
-			LineFeed(f);
-			FilePrintString(f, ";   Eine Kurve setzt sich aus Stuetzstellen und Werten an den Stuetzstellen");
-			LineFeed(f);
-			FilePrintString(f, ";   zusammen:");
-			LineFeed(f);
-			FilePrintString(f, ";   Es folgen beliebig viele Bloecke mit je 2 Werten.");
-			LineFeed(f);
-			FilePrintString(f, ";   - Stuetzstelle [double]");
-			LineFeed(f);
-			FilePrintString(f, ";   - Funktionswert an der Stuetzstelle [double]");
-			LineFeed(f);
+            FilePrintString(f,
+                            "; Schluesselwort: #CURVES (z.B. fuer Zeitkurven)");
+            LineFeed(f);
+            FilePrintString(f,
+                            "; Das Schluesselwort muss nicht vorhanden sein.");
+            LineFeed(f);
+            FilePrintString(f,
+                            "; Es folgen beliebig viele Abschnitte, die "
+                            "jeweils eine eigene Kurve");
+            LineFeed(f);
+            FilePrintString(f,
+                            "; darstellen und jeweils mit dem Schluesselwort "
+                            "#CURVES eingeleitet werden");
+            LineFeed(f);
+            FilePrintString(
+                f, "; muessen. Jede Dieser Kurven hat folgendes Aussehen:");
+            LineFeed(f);
+            FilePrintString(f,
+                            ";   Eine Kurve setzt sich aus Stuetzstellen und "
+                            "Werten an den Stuetzstellen");
+            LineFeed(f);
+            FilePrintString(f, ";   zusammen:");
+            LineFeed(f);
+            FilePrintString(
+                f, ";   Es folgen beliebig viele Bloecke mit je 2 Werten.");
+            LineFeed(f);
+            FilePrintString(f, ";   - Stuetzstelle [double]");
+            LineFeed(f);
+            FilePrintString(f,
+                            ";   - Funktionswert an der Stuetzstelle [double]");
+            LineFeed(f);
 #endif
-			if (found == 1)
-			{
-				stuetz = NULL;
-				anz = 0l;
-				while (StrTestDouble(&data[p += pos]))
-				{
-					ok = (StrReadDouble(&d1, &data[p], f, &pos) && ok);
-					ok = (StrReadDouble(&d2, &data[p += pos], f, &pos) && ok);
-					LineFeed(f);
-					anz++;
-					stuetz = (StuetzStellen*)Realloc(stuetz, (anz * sizeof(StuetzStellen)));
-					stuetz[anz - 1].punkt = d1;
-					stuetz[anz - 1].wert = d2;
-				}
-				if (anz >= 1l)
-				{
-					/* gueltige Zeitkurve, d.h. mind. 1 gueltige Stuetzstelle */
-					anz_kurven++;
-					kurven = (Kurven*)Realloc(kurven, (anz_kurven * sizeof(Kurven)));
-					kurven[anz_kurven - 1].anz_stuetzstellen = anz;
-					kurven[anz_kurven - 1].stuetzstellen = stuetz;
-				}
-				else
-				{
-					FilePrintString(f, "* vorhergehende Zeitkurve unzulaessig, ignoriert !");
-					LineFeed(f);
-					stuetz = (StuetzStellen*)Free(stuetz);
-					/* stuetz = Free(stuetz); MFC */
-				}
-			}
-			else if (found == 2)
-				if (curve_counter > 0) /* Dummy-Kurve nicht ausgeben */
-				{
-					stuetz = kurven[curve_counter].stuetzstellen;
-					for (i = 0; i < kurven[curve_counter].anz_stuetzstellen; i++)
-					{
-						fprintf(f, " %e ", stuetz[i].punkt);
-						fprintf(f, " %e ", stuetz[i].wert);
-						LineFeed(f);
-					}
-					stuetz = NULL;
-				}
-			curve_counter++;
-		}
-	}
-	return ok;
+            if (found == 1)
+            {
+                stuetz = NULL;
+                anz = 0l;
+                while (StrTestDouble(&data[p += pos]))
+                {
+                    ok = (StrReadDouble(&d1, &data[p], f, &pos) && ok);
+                    ok = (StrReadDouble(&d2, &data[p += pos], f, &pos) && ok);
+                    LineFeed(f);
+                    anz++;
+                    stuetz = (StuetzStellen*)Realloc(
+                        stuetz, (anz * sizeof(StuetzStellen)));
+                    stuetz[anz - 1].punkt = d1;
+                    stuetz[anz - 1].wert = d2;
+                }
+                if (anz >= 1l)
+                {
+                    /* gueltige Zeitkurve, d.h. mind. 1 gueltige Stuetzstelle */
+                    anz_kurven++;
+                    kurven =
+                        (Kurven*)Realloc(kurven, (anz_kurven * sizeof(Kurven)));
+                    kurven[anz_kurven - 1].anz_stuetzstellen = anz;
+                    kurven[anz_kurven - 1].stuetzstellen = stuetz;
+                }
+                else
+                {
+                    FilePrintString(
+                        f,
+                        "* vorhergehende Zeitkurve unzulaessig, ignoriert !");
+                    LineFeed(f);
+                    stuetz = (StuetzStellen*)Free(stuetz);
+                    /* stuetz = Free(stuetz); MFC */
+                }
+            }
+            else if (found == 2)
+                if (curve_counter > 0) /* Dummy-Kurve nicht ausgeben */
+                {
+                    stuetz = kurven[curve_counter].stuetzstellen;
+                    for (i = 0; i < kurven[curve_counter].anz_stuetzstellen;
+                         i++)
+                    {
+                        fprintf(f, " %e ", stuetz[i].punkt);
+                        fprintf(f, " %e ", stuetz[i].wert);
+                        LineFeed(f);
+                    }
+                    stuetz = NULL;
+                }
+            curve_counter++;
+        }
+    }
+    return ok;
 }
 
 ///**************************************************************************/
@@ -779,7 +817,8 @@ int FctCurves(char* data, int found, FILE* f)
 //	//------------------------------------------------------------------------
 //	NumberOfElements = (long)m_msh->ele_vector.size();
 //	//------------------------------------------------------------------------
-//	NumberOfElementsPerLayer = NumberOfElements / m_msh->getNumberOfMeshLayers();
+//	NumberOfElementsPerLayer = NumberOfElements /
+//m_msh->getNumberOfMeshLayers();
 //
 //	//layers
 //	if(m_mat_mp->geo_type_name.compare("LAYER") == 0)
@@ -799,7 +838,8 @@ int FctCurves(char* data, int found, FILE* f)
 //	//Warning
 //	if(no_values < NumberOfElementsPerLayer)
 //		DisplayMsgLn(
-//		        "Warning! Fewer element values in File for heterogeneous permeability field than elements in element
+//		        "Warning! Fewer element values in File for heterogeneous
+//permeability field than elements in element
 // list");
 //	//------------------------------------------------------------------------
 //	/* field (int) for helping sort */
@@ -807,8 +847,8 @@ int FctCurves(char* data, int found, FILE* f)
 //	for(i = 0; i < NumberOfElements; i++)
 //		help[i] = 0;
 //
-//	/* initialize element values in element list; this is for the case, if not for all
-//	   elements values are given in the input file */
+//	/* initialize element values in element list; this is for the case, if not
+//for all 	   elements values are given in the input file */
 //
 //	//WW double test1;
 //	//WW double test2;
@@ -825,8 +865,8 @@ int FctCurves(char* data, int found, FILE* f)
 //	//WW test1 = m_ele->mat_vector(0);
 //	//WW test2 = m_ele->mat_vector(1);
 //	//------------------------------------------------------------------------
-//	//METHOD = 0:  read in unsorted values for coordinates and distribute to corresponding elements */
-//	if(method == 0)
+//	//METHOD = 0:  read in unsorted values for coordinates and distribute to
+//corresponding elements */ 	if(method == 0)
 //	{
 //		// allocate storage to read in file with het values and initialize
 //		invals = (double**) Malloc((no_values) * sizeof(double*));
@@ -868,10 +908,13 @@ int FctCurves(char* data, int found, FILE* f)
 //				else
 //					for(j = 0; j < nof; j++)
 //						values[j] = invals[ihet][j + 3];
-//				//DisplayMsg(" Het Val for element: "); DisplayLong(i); DisplayMsg(" with coordinates ");
-//				//DisplayDouble(x,0,0); DisplayMsg(", "); DisplayDouble(y,0,0); DisplayMsg(", "); DisplayDouble(z,0,0);
+//				//DisplayMsg(" Het Val for element: "); DisplayLong(i); DisplayMsg("
+//with coordinates ");
+//				//DisplayDouble(x,0,0); DisplayMsg(", "); DisplayDouble(y,0,0);
+//DisplayMsg(", "); DisplayDouble(z,0,0);
 // DisplayMsg("       found at: ");
-//				//DisplayDouble(invals[ihet][0],0,0); DisplayMsg(", "); DisplayDouble(invals[ihet][1],0,0);
+//				//DisplayDouble(invals[ihet][0],0,0); DisplayMsg(", ");
+//DisplayDouble(invals[ihet][1],0,0);
 // DisplayMsg(",
 //");
 // DisplayDouble(invals[ihet][2],0,0); DisplayMsgLn(". ");
@@ -939,8 +982,8 @@ int FctCurves(char* data, int found, FILE* f)
 //		out.close();
 //	}                                     /* end if (method == 0) */
 //	//------------------------------------------------------------------------
-//	//METHOD = 1:  read in one sorted column, index is element number no conversion, no sorting
-//	if(method == 1)
+//	//METHOD = 1:  read in one sorted column, index is element number no
+//conversion, no sorting 	if(method == 1)
 //	{
 //		for(i = EleStart; i < EleEnd; i++)
 //		{
@@ -971,66 +1014,70 @@ int FctCurves(char* data, int found, FILE* f)
    Programing:
    06/2005 MB Implementation
 **************************************************************************/
-double GetAverageHetVal(long EleIndex, CFEMesh* m_msh, long no_values, double** invals)
+double GetAverageHetVal(long EleIndex,
+                        CFEMesh* m_msh,
+                        long no_values,
+                        double** invals)
 {
-	long i, j, ihet;
-	double average;
-	double xp[3], yp[3];
-	double value;
-	double NumberOfValues;
-	//  double InvNumberOfValues;
-	CGLPoint* m_point = NULL;
-	MeshLib::CElem* m_ele = NULL;
-	j = 0; // only for 1 value
-	//-----------------------------------------------------------------------
-	// Get element data
-	m_ele = m_msh->ele_vector[EleIndex];
-	for (j = 0; j < 3; j++)
-	{
-		double const* const pnt(m_ele->GetNode(j)->getData());
-		xp[j] = pnt[0];
-		yp[j] = pnt[1];
-		// zp[j] = 0.0;
-	}
-	//-----------------------------------------------------------------------
-	// Find data points in the element
-	NumberOfValues = 0;
-	// WW  InvNumberOfValues = 0;
-	m_point = new CGLPoint;
-	average = -1;
-	value = 0;
-	for (i = 0; i < no_values; i++)
-		if (invals[i][4] != -999999.0) // Data point not within an element yet
-		{
-			m_point->x = invals[i][0];
-			m_point->y = invals[i][1];
-			m_point->z = 0.0;
-			//....................................................................
-			// Calculate the product of values in element
-			// CC 10/05
-			if (m_point->IsInTriangleXYProjection(xp, yp))
-			{
-				value = value + invals[i][3];
-				NumberOfValues++;
-				invals[i][4] = -999999.0; // used as marker
-			}
-		}
-	// end for
-	//........................................................................
-	if (NumberOfValues == 0) // if no data points in element --> get neares value
-	{
-		ihet = GetNearestHetVal(EleIndex, m_msh, no_values, invals);
-		if (ihet < 0)
-			DisplayMsgLn(" Error getting nearest het_value location");
-		else
-			average = invals[ihet][j + 3];
-	}
-	//........................................................................
-	else // if data points in element --> Calculate arithmetic mean
+    long i, j, ihet;
+    double average;
+    double xp[3], yp[3];
+    double value;
+    double NumberOfValues;
+    //  double InvNumberOfValues;
+    CGLPoint* m_point = NULL;
+    MeshLib::CElem* m_ele = NULL;
+    j = 0;  // only for 1 value
+    //-----------------------------------------------------------------------
+    // Get element data
+    m_ele = m_msh->ele_vector[EleIndex];
+    for (j = 0; j < 3; j++)
+    {
+        double const* const pnt(m_ele->GetNode(j)->getData());
+        xp[j] = pnt[0];
+        yp[j] = pnt[1];
+        // zp[j] = 0.0;
+    }
+    //-----------------------------------------------------------------------
+    // Find data points in the element
+    NumberOfValues = 0;
+    // WW  InvNumberOfValues = 0;
+    m_point = new CGLPoint;
+    average = -1;
+    value = 0;
+    for (i = 0; i < no_values; i++)
+        if (invals[i][4] != -999999.0)  // Data point not within an element yet
+        {
+            m_point->x = invals[i][0];
+            m_point->y = invals[i][1];
+            m_point->z = 0.0;
+            //....................................................................
+            // Calculate the product of values in element
+            // CC 10/05
+            if (m_point->IsInTriangleXYProjection(xp, yp))
+            {
+                value = value + invals[i][3];
+                NumberOfValues++;
+                invals[i][4] = -999999.0;  // used as marker
+            }
+        }
+    // end for
+    //........................................................................
+    if (NumberOfValues ==
+        0)  // if no data points in element --> get neares value
+    {
+        ihet = GetNearestHetVal(EleIndex, m_msh, no_values, invals);
+        if (ihet < 0)
+            DisplayMsgLn(" Error getting nearest het_value location");
+        else
+            average = invals[ihet][j + 3];
+    }
+    //........................................................................
+    else  // if data points in element --> Calculate arithmetic mean
 
-		average = value / NumberOfValues;
-	delete m_point;
-	return average;
+        average = value / NumberOfValues;
+    delete m_point;
+    return average;
 }
 
 /**************************************************************************
@@ -1040,44 +1087,48 @@ double GetAverageHetVal(long EleIndex, CFEMesh* m_msh, long no_values, double** 
    0?/2004 SB Implementation
    09/2005 MB EleClass
 **************************************************************************/
-long GetNearestHetVal(long EleIndex, CFEMesh* m_msh, long no_values, double** invals)
+long GetNearestHetVal(long EleIndex,
+                      CFEMesh* m_msh,
+                      long no_values,
+                      double** invals)
 {
-	long i, nextele;
-	double ex, ey, ez, dist, dist1; // WW, dist2;
-	double x, y, z;
-	MeshLib::CElem* m_ele = NULL;
-	//----------------------------------------------------------------------
-	// MB ToDo
-	// EleIndex = -1;
-	// m_msh = NULL;
-	//----------------------------------------------------------------------
-	x = 0.0;
-	y = 0.0;
-	z = 0.0;
-	dist = 10000000.0; // Startwert
-	// WW  dist2 = 0.01;	    // Abstand zwischen eingelesenen Knoten und Geometrieknoten-RF;
-	// Achtung, doppelbelegung möglich bei kleinen Gitterabständen
-	nextele = -1;
-	// Get element data
-	m_ele = m_msh->ele_vector[EleIndex];
-	double const* center = m_ele->GetGravityCenter();
-	x = center[0];
-	y = center[1];
-	z = center[2];
-	// Calculate distances
-	for (i = 0; i < no_values; i++)
-	{
-		ex = invals[i][0];
-		ey = invals[i][1];
-		ez = invals[i][2];
-		dist1 = (ex - x) * (ex - x) + (ey - y) * (ey - y) + (ez - z) * (ez - z);
-		if (dist1 < dist)
-		{
-			dist = dist1;
-			nextele = i;
-		}
-	}
-	return nextele;
+    long i, nextele;
+    double ex, ey, ez, dist, dist1;  // WW, dist2;
+    double x, y, z;
+    MeshLib::CElem* m_ele = NULL;
+    //----------------------------------------------------------------------
+    // MB ToDo
+    // EleIndex = -1;
+    // m_msh = NULL;
+    //----------------------------------------------------------------------
+    x = 0.0;
+    y = 0.0;
+    z = 0.0;
+    dist = 10000000.0;  // Startwert
+    // WW  dist2 = 0.01;	    // Abstand zwischen eingelesenen Knoten und
+    // Geometrieknoten-RF; Achtung, doppelbelegung möglich bei kleinen
+    // Gitterabständen
+    nextele = -1;
+    // Get element data
+    m_ele = m_msh->ele_vector[EleIndex];
+    double const* center = m_ele->GetGravityCenter();
+    x = center[0];
+    y = center[1];
+    z = center[2];
+    // Calculate distances
+    for (i = 0; i < no_values; i++)
+    {
+        ex = invals[i][0];
+        ey = invals[i][1];
+        ez = invals[i][2];
+        dist1 = (ex - x) * (ex - x) + (ey - y) * (ey - y) + (ez - z) * (ez - z);
+        if (dist1 < dist)
+        {
+            dist = dist1;
+            nextele = i;
+        }
+    }
+    return nextele;
 }
 
 /**************************************************************************/
@@ -1097,31 +1148,35 @@ long GetNearestHetVal(long EleIndex, CFEMesh* m_msh, long no_values, double** in
 /**************************************************************************/
 int GetLineFromFile(char* zeile, ifstream* ein)
 {
-	int ok = 1;
-	string line;
-	int fertig = 0, i, j;
+    int ok = 1;
+    string line;
+    int fertig = 0, i, j;
 
-	while (fertig < 1)
-	{
-		if (ein->getline(zeile, MAX_ZEILE)) // Zeile lesen
-		{
-			line = zeile; // character in string umwandeln
-			i = (int)line.find_first_not_of(
-			    " ", 0); // Anfängliche Leerzeichen überlesen, i=Position des ersten Nichtleerzeichens im string
-			j = (int)line.find(
-			    ";",
-			    i); // Nach Kommentarzeichen ; suchen. j = Position des Kommentarzeichens, j=-1 wenn es keines gibt.
-			if (j != i)
-				fertig = 1; // Wenn das erste nicht-leerzeichen ein Kommentarzeichen ist, zeile überlesen. Sonst ist das
-			// eine Datenzeile
-		}
-		else // end of file found
-		{
-			ok = 0;
-			fertig = 1;
-		}
-	} // while
-	return ok;
+    while (fertig < 1)
+    {
+        if (ein->getline(zeile, MAX_ZEILE))  // Zeile lesen
+        {
+            line = zeile;  // character in string umwandeln
+            i = (int)line.find_first_not_of(
+                " ", 0);  // Anfängliche Leerzeichen überlesen, i=Position des
+                          // ersten Nichtleerzeichens im string
+            j = (int)line.find(
+                ";",
+                i);  // Nach Kommentarzeichen ; suchen. j = Position des
+                     // Kommentarzeichens, j=-1 wenn es keines gibt.
+            if (j != i)
+                fertig =
+                    1;  // Wenn das erste nicht-leerzeichen ein Kommentarzeichen
+                        // ist, zeile überlesen. Sonst ist das
+                        // eine Datenzeile
+        }
+        else  // end of file found
+        {
+            ok = 0;
+            fertig = 1;
+        }
+    }  // while
+    return ok;
 }
 
 /**************************************************************************/
@@ -1139,18 +1194,18 @@ int GetLineFromFile(char* zeile, ifstream* ein)
 /**************************************************************************/
 hetfields* Createhetfields(int n, char* name_file)
 {
-	int i;
-	hetfields* hf;
+    int i;
+    hetfields* hf;
 
-	hf = (hetfields*)Malloc(sizeof(hetfields));
-	hf->nof = n;
-	hf->filename = name_file;
-	hf->convertfact = (double*)Malloc(n * sizeof(double));
-	hf->names = (char**)Malloc(n * sizeof(char*));
-	for (i = 0; i < n; i++)
-		hf->names[i] = (char*)Malloc(256 * sizeof(char));
+    hf = (hetfields*)Malloc(sizeof(hetfields));
+    hf->nof = n;
+    hf->filename = name_file;
+    hf->convertfact = (double*)Malloc(n * sizeof(double));
+    hf->names = (char**)Malloc(n * sizeof(char*));
+    for (i = 0; i < n; i++)
+        hf->names[i] = (char*)Malloc(256 * sizeof(char));
 
-	return hf;
+    return hf;
 }
 
 /**************************************************************************/
@@ -1169,7 +1224,7 @@ hetfields* Createhetfields(int n, char* name_file)
 /**************************************************************************/
 void set_hetfields_name(hetfields* hf, int i, char* name)
 {
-	strcpy(hf->names[i], name);
+    strcpy(hf->names[i], name);
 }
 
 /**************************************************************************/
@@ -1181,7 +1236,7 @@ void set_hetfields_name(hetfields* hf, int i, char* name)
 /**************************************************************************/
 char* get_hetfields_name(hetfields* hf, int i)
 {
-	return hf->names[i];
+    return hf->names[i];
 }
 
 /**************************************************************************/
@@ -1193,7 +1248,7 @@ char* get_hetfields_name(hetfields* hf, int i)
 /**************************************************************************/
 int get_hetfields_number(hetfields* hf)
 {
-	return hf->nof;
+    return hf->nof;
 }
 
 /**************************************************************************/
@@ -1213,26 +1268,27 @@ int get_hetfields_number(hetfields* hf)
 /**************************************************************************/
 double GetHetValue(int ele_no, char* inname)
 {
-	int i, n;
-	char* name;
-	double value;
-	int material_properties_index = 0;
-	CFEMesh* m_msh = NULL;
-	n = get_hetfields_number(hf);
-	m_msh = FEMGet("GROUNDWATER_FLOW");
-	for (i = 0; i < n; i++)
-	{
-		name = get_hetfields_name(hf, i);
-		if (strstr(inname, name) && (strcmp(inname, name) == 0))
-		{
-			/* found */
-			//  value = ELEGetHetFieldValue(ele_no,i);
-			value = m_msh->ele_vector[ele_no]->mat_vector(material_properties_index);
-			return value;
-		}
-	}
-	DisplayMsgLn(" Error - No het. Field Value found");
-	return -1.0;
+    int i, n;
+    char* name;
+    double value;
+    int material_properties_index = 0;
+    CFEMesh* m_msh = NULL;
+    n = get_hetfields_number(hf);
+    m_msh = FEMGet("GROUNDWATER_FLOW");
+    for (i = 0; i < n; i++)
+    {
+        name = get_hetfields_name(hf, i);
+        if (strstr(inname, name) && (strcmp(inname, name) == 0))
+        {
+            /* found */
+            //  value = ELEGetHetFieldValue(ele_no,i);
+            value = m_msh->ele_vector[ele_no]->mat_vector(
+                material_properties_index);
+            return value;
+        }
+    }
+    DisplayMsgLn(" Error - No het. Field Value found");
+    return -1.0;
 }
 
 /**********************************************************************
@@ -1245,10 +1301,10 @@ double GetHetValue(int ele_no, char* inname)
  ***********************************************************************/
 double interpol(double x1, double x2, double zx1, double zx2, double xn)
 {
-	if (x1 == x2)
-		return zx1;
-	else
-		return zx1 + (xn - x1) * (zx2 - zx1) / (x2 - x1);
+    if (x1 == x2)
+        return zx1;
+    else
+        return zx1 + (xn - x1) * (zx2 - zx1) / (x2 - x1);
 }
 
 /**********************************************************************
@@ -1262,113 +1318,133 @@ returns a value interpolated between both arguments.
 Programming:
 11-2011 NB/TF
 ***********************************************************************/
-double GetMatrixValue(double var1, double var2, std::string caption, int* gueltig)
+double GetMatrixValue(double var1,
+                      double var2,
+                      std::string caption,
+                      int* gueltig)
 {
-	CFunction* matrix;
-	// WW int anz_variables, anz_data;
-	int dim_x, dim_y;
-	int i1 = 0;
-	int i2 = 0;
-	int j1 = 0;
-	int j2 = 0;
+    CFunction* matrix;
+    // WW int anz_variables, anz_data;
+    int dim_x, dim_y;
+    int i1 = 0;
+    int i2 = 0;
+    int j1 = 0;
+    int j2 = 0;
 
-	// JM avoid crash, if nan occurs
-	if (!(var2 == var2))
-		var2 = 0.0;
-	if (!(var1 == var1))
-		var1 = 288.15;
-	matrix = FCTGet(caption);
-	dim_x = matrix->matrix_dimension[0]; // NB 4.8.01
-	dim_y = matrix->matrix_dimension[1]; // NB
+    // JM avoid crash, if nan occurs
+    if (!(var2 == var2))
+        var2 = 0.0;
+    if (!(var1 == var1))
+        var1 = 288.15;
+    matrix = FCTGet(caption);
+    dim_x = matrix->matrix_dimension[0];  // NB 4.8.01
+    dim_y = matrix->matrix_dimension[1];  // NB
 
-	if (var1 < *matrix->variable_data_vector[0]) // is var1 smaller then the smallest argument?
-	{
-		*gueltig = 0;
-		i1 = i2 = 0;
-	}
-	else if (var1 > *matrix->variable_data_vector[dim_x - 1]) // is var1 larger then largest argument?
-	{
-		*gueltig = 0;
-		i1 = i2 = dim_x - 1;
-	}
-	else
-	{
-		i1 = searchElement(var1, 0, dim_x - 1, matrix->variable_data_vector);
-		i2 = i1 + 1;
-	}
+    if (var1 < *matrix->variable_data_vector[0])  // is var1 smaller then the
+                                                  // smallest argument?
+    {
+        *gueltig = 0;
+        i1 = i2 = 0;
+    }
+    else if (var1 >
+             *matrix->variable_data_vector[dim_x - 1])  // is var1 larger then
+                                                        // largest argument?
+    {
+        *gueltig = 0;
+        i1 = i2 = dim_x - 1;
+    }
+    else
+    {
+        i1 = searchElement(var1, 0, dim_x - 1, matrix->variable_data_vector);
+        i2 = i1 + 1;
+    }
 
-	if (var2 < *matrix->variable_data_vector[dim_x]) // is var1 smaller then the smallest argument?
-	{
-		*gueltig = 0;
-		j1 = j2 = dim_x;
-	}
-	else if (var2 > *matrix->variable_data_vector[dim_y + dim_x - 1]) // is var1 larger then largest argument?
-	{
-		*gueltig = 0;
-		j1 = j2 = dim_y + dim_x - 1;
-	}
-	else
-	{
-		j1 = searchElement(var2, dim_x, dim_y + dim_x - 1, matrix->variable_data_vector);
-		j2 = j1 + 1;
-	}
+    if (var2 < *matrix->variable_data_vector[dim_x])  // is var1 smaller then
+                                                      // the smallest argument?
+    {
+        *gueltig = 0;
+        j1 = j2 = dim_x;
+    }
+    else if (var2 > *matrix->variable_data_vector[dim_y + dim_x -
+                                                  1])  // is var1 larger then
+                                                       // largest argument?
+    {
+        *gueltig = 0;
+        j1 = j2 = dim_y + dim_x - 1;
+    }
+    else
+    {
+        j1 = searchElement(
+            var2, dim_x, dim_y + dim_x - 1, matrix->variable_data_vector);
+        j2 = j1 + 1;
+    }
 
-	if (fabs(var1 - *matrix->variable_data_vector[i1])
-	    < std::numeric_limits<double>::epsilon()) // var 1 is in the matrix
-	{
-		if (fabs(var2 - *matrix->variable_data_vector[j1])
-		    < std::numeric_limits<double>::epsilon()) // var 2 is in the matrix
-		{
-			return *matrix->variable_data_vector[dim_x + dim_y + i1 + (j1 - dim_x) * dim_x];
-		}
-		else // only v1 is in the matrix
-		{
-			double zx1y1, zx1y2;
-			double y1, y2;
-			zx1y1 = *matrix->variable_data_vector[dim_x + dim_y + i1 + (j1 - dim_x) * dim_x];
-			zx1y2 = *matrix->variable_data_vector[dim_x + dim_y + i1 + (j2 - dim_x) * dim_x];
-			y1 = *matrix->variable_data_vector[j1];
-			y2 = *matrix->variable_data_vector[j2];
+    if (fabs(var1 - *matrix->variable_data_vector[i1]) <
+        std::numeric_limits<double>::epsilon())  // var 1 is in the matrix
+    {
+        if (fabs(var2 - *matrix->variable_data_vector[j1]) <
+            std::numeric_limits<double>::epsilon())  // var 2 is in the matrix
+        {
+            return *matrix->variable_data_vector[dim_x + dim_y + i1 +
+                                                 (j1 - dim_x) * dim_x];
+        }
+        else  // only v1 is in the matrix
+        {
+            double zx1y1, zx1y2;
+            double y1, y2;
+            zx1y1 = *matrix->variable_data_vector[dim_x + dim_y + i1 +
+                                                  (j1 - dim_x) * dim_x];
+            zx1y2 = *matrix->variable_data_vector[dim_x + dim_y + i1 +
+                                                  (j2 - dim_x) * dim_x];
+            y1 = *matrix->variable_data_vector[j1];
+            y2 = *matrix->variable_data_vector[j2];
 
-			return interpol(y1, y2, zx1y1, zx1y2, var2);
-		}
-	}
-	else // v1 is not in the matrix
-	{
-		if (fabs(var2 - *matrix->variable_data_vector[dim_x + j1])
-		    < std::numeric_limits<double>::epsilon()) // only var 2 is in the matrix
-		{
-			double zx1y1, zx2y1;
-			double x1, x2;
-			zx1y1 = *matrix->variable_data_vector[dim_x + dim_y + i1 + (j1 - dim_x) * dim_x];
-			zx2y1 = *matrix->variable_data_vector[dim_x + dim_y + i2 + (j1 - dim_x) * dim_x];
-			x1 = *matrix->variable_data_vector[i1];
-			x2 = *matrix->variable_data_vector[i2];
+            return interpol(y1, y2, zx1y1, zx1y2, var2);
+        }
+    }
+    else  // v1 is not in the matrix
+    {
+        if (fabs(var2 - *matrix->variable_data_vector[dim_x + j1]) <
+            std::numeric_limits<double>::epsilon())  // only var 2 is in the
+                                                     // matrix
+        {
+            double zx1y1, zx2y1;
+            double x1, x2;
+            zx1y1 = *matrix->variable_data_vector[dim_x + dim_y + i1 +
+                                                  (j1 - dim_x) * dim_x];
+            zx2y1 = *matrix->variable_data_vector[dim_x + dim_y + i2 +
+                                                  (j1 - dim_x) * dim_x];
+            x1 = *matrix->variable_data_vector[i1];
+            x2 = *matrix->variable_data_vector[i2];
 
-			return interpol(x1, x2, zx1y1, zx2y1, var1);
-		}
+            return interpol(x1, x2, zx1y1, zx2y1, var1);
+        }
 
-		else // neither var1 nor var2 are in the matrix
-		{
-			double interp1, interp2;
-			double zx1y1, zx2y1, zx1y2, zx2y2;
-			double x1, x2, y1, y2;
-			zx1y1 = *matrix->variable_data_vector[dim_x + dim_y + i1 + (j1 - dim_x) * dim_x];
-			zx2y1 = *matrix->variable_data_vector[dim_x + dim_y + i2 + (j1 - dim_x) * dim_x];
-			zx1y2 = *matrix->variable_data_vector[dim_x + dim_y + i1 + (j2 - dim_x) * dim_x];
-			zx2y2 = *matrix->variable_data_vector[dim_x + dim_y + i2 + (j2 - dim_x) * dim_x];
+        else  // neither var1 nor var2 are in the matrix
+        {
+            double interp1, interp2;
+            double zx1y1, zx2y1, zx1y2, zx2y2;
+            double x1, x2, y1, y2;
+            zx1y1 = *matrix->variable_data_vector[dim_x + dim_y + i1 +
+                                                  (j1 - dim_x) * dim_x];
+            zx2y1 = *matrix->variable_data_vector[dim_x + dim_y + i2 +
+                                                  (j1 - dim_x) * dim_x];
+            zx1y2 = *matrix->variable_data_vector[dim_x + dim_y + i1 +
+                                                  (j2 - dim_x) * dim_x];
+            zx2y2 = *matrix->variable_data_vector[dim_x + dim_y + i2 +
+                                                  (j2 - dim_x) * dim_x];
 
-			x1 = *matrix->variable_data_vector[i1];
-			x2 = *matrix->variable_data_vector[i2];
-			y1 = *matrix->variable_data_vector[j1];
-			y2 = *matrix->variable_data_vector[j2];
+            x1 = *matrix->variable_data_vector[i1];
+            x2 = *matrix->variable_data_vector[i2];
+            y1 = *matrix->variable_data_vector[j1];
+            y2 = *matrix->variable_data_vector[j2];
 
-			interp1 = interpol(x1, x2, zx1y1, zx2y1, var1);
-			interp2 = interpol(x1, x2, zx1y2, zx2y2, var1);
+            interp1 = interpol(x1, x2, zx1y1, zx2y1, var1);
+            interp2 = interpol(x1, x2, zx1y2, zx2y2, var1);
 
-			return interpol(y1, y2, interp1, interp2, var2);
-		}
-	}
+            return interpol(y1, y2, interp1, interp2, var2);
+        }
+    }
 }
 
 /**********************************************************************
@@ -1382,7 +1458,8 @@ double GetMatrixValue(double var1, double var2, std::string caption, int* guelti
    Programming:
    08/2008 NB
  ***********************************************************************/
-// double GetMatrixValue(double var1, double var2, std::string caption, int* gueltig)
+// double GetMatrixValue(double var1, double var2, std::string caption, int*
+// gueltig)
 //{
 //	CFunction* matrix;
 //	//WW int anz_variables, anz_data;
@@ -1403,7 +1480,8 @@ double GetMatrixValue(double var1, double var2, std::string caption, int* guelti
 //	dim_y = matrix->matrix_dimension[1];  //NB
 //	//WW anz_data = (int)matrix->variable_data_vector.size()-dim_x-dim_y;
 //	//----------------------------------------------------------------------
-//	if (var1 < *matrix->variable_data_vector[0]) //is var1 smaller then the smallest argument?
+//	if (var1 < *matrix->variable_data_vector[0]) //is var1 smaller then the
+//smallest argument?
 //	{
 //		x1 = x2 = *matrix->variable_data_vector[0];
 //		*gueltig = 0;
@@ -1472,16 +1550,12 @@ double GetMatrixValue(double var1, double var2, std::string caption, int* guelti
 //			}
 //		}
 //	//getting the corresponding Z values for the arguments from the data vector
-//	zx1y1 = *matrix->variable_data_vector[(j1 - dim_x) * dim_x + (i1 + dim_x + dim_y)];
-//	zx2y1 = *matrix->variable_data_vector[(j1 - dim_x) * dim_x + (i2 + dim_x + dim_y)];
-//	zx1y2 = *matrix->variable_data_vector[(j2 - dim_x) * dim_x + (i1 + dim_x + dim_y)];
-//	zx2y2 = *matrix->variable_data_vector[(j2 - dim_x) * dim_x + (i2 + dim_x + dim_y)];
-//	return interpol (y1,y2,
-//	                 interpol (x1,x2,zx1y1,zx2y1,  var1),interpol (x1,
-//	                                                               y1,
-//	                                                               zx1y2,
-//	                                                               zx2y2,
-//	                                                               var1),var2);
+//	zx1y1 = *matrix->variable_data_vector[(j1 - dim_x) * dim_x + (i1 + dim_x +
+//dim_y)]; 	zx2y1 = *matrix->variable_data_vector[(j1 - dim_x) * dim_x + (i2 +
+//dim_x + dim_y)]; 	zx1y2 = *matrix->variable_data_vector[(j2 - dim_x) * dim_x +
+//(i1 + dim_x + dim_y)]; 	zx2y2 = *matrix->variable_data_vector[(j2 - dim_x) *
+//dim_x + (i2 + dim_x + dim_y)]; 	return interpol (y1,y2, 	                 interpol
+//(x1,x2,zx1y1,zx2y1,  var1),interpol (x1, 	                                                               y1, 	                                                               zx1y2, 	                                                               zx2y2, 	                                                               var1),var2);
 //}
 
 /****************************************************************************
@@ -1490,13 +1564,13 @@ double GetMatrixValue(double var1, double var2, std::string caption, int* guelti
  *****************************************************************************/
 double FindMin(vector<double> Vec)
 {
-	double x = DBL_MAX;
-	int unsigned i;
+    double x = DBL_MAX;
+    int unsigned i;
 
-	for (i = 0; i < Vec.size(); i++)
-		if ((Vec[i] >= 0) && (Vec[i] < x))
-			x = Vec[i];
-	return x;
+    for (i = 0; i < Vec.size(); i++)
+        if ((Vec[i] >= 0) && (Vec[i] < x))
+            x = Vec[i];
+    return x;
 }
 
 /****************************************************************************
@@ -1505,13 +1579,13 @@ double FindMin(vector<double> Vec)
  *****************************************************************************/
 double FindMax(vector<double> Vec)
 {
-	double x = DBL_MIN;
-	int unsigned i;
+    double x = DBL_MIN;
+    int unsigned i;
 
-	for (i = 0; i < Vec.size(); i++)
-		if (Vec[i] > x)
-			x = Vec[i];
-	return x;
+    for (i = 0; i < Vec.size(); i++)
+        if (Vec[i] > x)
+            x = Vec[i];
+    return x;
 }
 
 /****************************************************************************
@@ -1523,61 +1597,61 @@ double FindMax(vector<double> Vec)
  *****************************************************************************/
 void NsPol3(double p, double q, double r, vector<double>* roots)
 {
-	double eps = 7E-15;
-	double a, b, h, phi, D, z[3];
-	double pi = 3.1415926535897;
-	double nz;
-	int i;
+    double eps = 7E-15;
+    double a, b, h, phi, D, z[3];
+    double pi = 3.1415926535897;
+    double nz;
+    int i;
 
-	b = (p / 3) * (p / 3);
-	a = q / 3 - b;
-	b = b * p / 3 + 0.5 * (r - p / 3 * q);
-	h = sqrt(fabs(a));
+    b = (p / 3) * (p / 3);
+    a = q / 3 - b;
+    b = b * p / 3 + 0.5 * (r - p / 3 * q);
+    h = sqrt(fabs(a));
 
-	if (b < 0)
-		h = -h;
+    if (b < 0)
+        h = -h;
 
-	D = MathLib::fastpow(a, 3) + b * b;
+    D = MathLib::fastpow(a, 3) + b * b;
 
-	if (D <= (-eps))
-	{
-		nz = 3;
-		phi = acos(b / MathLib::fastpow(h, 3)) / 3;
-		z[0] = 2 * h * cos(pi / 3 - phi) - p / 3;
-		z[1] = 2 * h * cos(pi / 3 + phi) - p / 3;
-		z[2] = -2 * h * cos(phi) - p / 3;
-	}
-	else if (D < eps)
-	{
-		nz = 3;
-		z[0] = -2 * h - p / 3;
-		z[1] = h - p / 3;
-		z[2] = z[1];
-	}
-	else
-	{
-		nz = 1;
-		if (a >= eps)
-		{
-			b = b / MathLib::fastpow(h, 3);
-			phi = log(b + sqrt(b * b + 1)) / 3;
-			z[0] = -2 * h * sinh(phi) - p / 3;
-		}
-		else if (a > (-eps))
-		{
-			z[0] = pow((2 * abs(b)), 1. / 3.);
-			if (b > 0)
-				z[0] = -z[0];
-			z[0] = z[0] - p / 3;
-		}
-		else
-		{
-			b = b / MathLib::fastpow(h, 3);
-			phi = log(b + sqrt(b * b - 1)) / 3;
-			z[0] = -2 * h * cosh(phi) - p / 3;
-		}
-	}
+    if (D <= (-eps))
+    {
+        nz = 3;
+        phi = acos(b / MathLib::fastpow(h, 3)) / 3;
+        z[0] = 2 * h * cos(pi / 3 - phi) - p / 3;
+        z[1] = 2 * h * cos(pi / 3 + phi) - p / 3;
+        z[2] = -2 * h * cos(phi) - p / 3;
+    }
+    else if (D < eps)
+    {
+        nz = 3;
+        z[0] = -2 * h - p / 3;
+        z[1] = h - p / 3;
+        z[2] = z[1];
+    }
+    else
+    {
+        nz = 1;
+        if (a >= eps)
+        {
+            b = b / MathLib::fastpow(h, 3);
+            phi = log(b + sqrt(b * b + 1)) / 3;
+            z[0] = -2 * h * sinh(phi) - p / 3;
+        }
+        else if (a > (-eps))
+        {
+            z[0] = pow((2 * abs(b)), 1. / 3.);
+            if (b > 0)
+                z[0] = -z[0];
+            z[0] = z[0] - p / 3;
+        }
+        else
+        {
+            b = b / MathLib::fastpow(h, 3);
+            phi = log(b + sqrt(b * b - 1)) / 3;
+            z[0] = -2 * h * cosh(phi) - p / 3;
+        }
+    }
 
-	for (i = 0; i < nz; i++)
-		roots->push_back(z[i]);
+    for (i = 0; i < nz; i++)
+        roots->push_back(z[i]);
 }

@@ -25,20 +25,20 @@ last modification:
 **************************************************************************/
 CNodeValue::CNodeValue() : _node_distype(FiniteElement::INVALID_DIS_TYPE)
 {
-	geo_node_number = -1;
-	msh_node_number = -1;
-	msh_node_number_conditional = -1;
-	node_value = 0.;
-	node_area = 0.;
-	node_parameterA = 0.;
-	node_parameterB = 0.;
-	node_parameterC = 0.;
-	node_parameterD = 0.;
-	node_parameterE = 0.;
-	CurveIndex = -1;
-	conditional = -1;
-	check_me = true; // OK
-	_isConstrainedSTNode = false;
+    geo_node_number = -1;
+    msh_node_number = -1;
+    msh_node_number_conditional = -1;
+    node_value = 0.;
+    node_area = 0.;
+    node_parameterA = 0.;
+    node_parameterB = 0.;
+    node_parameterC = 0.;
+    node_parameterD = 0.;
+    node_parameterE = 0.;
+    CurveIndex = -1;
+    conditional = -1;
+    check_me = true;  // OK
+    _isConstrainedSTNode = false;
 }
 
 /**************************************************************************
@@ -50,7 +50,7 @@ last modification:
 **************************************************************************/
 CNodeValue::~CNodeValue()
 {
-	check_me = false; // OK
+    check_me = false;  // OK
 }
 
 /**************************************************************************
@@ -62,25 +62,25 @@ last modification:
 **************************************************************************/
 void CNodeValue::Write(std::ostream& os) const
 {
-	std::string deli = "  ";
-	os << geo_node_number << deli;
-	os << msh_node_number << deli;
-	os << CurveIndex << deli;
-	os << node_value << deli;
-	/*
-	// This is for river flow
-	// This writing will be valid for river flow when some
-	// of its parameters being moved from CSourceTerm to here
-	os<< node_distype <<deli;
-	os<< node_area <<deli;
-	os<< node_parameterA <<deli;
-	os<< node_parameterB <<deli;
-	os<< node_parameterC <<deli;
-	os<< node_parameterD <<deli;
-	os<< node_parameterE <<deli;
-	os<< conditional <<deli;
-	*/
-	os << "\n";
+    std::string deli = "  ";
+    os << geo_node_number << deli;
+    os << msh_node_number << deli;
+    os << CurveIndex << deli;
+    os << node_value << deli;
+    /*
+    // This is for river flow
+    // This writing will be valid for river flow when some
+    // of its parameters being moved from CSourceTerm to here
+    os<< node_distype <<deli;
+    os<< node_area <<deli;
+    os<< node_parameterA <<deli;
+    os<< node_parameterB <<deli;
+    os<< node_parameterC <<deli;
+    os<< node_parameterD <<deli;
+    os<< node_parameterE <<deli;
+    os<< conditional <<deli;
+    */
+    os << "\n";
 }
 
 /**************************************************************************
@@ -92,22 +92,22 @@ last modification:
 **************************************************************************/
 void CNodeValue::Read(std::istream& is)
 {
-	is >> geo_node_number;
-	is >> msh_node_number;
-	is >> CurveIndex;
-	is >> node_value;
-	/*
-	// This is for river flow
-	// This writing will be valid for river flow when some
-	// of its parameters being moved from CSourceTerm to here
-	is>> node_distype ;
-	is>> node_area ;
-	is>> node_parameterA ;
-	is>> node_parameterB ;
-	is>> node_parameterC ;
-	is>> node_parameterD ;
-	is>> node_parameterE ;
-	is>> conditional ;
-	*/
-	is >> std::ws;
+    is >> geo_node_number;
+    is >> msh_node_number;
+    is >> CurveIndex;
+    is >> node_value;
+    /*
+    // This is for river flow
+    // This writing will be valid for river flow when some
+    // of its parameters being moved from CSourceTerm to here
+    is>> node_distype ;
+    is>> node_area ;
+    is>> node_parameterA ;
+    is>> node_parameterB ;
+    is>> node_parameterC ;
+    is>> node_parameterD ;
+    is>> node_parameterE ;
+    is>> conditional ;
+    */
+    is >> std::ws;
 }

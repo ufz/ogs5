@@ -31,20 +31,20 @@
 class CGLDomain
 {
 private:
-	std::string name;
-	long Insert(CGLDomain*);
-	std::vector<CGLDomain*> GetVector(void);
+    std::string name;
+    long Insert(CGLDomain*);
+    std::vector<CGLDomain*> GetVector(void);
 
 public:
-	double x_min, x_max;
-	double y_min, y_max;
-	double z_min, z_max;
-	// constructor
-	CGLDomain(void);
-	// destructor
-	~CGLDomain(void);
-	int Read(char*, FILE*);
-	CGLDomain* Get(std::string);
+    double x_min, x_max;
+    double y_min, y_max;
+    double z_min, z_max;
+    // constructor
+    CGLDomain(void);
+    // destructor
+    ~CGLDomain(void);
+    int Read(char*, FILE*);
+    CGLDomain* Get(std::string);
 };
 extern std::vector<CGLDomain*> domain_vector;
 extern int GEOReadDomain(char*, int, FILE*);

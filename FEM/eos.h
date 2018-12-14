@@ -16,7 +16,7 @@
 //#include <stdio.h>
 //#include <string>
 
-class CFluidProperties; // 14.11.2012. WW
+class CFluidProperties;  // 14.11.2012. WW
 double pressure(double rho, double T, int fluid);
 // calculates the pressure depending on density and temperature
 // double density (double P, double rho0, double T, double prec, string c);
@@ -27,10 +27,15 @@ double isochoric_heat_capacity(double rho, double T, int c);
 // calculates the isochoric heat capacity depending on density and temperature
 double isobaric_heat_capacity(double rho, double T, int c);
 // calculates the isobaric heat capacity depending on density and temperature
-double linear_heat_capacity(double T, int c); //temperature dependent heat capacity for narrow range of application (fast)
-double polynomial_heat_capacity(double T, int c); //temperature dependent heat capacity for model comparison
-double co2_viscosity (double rho, double T);
-// calculates the viscosity depending on density and temperature !ONLY for CO2!!!
+double linear_heat_capacity(double T,
+                            int c);  // temperature dependent heat capacity for
+                                     // narrow range of application (fast)
+double polynomial_heat_capacity(
+    double T,
+    int c);  // temperature dependent heat capacity for model comparison
+double co2_viscosity(double rho, double T);
+// calculates the viscosity depending on density and temperature !ONLY for
+// CO2!!!
 double co2_heat_conductivity(double, double);
 // calculates the heat conductivity of co2 depending on density and temperature
 double ch4_viscosity_295K(double);
@@ -59,7 +64,13 @@ double ch4_heat_conductivity(double rho, double T);
 double n2_viscosity(double rho, double T);
 double n2_heat_conductivity(double rho, double T);
 double o2_heat_conductivity(double rho, double T);
-double mixing_ternary(double* x, double* a, double* b, double* MM, double* ra, double* rb, double* rMM);
+double mixing_ternary(double* x,
+                      double* a,
+                      double* b,
+                      double* MM,
+                      double* ra,
+                      double* rb,
+                      double* rMM);
 
 double dpressure(double TT, double PP, std::string cs, double ds);
 double zero(double T, double P, int fluid, double t);
@@ -78,6 +89,7 @@ double vapour_saturation_density_co2(double T);
  */
 double liquid_saturation_density_co2(double T);
 
-double DuansMixingRule(double T, double P, double x, int fluid1, int fluid2, bool neu);
+double DuansMixingRule(
+    double T, double P, double x, int fluid1, int fluid2, bool neu);
 
 #endif

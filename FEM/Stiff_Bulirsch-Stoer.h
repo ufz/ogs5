@@ -24,6 +24,7 @@
 
 /* externe Funktionen */
 extern void derivs(double x, double y[], double dydx[], int n, long node);
-extern void jacobn(double x, double y[], double dfdx[], double** dfdy, int n, long node);
+extern void jacobn(double x, double y[], double dfdx[], double** dfdy, int n,
+                   long node);
 
 #endif

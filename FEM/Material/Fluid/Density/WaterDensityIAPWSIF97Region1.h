@@ -29,7 +29,11 @@ class WaterDensityIAPWSIF97Region1
 public:
     WaterDensityIAPWSIF97Region1()
         : _gibbs_free_energy(DimensionLessGibbsFreeEnergyRegion1()),
-          _ref_T(1386.0), _ref_p(1.653e7), _sR(461.526) {}
+          _ref_T(1386.0),
+          _ref_p(1.653e7),
+          _sR(461.526)
+    {
+    }
 
     /**  Get density value.
          \param p   Pressure.
@@ -55,12 +59,12 @@ public:
 
         const double dgamma_dpi = _gibbs_free_energy.get_dgamma_dpi(tau, pi);
         return -(_ref_p - tau * _ref_p *
-               _gibbs_free_energy.get_dgamma_dtau_dpi(tau, pi) / dgamma_dpi)
-			   / (_sR * T * T * dgamma_dpi);
+                              _gibbs_free_energy.get_dgamma_dtau_dpi(tau, pi) /
+                              dgamma_dpi) /
+               (_sR * T * T * dgamma_dpi);
     }
 
-	
-	/**
+    /**
      *  Get the partial differential of the density with respect to pressure.
      *  \param p   Pressure.
      *  \param T   Temperature.
@@ -72,17 +76,17 @@ public:
 
         const double dgamma_dpi = _gibbs_free_energy.get_dgamma_dpi(tau, pi);
         return -_gibbs_free_energy.get_dgamma_dpi_dpi(tau, pi) /
-                       (_sR * T * dgamma_dpi * dgamma_dpi);
+               (_sR * T * dgamma_dpi * dgamma_dpi);
     }
 
 private:
     const DimensionLessGibbsFreeEnergyRegion1 _gibbs_free_energy;
 
-    const double _ref_T;     ///< reference temperature in K.
+    const double _ref_T;  ///< reference temperature in K.
     const double _ref_p;  ///< reference pressure in Pa.
     /// Specific water vapour gas constant in J/(kgK).
     const double _sR;
 };
 
-}  // end of namespace
-}  // end of namespace
+}  // namespace Fluid
+}  // namespace MaterialLib
