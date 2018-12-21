@@ -1026,7 +1026,7 @@ void CFiniteElementVec::LocalAssembly(const int update)
     }
     else
 #endif  //#if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012.
-        //WW
+        // WW
     {
 #if defined(USE_PETSC)  // || defined (other parallel solver lib). 04.2012 WW
 // TODO
@@ -1056,7 +1056,7 @@ void CFiniteElementVec::LocalAssembly(const int update)
     }
     else
 #endif  //#if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012.
-        //WW
+        // WW
 #if !defined(USE_PETSC)  // && !defined(other parallel libs)//03.3012. WW
     {
         for (int i = 0; i < nnodesHQ; i++)
@@ -1637,71 +1637,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
     if (dynamic)
         Residual = true;
 
-    bool onExBoundaryState[max_nnodes_QE_3D] = {false};
-    if (excavation)
-    {
-        int valid = 0;
-        excavation = true;
-        bool onExBoundary = false;
-        CNode* node;
-        CElem* elem;
-        CSolidProperties* smat_e;
-
-        for (int i = 0; i < nnodesHQ; i++)
-        {
-            node = MeshElement->nodes[i];
-            onExBoundary = false;
-            const std::size_t n_elements(node->getConnectedElementIDs().size());
-            for (std::size_t j = 0; j < n_elements; j++)
-            {
-                elem =
-                    pcs->m_msh->ele_vector[node->getConnectedElementIDs()[j]];
-                if (!elem->GetMark())
-                    continue;
-
-                smat_e = msp_vector[elem->GetPatchIndex()];
-                if (smat_e->excavation > 0)
-                {
-                    if (fabs(GetCurveValue(smat_e->excavation, 0, aktuelle_zeit,
-                                           &valid) -
-                             1.0) < DBL_MIN)
-                    {
-                        onExBoundary = true;
-                        break;
-                    }
-                }
-                else if (pcs->ExcavMaterialGroup > -1)
-                {
-                    double const* ele_center(elem->GetGravityCenter());
-                    const double expected_coordinate =
-                        GetCurveValue(pcs->ExcavCurve, 0, aktuelle_zeit,
-                                      &valid) +
-                        pcs->ExcavBeginCoordinate;
-                    const double max_excavation_range = std::max(
-                        expected_coordinate, pcs->ExcavBeginCoordinate);
-                    if (ele_center[pcs->ExcavDirection] > max_excavation_range)
-                    {
-                        onExBoundary = true;
-                        break;
-                    }
-                    else if (elem->GetPatchIndex() !=
-                             static_cast<size_t>(pcs->ExcavMaterialGroup))
-                    {
-                        onExBoundary = true;
-                        break;
-                    }
-                }
-                else
-                {
-                    onExBoundary = true;
-                    break;
-                }
-            }
-            if (onExBoundary)
-                onExBoundaryState[i] = 1;
-        }
-    }
-
     if (Residual)
     {
         const double biot = smat->biot_const;
@@ -1714,14 +1649,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
             case FiniteElement::LIQUID_FLOW:
                 for (int i = 0; i < nnodes; i++)
                     nodal_pore_p[i] = LoadFactor * _nodal_p1[i];
-                if (excavation)
-                {
-                    for (int i = 0; i < nnodes; i++)
-                    {
-                        if (onExBoundaryState[i] == 1)  // WX:02.2013
-                            nodal_pore_p[i] = 0.0;
-                    }
-                }
                 if (pcs->Neglect_H_ini == 2)
                 {
                     for (int i = 0; i < nnodes; i++)
@@ -1754,14 +1681,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
                         nodal_pore_p[i] =
                             LoadFactor * _nodal_S[i] * _nodal_p1[i];
                     }
-                    if (excavation)
-                    {
-                        for (int i = 0; i < nnodes; i++)
-                        {
-                            if (onExBoundaryState[i] == 1)  // WX:02.2013
-                                nodal_pore_p[i] = 0.0;
-                        }
-                    }
                     if (pcs->Neglect_H_ini == 2)
                     {
                         for (int i = 0; i < nnodes; i++)
@@ -1788,15 +1707,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
                         nodal_pore_p[i] =
                             LoadFactor *
                             smat->getBishopCoefficient(S_e, val_n) * val_n;
-                    }
-
-                    if (excavation)
-                    {
-                        for (int i = 0; i < nnodes; i++)
-                        {
-                            if (onExBoundaryState[i] == 1)
-                                nodal_pore_p[i] = 0.0;
-                        }
                     }
 
                     if (pcs->Neglect_H_ini == 2)
@@ -1834,15 +1744,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
                         nodal_pore_p[i] = pore_p * LoadFactor;
                     }
 
-                    if (excavation)
-                    {
-                        for (int i = 0; i < nnodes; i++)
-                        {
-                            if (onExBoundaryState[i] == 1)  // WX:02.2013
-                                nodal_pore_p[i] = 0.;
-                        }
-                    }
-
                     if (pcs->Neglect_H_ini == 2)
                     {
                         for (int i = 0; i < nnodes; i++)
@@ -1871,15 +1772,6 @@ void CFiniteElementVec::GlobalAssembly_RHS()
                     const double pore_p =
                         _nodal_p2[i] - bishop_coef * _nodal_p1[i];
                     nodal_pore_p[i] = pore_p * LoadFactor;
-                }
-
-                if (excavation)
-                {
-                    for (int i = 0; i < nnodes; i++)
-                    {
-                        if (onExBoundaryState[i] == 1)  // WX:02.2013
-                            nodal_pore_p[i] = 0.;
-                    }
                 }
 
                 if (pcs->Neglect_H_ini == 2)
@@ -1947,9 +1839,64 @@ void CFiniteElementVec::GlobalAssembly_RHS()
 
     if (excavation)
     {
+        int valid = 0;
+        excavation = true;
+        bool onExBoundary = false;
+        CNode* node;
+        CElem* elem;
+        CSolidProperties* smat_e;
+
         for (int i = 0; i < nnodesHQ; i++)
         {
-            if (!onExBoundaryState[i])
+            node = MeshElement->nodes[i];
+            onExBoundary = false;
+            const std::size_t n_elements(node->getConnectedElementIDs().size());
+            for (std::size_t j = 0; j < n_elements; j++)
+            {
+                elem =
+                    pcs->m_msh->ele_vector[node->getConnectedElementIDs()[j]];
+                if (!elem->GetMark())
+                    continue;
+
+                smat_e = msp_vector[elem->GetPatchIndex()];
+                if (smat_e->excavation > 0)
+                {
+                    if (fabs(GetCurveValue(smat_e->excavation, 0, aktuelle_zeit,
+                                           &valid) -
+                             1.0) < DBL_MIN)
+                    {
+                        onExBoundary = true;
+                        break;
+                    }
+                }
+                else if (pcs->ExcavMaterialGroup > -1)
+                {
+                    double const* ele_center(elem->GetGravityCenter());
+                    const double expected_coordinate =
+                        GetCurveValue(pcs->ExcavCurve, 0, aktuelle_zeit,
+                                      &valid) +
+                        pcs->ExcavBeginCoordinate;
+                    const double max_excavation_range = std::max(
+                        expected_coordinate, pcs->ExcavBeginCoordinate);
+                    if (ele_center[pcs->ExcavDirection] > max_excavation_range)
+                    {
+                        onExBoundary = true;
+                        break;
+                    }
+                    else if (elem->GetPatchIndex() !=
+                             static_cast<size_t>(pcs->ExcavMaterialGroup))
+                    {
+                        onExBoundary = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    onExBoundary = true;
+                    break;
+                }
+            }
+            if (!onExBoundary)
             {
                 for (std::size_t j = 0; j < dim; j++)
                     b_rhs[eqs_number[i] + NodeShift[j]] = 0.0;

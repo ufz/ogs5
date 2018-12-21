@@ -19,9 +19,9 @@
 solver and parellelisation of them 02/2008 PCH OpenMP parallelization for Lis
 matrix solver
 **************************************************************************/
-#include "FEMEnums.h"
-#include "Output.h"
-#include "MathTools.h"
+#include "rf_pcs.h"
+
+#include <limits>       // std::numeric_limits
 
 /*--------------------- MPI Parallel  -------------------*/
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL)
@@ -55,11 +55,14 @@ matrix solver
 // GEOLib
 #include "PointWithID.h"
 
+#include "FEMEnums.h"
+#include "Output.h"
+#include "MathTools.h"
+
 #include "PhysicalConstant.h"
 
 /* Objects */
 #include "pcs_dm.h"
-#include "rf_pcs.h"
 #include "rf_st_new.h"  // ST
 //#include "rf_bc_new.h" // ST
 //#include "rf_mmp_new.h" // MAT
@@ -4617,8 +4620,14 @@ bool CRFProcess::isPointInExcavatedDomain(double const* point,
         point[ExcavDirection];
     max_excavation_range = std::max(expected_coordinate, ExcavBeginCoordinate);
     min_excavation_range = std::min(expected_coordinate, ExcavBeginCoordinate);
-    if (element_center_x_in_excavation_direction > min_excavation_range &&
-        element_center_x_in_excavation_direction < max_excavation_range)
+    if ((element_center_x_in_excavation_direction > min_excavation_range ||
+         (std::fabs(element_center_x_in_excavation_direction -
+                    min_excavation_range) <
+          std::numeric_limits<double>::epsilon())) &&(
+            (element_center_x_in_excavation_direction < max_excavation_range) ||
+        (std::fabs(element_center_x_in_excavation_direction -
+                   max_excavation_range) <
+         std::numeric_limits<double>::epsilon())))
     {
         return true;
     }
