@@ -772,11 +772,14 @@ int Linear_EQS::Solver(CNumerics* num)
         //
         //			std::string fname("CO2MAN-Matrix.bin");
         //			std::ofstream os (fname.c_str(), std::ios::binary);
-        //			std::cout << "writing matrix in binary format to " << fname << "
-        //... " << std::flush; 			unsigned mat_size (size); 			os.write((char*)
-        //&mat_size, sizeof(unsigned)); 			unsigned *iA(new unsigned[mat_size+1]);
-        //			for (size_t k(0); k<mat_size+1; k++) {
-        //				iA[k] = A->ptr[k];
+        //			std::cout << "writing matrix in binary format to " << fname
+        //<<
+        //"
+        //... " << std::flush; 			unsigned mat_size (size);
+        // os.write((char*)
+        //&mat_size, sizeof(unsigned)); 			unsigned *iA(new
+        // unsigned[mat_size+1]); 			for (size_t k(0); k<mat_size+1; k++)
+        // { iA[k] = A->ptr[k];
         //			}
         //
         //			unsigned mat_nnz(iA[mat_size]);

@@ -136,7 +136,8 @@ bool GEOObjects::removePointVec(const std::string& name)
     }
 
     for (std::vector<PointVec*>::iterator it(_pnt_vecs.begin());
-         it != _pnt_vecs.end(); it++)
+         it != _pnt_vecs.end();
+         it++)
         if ((*it)->getName().compare(name) == 0)
         {
             delete *it;
@@ -159,7 +160,8 @@ std::vector<Point*>* GEOObjects::filterStationVec(
     const std::string& name, const std::vector<PropertyBounds>& bounds)
 {
     for (std::vector<PointVec*>::iterator it(_pnt_vecs.begin());
-         it != _pnt_vecs.end(); it++)
+         it != _pnt_vecs.end();
+         it++)
         if ((*it)->getName().compare(name) == 0 &&
             (*it)->getType() == PointVec::STATION)
             return (*it)->filterStations(bounds);
@@ -174,7 +176,8 @@ const std::vector<Point*>* GEOObjects::getStationVec(
     const std::string& name) const
 {
     for (std::vector<PointVec*>::const_iterator it(_pnt_vecs.begin());
-         it != _pnt_vecs.end(); it++)
+         it != _pnt_vecs.end();
+         it++)
     {
         if ((*it)->getName().compare(name) == 0 &&
             (*it)->getType() == PointVec::STATION)
@@ -269,7 +272,8 @@ const PolylineVec* GEOObjects::getPolylineVecObj(const std::string& name) const
 bool GEOObjects::removePolylineVec(const std::string& name)
 {
     for (std::vector<PolylineVec*>::iterator it = _ply_vecs.begin();
-         it != _ply_vecs.end(); ++it)
+         it != _ply_vecs.end();
+         ++it)
         if ((*it)->getName().compare(name) == 0)
         {
             delete *it;
@@ -331,7 +335,8 @@ const std::vector<Surface*>* GEOObjects::getSurfaceVec(
 bool GEOObjects::removeSurfaceVec(const std::string& name)
 {
     for (std::vector<SurfaceVec*>::iterator it(_sfc_vecs.begin());
-         it != _sfc_vecs.end(); it++)
+         it != _sfc_vecs.end();
+         it++)
         if ((*it)->getName().compare(name) == 0)
         {
             delete *it;
@@ -396,14 +401,16 @@ bool GEOObjects::isPntVecUsed(const std::string& name) const
 {
     // search dependent data structures (Polyline)
     for (std::vector<PolylineVec*>::const_iterator it(_ply_vecs.begin());
-         it != _ply_vecs.end(); it++)
+         it != _ply_vecs.end();
+         it++)
     {
         std::string a = (*it)->getName();
         if (((*it)->getName()).compare(name) == 0)
             return true;
     }
     for (std::vector<SurfaceVec*>::const_iterator it(_sfc_vecs.begin());
-         it != _sfc_vecs.end(); it++)
+         it != _sfc_vecs.end();
+         it++)
     {
         std::string a = (*it)->getName();
         if (((*it)->getName()).compare(name) == 0)
@@ -416,7 +423,8 @@ bool GEOObjects::isPntVecUsed(const std::string& name) const
 void GEOObjects::getStationVectorNames(std::vector<std::string>& names) const
 {
     for (std::vector<PointVec*>::const_iterator it(_pnt_vecs.begin());
-         it != _pnt_vecs.end(); it++)
+         it != _pnt_vecs.end();
+         it++)
         if ((*it)->getType() == PointVec::STATION)
             names.push_back((*it)->getName());
 }
@@ -425,7 +433,8 @@ void GEOObjects::getGeometryNames(std::vector<std::string>& names) const
 {
     names.clear();
     for (std::vector<PointVec*>::const_iterator it(_pnt_vecs.begin());
-         it != _pnt_vecs.end(); it++)
+         it != _pnt_vecs.end();
+         it++)
         if ((*it)->getType() == PointVec::POINT)
             names.push_back((*it)->getName());
 }

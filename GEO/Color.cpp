@@ -65,7 +65,8 @@ const Color* getColor(const std::string& id,
                       std::map<std::string, Color*>& colors)
 {
     for (std::map<std::string, Color*>::const_iterator it = colors.begin();
-         it != colors.end(); ++it)
+         it != colors.end();
+         ++it)
         if (id.compare(it->first) == 0)
             return it->second;
     std::cout << "Key \"" << id << "\" not found in color lookup table..."

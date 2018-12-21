@@ -762,9 +762,9 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
         {
             line.str(GetLineFromFile1(num_file));
             line >> newton_damping_tolerance;  // if NR error decreases by less
-                                               // than this factor, the next step
-                                               // will be dampened
-            line >> newton_damping_factor;  // dampened by this factor
+                                               // than this factor, the next
+                                               // step will be dampened
+            line >> newton_damping_factor;     // dampened by this factor
             line.clear();
             std::cout << "NR step will be damped by " << newton_damping_factor
                       << " if relative residual or relative unknown increment "

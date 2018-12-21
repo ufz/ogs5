@@ -250,9 +250,10 @@ typedef struct
 /* Die nachfolgenden Makros dienen der besseren Lesbarkeit (Kuerze!)
    des Codes. Sie werden am Ende dieser Quelle saemtlich undefiniert!
    Allgemeines: */
-#define dim ((long*)wurzel)[0]         /* Dimension der aktuellen Matrix */
-#define matrix_type ((long*)wurzel)[1] /* Speichermodell der aktuellen Matrix \
-                                        */
+#define dim ((long*)wurzel)[0] /* Dimension der aktuellen Matrix */
+#define matrix_type                                           \
+    ((long*)wurzel)[1] /* Speichermodell der aktuellen Matrix \
+                        */
 #define Maxim(x, v) \
     if (x < (v))    \
     x = v /* x =max(x,v) */
@@ -1883,7 +1884,7 @@ void* M5CreateMatrix(long param1, long param2, long param3)
             ii = jd_ptr2[i];
             index = m_msh->Eqs2Global_NodeIndex[ii];
             //			 col_ind[count1] =
-            //m_msh->go[m_msh->nod_vector[index]->connected_nodes[k]];
+            // m_msh->go[m_msh->nod_vector[index]->connected_nodes[k]];
             col_i = m_msh->nod_vector[index]->getConnectedNodes()[k];
             col_ind[count1] = m_msh->nod_vector[col_i]->GetEquationIndex();
             jj = col_ind[count1];

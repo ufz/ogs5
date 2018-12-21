@@ -1618,8 +1618,8 @@ double CSolidProperties::Heat_Conductivity(double reference)
         {
             // val = k_max-k_min/(1+10.0*exp(reference-S0));
             const double* k_T = data_Conductivity->getEntryArray();
-            //		val = k_T[0] - (k_T[0]-k_T[1]) / (1 + exp(10.0 * (reference -
-            //k_T[2])));
+            //		val = k_T[0] - (k_T[0]-k_T[1]) / (1 + exp(10.0 * (reference
+            //- k_T[2])));
             val = k_T[0] + k_T[1] * (reference - k_T[2]);
         }
         break;
@@ -1903,7 +1903,7 @@ void CSolidProperties::LocalNewtonBurgers(
     }
     //	if (counter == counter_max)
     //		std::cout << "WARNING: Maximum iteration number needed in
-    //LocalNewtonBurgers. Convergence not guaranteed."
+    // LocalNewtonBurgers. Convergence not guaranteed."
     //		          << std::endl;
     local_res = res_loc.norm();
 
@@ -2095,7 +2095,7 @@ void CSolidProperties::LocalNewtonMinkley(
             dsigdE);  // Full pivoting needed for global convergence
         //		if (counter == counter_max)
         //			std::cout << "WARNING: Maximum iteration number needed in
-        //LocalNewtonMinkley. Convergence not
+        // LocalNewtonMinkley. Convergence not
         // guaranteed."
         //			          << std::endl;
         //			          << std::endl;local_res = res_loc.norm();
@@ -3697,8 +3697,8 @@ int CSolidProperties::StressIntegrationMOHR_Aniso(
 
     *TmpDe = *Dep;
 
-    // ConstitutiveMatrix->resize(Size,Size);		//in head already defined, and is
-    // used for later as global variable
+    // ConstitutiveMatrix->resize(Size,Size);		//in head already defined,
+    // and is used for later as global variable
 
     *ConstitutiveMatrix = (0.);
 
@@ -3972,9 +3972,10 @@ int CSolidProperties::StressIntegrationMOHR_Aniso(
                                                          (i - 1));  // dcsn/deta
                     for (i = 0; i < Size; i++)
                         dtens_dsig[i] =
-                            dTens_daPara * dAniso_dsig_tens[i];  // dcsn/dsig=dcsn/deta
-                                                                 // * deta/dsig
-                }  // end if plasticity bedding
+                            dTens_daPara *
+                            dAniso_dsig_tens[i];  // dcsn/dsig=dcsn/deta
+                                                  // * deta/dsig
+                }                                 // end if plasticity bedding
                 if (first_step)
                 {
                     for (i = 0; i < Size; i++)
@@ -4331,9 +4332,10 @@ int CSolidProperties::StressIntegrationMOHR_Aniso(
                             pow(AnisoParaComp, (i - 1));  // dcsn/deta
                     for (i = 0; i < Size; i++)
                         dcsn_dsig[i] =
-                            dComp_daPara * dAniso_dsig_comp[i];  // dcsn/dsig=dcsn/deta
-                                                                 // * deta/dsig
-                }  // end if plasticity bedding
+                            dComp_daPara *
+                            dAniso_dsig_comp[i];  // dcsn/dsig=dcsn/deta
+                                                  // * deta/dsig
+                }                                 // end if plasticity bedding
                 // counter++;
                 if (first_step)
                 {

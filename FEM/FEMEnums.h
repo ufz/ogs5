@@ -247,8 +247,8 @@ const std::list<std::string> getAllDistributionNames();
    --> LMAX:	max(|x1-x0|)  -- Infinity norm: Local max error (across all
  elements) of solution vector delta (absolute error). Tolerance required for
  each primary variable.
-   --> ENORM:	|x1-x0|       -- Euclidian norm: Norm of the solution vector delta
- (absolute error). Norm taken over entire solution vector (all primary
+   --> ENORM:	|x1-x0|       -- Euclidian norm: Norm of the solution vector
+ delta (absolute error). Norm taken over entire solution vector (all primary
  variables) and checked against a single tolerance.
    --> EVNORM:	|x1-x0|       -- Euclidian varient norm: Norm of the solution
  vector delta (absolute error). Norm taken over solution vector of each primary

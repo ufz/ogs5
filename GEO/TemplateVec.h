@@ -183,7 +183,8 @@ public:
         {
             for (std::map<std::string, size_t>::iterator it =
                      _name_id_map->begin();
-                 it != _name_id_map->end(); ++it)
+                 it != _name_id_map->end();
+                 ++it)
                 if (it->second == id)
                 {
                     _name_id_map->erase(

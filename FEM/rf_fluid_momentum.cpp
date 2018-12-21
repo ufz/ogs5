@@ -149,11 +149,11 @@ double CFluidMomentum::Execute(int loop_process_number)
         if (m_pcs->getProcessType() == FiniteElement::RICHARDS_FLOW)
             m_msh = FEMGet("RICHARDS_FLOW");
         //		else if( m_pcs->pcs_type_name.find("LIQUID_FLOW")!=string::npos)
-        //TF
+        // TF
         else if (m_pcs->getProcessType() == FiniteElement::LIQUID_FLOW)
             m_msh = FEMGet("LIQUID_FLOW");
         //		else if(
-        //m_pcs->pcs_type_name.find("GROUNDWATER_FLOW")!=string::npos) TF
+        // m_pcs->pcs_type_name.find("GROUNDWATER_FLOW")!=string::npos) TF
         else if (m_pcs->getProcessType() == FiniteElement::GROUNDWATER_FLOW)
             m_msh = FEMGet("GROUNDWATER_FLOW");
 
@@ -497,11 +497,11 @@ void CFluidMomentum::ConstructFractureNetworkTopology()
         if (m_pcs->getProcessType() == FiniteElement::RICHARDS_FLOW)
             m_msh = FEMGet("RICHARDS_FLOW");
         //		else if( m_pcs->pcs_type_name.find("LIQUID_FLOW")!=string::npos)
-        //TF
+        // TF
         else if (m_pcs->getProcessType() == FiniteElement::LIQUID_FLOW)
             m_msh = FEMGet("LIQUID_FLOW");
         //		else if(
-        //m_pcs->pcs_type_name.find("GROUNDWATER_FLOW")!=string::npos) TF
+        // m_pcs->pcs_type_name.find("GROUNDWATER_FLOW")!=string::npos) TF
         else if (m_pcs->getProcessType() == FiniteElement::GROUNDWATER_FLOW)
             m_msh = FEMGet("GROUNDWATER_FLOW");
     }

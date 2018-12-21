@@ -3108,7 +3108,7 @@ int SpPICARD(double* b, double* x, long n,
     }
     /* Ende der Iterationsschleife
      **************************************************************************
-    */
+     */
 
     iterations_old_timestep = k;
 

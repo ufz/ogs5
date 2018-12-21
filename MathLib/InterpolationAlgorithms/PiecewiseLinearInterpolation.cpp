@@ -35,10 +35,11 @@ PiecewiseLinearInterpolation::PiecewiseLinearInterpolation(
       _values_at_supp_pnts(values_at_supp_pnts)
 {
     //	std::cout << "PiecewiseLinearInterpolation::PiecewiseLinearInterpolation
-    //support_points, values_at_supp_pnts: "
+    // support_points, values_at_supp_pnts: "
     //<< "\n";
     //	for (size_t k(0); k<supporting_points.size(); k++) {
-    //		std::cout << supporting_points[k] << " " << values_at_supp_pnts[k] <<
+    //		std::cout << supporting_points[k] << " " << values_at_supp_pnts[k]
+    //<<
     //"\n";
     //	}
     //	std::cout << "\n";

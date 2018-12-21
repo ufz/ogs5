@@ -21,7 +21,7 @@ matrix solver
 **************************************************************************/
 #include "rf_pcs.h"
 
-#include <limits>       // std::numeric_limits
+#include <limits>  // std::numeric_limits
 
 /*--------------------- MPI Parallel  -------------------*/
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL)
@@ -671,7 +671,7 @@ void CRFProcess::Create()
     std::cout << "->Create NUM"
               << "\n";
     //	if (pcs_type_name.compare("RANDOM_WALK")) { // PCH RWPT does not need
-    //this.
+    // this.
     if (this->getProcessType() !=
         FiniteElement::RANDOM_WALK)  // PCH RWPT does not need this.
     {
@@ -799,7 +799,7 @@ void CRFProcess::Create()
             m_pcs = pcs_vector[i];
             if (m_pcs && m_pcs->eqs)
                 //				if (m_pcs->_pcs_type_name.find("DEFORMATION") ==
-                //string::npos)
+                // string::npos)
                 if (!isDeformationProcess(m_pcs->getProcessType()))
                     break;
         }
@@ -1700,7 +1700,7 @@ void PCSDestroyAllProcesses(void)
     }
     dom_vector.clear();
 #endif  //#if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012.
-        //WW
+        // WW
     //----------------------------------------------------------------------
     // ELE
     for (i = 0; i < (long)ele_val_vector.size(); i++)
@@ -1789,7 +1789,7 @@ bool PCSRead(std::string file_base_name)
 
             // RelocateDeformationProcess(m_pcs);
             //			if (m_pcs->_pcs_type_name.find("DEFORMATION") !=
-            //string::npos) { // TF
+            // string::npos) { // TF
             if (isDeformationProcess(m_pcs->getProcessType()))
             {
                 pcs_vector.push_back(m_pcs->CopyPCStoDM_PCS());
@@ -4623,11 +4623,11 @@ bool CRFProcess::isPointInExcavatedDomain(double const* point,
     if ((element_center_x_in_excavation_direction > min_excavation_range ||
          (std::fabs(element_center_x_in_excavation_direction -
                     min_excavation_range) <
-          std::numeric_limits<double>::epsilon())) &&(
-            (element_center_x_in_excavation_direction < max_excavation_range) ||
-        (std::fabs(element_center_x_in_excavation_direction -
-                   max_excavation_range) <
-         std::numeric_limits<double>::epsilon())))
+          std::numeric_limits<double>::epsilon())) &&
+        ((element_center_x_in_excavation_direction < max_excavation_range) ||
+         (std::fabs(element_center_x_in_excavation_direction -
+                    max_excavation_range) <
+          std::numeric_limits<double>::epsilon())))
     {
         return true;
     }
@@ -4930,7 +4930,7 @@ double CRFProcess::Execute()
 
 #if defined(USE_PETSC)
         //		std::string eqs_output_file = FileName +
-        //number2str(aktueller_zeitschritt);
+        // number2str(aktueller_zeitschritt);
         //		eqs_new->EQSV_Viewer(eqs_output_file);
         eqs_new->Solver();
         eqs_new->MappingSolution();
@@ -5726,7 +5726,7 @@ void CRFProcess::GlobalAssembly()
 }
 else
 #endif  //#if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012.
-        //WW
+        // WW
 {       // STD
     // YDTEST. Changed to DOF 15.02.2007 WW
     for (size_t ii = 0; ii < continuum_vector.size(); ii++)
@@ -5911,10 +5911,10 @@ void CRFProcess::CalIntegrationPointValue()
     //  cal_integration_point_value = true;
     // Currently, extropolation only valid for liquid and Richards flow.
     //	if (_pcs_type_name.find("LIQUID") != string::npos ||
-    //_pcs_type_name.find( 			"RICHARD") != string::npos || _pcs_type_name.find(
-    //			"MULTI_PHASE_FLOW") != string::npos || _pcs_type_name.find(
-    //			"GROUNDWATER_FLOW") != string::npos || _pcs_type_name.find(
-    //			"TWO_PHASE_FLOW") != string::npos
+    //_pcs_type_name.find( 			"RICHARD") != string::npos ||
+    //_pcs_type_name.find( 			"MULTI_PHASE_FLOW") != string::npos ||
+    //_pcs_type_name.find( 			"GROUNDWATER_FLOW") != string::npos ||
+    //_pcs_type_name.find( 			"TWO_PHASE_FLOW") != string::npos
     //			|| _pcs_type_name.find("AIR_FLOW") != string::npos
     //			|| _pcs_type_name.find("PS_GLOBAL") != string::npos) //WW/CB
 
@@ -6336,7 +6336,7 @@ void CRFProcess::DDCAssembleGlobalMatrix()
 #endif
 }
 #endif  //#if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012.
-        //WW
+        // WW
 
 /*************************************************************************
    ROCKFLOW - Function:
@@ -6484,7 +6484,7 @@ void CRFProcess::SetSTWaterGemSubDomain(int myrank)
     rank_stgem_node_value_in_dom.push_back(
         (long)stgem_node_value_in_dom.size());
     //	cout << "dom " << k <<  " rank_stgem_node_value_in_dom " << (long)
-    //rank_stgem_node_value_in_dom[0]  << "\n";
+    // rank_stgem_node_value_in_dom[0]  << "\n";
 
     //	}
 
@@ -6498,7 +6498,7 @@ void CRFProcess::SetSTWaterGemSubDomain(int myrank)
 }
 
 #endif  //#if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012.
-        //WW
+        // WW
 /**************************************************************************
    FEMLib-Method: CRFProcess::IncorporateBoundaryConditions
    Task: set PCS boundary conditions
@@ -6648,7 +6648,8 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
                 excavated = true;
 #ifndef USE_PETSC
                 for (unsigned int j = 0;
-                     j < node->getConnectedElementIDs().size(); j++)
+                     j < node->getConnectedElementIDs().size();
+                     j++)
                 {
                     CElem* elem =
                         m_msh->ele_vector[node->getConnectedElementIDs()[j]];
@@ -8316,7 +8317,8 @@ void CRFProcess::IncorporateSourceTerms(const int rank)
                 continue_bool = checkConstrainedST(st_vector, *m_st, *cnodev);
 
                 for (std::size_t temp_i(0);
-                     temp_i < m_st->getNumberOfConstrainedSTs(); temp_i++)
+                     temp_i < m_st->getNumberOfConstrainedSTs();
+                     temp_i++)
                 {
                     if (st_vector[cnodev->getSTVectorGroup()]
                             ->isCompleteConstrainST(temp_i) &&
@@ -8367,7 +8369,8 @@ void CRFProcess::IncorporateSourceTerms(const int rank)
                         EleType == MshElemType::QUAD)
                     {
                         for (size_t i_face = 0;
-                             i_face < m_msh->face_vector.size(); i_face++)
+                             i_face < m_msh->face_vector.size();
+                             i_face++)
                         {
                             face = m_msh->face_vector[i_face];
                             if ((size_t)m_st->element_st_vector[i_st] ==
@@ -8503,7 +8506,8 @@ void CRFProcess::IncorporateSourceTerms(const int rank)
                 //				cout << "rank " << rank ;
                 gindex = stgem_node_value_in_dom[i];  // contains indexes to
                                                       // water-st_vec
-                //				cout << " gindex " << gindex << " i " << i << endl
+                //				cout << " gindex " << gindex << " i " << i <<
+                // endl
                 //;
                 // contains index to node
                 glocalindex = stgem_local_index_in_dom[i];
@@ -8752,7 +8756,7 @@ void CRFProcess::CalcSecondaryVariables(bool initial)
     //      break;
     //    case 'R': // Richards flow
     //	  if(_pcs_type_name[1] == 'I')	// PCH To make a distinction with RANDOM
-    //WALK.
+    // WALK.
     //        CalcSecondaryVariablesUnsaturatedFlow(initial); // WW
     //      break;
     //    case 'D':
@@ -8829,9 +8833,9 @@ char* GetCompNamehelp(char* inname)
             if (m_pcs == NULL)
                 break;
             //		outname =
-            //GetTracerCompName(phase,m_pcs->GetProcessComponentNumber()-1);
+            // GetTracerCompName(phase,m_pcs->GetProcessComponentNumber()-1);
             //		outname =
-            //cp_vec[m_pcs->GetProcessComponentNumber()-1]->compname;
+            // cp_vec[m_pcs->GetProcessComponentNumber()-1]->compname;
             outname = (char*)cp_vec[m_pcs->GetProcessComponentNumber() - 1]
                           ->compname.data();
             return outname;
@@ -8861,7 +8865,7 @@ string GetPFNamebyCPName(string inname)
         {
             m_pcs = pcs_vector[i];
             //	if(m_pcs->_pcs_type_name.compare("MASS_TRANSPORT") == 0){ // if
-            //this is mass transport // TF
+            // this is mass transport // TF
             if (m_pcs->getProcessType() == FiniteElement::MASS_TRANSPORT)
             {
                 j = m_pcs->GetProcessComponentNumber();
@@ -8884,7 +8888,7 @@ string GetPFNamebyCPName(string inname)
     //		if(m_pcs == NULL) break;
     //		outname = cp_vec[m_pcs->GetProcessComponentNumber()-1]->compname;
     //		outname = (char *)
-    //cp_vec[m_pcs->GetProcessComponentNumber()-1]->compname.data();
+    // cp_vec[m_pcs->GetProcessComponentNumber()-1]->compname.data();
     //		if(outname.compare(inname) == 0)
     //			return outname;
     //	};
@@ -10433,7 +10437,7 @@ void CRFProcess::CopyTimestepNODValues(bool forward)
             SetNodeValue(l, nidx0, GetNodeValue(l, nidx1));
         // WW
         //		if (_pcs_type_name.find("RICHARDS") != string::npos || type ==
-        //1212) { //Multiphase. WW
+        // 1212) { //Multiphase. WW
         // Multiphase. WW
         if (this->getProcessType() == FiniteElement::RICHARDS_FLOW ||
             type == 1212 || type == 42)
@@ -10556,8 +10560,8 @@ CRFProcess* PCSGet(const std::string& pcs_type_name,
         FiniteElement::convertProcessType(pcs_type_name));
     size_t no_processes(pcs_vector.size());
     for (size_t i = 0; i < no_processes; i++)
-        //		if (pcs_vector[i]->pcs_type_name.compare(pcs_type_name) == 0) { //
-        //TF
+        //		if (pcs_vector[i]->pcs_type_name.compare(pcs_type_name) == 0) {
+        //// TF
         if (pcs_vector[i]->getProcessType() == pcs_type)
             if (comp_name.compare(
                     pcs_vector[i]->pcs_primary_function_name[0]) == 0)
@@ -11548,7 +11552,7 @@ void CRFProcess::SetCPL()
 
     //	if (_pcs_type_name.compare("RICHARDS_FLOW") == 0
     //				&& m_msh_cpl->pcs_name.compare("OVERLAND_FLOW") == 0) { //
-    //ToDo
+    // ToDo
     if (this->getProcessType() == FiniteElement::RICHARDS_FLOW
         // ToDo
         && m_msh_cpl->pcs_name.compare("OVERLAND_FLOW") == 0)
@@ -11616,7 +11620,7 @@ void CRFProcess::SetCPL()
 
     //	if (_pcs_type_name.compare("GROUNDWATER_FLOW") == 0
     //				&& m_msh_cpl->pcs_name.compare("OVERLAND_FLOW") == 0) { //
-    //ToDo
+    // ToDo
     if (this->getProcessType() == FiniteElement::GROUNDWATER_FLOW
         // ToDo
         && m_msh_cpl->pcs_name.compare("OVERLAND_FLOW") == 0)
@@ -11793,7 +11797,7 @@ void CRFProcess::CalcELEFluxes(const GEOLIB::Polyline* const ply,
         //	for (size_t k = 0; k < m_ele->GetNodesNumber(false); k++)
         //	{
         //		temp_v[j] += m_pcs_flow->GetNodeValue(element_nodes[k],
-        //variable_index[j]);
+        // variable_index[j]);
         //	}
         //	temp_v[j] /=  m_ele->GetNodesNumber(false);
         //	v[j] = temp_v[j];
@@ -11902,7 +11906,7 @@ void CRFProcess::CalcELEFluxes(const GEOLIB::Polyline* const ply,
                 //	for (size_t k = 0; k < m_ele->GetNodesNumber(false); k++)
                 //	{
                 //		temp_v[j] += m_pcs_flow->GetNodeValue(element_nodes[k],
-                //variable_index[j]);
+                // variable_index[j]);
                 //	}
                 //	temp_v[j] /=  m_ele->GetNodesNumber(false);
                 //	v_2[j] = temp_v[j];
@@ -11968,7 +11972,7 @@ void CRFProcess::CalcELEMassFluxes(const GEOLIB::Polyline* const ply,
     double C_ele = 0.0;  // C1 = 0, C2 = 0; // TF 2012-08 // removed warning
                          // unused variable
     //	int number_nodes_at_edge = 0; // TF 2012-08 // removed warning unused
-    //variable
+    // variable
     double J_adv[3], J_disp[3], J_diff[3], v[3], temp_j, j_diff[3], j_disp[3],
         norm_v;
     double J_adv_temp, J_disp_temp, J_diff_temp, J_temp;
@@ -12290,7 +12294,8 @@ void CRFProcess::CalcELEMassFluxes(const GEOLIB::Polyline* const ply,
             // polyline was already used, BG 11/2011
             Use_Element = true;
             for (size_t j = 0;
-                 j < static_cast<size_t>(m_ele->GetNodesNumber(false)); j++)
+                 j < static_cast<size_t>(m_ele->GetNodesNumber(false));
+                 j++)
             {
                 m_node = m_ele->GetNode(j);
                 // check if edge was already used
@@ -12377,7 +12382,7 @@ void CRFProcess::CalcELEMassFluxes(const GEOLIB::Polyline* const ply,
         // mass check
         //		totalmassflux = 0.0; // 2012-08 TF not used
         //		totalmass = C_ele * porosity * m_ele->GetVolume(); // 2012-08 TF
-        //not used
+        // not used
 
         // 2012-08 TF, since totalmassflux is not used we can comment out the
         // following two lines
@@ -13869,7 +13874,7 @@ void CRFProcess::PI_TimeStepSize()
     fac = max(factor2, min(factor1, pow(err, 0.25) / sfactor));
     hnew = Tim->time_step_length /
            fac;  //*Tim->reject_factor;              // BG, use the reject
-                 //factor to lower timestep after rejection BG
+                 // factor to lower timestep after rejection BG
 
     // determine if the error is small enough
     if (err <= 1.0e0 && accepted)  // step is accept (unless Newton diverged!)
@@ -14882,8 +14887,8 @@ void CRFProcess::CalculateFluidDensitiesAndViscositiesAtNodes(CRFProcess* m_pcs)
 
     Molweight_CO2 = 44.009;   // [g/mol]
     Molweight_H2O = 18.0148;  // [g/mol]
-    Molweight_NaCl = 58.443;  // [g/mol]				//ToDo: provide constants
-                              // once in the whole project
+    Molweight_NaCl = 58.443;  // [g/mol]				//ToDo: provide
+                              // constants once in the whole project
 
     // WW saturation_gas_min = 0.00001;
     // WW saturation_liquid_min = 0.00001;
@@ -15203,8 +15208,8 @@ void CRFProcess::Phase_Transition_CO2(CRFProcess* m_pcs, int Step)
 
     Molweight_CO2 = 44.009;   // [g/mol]
     Molweight_H2O = 18.0148;  // [g/mol]
-    Molweight_NaCl = 58.443;  // [g/mol]				//ToDo: provide constants
-                              // once in the whole project
+    Molweight_NaCl = 58.443;  // [g/mol]				//ToDo: provide
+                              // constants once in the whole project
 
     saturation_gas_min = 0.00001;
     saturation_liquid_min = 0.00001;

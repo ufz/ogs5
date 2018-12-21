@@ -891,9 +891,10 @@ void CGLPolyline::SortPointVectorByDistance()
 void CGLPolyline::GetPointOrderByDistance()
 {
     //	std::cout << "CGLPolyline::GetPointOrderByDistance() polyline " <<
-    //getName() << "\n"; 	for (size_t k(0); k<sbuffer.size(); k++) { 		std::cout <<
+    // getName() << "\n"; 	for (size_t k(0); k<sbuffer.size(); k++) {
+    // std::cout <<
     //"\tsbuffer[" << k << "]: " << sbuffer[k] << ", ibuffer[" << k << "]: " <<
-    //ibuffer[k] <<"\n";
+    // ibuffer[k] <<"\n";
     //	}
 
     long number_of_nodes, i, l;
@@ -992,9 +993,9 @@ void CGLPolyline::GetPointOrderByDistance()
             }
         }
     //	std::cout << "CGLPolyline::GetPointOrderByDistance() polyline " <<
-    //getName() << "\n"; 	for (size_t k(0); k<OrderedPoint.size(); k++) {
+    // getName() << "\n"; 	for (size_t k(0); k<OrderedPoint.size(); k++) {
     //		std::cout << "OrderedPoint[" << k << "]: " << OrderedPoint[k] << ",
-    //sbuffer[" << k << "]: " << sbuffer[k] <<
+    // sbuffer[" << k << "]: " << sbuffer[k] <<
     //", ibuffer[" << k << "]: " << ibuffer[k] <<"\n";
     //	}
 }

@@ -588,15 +588,16 @@ void LegacyVtkInterface::WriteVTKDataArraysPETSC(PetscViewer viewer) const
             // handled elswhere
             if (_cellArrayNames[k].compare("VELOCITY") == 0)
             {
-                // kg44 to be done		vtk_file << "VECTORS velocity double " <<
+                // kg44 to be done		vtk_file << "VECTORS velocity double "
+                // <<
                 // "\n"; 		this->WriteELEVelocity(vtk_file); //WW/OK
             }
             // PRINT CHANGING (OR CONSTANT) PERMEABILITY TENSOR?   // JTARON
             // 2010
             else if (_cellArrayNames[k].compare("PERMEABILITY") == 0)
             {
-                /*  kg44 to be done     		vtk_file << "TENSORS permeability
-                   double " << endl; for (long j = 0; j < (long)
+                /*  kg44 to be done     		vtk_file << "TENSORS
+                   permeability double " << endl; for (long j = 0; j < (long)
                    _mesh->ele_vector.size(); j++)
                                         {
                                             MeshLib::CElem* ele =

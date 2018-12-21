@@ -110,7 +110,8 @@ int main(int argc, char* argv[])
     //
     //			const size_t n_pnts (pnts->size());
     //			for (size_t k(0); k<n_pnts; k++) {
-    //				extract_mesh_nodes.writeNearestMeshNodeToPoint (out, pnt_out,
+    //				extract_mesh_nodes.writeNearestMeshNodeToPoint (out,
+    // pnt_out,
     //*((*pnts)[k]));
     //			}
     //			pnt_out << "#STOP" << std::endl;
@@ -133,7 +134,7 @@ int main(int argc, char* argv[])
     //	size_t ply_id (0);
     //	size_t layer(1);
     //	getMeshNodesFromLayerAlongPolyline(mesh, geo, unique_name, ply_id,
-    //layer, mesh_ids); 	writeMeshNodes(mesh, mesh_ids, "MeshIDs.txt",
+    // layer, mesh_ids); 	writeMeshNodes(mesh, mesh_ids, "MeshIDs.txt",
     //"MeshNodesAsPoints.gli", true);
 
     //*** extract surface out of mesh
@@ -147,10 +148,11 @@ int main(int argc, char* argv[])
     //		bool closed ((*plys)[k]->isClosed());
     //		if (!closed)
     //		{
-    //			std::cout << "converting polyline " << k << " to closed polyline" <<
-    //std::endl; 			GEOLIB::Polygon* polygon(NULL);
+    //			std::cout << "converting polyline " << k << " to closed
+    // polyline"
+    //<< std::endl; 			GEOLIB::Polygon* polygon(NULL);
     //			extract_mesh_nodes.getPolygonFromPolyline(*((*plys)[k]), geo,
-    //unique_name, polygon);
+    // unique_name, polygon);
     ////			polylines.push_back (polygon);
     ////			geo->appendPolylineVec (polylines, unique_name);
     //			std::string *polygon_name(new std::string);
@@ -158,7 +160,7 @@ int main(int argc, char* argv[])
     //*polygon_name);
     //			(*polygon_name) += "-Polygon";
     //			geo->getPolylineVecObj(unique_name)->push_back(polygon,
-    //polygon_name);
+    // polygon_name);
     ////			polylines.clear();
     //		}
     //	}
@@ -182,13 +184,13 @@ int main(int argc, char* argv[])
             std::ofstream pnt_out(fname_gli.c_str());
             pnt_out << "#POINTS" << std::endl;
             GEOLIB::Polygon polygon(*((*plys)[k]));
-            //			extract_mesh_nodes.writeMesh2DNodeIDAndArea (out, pnt_out,
-            //polygon);
+            //			extract_mesh_nodes.writeMesh2DNodeIDAndArea (out,
+            // pnt_out, polygon);
             extract_mesh_nodes.writeTopSurfaceMeshNodeIDs(out, pnt_out,
                                                           polygon);
             // write all nodes - not only the surface nodes
             //			extract_mesh_nodes.writeMeshNodeIDs (out, pnt_out,
-            //polygon);
+            // polygon);
             pnt_out << "#STOP" << std::endl;
             out.close();
             pnt_out.close();
@@ -211,7 +213,7 @@ int main(int argc, char* argv[])
     //		}
     //	}
     //	extract_mesh_nodes.writeMesh2DNodeIDAndArea (out, pnt_out,
-    //GEOLIB::Polygon((*((*plys)[bounding_polygon_id]))),
+    // GEOLIB::Polygon((*((*plys)[bounding_polygon_id]))),
     // holes);
     //	for (size_t k(0); k<holes.size(); k++) {
     //		delete holes[k];

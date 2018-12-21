@@ -265,7 +265,8 @@ public:
     /// Adds a stratigraphy to a borehole given a vector of points of length "n"
     /// and a vector of soil names of length "n-1".
     int addStratigraphy(const std::vector<GEOLIB::Point*>& profile,
-                        const std::vector<std::string> soil_names);
+                        const std::vector<std::string>
+                            soil_names);
 
     /// Reads the stratigraphy for a specified station from a file
     static int addStratigraphy(const std::string& path,

@@ -810,8 +810,8 @@ void CFEMesh::ConstructGrid()
         if (elem->GetElementType() == MshElemType::LINE)
             continue;  // line element
         //		thisElem0->GetNodeIndeces(node_index_glb0);
-        //		const vec<long>& node_index_glb0 (thisElem0->GetNodeIndeces()); //
-        //compiler said: unused variable // TF
+        //		const vec<long>& node_index_glb0 (thisElem0->GetNodeIndeces());
+        //// compiler said: unused variable // TF
         elem->GetNeighbors(Neighbors0);
         size_t m0 = elem->GetFacesNumber();
 
@@ -960,7 +960,7 @@ void CFEMesh::constructMeshGrid()
     //#ifndef NDEBUG
     //	clock_t end(clock());
     //	std::cout << "done, took " << (end-start)/(double)(CLOCKS_PER_SEC) << "
-    //s -- " << std::flush; #endif
+    // s -- " << std::flush; #endif
 }
 
 /**************************************************************************
@@ -1479,11 +1479,11 @@ long CFEMesh::GetNODOnPNT(const GEOLIB::Point* const pnt) const
 
     //	const size_t nodes_in_usage(static_cast<size_t> (NodesInUsage()));
     //	double sqr_dist(0.0), distmin(MathLib::sqrDist
-    //(nod_vector[0]->getData(), pnt->getData())); 	size_t number(0); 	for (size_t
-    //i = 1; i < nodes_in_usage; i++)
+    //(nod_vector[0]->getData(), pnt->getData())); 	size_t number(0); 	for
+    //(size_t i = 1; i < nodes_in_usage; i++)
     //	{
     //		sqr_dist = MathLib::sqrDist (nod_vector[i]->getData(),
-    //pnt->getData()); 		if (sqr_dist < distmin)
+    // pnt->getData()); 		if (sqr_dist < distmin)
     //		{
     //			distmin = sqr_dist;
     //			number = i;
@@ -1494,10 +1494,10 @@ long CFEMesh::GetNODOnPNT(const GEOLIB::Point* const pnt) const
     //		double const*const data0(nod_vector[node_idx]->getData());
     //		double const*const data1(nod_vector[number]->getData());
     //		std::cout << "pnt: "<< *pnt << " mesh grid node " <<
-    //nod_vector[node_idx]->GetIndex() << ": "
+    // nod_vector[node_idx]->GetIndex() << ": "
     //			<< data0[0] << " " << data0[1] << " " << data0[2] <<
     //			", mesh grid node (old algorithm) " <<
-    //nod_vector[number]->GetIndex() << ": "
+    // nod_vector[number]->GetIndex() << ": "
     //			<< data1[0] << " " << data1[1] << " " << data1[2] << "\n";
     //		std::cout << "bbx: " << _mesh_grid->getMinPoint() << " x " <<
     //_mesh_grid->getMaxPoint() << "\n"; 		size_t coords[3];
@@ -1505,7 +1505,8 @@ long CFEMesh::GetNODOnPNT(const GEOLIB::Point* const pnt) const
     //		std::cout << "grid coords: " << coords[0] << " " << coords[1] << " "
     //<< coords[2] << "\n"; 		double llf[3], urb[3];
     //		_mesh_grid->getGridCornerPoints(pnt->getData(), llf, urb);
-    //		std::cout << "local bbx: " << llf[0] << " " << llf[1] << " " << llf[2]
+    //		std::cout << "local bbx: " << llf[0] << " " << llf[1] << " " <<
+    // llf[2]
     //<< " x " << urb[0] << " " << urb[1]
     //<< " " << urb[2] << "\n";
     //	}

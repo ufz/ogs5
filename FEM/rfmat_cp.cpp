@@ -458,7 +458,7 @@ ios::pos_type CompProperties::Read(ifstream* rfd_file)
 
                 if (diffusion_model > 0)
                     //		read_help = (double *)
-                    //Malloc(count_of_diffusion_model_values * sizeof(double));
+                    // Malloc(count_of_diffusion_model_values * sizeof(double));
 
                     for (j = 0; j < count_of_diffusion_model_values; j++)
                     {
@@ -518,7 +518,7 @@ ios::pos_type CompProperties::Read(ifstream* rfd_file)
 
                 if (decay_model > 0)
                     //		read_help = (double *)
-                    //Malloc(count_of_decay_model_values * sizeof(double));
+                    // Malloc(count_of_decay_model_values * sizeof(double));
 
                     for (j = 0; j < count_of_decay_model_values; j++)
                         /*
@@ -565,7 +565,7 @@ ios::pos_type CompProperties::Read(ifstream* rfd_file)
 
                 if (isotherm_model > 0)
                     //		read_help = (double *)
-                    //Malloc(count_of_isotherm_model_values * sizeof(double));
+                    // Malloc(count_of_isotherm_model_values * sizeof(double));
 
                     for (j = 0; j < count_of_isotherm_model_values; j++)
                         /*
@@ -992,7 +992,7 @@ double CompProperties::CalcDiffusionCoefficientCP(long index,
 
                 diffusion_average += 1.0 / Dm;
                 //	cout << "debug: " << Dm << " porosity: " <<
-                //GetNodePorosityValue_MT(m_Elem->GetNodeIndex ( i ), 0)
+                // GetNodePorosityValue_MT(m_Elem->GetNodeIndex ( i ), 0)
                 //<< endl;
             }
             Dm = count_nodes /
@@ -1021,7 +1021,7 @@ double CompProperties::CalcDiffusionCoefficientCP(long index,
                                      // porosities & saturations ->
             // Pore diffusion coefficient
             //			cout << " CalcDiffusionCoefficientCP: De: " <<
-            //Dm*porosity*saturation << " saturation " <<
+            // Dm*porosity*saturation << " saturation " <<
             // saturation << " porosity " << endl;
 
             return Dm;
@@ -1084,7 +1084,7 @@ double CompProperties::CalcDiffusionCoefficientCP(long index,
 
                 diffusion_average += 1.0 / Dm;
                 //	cout << "debug: " << Dm << " porosity: " <<
-                //GetNodePorosityValue_MT(m_Elem->GetNodeIndex ( i ), 0)
+                // GetNodePorosityValue_MT(m_Elem->GetNodeIndex ( i ), 0)
                 //<< "\n";
             }
             Dm = count_nodes /
@@ -1113,7 +1113,7 @@ double CompProperties::CalcDiffusionCoefficientCP(long index,
                                      // porosities & saturations ->
             // Pore diffusion coefficient
             //			cout << " CalcDiffusionCoefficientCP: De: " <<
-            //Dm*porosity*saturation << " saturation " <<
+            // Dm*porosity*saturation << " saturation " <<
             // saturation << " porosity " << "\n";
 
             return Dm;
@@ -1613,7 +1613,7 @@ double CompProperties::CalcElementRetardationFactorNew(long index,
         // case 15: /* Input by curve */
         //	 isotherm = 0.0;
         //	 isotherm = GetCurveDerivative((int) isotherm_model_values[0], 0,
-        //fabs(conc), &gueltig); 	 break;
+        // fabs(conc), &gueltig); 	 break;
         default:
             DisplayMsgLn(
                 "Unknown sorption isotherm type. Assuming no sorption");
@@ -1701,7 +1701,7 @@ double CompProperties::CalcElementMeanConcNew(long index, CRFProcess* m_pcs)
     /* calculate mean value */
 
     //	 DisplayMsgLn(" "); DisplayMsg(" val1: ");
-    //DisplayDouble(val1,0,0);DisplayMsg(", val2: ");
+    // DisplayDouble(val1,0,0);DisplayMsg(", val2: ");
     // DisplayDouble(val2,0,0); DisplayMsgLn("");
     val = theta * val1 + (1.0 - theta) * val2;
 

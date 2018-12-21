@@ -50,7 +50,7 @@ double CubicSpline::interpolation(double x) const
         {
             // 07/2010 TF
             //			val = yy[i] + bb[i] * (x - xx[i]) + cc[i] * pow(x -
-            //xx[i], 2.0)
+            // xx[i], 2.0)
             //					+ dd[i] * pow(x - xx[i], 3.0);
             double t(x - xx[i]);
             // employing Horner-Schema in order to save multiplications

@@ -153,8 +153,8 @@ public:
     std::string bacteria_name;
     int bacteria_number;
     std::vector<double> ProductionStoch;  // stochiometry of reaction
-    //    vector <double>	ProductionStoch2; // stochiometry of reaction - short
-    //    version
+    //    vector <double>	ProductionStoch2; // stochiometry of reaction -
+    //    short version
     std::vector<MonodSubstruct*> ProdStochhelp;  // store input values
     double specif_cap;
     // CB Isotope fractionation
@@ -199,7 +199,7 @@ public:
                               interally calculated */
     double Density_NAPL;   /* density of the pure NAPL phase */
     //	double  ConversionFactor;       /* factor to convert concentrations to
-    //mol/kg */
+    // mol/kg */
     // SB speed-up flags
     int typeflag_monod;             /* set to 1 if reaction is monod type */
     int typeflag_exchange;          /* set to 1 if reaction is exchange type */

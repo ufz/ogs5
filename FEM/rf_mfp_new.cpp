@@ -967,7 +967,7 @@ void CFluidProperties::Write(std::ofstream* mfp_file) const
     // TF 11/2011 - used only in read- and write-method
     //	if(heat_capacity_model == 0)
     //		*mfp_file << "  " << heat_capacity_model << " " <<
-    //heat_capacity_fct_name <<
+    // heat_capacity_fct_name <<
     //		"\n";
     if (heat_capacity_model == 1)
         *mfp_file << "  " << heat_capacity_model << " "
@@ -4026,7 +4026,8 @@ double Hash_Table::CalcValue(double* var, const int var_id) const
             {
                 data_0 = hash_table_data[i + j];
                 for (k = table_section_ends[i + j];
-                     k < table_section_ends[i + j + 1]; k++)
+                     k < table_section_ends[i + j + 1];
+                     k++)
                 {
                 }
             }

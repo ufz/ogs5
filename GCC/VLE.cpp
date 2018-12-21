@@ -611,7 +611,7 @@ double VLE::Henry_const_CO2(double T)
     Ps = IF97::Psat(T) * 10.0;
     return A / Tr + B / Tr * pow(Tau, 0.355) + C * pow(Tr, -0.41) * exp(Tau) +
            log(Ps) - log(55.51);  //"-log(55.51)" for unit convert from mole
-                                  //fraction to mol/kg water
+                                  // fraction to mol/kg water
 }
 
 double VLE::Henry_const_H2(double T)
@@ -627,7 +627,7 @@ double VLE::Henry_const_H2(double T)
     Ps = IF97::Psat(T) * 10.0;
     return A / Tr + B / Tr * pow(Tau, 0.355) + C * pow(Tr, -0.41) * exp(Tau) +
            log(Ps) - log(55.51);  //"-log(55.51)" for unit convert from mole
-                                  //fraction to mol/kg water
+                                  // fraction to mol/kg water
 }
 
 void VLE::EoS_PR_H2(double T, double P, double& V, double& Z, double& lnphi)

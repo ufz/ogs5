@@ -1000,14 +1000,14 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
                          // plas strain)
                     in >> permeability_strain_model_value[0];  // threshold vol.
                                                                // strain
-                    in >>
-                        permeability_strain_model_value[1];  // d_fac/d_volStrain
-                                                             // when vol. strain
-                                                             // <= threshold
-                    in >>
-                        permeability_strain_model_value[2];  // d_fac/d_volStrain
-                                                             // when vol. strain
-                                                             // > threshold
+                    in >> permeability_strain_model_value
+                              [1];  // d_fac/d_volStrain
+                                    // when vol. strain
+                                    // <= threshold
+                    in >> permeability_strain_model_value
+                              [2];  // d_fac/d_volStrain
+                                    // when vol. strain
+                                    // > threshold
                     in >> permeability_strain_model_value
                               [3];  // curve numer for dependenc between
                                     // threshold and plas strain
@@ -2602,11 +2602,11 @@ double CMediumProperties::PermeabilitySaturationFunction(
             // TF: the following commented code is a new implementation of JOD
             // with this code we have different results in benchmark
             // H2/LabGasInjec/H2_Permeability_GasPressure
-            //			if (sl > (maximum_saturation[phase] - MKleinsteZahl)) sl =
-            //maximum_saturation[phase]
+            //			if (sl > (maximum_saturation[phase] - MKleinsteZahl)) sl
+            //= maximum_saturation[phase]
             //							- MKleinsteZahl;
-            //			if (sl < (residual_saturation[phase] + MKleinsteZahl)) sl =
-            //residual_saturation[phase]
+            //			if (sl < (residual_saturation[phase] + MKleinsteZahl))
+            // sl = residual_saturation[phase]
             //							+ MKleinsteZahl;
             //
             //			slr = residual_saturation[0];
@@ -2617,8 +2617,8 @@ double CMediumProperties::PermeabilitySaturationFunction(
             //			se = (sl - slr1) / (1 - slr);
             //			//
             //			kr = pow(1.0 - se, 1.0 / 3.0) * pow(1.0 - pow(se, 1.0 /
-            //m), 2.0 * m); 			if (kr < minimum_relative_permeability) 				kr =
-            //minimum_relative_permeability;
+            // m), 2.0 * m); 			if (kr < minimum_relative_permeability)
+            // kr = minimum_relative_permeability;
             break;
         //
         case 6:  // 2-phase BROOKS/COREY --> WETTING
@@ -2663,10 +2663,11 @@ double CMediumProperties::PermeabilitySaturationFunction(
             //				sl = residual_saturation[phase]+ MKleinsteZahl;
             //			//
             //			se = (sl - residual_saturation[1]) / (1. -
-            //residual_saturation[0] - residual_saturation[1]); 			kr = pow(1.0 -
-            //se, 2) * (1.0 - pow(se, (2.0 + saturation_exponent[phase]) 							/
-            //saturation_exponent[phase])); 			kr =
-            //MRange(minimum_relative_permeability,kr,1.);
+            // residual_saturation[0] - residual_saturation[1]); 			kr =
+            // pow(1.0
+            // - se, 2) * (1.0 - pow(se, (2.0 + saturation_exponent[phase])
+            // / saturation_exponent[phase])); 			kr =
+            // MRange(minimum_relative_permeability,kr,1.);
 
             break;
         //
@@ -2839,7 +2840,7 @@ double* CMediumProperties::HeatConductivityTensor(int number)
     for (size_t ii = 0; ii < pcs_vector.size(); ii++)
     {
         //		if (pcs_vector[ii]->pcs_type_name.find("FLOW") != string::npos)
-        //TF
+        // TF
         if (isFlowProcess(pcs_vector[ii]->getProcessType()))
             FLOW = true;
     }
@@ -4142,7 +4143,7 @@ double CMediumProperties::Porosity(long number, double theta)
 
             for (size_t i = 0; i < pcs_vector.size(); i++)
                 //		if ((pcs_vector[i]->pcs_type_name.find("FLOW") !=
-                //string::npos)) {
+                // string::npos)) {
                 if (isFlowProcess(pcs_vector[i]->getProcessType()))
                 {
                     idx = pcs_vector[i]->GetElementValueIndex("POROSITY");
@@ -4167,7 +4168,7 @@ double CMediumProperties::Porosity(long number, double theta)
                 {
                     pcs_temp = pcs_vector[i];
                     //	            if (
-                    //pcs_temp->pcs_type_name.compare("GROUNDWATER_FLOW") == 0
+                    // pcs_temp->pcs_type_name.compare("GROUNDWATER_FLOW") == 0
                     //||
                     //                     pcs_temp->pcs_type_name.compare("LIQUID_FLOW")
                     //                     == 0         ) {
@@ -4324,7 +4325,8 @@ double CMediumProperties::Porosity(CElement* assem)
             for (size_t i = 0; i < pcs_vector.size(); i++)
             {
                 pcs_temp = pcs_vector[i];
-                //			if ((pcs_temp->pcs_type_name.compare("GROUNDWATER_FLOW")
+                //			if
+                //((pcs_temp->pcs_type_name.compare("GROUNDWATER_FLOW")
                 //== 0) || (pcs_temp->pcs_type_name.compare("RICHARDS_FLOW") ==
                 // 0)||(pcs_temp->pcs_type_name.compare("MULTI_PHASE_FLOW") ==
                 // 0))
@@ -4687,7 +4689,7 @@ double* CMediumProperties::PermeabilityTensor(long index)
                 {
                     pcs_tmp = pcs_vector[i];
                     //	                if (
-                    //m_pcs_tmp->pcs_type_name.compare("GROUNDWATER_FLOW") == 0
+                    // m_pcs_tmp->pcs_type_name.compare("GROUNDWATER_FLOW") == 0
                     //||
                     //                                   m_pcs_tmp->pcs_type_name.compare("LIQUID_FLOW")
                     //                                   == 0) TF
@@ -4738,9 +4740,9 @@ double* CMediumProperties::PermeabilityTensor(long index)
                 {
                     pcs_tmp = pcs_vector[i];
                     //	                if (
-                    //m_pcs_tmp->pcs_type_name.compare("GROUNDWATER_FLOW") == 0
-                    //|| 	                                m_pcs_tmp->pcs_type_name.compare("LIQUID_FLOW") == 0)
-                    //TF
+                    // m_pcs_tmp->pcs_type_name.compare("GROUNDWATER_FLOW") == 0
+                    //|| m_pcs_tmp->pcs_type_name.compare("LIQUID_FLOW") == 0)
+                    // TF
                     if (pcs_tmp->getProcessType() ==
                             FiniteElement::GROUNDWATER_FLOW ||
                         pcs_tmp->getProcessType() == FiniteElement::LIQUID_FLOW)
@@ -7446,18 +7448,18 @@ double CMediumProperties::NonlinearFlowFunction(long index, int gp,
        double detjac, *invjac, invjac2d[4];
        double grad_omega[8];
        double grad_h_min = MKleinsteZahl;
-       double xgt[3],ygt[3],zgt[3];				//CMCD Global x,y,z coordinates of
-       traingular element
-       double xt[3],yt[3];							//CMCD Local x,y coordinates of traingular
-       element double pt_element_node[4], ht_element_node[4],
+       double xgt[3],ygt[3],zgt[3];				//CMCD Global x,y,z coordinates
+       of traingular element
+       double xt[3],yt[3];							//CMCD Local x,y coordinates
+       of traingular element double pt_element_node[4], ht_element_node[4],
        zt_element_node[4]; //CMCD Pressure, depth head traingular element double
        dN_dx[3],dN_dy[3], area;				//CMCD Shape function derivates for
        triangles double isotropicgradient,porosity, Re, Lambda, apperture,
        hyd_radius, perm; double linear_q,turbulent_q,linear_grad,
        turbulent_grad, flow_rate, temp; double dircos[6];
        //CMCD 04 2004
-       gp[0]= gp[1] = gp[2] = 0.0;					//Gaus points, triangular interpretation
-       value not relevant
+       gp[0]= gp[1] = gp[2] = 0.0;					//Gaus points, triangular
+       interpretation value not relevant
 
        element_nodes = ElGetElementNodes(index);
        g = gravity_constant;
@@ -7624,11 +7626,11 @@ double CMediumProperties::NonlinearFlowFunction(long index, int gp,
    0		Curve
    1		Constant
    2		Funktion der effektiven Spannung und des Drucks in Elementmitte
-   3		Funktion der effektiven Spannung und des Drucks in Elementmitte ueber
-Kurve 4		Storage as function of effective stress read from curve 5 Storage as
-normal stress in element in stress field defined by KTB stress field. 6
-Storage as normal stress in element in stress field defined by KTB stress field,
-function to increase storage with distance from borehole.
+   3		Funktion der effektiven Spannung und des Drucks in Elementmitte
+ueber Kurve 4		Storage as function of effective stress read from curve 5
+Storage as normal stress in element in stress field defined by KTB stress field.
+6 Storage as normal stress in element in stress field defined by KTB stress
+field, function to increase storage with distance from borehole.
 **************************************************************************/
 double CMediumProperties::StorageFunction(long index, double* gp, double theta)
 {

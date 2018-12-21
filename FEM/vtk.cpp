@@ -520,7 +520,8 @@ bool CVTK::WriteMeshElementConnectivity(std::fstream& fin, bool output_data,
             {
                 ele = msh->ele_vector[i];
                 for (size_t j = 0;
-                     j < msh->ele_vector[i]->GetNodesNumber(false); j++)
+                     j < msh->ele_vector[i]->GetNodesNumber(false);
+                     j++)
                     write_value_binary<long>(fin, ele->GetNodeIndex(j));
             }
         }

@@ -261,13 +261,13 @@ void gatherK(const CommunicationTable& ct, Math_Group::SparseMatrixDOK& globalK)
         vec_sendbuf[i].resize(neighbor.overlapping_edges.size());
         vec_recvbuf[i].resize(neighbor.overlapping_edges.size());
         //		std::cout << "rank= " << myrank << ": neighbor rank " <<
-        //neighbor.rank << "\n";
+        // neighbor.rank << "\n";
         for (size_t j = 0; j < neighbor.overlapping_edges.size(); j++)
         {
             const Edge& edge = neighbor.overlapping_edges[j];
             vec_sendbuf[i][j] = globalK(edge.first, edge.second);
             //			std::cout << "rank= " << myrank << ": neighbor rank " <<
-            //neighbor.rank << "- edge (" <<
+            // neighbor.rank << "- edge (" <<
             // edge.first
             //<< "," << edge.second << ")\n";
         }
@@ -280,7 +280,7 @@ void gatherK(const CommunicationTable& ct, Math_Group::SparseMatrixDOK& globalK)
         MPI_Isend(&vec_sendbuf[i][0], vec_sendbuf[i].size(), MPI_DOUBLE,
                   neighbor_rank, 0, MPI_COMM_WORLD, &vec_req[i]);
         //		std::cout << "rank= " << myrank << ": sending " <<
-        //vec_sendbuf[i].size() << " data to rank " <<
+        // vec_sendbuf[i].size() << " data to rank " <<
         // neighbor_rank << "\n";
     }
 
@@ -292,7 +292,7 @@ void gatherK(const CommunicationTable& ct, Math_Group::SparseMatrixDOK& globalK)
         MPI_Irecv(&vec_recvbuf[i][0], vec_recvbuf[i].size(), MPI_DOUBLE,
                   neighbor_rank, 0, MPI_COMM_WORLD, &vec_req[i]);
         //		std::cout << "rank= " << myrank << ": receiving " <<
-        //vec_recvbuf[i].size() << " data from rank " <<
+        // vec_recvbuf[i].size() << " data from rank " <<
         // neighbor_rank << "\n";
     }
 
@@ -323,9 +323,10 @@ void gatherK(const CommunicationTable& ct, Math_Group::SparseMatrixDOK& globalK)
     //		}
     //
     //		for (int i=0; i<vec_recvbuf.size(); i++) {
-    //			std::cout << "rank= " << myrank << ": neighbor rank " << i << " -
-    //"; 			for (size_t j=0; j<vec_recvbuf[i].size(); j++) { 				std::cout <<
-    //vec_recvbuf[i][j] << " ";
+    //			std::cout << "rank= " << myrank << ": neighbor rank " << i << "
+    //-
+    //"; 			for (size_t j=0; j<vec_recvbuf[i].size(); j++) {
+    // std::cout << vec_recvbuf[i][j] << " ";
     //			}
     //			std::cout << "\n";
     //		}
@@ -333,7 +334,7 @@ void gatherK(const CommunicationTable& ct, Math_Group::SparseMatrixDOK& globalK)
     //		std::stringstream temp_in;
     //		globalK.Write(temp_in);
     //		std::cout << "rank= " << myrank << ": K is updated. K =\n" <<
-    //temp_in.str();
+    // temp_in.str();
     //
     //		if (myrank<n_ranks-1) {
     //			MPI_Send(&done, 1, MPI_INT, myrank+1, 0, MPI_COMM_WORLD);

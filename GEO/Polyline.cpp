@@ -206,7 +206,8 @@ Polyline* Polyline::constructPolylineFromSegments(
         bool ply_found(false);
         prox *= prox;  // square distance once to save time later
         for (std::vector<Polyline*>::iterator it = local_ply_vec.begin();
-             it != local_ply_vec.end(); ++it)
+             it != local_ply_vec.end();
+             ++it)
         {
             if (pnt_vec == (*it)->getPointsVec())
             {

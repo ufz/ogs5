@@ -1483,18 +1483,23 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs,
                     nodes_vector.clear();
 
                     //					m_msh->GetNODOnSFC(m_surface,
-                    //nodes_vector); #ifndef NDEBUG 					GEOLIB::GEOObjects const&
-                    //geo_obj(* m_msh->getGEOObjects()); 					std::string const&
-                    //geo_project_name (* m_msh->getProjectName()); 					std::string
-                    //sfc_name;
+                    // nodes_vector); #ifndef NDEBUG
+                    // GEOLIB::GEOObjects const& geo_obj(*
+                    // m_msh->getGEOObjects()); std::string const&
+                    // geo_project_name (* m_msh->getProjectName());
+                    // std::string sfc_name;
                     //					geo_obj.getSurfaceVecObj(geo_project_name)->getNameOfElement(sfc,
-                    //sfc_name); 					std::string debug_fname("MeshNodesOld-BC-" +
-                    //sfc_name + ".gli"); 					std::ofstream debug_out
-                    //(debug_fname.c_str()); 					debug_out << "#POINTS" << "\n"; 					for
-                    //(size_t k(0); k<nodes_vector.size(); k++) { 						debug_out << k
+                    // sfc_name); 					std::string
+                    // debug_fname("MeshNodesOld-BC-" + sfc_name + ".gli");
+                    // std::ofstream debug_out (debug_fname.c_str());
+                    // debug_out << "#POINTS" << "\n"; 					for
+                    //(size_t k(0); k<nodes_vector.size(); k++) {
+                    // debug_out << k
                     //<< " " <<
                     //							GEOLIB::Point((m_msh->getNodeVector())[nodes_vector[k]]->getData())
-                    //<< 							" $NAME " << nodes_vector[k] << "\n";
+                    //<< 							" $NAME " << nodes_vector[k]
+                    //<<
+                    //"\n";
                     //					}
                     //					debug_out << "#STOP" << "\n";
                     //					debug_out.close();
@@ -1531,8 +1536,8 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs,
                     //					nodes_vector.clear();
                     for (size_t k(0); k < msh_nod_vec.size(); k++)
                     {
-                        //						std::cout << "\t" << k << "\t" <<
-                        //nodes_vector_old[k] << "\t" <<
+                        //						std::cout << "\t" << k << "\t"
+                        //<< nodes_vector_old[k] << "\t" <<
                         // msh_nod_vec[k]
                         //<<
                         //"\n";
@@ -1715,7 +1720,8 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs,
             //					m_node_value->msh_node_number = nodes_vector[i]
             //							+ ShiftInNodeVector; //nodes[i];
             //					m_node_value->geo_node_number = nodes_vector[i];
-            ////nodes[i]; 					m_node_value->node_value = bc->geo_node_value;
+            ////nodes[i]; 					m_node_value->node_value =
+            /// bc->geo_node_value;
             //					m_node_value->pcs_pv_name = pcs_pv_name; //YD/WW
             //					m_node_value->CurveIndex = bc->getCurveIndex();
             //					pcs->bc_node.push_back(bc); //WW

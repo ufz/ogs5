@@ -249,7 +249,7 @@ void testOctTree(MeshLib::CFEMesh const* const mesh,
     MeshLib::CNode min(0, nodes_oct_tree[0]->getData()),
         max(1, nodes_oct_tree[0]->getData());
     //	GEOLIB::Point min(nodes_oct_tree[0]->getData()),
-    //max(nodes_oct_tree[0]->getData());
+    // max(nodes_oct_tree[0]->getData());
     // determine bounding box
     for (size_t k(0); k < n_nodes_oct_tree; k++)
     {
@@ -500,12 +500,13 @@ int main(int argc, char* argv[])
     testMeshGridAlgorithm(mesh, pnts_for_search, idx_found_nodes_mesh_grid_alg);
 
     //	std::cout << "compare results of linear algorithm with MeshGrid ... " <<
-    //std::flush; 	for (size_t k(0); k<idx_found_nodes_mesh_grid_alg.size(); k++)
-    //{ 		if (idx_found_nodes_mesh_grid_alg[k] != idx_found_nodes_linear_alg[k]) {
-    //			std::cout << std::endl << "point: " << *pnts_for_search[k] << " node
-    //found within oct_tree: "
-    //				<<  *(nodes[idx_found_nodes_mesh_grid_alg[k]]) << ", node found
-    //with linear algorithm "
+    // std::flush; 	for (size_t k(0); k<idx_found_nodes_mesh_grid_alg.size();
+    // k++) { 		if (idx_found_nodes_mesh_grid_alg[k] !=
+    // idx_found_nodes_linear_alg[k]) { 			std::cout << std::endl << "point:
+    // "
+    // << *pnts_for_search[k] << " node found within oct_tree: "
+    //				<<  *(nodes[idx_found_nodes_mesh_grid_alg[k]]) << ", node
+    // found with linear algorithm "
     //				<<  *(nodes[idx_found_nodes_linear_alg[k]]);
     //		}
     //	}
@@ -517,12 +518,13 @@ int main(int argc, char* argv[])
 
     // *** compare results
     //	std::cout << "compare results of linear algorithm with OctTree ... " <<
-    //std::flush; 	for (size_t k(0); k<idx_found_nodes_oct_tree.size(); k++) { 		if
-    //(idx_found_nodes_oct_tree[k] != idx_found_nodes_linear_alg[k]) { 			std::cout
+    // std::flush; 	for (size_t k(0); k<idx_found_nodes_oct_tree.size(); k++) {
+    // if (idx_found_nodes_oct_tree[k] != idx_found_nodes_linear_alg[k]) {
+    // std::cout
     //<< std::endl << "point: " << *pnts_for_search[k] << " node found within
-    //oct_tree: "
-    //				<<  *(nodes[idx_found_nodes_oct_tree[k]]) << ", node found with
-    //linear algorithm "
+    // oct_tree: "
+    //				<<  *(nodes[idx_found_nodes_oct_tree[k]]) << ", node found
+    // with linear algorithm "
     //				<<  *(nodes[idx_found_nodes_linear_alg[k]]);
     //		}
     //	}

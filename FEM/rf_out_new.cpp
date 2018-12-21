@@ -185,7 +185,8 @@ bool OUTRead(const std::string& file_base_name,
 
             //			char number_char[3]; //OK4709
             //			sprintf(number_char, "%i", (int) out_vector.size() - 1);
-            ////OK4709 			out->ID = number_char; //OK4709 			out->setID
+            ////OK4709 			out->ID = number_char; //OK4709
+            /// out->setID
             //(out_vector.size() - 1);
 
             out_file.seekg(position, ios::beg);
@@ -333,10 +334,11 @@ void OUTData(double time_current, int time_step_number, bool force_output)
             || m_out->dat_type_name.compare("CSV") == 0)
         {
             //			m_out->matlab_delim = " ";
-            //			if (m_out->dat_type_name.compare("MATLAB") == 0) // JT, just
-            //for commenting header for matlab 			if
+            //			if (m_out->dat_type_name.compare("MATLAB") == 0) // JT,
+            // just for commenting header for matlab 			if
             //(m_out->dat_type_name.compare("GNUPLOT") == 0) // JOD, just for
-            //commenting header for gnupl 				m_out->matlab_delim = "%";
+            // commenting header for gnupl 				m_out->matlab_delim =
+            // "%";
 
             switch (m_out->getGeoType())
             {
@@ -456,7 +458,8 @@ void OUTData(double time_current, int time_step_number, bool force_output)
                     cout << "Data output: Surface profile"
                          << "\n";
                     //..............................................................
-                    //				if (m_out->_dis_type_name.compare("AVERAGE") == 0)
+                    //				if (m_out->_dis_type_name.compare("AVERAGE")
+                    //== 0)
                     //{
                     if (m_out->getProcessDistributionType() ==
                         FiniteElement::AVERAGE)
@@ -512,9 +515,12 @@ void OUTData(double time_current, int time_step_number, bool force_output)
                     //					OutputBySteps = false;
                     //				} else {
                     //					for (j = 0; j < no_times; j++) {
-                    //						if ((time_current > m_out->time_vector[j]) ||
-                    //fabs( 								time_current - m_out->time_vector[j])
-                    //								<MKleinsteZahl) {
+                    //						if ((time_current >
+                    // m_out->time_vector[j])
+                    //|| fabs( 								time_current -
+                    // m_out->time_vector[j])
+                    // <MKleinsteZahl)
+                    // {
                     //							m_out->NODWriteLAYDataTEC(j);
                     //							m_out->time_vector.erase(m_out->time_vector.begin()
                     //									+ j);
