@@ -85,6 +85,17 @@ Benchmark(AUTHOR WW
 )
 
 Benchmark(AUTHOR WW
+	PATH HM/excavation/BoreholeExcavation/borehole_excav
+	CONFIG FEM
+	NUM_PROCESSORS 1
+	RUNTIME 40
+	OUTPUT_FILES
+		borehole_excav_ply_horizon_t2.tec
+		borehole_excav_ply_vertikal_t3.tec
+)
+
+
+Benchmark(AUTHOR WW
 	PATH TH2M/H2M_TEP/w_exp
 	CONFIG FEM
 	NUM_PROCESSORS 1
