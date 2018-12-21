@@ -1113,8 +1113,8 @@ void CSourceTerm::Write(std::fstream* st_file)
 ////		dis_type = 1;
 ////////	if (dis_type_name.compare("CONSTANT_GEO") == 0)
 ////////		dis_type = 12; //SB flux is distributed along polyline. To
-///do. 4.10.06 /	if (this->getProcessDistributionType() == LINEAR) /
-///dis_type = 2; /	if (this->getProcessDistributionType() == CONSTANT_NEUMANN)
+/// do. 4.10.06 /	if (this->getProcessDistributionType() == LINEAR) /
+/// dis_type = 2; /	if (this->getProcessDistributionType() == CONSTANT_NEUMANN)
 ////		dis_type = 3;
 ////	if (this->getProcessDistributionType() == LINEAR_NEUMANN)
 ////		dis_type = 4;
@@ -1471,7 +1471,7 @@ double AreaProjection(CEdge* edge,
 {
     double area_projection(0);
     //	const double epsilon (1.0e-8); //tolerance to decide whether projection
-    //is used
+    // is used
     // compute edge normal vector
     double edge_normal[3];  // edge integration is 2 dimensional
     double elemNormalVector[3];
@@ -1960,7 +1960,8 @@ void CSourceTerm::FaceIntegration(CRFProcess* pcs,
     {
         k = nodes_on_sfc[i];
         for (j = 0;
-             j < (long)msh->nod_vector[k]->getConnectedElementIDs().size(); j++)
+             j < (long)msh->nod_vector[k]->getConnectedElementIDs().size();
+             j++)
         {
             l = msh->nod_vector[k]->getConnectedElementIDs()[j];
             if (msh->ele_vector[l]->selected == 0)
@@ -2571,7 +2572,7 @@ void GetCouplingNODValueNewton(double& value, CSourceTerm* m_st,
         cnodev->msh_node_number, cnodev->msh_node_number_conditional, gamma);
 
     /////   relative coupling interface permeability (calculate ALWAYS
-    ///implicitly)
+    /// implicitly)
     if (h_this_shifted > h_cond)
     {  // flow direction from the overland compartment
         relPerm = m_st->GetRelativeInterfacePermeability(
@@ -2616,7 +2617,8 @@ void GetCouplingNODValueNewton(double& value, CSourceTerm* m_st,
                 z_cond;
             h_this_averaged = 0;
             for (long i = 0;
-                 i < (long)cnodev->msh_node_numbers_averaging.size(); i++)
+                 i < (long)cnodev->msh_node_numbers_averaging.size();
+                 i++)
                 h_this_averaged +=
                     cnodev->msh_node_weights_averaging[i] *
                     (m_pcs_this->GetNodeValue(
@@ -2956,7 +2958,7 @@ void GetCouplingNODValueMixed(double& value, CSourceTerm* m_st,
 //		//q = (RiverConductance * HRiver)   -  (RiverConductance * HAquifer)
 //		value = RiverConductance * paraA;
 //		MXInc(cnodev->msh_node_number, cnodev->msh_node_number,
-//RiverConductance);
+// RiverConductance);
 //	}
 //	if (h < paraD) { //HAquiver < BRiverBed
 //		//q = (RiverConductance * HRiver)   - (RiverConductance * BRiverBed)
@@ -3709,7 +3711,7 @@ void CSourceTermGroup::SetPolylineNodeVectorConditional(
                 pcs_type_name == "MULTI_PHASE_FLOW")
             {
                 //				m_msh_cond->GetNODOnPLY(m_ply,
-                //ply_nod_vector_cond);
+                // ply_nod_vector_cond);
                 m_msh_cond->GetNODOnPLY(
                     static_cast<const GEOLIB::Polyline*>(st->getGeoObj()),
                     ply_nod_vector_cond);
@@ -3725,7 +3727,7 @@ void CSourceTermGroup::SetPolylineNodeVectorConditional(
             {
                 number_of_nodes = ply_nod_vector.size();
                 //				m_msh_cond->GetNODOnPLY(m_ply,
-                //ply_nod_vector_cond);
+                // ply_nod_vector_cond);
                 m_msh_cond->GetNODOnPLY(
                     static_cast<const GEOLIB::Polyline*>(st->getGeoObj()),
                     ply_nod_vector_cond);
@@ -4119,7 +4121,7 @@ void CSourceTermGroup::SetSurfaceNodeValueVector(
     //					/ (double) number_of_nodes;
 
     //	if (st->dis_type == 2 || st->dis_type == 4) { // Piecewise linear
-    //distributed, polygon-wise WW
+    // distributed, polygon-wise WW
     if (st->getProcessDistributionType() == FiniteElement::LINEAR ||
         st->getProcessDistributionType() == FiniteElement::LINEAR_NEUMANN)
     {
@@ -4323,7 +4325,7 @@ void CSourceTerm::SetNodeValues(const std::vector<long>& nodes,
         //			m_nod_val->node_parameterE = node_value_vectorE[i];
         //		}
         //		if (dis_type == 6 || dis_type == 8 || dis_type == 9) // critical
-        //depth, normal depth, analytical
+        // depth, normal depth, analytical
         if (getProcessDistributionType() == FiniteElement::CRITICALDEPTH ||
             getProcessDistributionType() == FiniteElement::NORMALDEPTH ||
             getProcessDistributionType() == FiniteElement::ANALYTICAL)
@@ -4571,7 +4573,8 @@ std::string CSourceTerm::assignPrecipitationDirectlyOnTopSurfaceNodes(
     if (m_pcs->st_node.size() > 0)
     {
         for (std::size_t i = m_pcs->number_of_steady_st_nodes;
-             i < m_pcs->st_node.size(); i++)
+             i < m_pcs->st_node.size();
+             i++)
         {
             delete m_pcs->st_node_value[i];
             // m_pcs->st_node contains only pointers to CSourceTerm (held by
@@ -4864,7 +4867,7 @@ double CSourceTerm::GetAnalyticalSolution(long location)
                 tflux_area += (flux_area / n);
             }
             node_area = tvol * 2.;  //* 2 because the diffusion is in two
-                                    //direction perpendicular to the fracture
+                                    // direction perpendicular to the fracture
             mass_solute_present = tflux_area * tvol * value;
         }
         // Area for polylines
@@ -5131,7 +5134,8 @@ void GetCouplingFieldVariables(CRFProcess* m_pcs_this, CRFProcess* m_pcs_cond,
                 *z_cond;  // shift overland / groundwater node to soil column
             *h_averaged = 0;
             for (long i = 0;
-                 i < (long)cnodev->msh_node_numbers_averaging.size(); i++)
+                 i < (long)cnodev->msh_node_numbers_averaging.size();
+                 i++)
                 *h_averaged +=
                     cnodev->msh_node_weights_averaging[i] *
                     (m_pcs_this->GetNodeValue(

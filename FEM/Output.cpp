@@ -416,7 +416,7 @@ ios::pos_type COutput::Read(std::ifstream& in_str,
                 else
                     time_vector.push_back(strtod(line_string.data(), NULL));
                 //					rwpt_time_vector.push_back(strtod(line_string.data(),
-                //NULL));
+                // NULL));
                 in_str.ignore(MAX_ZEILE, '\n');
             }
             continue;
@@ -874,7 +874,7 @@ void COutput::NODWriteDOMDataTEC()
         //      string tec_file_name = file_base_name + "_" + "domain" + "_tet";
         //
         //#if defined(USE_MPI) || defined(USE_MPI_PARPROC) ||
-        //defined(USE_MPI_REGSOIL)
+        // defined(USE_MPI_REGSOIL)
         //      sprintf(tf_name, "%d", myrank);
         //      tec_file_name += "_" + string(tf_name);
         //#endif
@@ -1243,7 +1243,8 @@ void COutput::WriteTECNodeData(fstream& tec_file)
                     {
                         timelevel = 0;
                         for (size_t m = 0;
-                             m < m_pcs->nod_val_name_vector.size(); m++)
+                             m < m_pcs->nod_val_name_vector.size();
+                             m++)
                             if (m_pcs->nod_val_name_vector[m].compare(
                                     nod_value_name) == 0)
                             {
@@ -1883,7 +1884,7 @@ double COutput::NODWritePLYDataTEC(int number)
             }
             // WW
             //			double old_val_n = m_pcs->GetNodeValue(old_gnode,
-            //NodeIndex[k]);
+            // NodeIndex[k]);
             if (_nod_value_vector[k].find("DELTA") == 0)  // JOD 2014-11-10
                 val_n = m_pcs->GetNodeValue(gnode, 1) -
                         m_pcs->GetNodeValue(gnode, NodeIndex[k]);
@@ -1967,7 +1968,7 @@ void COutput::NODWritePNTDataTEC(double time_current, int time_step_number)
     CRFProcess* dm_pcs = NULL;
     for (size_t i = 0; i < pcs_vector.size(); i++)
         //		if (pcs_vector[i]->pcs_type_name.find("DEFORMATION") !=
-        //string::npos) { TF
+        // string::npos) { TF
         if (isDeformationProcess(pcs_vector[i]->getProcessType()))
         {
             dm_pcs = pcs_vector[i];
@@ -2087,7 +2088,7 @@ void COutput::NODWritePNTDataTEC(double time_current, int time_step_number)
             else
                 tec_file << " ZONE T=\"POINT=" << geo_name << "\""
                          << "\n";  //, I=" << anz_zeitschritte << ", J=1, K=1,
-                                   //F=POINT" << "\n";
+                                   // F=POINT" << "\n";
         }
     }
 
@@ -2141,8 +2142,9 @@ void COutput::NODWritePNTDataTEC(double time_current, int time_step_number)
             for (size_t l = 0; l < pcs_vector.size(); l++)
             {
                 m_pcs = pcs_vector[l];
-                //				if (m_pcs->pcs_type_name.compare("MASS_TRANSPORT") ==
-                //0) { TF
+                //				if
+                //(m_pcs->pcs_type_name.compare("MASS_TRANSPORT")
+                //== 0) { TF
                 if (m_pcs->getProcessType() == FiniteElement::MASS_TRANSPORT)
                 {
                     timelevel = 0;
@@ -2151,8 +2153,8 @@ void COutput::NODWritePNTDataTEC(double time_current, int time_step_number)
                         if (m_pcs->nod_val_name_vector[m].compare(
                                 nod_value_name) == 0)
                         {
-                            //							m_pcs_out = PCSGet(pcs_type_name,
-                            //nod_value_name);
+                            //							m_pcs_out =
+                            // PCSGet(pcs_type_name, nod_value_name);
                             m_pcs_out = PCSGet(FiniteElement::MASS_TRANSPORT,
                                                nod_value_name);
                             if (timelevel == 1)
@@ -2949,7 +2951,7 @@ void COutput::CalcELEFluxes()
             //		CGLPolyline* ply = GEOGetPLYByName(geo_name);
             //		if (!ply)
             //			std::cout << "Warning in COutput::CalcELEFluxes - no GEO
-            //data" << "\n";
+            // data" << "\n";
 
             // BG 04/2011: ELEWritePLY_TEC does not work for MASS_TRANSPORT
             // because there is no flux considered
@@ -3628,7 +3630,7 @@ void COutput::PCONWriteDOMDataTEC()
         //      string tec_file_name = file_base_name + "_" + "domain" + "_tet";
         //
         //#if defined(USE_MPI) || defined(USE_MPI_PARPROC) ||
-        //defined(USE_MPI_REGSOIL)
+        // defined(USE_MPI_REGSOIL)
         //      sprintf(tf_name, "%d", myrank);
         //      tec_file_name += "_" + string(tf_name);
         //#endif

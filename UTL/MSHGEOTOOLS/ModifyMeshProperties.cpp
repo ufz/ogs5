@@ -106,7 +106,7 @@ void ModifyMeshProperties::setMaterial(const GEOLIB::Polygon& polygon,
         //		size_t k;
         //		for (k = 0; k<nodes_indices.Size(); k++) {
         //			if (!
-        //rot_polygon.isPntInPolygon(*(mesh_nodes_as_points[nodes_indices[k]])))
+        // rot_polygon.isPntInPolygon(*(mesh_nodes_as_points[nodes_indices[k]])))
         //{ 				break;
         //			}
         //		}
@@ -136,8 +136,8 @@ void ModifyMeshProperties::setMaterial(const GEOLIB::Polygon& polygon,
         center[1] /= nodes_indices.Size();
         //		center[2] /= nodes_indices.Size();
 
-        //		std::cout << "center of element " << j << ": " << center[0] << ",
-        //" << center[1] << ", " << center[2] <<
+        //		std::cout << "center of element " << j << ": " << center[0] <<
+        //", " << center[1] << ", " << center[2] <<
         // std::endl;
 
         if (rot_polygon.isPntInPolygon(center[0], center[1], center[2]))

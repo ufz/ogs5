@@ -1983,8 +1983,9 @@ double CFiniteElementStd::CalCoefMassPSGLOBAL(int dof_index)
             variables[1] = T;
             val =
                 poro * (Sw)*FluidProp->drhodP(variables) / FluidProp->Density();
-            //		cout << FluidProp->fluid_name << " Pressure: " << P << " Temp:
-            //" << ": drhodP: " << FluidProp->drhodP(P,T) << " density: " <<
+            //		cout << FluidProp->fluid_name << " Pressure: " << P << "
+            // Temp: " << ": drhodP: " << FluidProp->drhodP(P,T) << " density: "
+            //<<
             // FluidProp->Density() << "\n";
             break;
         case 1:  // Snw in the wetting equation
@@ -2150,8 +2151,8 @@ double CFiniteElementStd::CalCoefContent()
             }  // SB, BG
             dS = porval1 * nodeval1 -
                  porval0 * nodeval0;  // 1/dt accounted for in assemble function
-            //		if(Index == 195) cout << val << "Sat_old = " << nodeval0 << ",
-            //Sa_new: "<< nodeval1<< ", dS: " << dS
+            //		if(Index == 195) cout << val << "Sat_old = " << nodeval0 <<
+            //", Sa_new: "<< nodeval1<< ", dS: " << dS
             //<< "\n";
             val = dS;
             break;
@@ -3103,13 +3104,13 @@ void CFiniteElementStd::CalCoefLaplacePSGLOBAL(bool Gravity, int dof_index)
                 // Doing Upwind elements for saturation by divergent of
                 // pressure. Pnw upwind
                 //				int WhichNode =
-                //UpwindElement((int)(pcs->m_num->ele_upwind_method), 1); // TF:
-                //set, but never used 				Snw = NodalVal_SatNW[WhichNode]; // TF:
-                //set, but never used
+                // UpwindElement((int)(pcs->m_num->ele_upwind_method), 1); //
+                // TF: set, but never used 				Snw =
+                // NodalVal_SatNW[WhichNode]; // TF: set, but never used
                 //			}
                 //			else
-                //				Snw = interpolate(NodalVal_SatNW); // TF: set, but
-                //never used
+                //				Snw = interpolate(NodalVal_SatNW); // TF: set,
+                // but never used
 
                 CMediumProperties* m_mmp = NULL;
                 CElem* thisEle = pcs->m_msh->ele_vector[index];
@@ -3142,17 +3143,18 @@ void CFiniteElementStd::CalCoefLaplacePSGLOBAL(bool Gravity, int dof_index)
             // Doing Upwind elements for saturation by divergent of pressure.
             // Pnw upwind
             //			int WhichNode =
-            //UpwindElement((int)(pcs->m_num->ele_upwind_method), 1); // TF:
-            //set, but never used 			Snw = NodalVal_SatNW[WhichNode]; // TF: set,
-            //but never used
+            // UpwindElement((int)(pcs->m_num->ele_upwind_method), 1); // TF:
+            // set, but never used 			Snw = NodalVal_SatNW[WhichNode]; //
+            // TF: set, but never used
             //		}
             //		else
             //			Snw = interpolate(NodalVal_SatNW); // TF: set, but never
-            //used
+            // used
 
             //		CElem* thisEle = pcs->m_msh->ele_vector[index]; // TF: set,
-            //but never used 		int matgrp = thisEle->GetPatchIndex(); // TF: set,
-            //but never used 		CMediumProperties* m_mmp = mmp_vector[matgrp];
+            // but never used 		int matgrp = thisEle->GetPatchIndex(); //
+            // TF: set, but never used 		CMediumProperties* m_mmp =
+            // mmp_vector[matgrp];
             k_rel = MediaProp->PermeabilitySaturationFunction(Sw, 1);
             mat_fac = k_rel / GasProp->Viscosity();
 
@@ -3618,8 +3620,10 @@ double CFiniteElementStd::CalCoefAdvection()
                 val = FluidProp->SpecificHeatCapacity() * FluidProp->Density();
             break;
         case EPT_MASS_TRANSPORT:  // Mass transport //SB4200
-            val = 1.0 * time_unit_factor;  //*MediaProp->Porosity(Index,pcs->m_num->ls_theta);
-                                           //// Porosity;
+            val =
+                1.0 *
+                time_unit_factor;  //*MediaProp->Porosity(Index,pcs->m_num->ls_theta);
+                                   //// Porosity;
             break;
         case EPT_OVERLAND_FLOW:  // Liquid flow
             val = 1.0;
@@ -7525,14 +7529,14 @@ void CFiniteElementStd::AssembleRHS(int dimension)
             PcsType = EPT_LIQUID_FLOW;
             break;
             //		} else if (m_pcs->pcs_type_name.find("RICHARDS_FLOW") !=
-            //string::npos) { // TF
+            // string::npos) { // TF
         }
         else if (m_pcs->getProcessType() == FiniteElement::RICHARDS_FLOW)
         {
             PcsType = EPT_RICHARDS_FLOW;
             break;
             //		} else if (m_pcs->pcs_type_name.find("GROUNDWATER_FLOW") //
-            //TF
+            // TF
         }
         else if (m_pcs->getProcessType() == FiniteElement::GROUNDWATER_FLOW)
         {
@@ -7544,7 +7548,7 @@ void CFiniteElementStd::AssembleRHS(int dimension)
     pcs = m_pcs;
     int nidx1;
     //	if (!(m_pcs->pcs_type_name.find("GROUNDWATER_FLOW") != string::npos)) //
-    //TF
+    // TF
     if (!(m_pcs->getProcessType() == GROUNDWATER_FLOW))
         nidx1 = m_pcs->GetNodeValueIndex("PRESSURE1") + 1;
     else  // then, this is GROUNDWATER_FLOW
@@ -7593,8 +7597,8 @@ void CFiniteElementStd::AssembleRHS(int dimension)
             rho = 1.0;
         else
             rho *= gravity_constant;
-        //			rho *= gravity_constant/FluidProp->Viscosity();		// This seems
-        //to divide viscosity two times. Thus, wrong.
+        //			rho *= gravity_constant/FluidProp->Viscosity();		// This
+        // seems to divide viscosity two times. Thus, wrong.
 
         fktG *= rho;
         for (int i = 0; i < nnodes; i++)
@@ -7628,7 +7632,8 @@ void CFiniteElementStd::AssembleRHS(int dimension)
     for (size_t i = 0; i < pcs_vector.size(); ++i)
     {
         m_pcs = pcs_vector[i];
-        //		if (m_pcs->pcs_type_name.find("GROUNDWATER_FLOW") != string::npos)
+        //		if (m_pcs->pcs_type_name.find("GROUNDWATER_FLOW") !=
+        // string::npos)
         //// TF
         if (m_pcs->getProcessType() == GROUNDWATER_FLOW)
         {
@@ -8595,8 +8600,8 @@ void CFiniteElementStd::AssembleMixedHyperbolicParabolicEquation()
         (*AuxMatrix) *= fac_storage;
         *StiffMatrix += *AuxMatrix;
         // Content matrix
-        //*AuxMatrix      = *Content;		//SB, BG; Korrektur Stofftransport bei
-        //Mehrphasenströmung
+        //*AuxMatrix      = *Content;		//SB, BG; Korrektur Stofftransport
+        // bei Mehrphasenströmung
         //(*AuxMatrix)   *= fac_content;
         //*StiffMatrix   += *AuxMatrix; // SB, BG
 
@@ -8693,7 +8698,7 @@ void CFiniteElementStd::AssembleMixedHyperbolicParabolicEquation()
           cout << " initial concentrations" << "\n";
           for (i=0;i<nnodes; i++) cout << "| " << NodalVal1[i] << " |" << "\n";
           //	cout << " RHS vector: " << "\n";
-          //	for (i=0;i<nnodes; i++) cout << "| " <<  (double)(*RHS)(i+LocalShift)
+          //	for (i=0;i<nnodes; i++) cout << "| " <<    (double)(*RHS)(i+LocalShift)
           << " |" << "\n";
           }
         */

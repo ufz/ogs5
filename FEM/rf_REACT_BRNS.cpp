@@ -499,7 +499,7 @@ void REACT_BRNS::RUN(double time_step)
         // Run BRNS;
         //	 solverTime=0.0;
         //	 if (pos_x== 0 && pos_y==0) { porosity=8; pos_z=99.9;
-        //waterSaturation=3.3; solverTime=7.0; cout << "solverTime
+        // waterSaturation=3.3; solverTime=7.0; cout << "solverTime
         // passed to BRNS: " << solverTime << endl; }
 
 #ifdef USE_MPI_BRNS
@@ -596,7 +596,8 @@ void REACT_BRNS::RUN(double time_step)
 #else
     timeSpentInBrnsCoupling += (double)(clock() - startTime) / CLOCKS_PER_SEC;
 
-//			cout << "solverTime=" << solverTime << "total "<< timeSpentInBrnsSolver
+//			cout << "solverTime=" << solverTime << "total "<<
+// timeSpentInBrnsSolver
 //<< endl;
 #endif
 
@@ -726,7 +727,8 @@ int REACT_BRNS::GetFlowType_MT(void)
             m_flow_pcs = m_pcs;
             return 3;
         }
-        //		else if ( m_pcs->pcs_type_name.compare ( "TWO_PHASE_FLOW" ) ==0 )
+        //		else if ( m_pcs->pcs_type_name.compare ( "TWO_PHASE_FLOW" ) ==0
+        //)
         //{
         else if (m_pcs->getProcessType() == FiniteElement::TWO_PHASE_FLOW)
         {

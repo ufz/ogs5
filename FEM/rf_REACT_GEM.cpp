@@ -1439,12 +1439,12 @@ double REACT_GEM::GetPressureValue_MT(long node_Index, int timelevel)
             case 3:  // for "RICHARDS_FLOW", not tested!!!
                 pressure = m_gem_pressure;
                 //	indx = m_flow_pcs->GetNodeValueIndex ( "PRESSURE1" )
-                //+timelevel; 	pressure = m_flow_pcs->GetNodeValue ( node_Index,
-                //indx ); // The unit of HEAD is in meters
+                //+timelevel; 	pressure = m_flow_pcs->GetNodeValue (
+                // node_Index, indx ); // The unit of HEAD is in meters
 
                 // change the pressure unit from meters of water to bar.
                 //	pressure = Pressure_M_2_Bar ( pressure ,
-                //m_FluidProp->Density() );
+                // m_FluidProp->Density() );
                 // add atmospheric pressure
                 //	pressure +=1.0;
                 if (pressure < 0.0 /*valcumm suction in groundwater is not so
@@ -1517,9 +1517,9 @@ short REACT_GEM::SetPressureValue_MT(long node_Index, int timelevel,
                 break;
             //				m_pcs = PCSGet ( "RICHARDS_FLOW" );
             //				indx = m_pcs->GetNodeValueIndex ( "PRESSURE1" )
-            //+timelevel; 				pressure = Pressure_Bar_2_Pa ( pressure );
-            //				m_pcs->SetNodeValue ( node_Index, indx, pressure );
-            //				break;
+            //+timelevel; 				pressure = Pressure_Bar_2_Pa ( pressure
+            //); 				m_pcs->SetNodeValue ( node_Index, indx, pressure
+            //); break;
             case 4:
                 m_pcs = PCSGet("MULTI_PHASE_FLOW");
                 indx = m_pcs->GetNodeValueIndex("PRESSURE1") + timelevel;
@@ -2289,7 +2289,7 @@ int REACT_GEM::CalcPorosity(long in, TNode* m_Node)
 
     // normalized by m_Vs
     //	m_porosity[in] = 1.0 - m_porosity[in] / ( m_Vs[in] * 1.0e-6 /*convert to
-    //cm3 here*/) ;
+    // cm3 here*/) ;
     // kg44 this is the correct way to do it
     m_porosity[in] = 1.0 - (m_porosity[in]);
 
@@ -2300,8 +2300,8 @@ int REACT_GEM::CalcPorosity(long in, TNode* m_Node)
         m_porosity[in] = max_possible_porosity;  // upper limit of porosity
     if (m_porosity[in] <= min_possible_porosity)
         m_porosity[in] =
-            min_possible_porosity;  // lower limit of porosity..	     cout << "
-                                    // skal factor " << skal_faktor << "
+            min_possible_porosity;  // lower limit of porosity..	     cout <<
+                                    // " skal factor " << skal_faktor << "
     // excess water volume " << m_excess_water[in] ;
     // cout <<" porosity:" << m_porosity[in] << " node: "<< in <<" Vs
     // "<<m_Vs[in]<<"\n";
@@ -2449,7 +2449,7 @@ int REACT_GEM::MassToConcentration(
                     m_porosity[in] * m_pcs->GetNodeValue(in, idx + 1);
 
                 //	     m_pcs->SetNodeValue ( in, idx, m_fluid_volume[in] /
-                //m_porosity[in]); // instead change
+                // m_porosity[in]); // instead change
                 // saturation accordingly; this is done always.
             }
             //  m_excess_gas[in] = m_gas_volume[in]- m_porosity[in]* ( 1.0 -
@@ -2489,14 +2489,15 @@ int REACT_GEM::MassToConcentration(
     }
 #if defined(USE_MPI_GEMS) || defined(USE_PETSC)
 //	if ( fabs ( m_excess_water_buff[in] ) >= 0.01 ) cout << "node "<< in <<"
-//m_excess_water" << m_excess_water_buff[in]
+// m_excess_water" << m_excess_water_buff[in]
 //<<"\n";
 //	if ( fabs ( m_excess_gas_buff[in] ) >= 0.01 ) cout << "node "<< in <<"
-//m_excess_gas" << m_excess_water_buff[in]
+// m_excess_gas" << m_excess_water_buff[in]
 //<<"\n";
 #else
 //	if ( fabs ( m_excess_water[in] ) >= 0.01 ) cout << "node "<< in <<"
-//m_excess_water " << m_excess_water[in] <<"\n"; 	if ( fabs ( m_excess_gas[in] )
+// m_excess_water " << m_excess_water[in] <<"\n"; 	if ( fabs ( m_excess_gas[in]
+// )
 //>= 0.01 ) cout << "node "<< in <<" m_excess_gas " << m_excess_water[in]
 //<<"\n";
 #endif
@@ -3123,17 +3124,19 @@ ios::pos_type REACT_GEM::Read(std::ifstream* gem_file)
                 //                cout <<" activities " << n_activities << "\n";
                 // first general kinetic parameters
                 //	0,1,2  double E_acid,E_neutral,E_base; // activation
-                //energies
+                // energies
                 in >> d_kin.kinetic_parameters[0] >>
                     d_kin.kinetic_parameters[1] >> d_kin.kinetic_parameters[2];
-                //			cout << kinetic_parameters[0] << kinetic_parameters[1]
+                //			cout << kinetic_parameters[0] <<
+                // kinetic_parameters[1]
                 //<< kinetic_parameters[1]<<"\n";
 
                 //      3-5  double k_acid, k_neutral,k_base; //
                 //      dissolution/precipitation rate constants
                 in >> d_kin.kinetic_parameters[3] >>
                     d_kin.kinetic_parameters[4] >> d_kin.kinetic_parameters[5];
-                //			cout << kinetic_parameters[3] << kinetic_parameters[4]
+                //			cout << kinetic_parameters[3] <<
+                // kinetic_parameters[4]
                 //<< kinetic_parameters[5]<<"\n";
 
                 //      6-11  double q1,p1,q2,q3,p2,p3; // exponents for omega
@@ -3295,7 +3298,8 @@ int REACT_GEM::CalcReactionRate(long in, double temp, TNode* m_Node)
                     // vanselow convention
             {
                 for (j = m_kin[ii].dc_counter;
-                     j < m_kin[ii].dc_counter + dCH->nDCinPH[k]; j++)
+                     j < m_kin[ii].dc_counter + dCH->nDCinPH[k];
+                     j++)
                     // do not include surface complexation species!
                     if (!(dCH->ccDC[j] == '0') && !(dCH->ccDC[j] == 'X') &&
                         !(dCH->ccDC[j] == 'Y') && !(dCH->ccDC[j] == 'Z'))
@@ -3319,13 +3323,14 @@ int REACT_GEM::CalcReactionRate(long in, double temp, TNode* m_Node)
             // characteristics
             {
                 for (j = m_kin[ii].dc_counter;
-                     j < m_kin[ii].dc_counter + dCH->nDCinPH[k]; j++)
+                     j < m_kin[ii].dc_counter + dCH->nDCinPH[k];
+                     j++)
                     // do not include surface complexation species!
                     if (!(dCH->ccDC[j] == '0') && !(dCH->ccDC[j] == 'X') &&
                         !(dCH->ccDC[j] == 'Y') && !(dCH->ccDC[j] == 'Z'))
                     {
-                        //				omega_phase[k] += CalcSaturationIndex ( j,
-                        //in,tempC,press ); // loop over all
+                        //				omega_phase[k] += CalcSaturationIndex (
+                        // j, in,tempC,press ); // loop over all
                         // components of the phase
                         // we need this later for solid solutions....
                         omega_components[in * nDC + j] = m_Node->DC_a(j);
@@ -3530,7 +3535,8 @@ int REACT_GEM::CalcLimitsInitial(long in, TNode* m_Node)
                 // kinetic_mocel==3 only precipitation (no dissolution)
 
                 for (j = m_kin[ii].dc_counter;
-                     j < m_kin[ii].dc_counter + dCH->nDCinPH[k]; j++)
+                     j < m_kin[ii].dc_counter + dCH->nDCinPH[k];
+                     j++)
                 {
                     if ((dCH->ccDC[j] == '0') || (dCH->ccDC[j] == 'X') ||
                         (dCH->ccDC[j] == 'Y') || (dCH->ccDC[j] == 'Z'))
@@ -3597,7 +3603,8 @@ int REACT_GEM::CalcLimits(long in, TNode* m_Node)
             // kinetic_model==2 only dissolution (no precipitation)
             // kinetic_mocel==3 only precipitation (no dissolution)
             for (j = m_kin[ii].dc_counter;
-                 j < m_kin[ii].dc_counter + dCH->nDCinPH[k]; j++)
+                 j < m_kin[ii].dc_counter + dCH->nDCinPH[k];
+                 j++)
             {
                 //     cout << "Kin debug " << in << " mol amount species " <<
                 //     m_xDC[in*nDC+j] << " saturation phase "
@@ -4637,9 +4644,9 @@ void REACT_GEM::gems_worker(int tid, string m_Project_path)
         //	const std::vector<MeshLib::CNode*>& msh_nodes
         //(m_flow_pcs->m_msh->getNodeVector()); 	double const* const coords
         //(msh_nodes[in]->getData()); 	if (coords[0] <=0.0)
-        //m_dll[in*nDC+nDC-3]=27300.0;  // here set monocorn... 	if ((coords[0]
-        //>0.0) && (coords[0]<10.0)) m_dll[in*nDC+nDC-6]= 2.869412109375e+04; //
-        //here set gravel
+        // m_dll[in*nDC+nDC-3]=27300.0;  // here set monocorn... 	if
+        // ((coords[0] >0.0) && (coords[0]<10.0))
+        // m_dll[in*nDC+nDC-6]= 2.869412109375e+04; // here set gravel
         //        if (coords[0] >=10.0) m_dll[in*nDC+nDC-3]=2.532753515625e+04;
         //        // here set monocorn again
 

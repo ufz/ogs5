@@ -55,7 +55,7 @@ typedef struct
     std::vector<double> last_source_value;
     // double value_store[10][5000];
     double** value_store;  //[PCS_NUMBER_MAX*2]First ref no processes(two fields
-                           //per process..time, value), second ref no
+                           // per process..time, value), second ref no
                            // values
 } NODE_HISTORY;
 

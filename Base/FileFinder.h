@@ -49,7 +49,8 @@ public:
                 << "Error: FileFinder::getPath() -- directory list is empty."
                 << "\n";
         for (std::list<std::string>::iterator it = _directories.begin();
-             it != _directories.end(); ++it)
+             it != _directories.end();
+             ++it)
         {
             std::string testDir(*it);
             std::ifstream is(testDir.append(filename).c_str());

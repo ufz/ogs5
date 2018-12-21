@@ -1232,7 +1232,7 @@ void KRConfig(const GEOLIB::GEOObjects& geo_obj, const std::string& unique_name)
                                  "Change Settings in *.mmp file "
                               << "\n";
         //#ds  k= m_krd->NumberLinear + m_krd->NumberFreundlich +
-        //m_krd->NumberLangmuir;
+        // m_krd->NumberLangmuir;
         int k = m_krd->NumberLinear + m_krd->NumberFreundlich +
                 m_krd->NumberLangmuir + m_krd->NumberNAPLdissolution;
         if (k > 0)
@@ -1552,7 +1552,8 @@ void KRConfig(const GEOLIB::GEOObjects& geo_obj, const std::string& unique_name)
                                 // check vs. all previously identified nodes to
                                 // prevent duplicate entries
                                 for (size_t nn = 0;
-                                     nn < ReactNeighborNodes.size(); nn++)
+                                     nn < ReactNeighborNodes.size();
+                                     nn++)
                                     // node has already been found
                                     if (annode_idx == ReactNeighborNodes[nn])
                                     {
@@ -2317,7 +2318,8 @@ int CKinReact::CheckReactionDataConsistency()
     if (number_reactionpartner < 2)
     {
         // SB todo		ok=0;
-        // SB todo		cout << " Less than two reaction partners in equation found"
+        // SB todo		cout << " Less than two reaction partners in equation
+        // found"
         // << "\n";
     }
     // Ratekonstant zero?
@@ -2378,7 +2380,8 @@ int CKinReact::CheckReactionDataConsistency()
     if ((number_monod + number_inhibit + number_production == 0) &&
         (type == "monod"))
     {
-        //		cout << "Warning: no monod terms specified for monod equation "<<
+        //		cout << "Warning: no monod terms specified for monod equation
+        //"<<
         //"\n";
     }
 
@@ -2534,7 +2537,7 @@ void CKinReact::Write(ofstream* rfe_file)
         //*rfe_file << "$PRODUCTIONTERMS" << "\n" << number_production << "\n";
         // for(i=0;i<number_production;i++)
         //	*rfe_file << production[i]->species << "  " <<
-        //production[i]->concentration << "  " << production[i]->order
+        // production[i]->concentration << "  " << production[i]->order
         //<< "\n";
         // Production Terms
         length = (int)ProdStochhelp.size();
@@ -3158,10 +3161,11 @@ void KBlobConfig(const GEOLIB::GEOObjects& geo_obj,
             {
                 // 06/2010 TF - switch to new GEOLIB - REMOVE CANDIDATE
                 //				CGLPoint* m_geo_point = NULL; // make new GEO
-                //point 				m_geo_point = GEOGetPointByName(s_geo_name);//Get GEO
-                //point by name 				if (m_geo_point) 					l =
-                //m_msh->GetNODOnPNT(m_geo_point); // + ShiftInNodeVector; //
-                //find MSH point
+                // point 				m_geo_point =
+                // GEOGetPointByName(s_geo_name);//Get GEO
+                // point by name 				if (m_geo_point) l =
+                // m_msh->GetNODOnPNT(m_geo_point); // + ShiftInNodeVector; //
+                // find MSH point
                 // number
                 // stored
                 // in l
@@ -3723,8 +3727,8 @@ void CKinReactData::Write(ofstream* rfe_file)
     //*rfe_file << " Number of reactions: " << NumberReactions << "\n";
     //*rfe_file << " Number of linear exchange reactions: " << NumberLinear <<
     //"\n"; *rfe_file << " Number of freundlich exchange reactions: " <<
-    //NumberFreundlich << "\n"; *rfe_file << " Number of langmuir exchange
-    //reactions: " << NumberLangmuir << "\n"; *rfe_file << " is_a_bacterium: "
+    // NumberFreundlich << "\n"; *rfe_file << " Number of langmuir exchange
+    // reactions: " << NumberLangmuir << "\n"; *rfe_file << " is_a_bacterium: "
     //<< "\n";
     // for(i=0;i<is_a_bacterium.size();i++) *rfe_file << is_a_bacterium[i] << "
     // ";
@@ -5192,7 +5196,7 @@ void derivs(double t, double c[], double dcdt[], int n, long node,
                 totalSurface = m_krd->exSurface[m_kr->exSurfaceID];
 
                 //#ds ACHTUNG hier muss sicher gestellt sein, dass Sp1 die
-                //adsorbierte und Sp2 die gel�ste Species ist !
+                // adsorbierte und Sp2 die gel�ste Species ist !
                 exchange = kadsorb *
                                (totalSurface - occupiedSurface[surfaceID]) *
                                c[Sp2] -
@@ -6824,8 +6828,8 @@ void jacobn(double t, double c[], double dfdt[], double** dfdc, int n,
                  pow((m_kr->Current_Csat[node] - c[Sp2]), exponent) * dt) >
                 c[Sp1])
             {
-                //		dfdc[Sp1][Sp2] = 0     derivatives for water-concentration
-                //is zero in case of reduced rate in
+                //		dfdc[Sp1][Sp2] = 0     derivatives for
+                // water-concentration is zero in case of reduced rate in
                 // derivs
                 //		dfdc[Sp2][Sp2] = 0
 
@@ -6842,8 +6846,8 @@ void jacobn(double t, double c[], double dfdt[], double** dfdc, int n,
             // Case 2 : original rate in derivs
             else
             {
-                //		dfdc[Sp1][Sp1] = 0     derivatives for NAPL-concentration
-                //always zero 		dfdc[Sp2][Sp1] = 0
+                //		dfdc[Sp1][Sp1] = 0     derivatives for
+                // NAPL-concentration always zero 		dfdc[Sp2][Sp1] = 0
 
                 // if ( (m_kr->current_Csat < c[Sp2]) || (c[Sp1] >
                 // MKleinsteZahl) ) {         // no dissolution or NAPL mass
@@ -9722,7 +9726,8 @@ void CKinReactData::CopyConcentrations(void)
                     coord0 = m_msh->nod_vector[i]->getData();
                     // check all neighbour nodes
                     for (j = 0;
-                         j < m_msh->nod_vector[i]->getNumConnectedNodes(); j++)
+                         j < m_msh->nod_vector[i]->getNumConnectedNodes();
+                         j++)
                     {
                         nidx = m_msh->nod_vector[i]->getConnectedNodes()[j];
                         coord1 = m_msh->nod_vector[nidx]->getData();

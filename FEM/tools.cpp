@@ -818,7 +818,7 @@ int FctCurves(char* data, int found, FILE* f)
 //	NumberOfElements = (long)m_msh->ele_vector.size();
 //	//------------------------------------------------------------------------
 //	NumberOfElementsPerLayer = NumberOfElements /
-//m_msh->getNumberOfMeshLayers();
+// m_msh->getNumberOfMeshLayers();
 //
 //	//layers
 //	if(m_mat_mp->geo_type_name.compare("LAYER") == 0)
@@ -839,7 +839,7 @@ int FctCurves(char* data, int found, FILE* f)
 //	if(no_values < NumberOfElementsPerLayer)
 //		DisplayMsgLn(
 //		        "Warning! Fewer element values in File for heterogeneous
-//permeability field than elements in element
+// permeability field than elements in element
 // list");
 //	//------------------------------------------------------------------------
 //	/* field (int) for helping sort */
@@ -848,7 +848,7 @@ int FctCurves(char* data, int found, FILE* f)
 //		help[i] = 0;
 //
 //	/* initialize element values in element list; this is for the case, if not
-//for all 	   elements values are given in the input file */
+// for all 	   elements values are given in the input file */
 //
 //	//WW double test1;
 //	//WW double test2;
@@ -866,7 +866,7 @@ int FctCurves(char* data, int found, FILE* f)
 //	//WW test2 = m_ele->mat_vector(1);
 //	//------------------------------------------------------------------------
 //	//METHOD = 0:  read in unsorted values for coordinates and distribute to
-//corresponding elements */ 	if(method == 0)
+// corresponding elements */ 	if(method == 0)
 //	{
 //		// allocate storage to read in file with het values and initialize
 //		invals = (double**) Malloc((no_values) * sizeof(double*));
@@ -908,13 +908,13 @@ int FctCurves(char* data, int found, FILE* f)
 //				else
 //					for(j = 0; j < nof; j++)
 //						values[j] = invals[ihet][j + 3];
-//				//DisplayMsg(" Het Val for element: "); DisplayLong(i); DisplayMsg("
-//with coordinates ");
+//				//DisplayMsg(" Het Val for element: "); DisplayLong(i);
+// DisplayMsg(" with coordinates ");
 //				//DisplayDouble(x,0,0); DisplayMsg(", "); DisplayDouble(y,0,0);
-//DisplayMsg(", "); DisplayDouble(z,0,0);
+// DisplayMsg(", "); DisplayDouble(z,0,0);
 // DisplayMsg("       found at: ");
 //				//DisplayDouble(invals[ihet][0],0,0); DisplayMsg(", ");
-//DisplayDouble(invals[ihet][1],0,0);
+// DisplayDouble(invals[ihet][1],0,0);
 // DisplayMsg(",
 //");
 // DisplayDouble(invals[ihet][2],0,0); DisplayMsgLn(". ");
@@ -983,7 +983,7 @@ int FctCurves(char* data, int found, FILE* f)
 //	}                                     /* end if (method == 0) */
 //	//------------------------------------------------------------------------
 //	//METHOD = 1:  read in one sorted column, index is element number no
-//conversion, no sorting 	if(method == 1)
+// conversion, no sorting 	if(method == 1)
 //	{
 //		for(i = EleStart; i < EleEnd; i++)
 //		{
@@ -1165,10 +1165,9 @@ int GetLineFromFile(char* zeile, ifstream* ein)
                 i);  // Nach Kommentarzeichen ; suchen. j = Position des
                      // Kommentarzeichens, j=-1 wenn es keines gibt.
             if (j != i)
-                fertig =
-                    1;  // Wenn das erste nicht-leerzeichen ein Kommentarzeichen
-                        // ist, zeile überlesen. Sonst ist das
-                        // eine Datenzeile
+                fertig = 1;  // Wenn das erste nicht-leerzeichen ein
+                             // Kommentarzeichen ist, zeile überlesen. Sonst ist
+                             // das eine Datenzeile
         }
         else  // end of file found
         {
@@ -1481,7 +1480,7 @@ double GetMatrixValue(double var1,
 //	//WW anz_data = (int)matrix->variable_data_vector.size()-dim_x-dim_y;
 //	//----------------------------------------------------------------------
 //	if (var1 < *matrix->variable_data_vector[0]) //is var1 smaller then the
-//smallest argument?
+// smallest argument?
 //	{
 //		x1 = x2 = *matrix->variable_data_vector[0];
 //		*gueltig = 0;
@@ -1551,11 +1550,11 @@ double GetMatrixValue(double var1,
 //		}
 //	//getting the corresponding Z values for the arguments from the data vector
 //	zx1y1 = *matrix->variable_data_vector[(j1 - dim_x) * dim_x + (i1 + dim_x +
-//dim_y)]; 	zx2y1 = *matrix->variable_data_vector[(j1 - dim_x) * dim_x + (i2 +
-//dim_x + dim_y)]; 	zx1y2 = *matrix->variable_data_vector[(j2 - dim_x) * dim_x +
-//(i1 + dim_x + dim_y)]; 	zx2y2 = *matrix->variable_data_vector[(j2 - dim_x) *
-//dim_x + (i2 + dim_x + dim_y)]; 	return interpol (y1,y2, 	                 interpol
-//(x1,x2,zx1y1,zx2y1,  var1),interpol (x1, 	                                                               y1, 	                                                               zx1y2, 	                                                               zx2y2, 	                                                               var1),var2);
+// dim_y)]; 	zx2y1 = *matrix->variable_data_vector[(j1 - dim_x) * dim_x + (i2
+// + dim_x + dim_y)]; 	zx1y2 = *matrix->variable_data_vector[(j2 - dim_x) *
+// dim_x + (i1 + dim_x + dim_y)]; 	zx2y2 = *matrix->variable_data_vector[(j2 -
+// dim_x) * dim_x + (i2 + dim_x + dim_y)]; 	return interpol (y1,y2, interpol
+//(x1,x2,zx1y1,zx2y1,  var1),interpol (x1, y1, zx1y2, zx2y2, var1),var2);
 //}
 
 /****************************************************************************

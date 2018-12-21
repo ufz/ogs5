@@ -2741,7 +2741,7 @@ void CRFProcessDeformation::GlobalAssembly()
     // STD
     else
 #endif  //#if !defined(USE_PETSC) // && !defined(other parallel libs)//10.3012.
-        //WW
+        // WW
     {
         GlobalAssembly_DM();
 
@@ -2857,8 +2857,8 @@ void CRFProcessDeformation::PostExcavation()
         if (msp_vector[l]->excavated)
             deact_dom.push_back(l);
     }
-    // if(ExcavMaterialGroup>=0&&PCS_ExcavState<0)	//WX:01.2010.update pcs excav
-    // state
+    // if(ExcavMaterialGroup>=0&&PCS_ExcavState<0)	//WX:01.2010.update pcs
+    // excav state
     if (ExcavMaterialGroup >= 0)
     {
         for (size_t l = 0; l < m_msh->ele_vector.size(); l++)
@@ -2875,9 +2875,8 @@ void CRFProcessDeformation::PostExcavation()
                         m_msh->ele_vector[l]->SetExcavState(
                             0);          // 1=now, 0=past
                     PCS_ExcavState = 1;  // not necessary
-                    now_Excav =
-                        true;  // new elems are excavated at this time step
-                               // break;
+                    now_Excav = true;    // new elems are excavated at this time
+                                         // step break;
                 }
             }
         }
@@ -3383,7 +3382,8 @@ void CRFProcessDeformation::ReleaseLoadingByExcavation()
             // CC 10/05
             Surface* m_surface = GEOGetSFCByName(m_st->getGeoName());
             //			 07/2010 TF ToDo: to do away with the global vector
-            //surface_vector 			                  fetch the geometry from CFEMesh 			Surface *m_surface
+            // surface_vector 			                  fetch the geometry
+            // from CFEMesh 			Surface *m_surface
             //(surface_vector[m_st->getGeoObjIdx()]);
             if (m_surface)
             {

@@ -469,7 +469,8 @@ void SparseMatrixDOK::Write(std::ostream& os, int format)
         {
 #ifdef USE_HASHMAP
             for (col_id_itr kk = set_col_id[i].begin();
-                 kk != set_col_id[i].end(); kk++)
+                 kk != set_col_id[i].end();
+                 kk++)
             {
                 jj = this->mat_row[i].find(*kk);
 #else

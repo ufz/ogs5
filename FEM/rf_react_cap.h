@@ -162,8 +162,8 @@ public:
     bool check_no_reaction_nodes; /* flag if CheckNoReactionNodes has been
                                      performed */
     //	double temperature; /* temperature of water at node as specified in
-    //input file */ 	int heatflag;      /* if 1, heat transport is active and
-    //passed to phreeqc */
+    // input file */ 	int heatflag;      /* if 1, heat transport is active and
+    // passed to phreeqc */
     std::vector<std::string>
         ic_2_bc_geometry_type;  // Convert eq concentrations at this gemetry to
                                 // BC there

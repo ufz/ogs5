@@ -919,11 +919,11 @@ int REACT::WriteInputPQCString(
             for (i = ii; i < ii + rcml_number_of_gas_species; i++)
             {
                 speciesname = this->pqc_names[i];
-                //			cout << "Testing index vectors: " << speciesname << ",
-                //With vectors: " << pqc_names[i] << ",
+                //			cout << "Testing index vectors: " << speciesname <<
+                //", With vectors: " << pqc_names[i] << ",
                 //"
                 //<< pcs_vector[pqc_process[i]]->pcs_number << ", " <<
-                //pqc_index[i];
+                // pqc_index[i];
                 dval = pcs_vector[pqc_process[i]]->GetNodeValue(index,
                                                                 pqc_index[i]);
                 //			cout << dval << "\n";
@@ -1719,7 +1719,7 @@ void REACT::InitREACT(void)
     {
         m_pcs = pcs_vector[j];
         //		if (m_pcs->pcs_type_name.compare("MASS_TRANSPORT") == 0) { // if
-        //it is a mass transport process
+        // it is a mass transport process
         // if it is a mass transport process
         if (m_pcs->getProcessType() == FiniteElement::MASS_TRANSPORT)
         {
@@ -1796,8 +1796,8 @@ void REACT::InitREACT0()
     for (size_t j = 0; j < np; j++)  // for all processes
     {
         pcs = pcs_vector[j];
-        //		if (pcs->pcs_type_name.compare("MASS_TRANSPORT") == 0) { // if it
-        //is a mass transport process
+        //		if (pcs->pcs_type_name.compare("MASS_TRANSPORT") == 0) { // if
+        // it is a mass transport process
         if (pcs->getProcessType() == FiniteElement::MASS_TRANSPORT)
         {
             int comp = pcs->pcs_component_number;  // get component number
@@ -2206,7 +2206,7 @@ int REACT::ReadReactionModel(FILE* File)
                             m_pcs = pcs_vector[i];
                             //							if
                             //(m_pcs->pcs_type_name.find("HEAT_TRANSPORT") !=
-                            //string::npos)
+                            // string::npos)
                             //{
                             if (m_pcs->getProcessType() ==
                                 FiniteElement::HEAT_TRANSPORT)
@@ -2402,7 +2402,7 @@ int REACT::ReadReactionModelNew(ifstream* pqc_infile)
                         m_pcs = pcs_vector[i];
                         //					if
                         //(m_pcs->pcs_type_name.find("HEAT_TRANSPORT") !=
-                        //string::npos) {
+                        // string::npos) {
                         if (m_pcs->getProcessType() ==
                             FiniteElement::HEAT_TRANSPORT)
                         {
@@ -2837,9 +2837,9 @@ int REACT::ReadInputPhreeqc(long index, FILE* fpqc, FILE* Fphinp)
                                         pe_flag = 0;
                                     break;
                                 }
-                                /*		                        else{  // pH in RF
-                                   input file pH_flag=0; printf("Component %s:
-                                   concentration %lf", s, val_in[j][index]);
+                                /*		                        else{  // pH in
+                                   RF input file pH_flag=0; printf("Component
+                                   %s: concentration %lf", s, val_in[j][index]);
                                                         FilePrintDouble(f,
                                    val_in[j][index]); FilePrintString(f, "
                                    charge "); FilePrintString(f, " # comp ");
@@ -2869,8 +2869,8 @@ int REACT::ReadInputPhreeqc(long index, FILE* fpqc, FILE* Fphinp)
                                             //                           val_in[i][index]);
                                             FilePrintDouble(f,
                                                             val_in[i][index]);
-                                            // MX						   FilePrintString(f, "
-                                            // charge ");
+                                            // MX
+                                            // FilePrintString(f, " charge ");
 
                                             if (strstr(str, "charge"))
                                                 FilePrintString(f, " charge ");
@@ -3440,8 +3440,10 @@ int REACT::WriteInputPhreeqc(long index,
                         *out_file << speciesname << "       " << dval
                                   << "     # comp "
                                   << "\n";
-                        //					if(index <2) cout << speciesname << " " <<
-                        //dval << "\n";
+                        //					if(index <2) cout << speciesname <<
+                        //"
+                        //"
+                        //<< dval << "\n";
                         //                else
                         //                    *out_file << speciesname << " " <<
                         //                    dval << " charge " << "       #
@@ -3510,7 +3512,9 @@ int REACT::WriteInputPhreeqc(long index,
                 *out_file << "pH"
                           << "       " << dval << "       # comp "
                           << "\n";
-            // SB to do screen output				if(index <2) cout << "  pH: " << dval
+            // SB to do screen output				if(index <2) cout << "  pH:
+            // "
+            // << dval
             // << ", " << pcs_vector[pqc_process[count]]->pcs_number << "\n";
             // write pe
             count++;
@@ -3519,7 +3523,9 @@ int REACT::WriteInputPhreeqc(long index,
             *out_file << "pe"
                       << "       " << dval << "       # comp "
                       << "\n";
-            // SB to do screen output		if(index <2)  cout << "  pe: " << dval <<
+            // SB to do screen output		if(index <2)  cout << "  pe: " <<
+            // dval
+            // <<
             // ", " << pcs_vector[pqc_process[count]]->pcs_number << "\n";
 
             *out_file << line_string << "\n";
@@ -3680,11 +3686,11 @@ int REACT::WriteInputPhreeqc(long index,
             for (i = ii; i < ii + rcml_number_of_gas_species; i++)
             {
                 speciesname = this->pqc_names[i];
-                //			cout << "Testing index vectors: " << speciesname << ",
-                //With vectors: " << pqc_names[i] << ",
+                //			cout << "Testing index vectors: " << speciesname <<
+                //", With vectors: " << pqc_names[i] << ",
                 //"
                 //<< pcs_vector[pqc_process[i]]->pcs_number << ", " <<
-                //pqc_index[i];
+                // pqc_index[i];
                 dval = pcs_vector[pqc_process[i]]->GetNodeValue(index,
                                                                 pqc_index[i]);
                 //			cout << dval << "\n";
@@ -3986,7 +3992,7 @@ int REACT::WriteInputPhreeqc(long index,
                         }
                     }
                     ////m_pcs = PCSGet("MASS_TRANSPORT", speciesname);// CB HS
-                    ///update
+                    /// update
                     // m_pcs = cp_vec[cp_name_2_idx[speciesname]]->getProcess();
                     // idx = m_pcs->GetNodeValueIndex(speciesname)+1; // new
                     // time level dval = m_pcs->GetNodeValue(index,idx);
@@ -4357,8 +4363,8 @@ int REACT::ReadOutputPhreeqcNew(void)
                     }
                     pcs_vector[pqc_process[j]]->SetNodeValue(
                         index, pqc_index[j] + dix, dval);
-                    //					if(index <2) cout << " Read aqu. for " <<
-                    //pqc_names[j] << " " << dval << "\n";
+                    //					if(index <2) cout << " Read aqu. for "
+                    //<< pqc_names[j] << " " << dval << "\n";
                 }
             }
 
@@ -4368,7 +4374,8 @@ int REACT::ReadOutputPhreeqcNew(void)
                 j = n1;
                 pcs_vector[pqc_process[j]]->SetNodeValue(
                     index, pqc_index[j] + dix, dval);
-                //				if(index <2) cout << " Read for pH: " << dval << ",
+                //				if(index <2) cout << " Read for pH: " << dval <<
+                //",
                 //";
             }
             if (ein >> dval)  // read H+
@@ -4403,7 +4410,7 @@ int REACT::ReadOutputPhreeqcNew(void)
                 {
                     // speciesname = pqc_names[j];
                     ////m_pcs = PCSGet("MASS_TRANSPORT",speciesname);// CB HS
-                    ///update
+                    /// update
                     // m_pcs = cp_vec[cp_name_2_idx[speciesname]]->getProcess();
                     // idx = m_pcs->GetNodeValueIndex(speciesname)+1;
                     // m_pcs->SetNodeValue(index,idx,dval);
@@ -4430,7 +4437,7 @@ int REACT::ReadOutputPhreeqcNew(void)
                         pcs_vector[pqc_process[j]]->SetNodeValue(
                             index, pqc_index[j] + dix, dval);
                     //				if(index <2)  cout << " Read equi. for " <<
-                    //pqc_names[j] << " " << dval << "\n";
+                    // pqc_names[j] << " " << dval << "\n";
                 }
             }
 
@@ -4716,8 +4723,8 @@ void REACT::GetTransportResults(void)
     for (size_t j = 0; j < np; j++)  // for all processes
     {
         pcs = pcs_vector[j];
-        //		if (pcs->pcs_type_name.compare("MASS_TRANSPORT") == 0) { // if it
-        //is a mass transport process
+        //		if (pcs->pcs_type_name.compare("MASS_TRANSPORT") == 0) { // if
+        // it is a mass transport process
         if (pcs->getProcessType() == FiniteElement::MASS_TRANSPORT)
         {
             int comp = pcs->pcs_component_number;  // get component number
@@ -4998,8 +5005,8 @@ void REACT::GetTransportResults2Element()
     for (size_t j = 0; j < np; j++)  // for all processes
     {
         pcs = pcs_vector[j];
-        //		if (pcs->pcs_type_name.compare("MASS_TRANSPORT") == 0) { // if it
-        //is a mass transport process
+        //		if (pcs->pcs_type_name.compare("MASS_TRANSPORT") == 0) { // if
+        // it is a mass transport process
         // if it is a mass transport process
         if (pcs->getProcessType() == FiniteElement::MASS_TRANSPORT)
         {

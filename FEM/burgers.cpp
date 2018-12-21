@@ -65,7 +65,7 @@ void SolidBurgers::UpdateBurgersProperties(double s_eff,
                     (PhysicalConstant::IdealGasConstant * Temperature * T_ref));
     //	if (etaM / etaM0 < 1.e-2)
     //		std::cout << "WARNING: Maxwell viscosity sank to 100th of original
-    //value." << std::endl;
+    // value." << std::endl;
 }
 
 /**************************************************************************

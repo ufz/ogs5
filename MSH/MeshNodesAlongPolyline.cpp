@@ -116,7 +116,7 @@ MeshNodesAlongPolyline::MeshNodesAlongPolyline(
 //	std::string ply_name;
 //	if (!
 //_mesh->getGEOObjects()->getPolylineVecObj(*(_mesh->getProjectName()))->getNameOfElement(ply,
-//ply_name)) { 		ply_name = "unknown-ply";
+// ply_name)) { 		ply_name = "unknown-ply";
 //	}
 //
 //	std::cout << "distances of linear nodes along polyline " << ply_name <<
@@ -127,7 +127,7 @@ MeshNodesAlongPolyline::MeshNodesAlongPolyline(
 //	std::cout << "number of linear nodes along polyline " << ply_name << ": " <<
 //	_dist_of_proj_node_from_ply_start.size()
 //	          << ", number of higher order nodes: " <<
-//msh_node_higher_order_ids.size() <<
+// msh_node_higher_order_ids.size() <<
 //	"\n";
 #endif
     // assign/append higher order nodes at the end of vector _msh_node_ids

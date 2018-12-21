@@ -779,7 +779,7 @@ SparseTable::SparseTable(MeshLib::CFEMesh* a_mesh, bool quadratic, bool symm,
     {
         //
         //--- Sort, from that has maximum connect nodes to that has minimum
-        //connect nodes
+        // connect nodes
         //
         for (i = 0; i < rows; i++)
         {
@@ -928,7 +928,7 @@ SparseTable::SparseTable(CPARDomain& m_dom, bool quadratic, bool symm)
     }
     //
     //--- Sort, from that has maximum connect nodes to that has minimum connect
-    //nodes
+    // nodes
     //
     for (i = 0; i < rows; i++)
     {
@@ -1350,7 +1350,8 @@ void CSparseMatrix::Write(std::ostream& os)
             for (i = 0; i < rows; i++)
                 for (jj = 0; jj < DOF; jj++)
                     for (k = num_column_entries[i];
-                         k < num_column_entries[i + 1]; k++)
+                         k < num_column_entries[i + 1];
+                         k++)
                         // TEST
                         // if(fabs(entry[(ii*DOF+jj)*size_entry_column+counter])>DBL_MIN)
                         // //DBL_EPSILON)
@@ -1430,7 +1431,8 @@ void CSparseMatrix::Write_BIN(std::ostream& os)
                 ptr[ii * rows + i] = counter;
                 for (jj = 0; jj < DOF; jj++)
                     for (k = num_column_entries[i];
-                         k < num_column_entries[i + 1]; k++)
+                         k < num_column_entries[i + 1];
+                         k++)
                     {
                         A_index[counter] = jj * rows + entry_column[k];
                         A_value[counter] =

@@ -52,8 +52,10 @@ public:
 
     /* Methods */
     static int load_param(std::vector<SpeciesData>& spec,
-                          std::vector<int> name_type,
-                          std::vector<int> phase_type);
+                          std::vector<int>
+                              name_type,
+                          std::vector<int>
+                              phase_type);
     // species storage
     // name type: 0-name, 1-scform, 2-abbrev, 3-ecform, others-all
     // phase type: 0-5 SpeciesData.type, others- last found in database

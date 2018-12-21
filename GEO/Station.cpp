@@ -226,8 +226,8 @@ int StationBorehole::addStratigraphy(const std::string& path,
         //			borehole->_soilLayerThickness.clear();
         //			borehole->_soilName.clear();
         //
-        //			cout << "StationBorehole::addStratigraphy() - Profile incomplete
-        //(Borehole " << borehole->_name <<
+        //			cout << "StationBorehole::addStratigraphy() - Profile
+        // incomplete (Borehole " << borehole->_name <<
         //",
         // Layer " << (i+1) << " missing).\n";
         //

@@ -872,7 +872,8 @@ void CInitialCondition::SetDomain(int nidx)
                 FiniteElement::OVERLAND_FLOW)
                 // OK MSH
                 for (i = 0;
-                     i < this->getProcess()->m_msh->GetNodesNumber(false); i++)
+                     i < this->getProcess()->m_msh->GetNodesNumber(false);
+                     i++)
                 {
                     node_val =
                         geo_node_value +

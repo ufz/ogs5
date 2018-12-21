@@ -24,7 +24,8 @@ SimplePolygonTree::~SimplePolygonTree()
 {
     delete _node_polygon;
     for (std::list<SimplePolygonTree*>::const_iterator it(_childs.begin());
-         it != _childs.end(); ++it)
+         it != _childs.end();
+         ++it)
     {
         delete *it;
     }
@@ -57,7 +58,8 @@ void SimplePolygonTree::insertSimplePolygonTree(
     const Polygon* polygon(polygon_hierarchy->getPolygon());
     bool nfound(true);
     for (std::list<SimplePolygonTree*>::const_iterator it(_childs.begin());
-         it != _childs.end() && nfound; ++it)
+         it != _childs.end() && nfound;
+         ++it)
     {
         // check all points of polygon
         size_t n_pnts_polygon(polygon->getNumberOfPoints()), cnt(0);

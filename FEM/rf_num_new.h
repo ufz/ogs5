@@ -212,15 +212,18 @@ struct LINEAR_SOLVER
     long num_of_unknowns_ls;
     // OK UNKNOWN_LINEAR_SOLVER **unknown_ls;
     int unknown_vector_dimension; /* nodal degree of freedom */
-    int* unknown_vector_indeces;  /* pointer of field
-                                     unknown_vector_index[unknown_vector_dimension]
-                                   */
-    long* unknown_node_numbers;   /* pointer of field
-                                     unknown_node_numbers[unknown_vector_dimension]
-                                   */
-    int* unknown_update_methods;  /* pointer of field
-                                     unknown_update_methods[unknown_vector_dimension]
-                                   */
+    int*
+        unknown_vector_indeces; /* pointer of field
+                                   unknown_vector_index[unknown_vector_dimension]
+                                 */
+    long*
+        unknown_node_numbers; /* pointer of field
+                                 unknown_node_numbers[unknown_vector_dimension]
+                               */
+    int*
+        unknown_update_methods; /* pointer of field
+                                   unknown_update_methods[unknown_vector_dimension]
+                                 */
 };
 
 #ifdef USE_MPI  // WW

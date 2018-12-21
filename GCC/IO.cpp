@@ -464,8 +464,8 @@ vector<int> IO::formula2index_total(std::string formula)
     return id_iz;
 }
 
-vector<int> IO::formula2index_define(std::string formula,
-                                     vector<string> Chemical_Element)
+vector<int> IO::formula2index_define(
+    std::string formula, vector<string> Chemical_Element)
 {
     // const string Chemical_Element[10]={"Li", "Na", "K", "Mg", "Ca", "Cl",
     // "S", "C", "H", "O"};

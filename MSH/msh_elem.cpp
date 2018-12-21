@@ -1671,7 +1671,7 @@ void CElem::SetNormalVector()
         double const* const p0(nodes[0]->getData());
         double const* const p1(nodes[1]->getData());
         //		double const* const p2 (nodes[2]->getData()); // TF unused
-        //variable
+        // variable
         double const* const p3(nodes[3]->getData());
         const double v1[3] = {p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]};
         const double v2[3] = {p3[0] - p0[0], p3[1] - p0[1], p3[2] - p0[2]};

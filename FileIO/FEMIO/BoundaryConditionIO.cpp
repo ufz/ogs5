@@ -59,19 +59,17 @@ namespace FileIO
 ////					setProcessPrimaryVariable(CONCENTRATION);
 ////				} else {
 ////					DisplayErrorMsg(
-////							"Error: In reading BC file, the input component names are not found
-///in MCP file!!!"); /					exit(1); /				}
-////			} else {
-////				setProcess(PCSGet(this->getProcessType()));
-////				setProcessPrimaryVariable(convertPrimaryVariable(tmp));
-////			}
-////			in.clear();
-////		}
+////							"Error: In reading BC file, the input component names
+///are
+/// not found in MCP file!!!"); /					exit(1); /				} /
+///} else { /				setProcess(PCSGet(this->getProcessType())); /
+/// setProcessPrimaryVariable(convertPrimaryVariable(tmp)); /			} /
+/// in.clear(); /		}
 //
 ////		// HS, this is new. later on we should stick to COMP_NAME,
-///PRIMARY_VARIABLE support will be removed. /		if
+/// PRIMARY_VARIABLE support will be removed. /		if
 ///(line_string.find("$COMP_NAME") != std::string::npos) { /
-///in.str(GetLineFromFile1(in_str)); /			std::string tmp;
+/// in.str(GetLineFromFile1(in_str)); /			std::string tmp;
 ////			in >> tmp; // _pcs_pv_name;
 ////			if (this->_pcs_type == MASS_TRANSPORT) {
 ////				// HS set the pointer to MCP based on component name.
@@ -81,14 +79,15 @@ namespace FileIO
 ////					setProcessPrimaryVariable(CONCENTRATION);
 ////				} else {
 ////					DisplayErrorMsg(
-////							"Error: In reading BC file, the input component names are not found
-///in MCP file!!!"); /					exit(1); /				} /			} /
-///in.clear(); /		}
+////							"Error: In reading BC file, the input component names
+///are not found
+/// in MCP file!!!"); /					exit(1); /				} /			} /
+/// in.clear(); /		}
 //
 //		//subkeyword found
 //		if (line_string.find("$GEO_TYPE") != std::string::npos) {
 //			GeoIO::readGeoInfo (geo_info, in_str, geo_name, geo_obj,
-//unique_fname);
+// unique_fname);
 //		}
 //
 ////		//PCH
@@ -98,8 +97,8 @@ namespace FileIO
 ////			_periodic = false; // JOD
 ////
 ////			// Soure terms are assign to element nodes directly. 23.02.2009.
-///WW /			if (line_string.find("DIRECT") != std::string::npos) { /
-///this->setProcessDistributionType(FiniteElement::DIRECT); /				in
+/// WW /			if (line_string.find("DIRECT") != std::string::npos) { /
+/// this->setProcessDistributionType(FiniteElement::DIRECT); /				in
 ///>> fname; /				fname = FilePath + fname; /				in.clear();
 ////			}
 ////			if (line_string.find("CONSTANT") != std::string::npos) {

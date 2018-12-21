@@ -316,13 +316,16 @@ POINT const* Grid<POINT>::getNearestPoint(double const* const pnt) const
         {
             size_t tmp_coords[3];
             for (tmp_coords[0] = coords[0] - offset;
-                 tmp_coords[0] < coords[0] + offset; tmp_coords[0]++)
+                 tmp_coords[0] < coords[0] + offset;
+                 tmp_coords[0]++)
             {
                 for (tmp_coords[1] = coords[1] - offset;
-                     tmp_coords[1] < coords[1] + offset; tmp_coords[1]++)
+                     tmp_coords[1] < coords[1] + offset;
+                     tmp_coords[1]++)
                 {
                     for (tmp_coords[2] = coords[2] - offset;
-                         tmp_coords[2] < coords[2] + offset; tmp_coords[2]++)
+                         tmp_coords[2] < coords[2] + offset;
+                         tmp_coords[2]++)
                     {
                         // do not check the origin grid cell twice
                         if (!(tmp_coords[0] == coords[0] &&

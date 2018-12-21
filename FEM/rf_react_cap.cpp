@@ -953,7 +953,8 @@ void REACT_CAP::InitChemApp(void)
     // for(ii=this->mass_num; ii<(int)pcs_mass_idx.size(); ii++){
     //	m_pcs = pcs_vector[pcs_mass_idx[ii]];
     //	if(strcmp(m_pcs->pcs_primary_function_name[0], "pH")==0 ||
-    //strcmp(m_pcs->pcs_primary_function_name[0], "Eh")==0){ 		cout << "     --> "
+    // strcmp(m_pcs->pcs_primary_function_name[0], "Eh")==0){ 		cout << "
+    // --> "
     //<< m_pcs->pcs_primary_function_name[0] << "\n";
     //		pcs_ospecies_idx.push_back(pcs_mass_idx[ii]);
     //	}
@@ -2067,7 +2068,8 @@ void REACT_CAP::LoopNodeReact(int f, int nodeflag)
                 PP = m_rei->GetPressure(ii);
             }
 
-            // for(i=0;i<ns;i++)	if(ii==1) cout << i << " " << species_name[i]
+            // for(i=0;i<ns;i++)	if(ii==1) cout << i << " " <<
+            // species_name[i]
             // << " " << species_value[i] << "\n";
 
             //----VLE--init--
@@ -3034,7 +3036,7 @@ void REACT_CAP::LoopNodeReact(int f, int nodeflag)
                 //	delta_VLS_aq[i]
                 //=species_value_b[VLS_idx_aq[i]]-species_value[VLS_idx_aq[i]];
                 //	if(abs(
-                //delta_VLS_aq[i]/(species_value[VLS_idx_aq[i]]+VLS_value_vs[i])
+                // delta_VLS_aq[i]/(species_value[VLS_idx_aq[i]]+VLS_value_vs[i])
                 //) > 1.0e-8 )
                 //}
                 // pass parameters from pcs-eclipse
@@ -3555,7 +3557,7 @@ vector<double> REACT_CAP::derivs(vector<double> c)
     //}
     // for(i=0;i<(int)species_kin_idx.size();i++){
     //	cout << " " << setw(6) << species_kin_phase[i] << setw(6) <<
-    //species_kin_idx[i] << species_kin_name[i] << "\n";
+    // species_kin_idx[i] << species_kin_name[i] << "\n";
     //}
 
     this->KinRate();
@@ -3565,7 +3567,7 @@ vector<double> REACT_CAP::derivs(vector<double> c)
     // cout << Kin_Reactions[i_re].type << " " << Kin_Reactions[i_re].rate;
     // for(i_resp=0;i_resp<(int)Kin_Reactions[i_re].species_name.size();i_resp++){
     //	cout << " " << Kin_Reactions[i_re].species_stoi[i_resp] << " " <<
-    //Kin_Reactions[i_re].species_name[i_resp];
+    // Kin_Reactions[i_re].species_name[i_resp];
     //}
     // cout << "\n";
     //}
@@ -3942,7 +3944,7 @@ bool REACT_CAP::LoadHKFparam()
     //	i_counter=0;
     //	for(i=0;i<Kin_HKF_species.size();i++)
     //		if(Kin_HKF_species[i].name!="H2O" &&
-    //Kin_HKF_species[i].name!="H2O_liquid"){
+    // Kin_HKF_species[i].name!="H2O_liquid"){
     //			Kin_HKF_species[i]=spec[i_counter];
     //			i_counter++;
     //		}

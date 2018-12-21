@@ -377,7 +377,8 @@ void ExtractMeshNodes::writeMesh2DNodeIDAndArea(std::ostream& os,
     n_nodes = 0;
     gli_out.precision(14);
     for (std::vector<size_t>::const_iterator it(node_ids.begin());
-         it != node_ids.end(); it++)
+         it != node_ids.end();
+         it++)
     {
         double const* const pnt(msh_nodes[*it]->getData());
         gli_out << n_nodes + _gli_pnt_offset << " " << std::scientific << pnt[0]
@@ -459,7 +460,8 @@ void ExtractMeshNodes::writeMesh2DNodeIDAndArea(
     n_nodes = 0;
     gli_out.precision(14);
     for (std::vector<size_t>::const_iterator it(node_ids.begin());
-         it != node_ids.end(); it++)
+         it != node_ids.end();
+         it++)
     {
         double const* const pnt(msh_nodes[*it]->getData());
         gli_out << n_nodes + _gli_pnt_offset << " " << std::scientific << pnt[0]

@@ -110,7 +110,7 @@ void SolidMinkley::UpdateMinkleyProperties(double s_eff, const double eps_p_eff,
                        hard4)));  // fourth order isotropic hardening/softening
                                   //	if (etaM / etaM0 < 1.e-2)
     //		std::cout << "WARNING: Maxwell viscosity sank to 100th of original
-    //value." << std::endl;
+    // value." << std::endl;
 }
 
 /**************************************************************************

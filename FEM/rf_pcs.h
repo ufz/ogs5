@@ -382,7 +382,7 @@ public:
     std::vector<long> bc_local_index_in_dom;      // WW for domain decomposition
     std::vector<long> rank_bc_node_value_in_dom;  // WW
 #endif  //#if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012.
-        //WW
+        // WW
     std::vector<long> bc_transient_index;  // WW/CB
     std::vector<long> st_transient_index;  // WW/CB...BG
     void UpdateTransientBC();              // WW/CB
@@ -401,7 +401,7 @@ public:
     std::vector<long> st_local_index_in_dom;      // WW for domain decomposition
     std::vector<long> rank_st_node_value_in_dom;  // WW
 #endif  //#if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012.
-        //WW
+        // WW
     void RecordNodeVSize(const int Size)  // WW
     {
         orig_size = Size;
@@ -745,7 +745,7 @@ public:
 #if !defined(USE_PETSC)  // && !defined(other parallel libs)//03.3012. WW
     void SetBoundaryConditionSubDomain();  // WW
 #endif  //#if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012.
-        //WW
+        // WW
 // WW void CheckBCGroup(); //OK
 #if !defined(USE_PETSC)  // && !defined(other parallel libs)//03~04.3012. WW
 #ifdef NEW_EQS           // WW

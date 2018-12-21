@@ -462,7 +462,7 @@ Problem::Problem(const char* filename)
 #endif
     }
 #endif  //#if !defined(USE_PETSC) // && !defined(other parallel libs)//03.3012.
-        //WW
+        // WW
     //----------------------------------------------------------------------
     PCSRestart();  // SB
     OUTCheck();    // new SB
@@ -1545,7 +1545,7 @@ bool Problem::CouplingLoop()
                 //
                 inner_max = a_pcs->m_num->cpl_max_iterations;
                 //				inner_min = a_pcs->m_num->cpl_min_iterations; //
-                //variable set but never used
+                // variable set but never used
                 //
                 a_pcs->iter_outer_cpl = outer_index;
                 b_pcs->iter_outer_cpl = outer_index;
@@ -1563,7 +1563,7 @@ bool Problem::CouplingLoop()
                     if (a_pcs->first_coupling_iteration)
                         PreCouplingLoop(a_pcs);
                     //					error = Call_Member_FN(this,
-                    //active_processes[index])();
+                    // active_processes[index])();
                     Call_Member_FN(this, active_processes[index])();
                     if (!a_pcs->TimeStepAccept())
                     {
@@ -1576,7 +1576,7 @@ bool Problem::CouplingLoop()
                     if (b_pcs->first_coupling_iteration)
                         PreCouplingLoop(b_pcs);
                     //					error = Call_Member_FN(this,
-                    //active_processes[cpl_index])();
+                    // active_processes[cpl_index])();
                     Call_Member_FN(this, active_processes[cpl_index])();
                     if (!b_pcs->TimeStepAccept())
                     {
@@ -1631,7 +1631,7 @@ bool Problem::CouplingLoop()
                 if (a_pcs->first_coupling_iteration)
                     PreCouplingLoop(a_pcs);
                 //				error = Call_Member_FN(this,
-                //active_processes[index])(); // TF: error set, but never
+                // active_processes[index])(); // TF: error set, but never
                 // used
                 Call_Member_FN(this, active_processes[index])();
                 if (!a_pcs->TimeStepAccept())
@@ -2102,8 +2102,9 @@ inline double Problem::MultiPhaseFlow()
     // m_pcs->CalculateFluidDensitiesAndViscositiesAtNodes(m_pcs);
 
     // Cases: decide, weather to use GEOSYS, ECLIPSE or DuMux; BG 10/2010
-    if ((m_pcs->simulator.compare("GEOSYS") == 0))  // ||(m_pcs->simulator.compare("ECLIPSE")==0)){
-                                                    // // standard: use GeoSys
+    if ((m_pcs->simulator.compare("GEOSYS") ==
+         0))  // ||(m_pcs->simulator.compare("ECLIPSE")==0)){
+              // // standard: use GeoSys
     {
         // if((m_pcs->simulator.compare("GEOSYS")==0)
         // ||(m_pcs->simulator.compare("ECLIPSE")==0)){ // standard: use GeoSys
@@ -3031,7 +3032,7 @@ void Problem::OutputMassOfComponentInModel(std::vector<CRFProcess*> flow_pcs,
     // int position;
     std::string path;
     //	double density_water; // 2012-08 TF, variable ‘density_water’ set but
-    //not used [-Wunused-but-set-variable]
+    // not used [-Wunused-but-set-variable]
     double porosity;
     //	int variable_index; // 2012-08 TF, variable set but not used
     double ComponentConcentration, TotalVolume, SourceTerm;
@@ -3103,15 +3104,16 @@ void Problem::OutputMassOfComponentInModel(std::vector<CRFProcess*> flow_pcs,
         node_volume = 0;
         if (mfp_vector[0]->density_model == 18)
         {
-            //			variable_index = flow_pcs[0]->GetNodeValueIndex("DENSITY1");
+            //			variable_index =
+            // flow_pcs[0]->GetNodeValueIndex("DENSITY1");
             //// // 2012-08 TF, variable set but
             // not used 			density_water = flow_pcs[0]->GetNodeValue(i,
             // variable_index); // 2012-08 TF, variable ‘density_water’ set but
-            //not used [-Wunused-but-set-variable]
+            // not used [-Wunused-but-set-variable]
         }
         //		else
         //			density_water = mfp_vector[0]->Density(); // 2012-08 TF,
-        //variable ‘density_water’ set but not used
+        // variable ‘density_water’ set but not used
         //[-Wunused-but-set-variable]
 
         for (int j = 0; j < int(m_node->getConnectedElementIDs().size()); j++)
@@ -3767,17 +3769,17 @@ inline double Problem::RandomWalker()
             // Select the mesh whose process name has the mesh for
             // Fluid_Momentum
             //			if(
-            //m_pcs->pcs_type_name.find("RICHARDS_FLOW")!=string::npos)
+            // m_pcs->pcs_type_name.find("RICHARDS_FLOW")!=string::npos)
             // TF
             if (m_pcs->getProcessType() == FiniteElement::RICHARDS_FLOW)
                 m_msh = FEMGet("RICHARDS_FLOW");
             //			else if(
-            //m_pcs->pcs_type_name.find("LIQUID_FLOW")!=string::npos)
+            // m_pcs->pcs_type_name.find("LIQUID_FLOW")!=string::npos)
             // TF
             else if (m_pcs->getProcessType() == FiniteElement::LIQUID_FLOW)
                 m_msh = FEMGet("LIQUID_FLOW");
             //			else if(
-            //m_pcs->pcs_type_name.find("GROUNDWATER_FLOW")!=string::npos)
+            // m_pcs->pcs_type_name.find("GROUNDWATER_FLOW")!=string::npos)
             // TF
             else if (m_pcs->getProcessType() == FiniteElement::GROUNDWATER_FLOW)
                 m_msh = FEMGet("GROUNDWATER_FLOW");

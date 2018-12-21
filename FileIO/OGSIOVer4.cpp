@@ -92,12 +92,13 @@ std::string readPoints(std::istream& in, std::vector<Point*>* pnt_vec,
                 size_t end_pos((line.substr(pos + 6)).find(" "));
                 if (end_pos != std::string::npos)
                     (*pnt_id_name_map)[line.substr(pos + 6, end_pos)] = id;
-                //					std::cout << "* name: " << line.substr (pos+6,
-                //end_pos) << ", id: " << id << "\n";
+                //					std::cout << "* name: " << line.substr
+                //(pos+6, end_pos) << ", id: " << id << "\n";
                 else
                     (*pnt_id_name_map)[line.substr(pos + 6)] = id;
-                //					std::cout << "name: " << line.substr (pos+6) << ",
-                //id: " << id << "\n";
+                //					std::cout << "name: " << line.substr (pos+6)
+                //<<
+                //", id: " << id << "\n";
             }
 
             size_t id_pos(line.find("$ID"));
@@ -568,11 +569,12 @@ std::string readSurfaces(std::istream& in, std::vector<Surface*>& sfc_vec,
     for (size_t k(0); k < polygon_vec.size(); k++)
         delete polygon_vec[k];
     //	std::cout << "readSurfaces: number of read polygons  " <<
-    //polygon_vec.size() << "\n";
+    // polygon_vec.size() << "\n";
 
     //	// subdivide all polygons in simple polygons
     //	for (std::vector<GEOLIB::Polygon*>::iterator polygon_it
-    //(polygon_vec.begin()); 			polygon_it != polygon_vec.end(); polygon_it++) {
+    //(polygon_vec.begin()); 			polygon_it != polygon_vec.end();
+    // polygon_it++) {
     //		// compute list of simple polygons
     //		(*polygon_it)->computeListOfSimplePolygons ();
     //	}
@@ -581,58 +583,64 @@ std::string readSurfaces(std::istream& in, std::vector<Surface*>& sfc_vec,
     //	std::list<SimplePolygonTree*> polygon_forest;
     //	// create polygon forest
     //	for (std::vector<GEOLIB::Polygon*>::iterator polygon_it
-    //(polygon_vec.begin()); 				polygon_it != polygon_vec.end(); polygon_it++) {
+    //(polygon_vec.begin()); 				polygon_it != polygon_vec.end();
+    // polygon_it++) {
     //		// get the list and insert the elements as SimplePolygonTree items
-    //into the forest 		const std::list<Polygon*> simple_polygon_list
+    // into the forest 		const std::list<Polygon*> simple_polygon_list
     //((*polygon_it)->getListOfSimplePolygons()); 		for
     //(std::list<Polygon*>::const_iterator simple_polygon_it
     //(simple_polygon_list.begin()); 			simple_polygon_it !=
-    //simple_polygon_list.end(); simple_polygon_it++) { 			SimplePolygonTree *spt
-    //(new SimplePolygonTree (*simple_polygon_it)); 			polygon_forest.push_back
-    //(spt);
+    // simple_polygon_list.end(); simple_polygon_it++) {
+    // SimplePolygonTree *spt (new SimplePolygonTree (*simple_polygon_it));
+    // polygon_forest.push_back (spt);
     //		}
     //	}
     //	std::cout << "readSurfaces: \"Polygon forest\" consists of " <<
-    //polygon_forest.size() << " trees" << "\n";
+    // polygon_forest.size() << " trees" << "\n";
     //
     //	// create the hierarchy
     //	createPolygonTree (polygon_forest);
     //	std::cout << "readSurfaces: \"Polygon forest\" consists of " <<
-    //polygon_forest.size() << " trees" << "\n";
+    // polygon_forest.size() << " trees" << "\n";
     //
     //	std::string out_fname ("GMSHTest.geo");
     //	std::cout << "writing input file for GMSH " << out_fname << " ... " <<
-    //std::flush; 	GMSHInterface gmsh_io (out_fname);
+    // std::flush; 	GMSHInterface gmsh_io (out_fname);
     //	// writing points
     //	gmsh_io.writeGMSHPoints(pnt_vec);
     //	// writing simple polygon tree
     //	for (std::list<GEOLIB::SimplePolygonTree*>::const_iterator
-    //polygon_tree_it (polygon_forest.begin()); 	polygon_tree_it !=
-    //polygon_forest.end(); polygon_tree_it++) {
+    // polygon_tree_it (polygon_forest.begin()); 	polygon_tree_it !=
+    // polygon_forest.end(); polygon_tree_it++) {
     //		(*polygon_tree_it)->visitAndProcessNodes (gmsh_io);
     //	}
     //	std::cout << "done" << "\n";
 
     // create surfaces from simple polygons
     //	for (std::vector<GEOLIB::Polygon*>::iterator polygon_it
-    //(polygon_vec.begin()); 		polygon_it != polygon_vec.end(); polygon_it++) {
+    //(polygon_vec.begin()); 		polygon_it != polygon_vec.end();
+    // polygon_it++)
+    //{
     //
     //		const std::list<GEOLIB::Polygon*>& list_of_simple_polygons
     //((*polygon_it)->getListOfSimplePolygons());
     //
     //		for (std::list<GEOLIB::Polygon*>::const_iterator simple_polygon_it
     //(list_of_simple_polygons.begin()); 			simple_polygon_it !=
-    //list_of_simple_polygons.end(); simple_polygon_it++) {
+    // list_of_simple_polygons.end(); simple_polygon_it++) {
     //
     //			std::list<GEOLIB::Triangle> triangles;
     //			MathLib::earClippingTriangulationOfPolygon(*simple_polygon_it,
-    //triangles); 			std::cout << "done - " << triangles.size () << " triangles "
+    // triangles); 			std::cout << "done - " << triangles.size () << "
+    // triangles
+    // "
     //<< "\n";
     //
     //			Surface *sfc(new Surface(pnt_vec));
     //			// add Triangles to Surface
     //			std::list<GEOLIB::Triangle>::const_iterator it
-    //(triangles.begin()); 			while (it != triangles.end()) { 				sfc->addTriangle
+    //(triangles.begin()); 			while (it != triangles.end()) {
+    // sfc->addTriangle
     //((*it)[0], (*it)[1], (*it)[2]); 				it++;
     //			}
     //			sfc_vec.push_back (sfc);

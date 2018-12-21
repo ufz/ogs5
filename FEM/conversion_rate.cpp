@@ -48,7 +48,7 @@ conversion_rate::conversion_rate(double T_solid,
         // set in rf_msp
         reaction_enthalpy = -1.12e+05;  // in J/mol; negative for exothermic
                                         // composition reaction
-        reaction_entropy = -143.5;  // in J/mol K
+        reaction_entropy = -143.5;      // in J/mol K
         M_carrier = PhysicalConstant::MolarMass::N2;
         M_react = PhysicalConstant::MolarMass::Water;
     }
@@ -59,7 +59,7 @@ conversion_rate::conversion_rate(double T_solid,
         rho_up = 4860.0;
         reaction_enthalpy = -1.376e+05;  // in J/mol; negative for exothermic
                                          // composition reaction
-        reaction_entropy = -114.1;  // in J/mol K
+        reaction_entropy = -114.1;       // in J/mol K
         M_carrier = PhysicalConstant::MolarMass::N2;
         M_react = PhysicalConstant::MolarMass::O2;
     }
@@ -297,7 +297,7 @@ double conversion_rate::Z13XBF_adsorption()
     // automatic time stepping should be used instead of the following.
     // else if (dCdt > 0.) {
     //	double dens_guess = p_r_g*COMP_MOL_MASS_WATER/(R*T); //vapor density
-    //guess
+    // guess
     //	//const double max_rate = dens_guess/(rho_low*dt);
     //	//dCdt = min(dCdt,max_rate);
     //}

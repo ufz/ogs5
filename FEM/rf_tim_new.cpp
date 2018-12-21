@@ -143,8 +143,9 @@ std::ios::pos_type GetNextSubKeyword(std::ifstream* file,
                       // Kommentarzeichens, j=-1 wenn es keines gibt.
         if (j < 0)
             j = (int)line_complete.length();
-        // if(j!=i) break;						 //Wenn das erste nicht-leerzeichen ein
-        // Kommentarzeichen ist, zeile �berlesen. Sonst ist das eine Datenzeile
+        // if(j!=i) break;						 //Wenn das erste
+        // nicht-leerzeichen ein Kommentarzeichen ist, zeile �berlesen. Sonst
+        // ist das eine Datenzeile
         if (i != -1)
             *line = line_complete.substr(
                 i, j - i);  // Ab erstem nicht-Leerzeichen bis Kommentarzeichen
@@ -369,9 +370,10 @@ std::ios::pos_type CTimeDiscretization::Read(std::ifstream* tim_file)
                     double include_third_variable = -1.0;
                     double third_variable_tolerance = -1.0;
                     //
-                    line >> dynamic_control_error_method;  // Corresponds to
-                                                           // FiniteElement::ErrorMethod.
-                                                           // Defines how
+                    line >>
+                        dynamic_control_error_method;  // Corresponds to
+                                                       // FiniteElement::ErrorMethod.
+                                                       // Defines how
                     // tolerance is applied.
                     line >> time_step_length;  // initial_dt
                     line >> min_time_step;     // min_dt
@@ -614,8 +616,9 @@ std::ios::pos_type CTimeDiscretization::Read(std::ifstream* tim_file)
                         {
                             *tim_file >> line_string;
                             adapt_itr_type = convertIterationType(line_string);
-                            if (line_string == "COUPLED_STABLE_ERROR")  // convertIterationType()
-                                                                        // finds
+                            if (line_string ==
+                                "COUPLED_STABLE_ERROR")  // convertIterationType()
+                                                         // finds
                                 // IterationType::COUPLED if that is part of the
                                 // name... very unpractical.
                                 adapt_itr_type =
@@ -1166,7 +1169,7 @@ double CTimeDiscretization::FirstTimeStepEstimate(void)
         switch (m_pcs->getProcessType())  // TF
         {
             //		case 'G': // kg44 groudnwater flow ---if steady state, time
-            //step should be greater zero...transient
+            // step should be greater zero...transient
             // flow does not work with adaptive stepping
             case FiniteElement::GROUNDWATER_FLOW:  // TF, if steady state, time
                                                    // step should be greater
@@ -1180,8 +1183,8 @@ double CTimeDiscretization::FirstTimeStepEstimate(void)
                     initial_time_step;  // take min time step as conservative
                                         // best guess for testing
                 break;
-            //		case 'M': // kg44 Mass transport ---if steady state, time step
-            //should be greater zero..
+            //		case 'M': // kg44 Mass transport ---if steady state, time
+            // step should be greater zero..
             case FiniteElement::HEAT_TRANSPORT:  // MW copied from
                                                  // MASS_TRANSPORT // TF, if
                                                  // steady state, time step
@@ -2072,7 +2075,7 @@ double CTimeDiscretization::AdaptiveFirstTimeStepEstimate(void)
                                     // guess for testing
                 break;
             //		case 'G': // kg44 groudnwater flow ---if steady state, time
-            //step should be greater zeor...transient
+            // step should be greater zeor...transient
             // flow does not work with adaptive stepping
             case FiniteElement::GROUNDWATER_FLOW:  // if steady state, time step
                                                    // should be greater zero ...
@@ -2423,7 +2426,7 @@ double CTimeDiscretization::MaxTimeStep()
 
         melem = this_pcs->m_msh->ele_vector[i];
         //		cout << m_mat_mp->Porosity(i,theta) << " " <<
-        //melem->representative_length << "\n";
+        // melem->representative_length << "\n";
         // KG44 attention DM needs to be multiplied with porosity!
         Dm = m_mat_mp->TortuosityFunction(i, g, theta) *
              m_mat_mp->Porosity(i, theta) *
@@ -2445,7 +2448,7 @@ double CTimeDiscretization::MaxTimeStep()
                 Dm;
         max_diff_time_step = std::min(max_diff_time_step, dummy);
         //	std::cout << "Neumann criteria: " << max_diff_time_step << " i " <<
-        //i << "\n";
+        // i << "\n";
     }
 
     std::cout << "GEMS3K: maximum Diffusive / Dispersive Time Step "

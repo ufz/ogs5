@@ -551,7 +551,7 @@ void MSHSelectFreeSurfaceNodes(MeshLib::CFEMesh* m_msh)
             for (size_t j = 0; j < m_msh->getNumberOfMeshLayers(); j++)
             {
                 //				strang = (long*)
-                //Realloc(strang,(j+1)*sizeof(long));
+                // Realloc(strang,(j+1)*sizeof(long));
                 strang[j] = nextnode;
                 size_t startnode = nextnode;
                 nextnode = MSHGetNextNode(startnode, m_msh);
@@ -611,7 +611,7 @@ void MSHDefineMobile(CRFProcess* m_pcs)
             //....................................................................
             // DOMAIN
             //			if(m_mat_mp->geo_type_name.find("DOMAIN") !=
-            //std::string::npos)
+            // std::string::npos)
             if (m_mat_mp->getGeoType() == GEOLIB::GEODOMAIN)
             {
                 // CGLDomain *m_domain = NULL;

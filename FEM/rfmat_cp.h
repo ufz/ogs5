@@ -72,7 +72,7 @@ public:
                                           */
     double diffusion_model_values[10]; /* Parameter fuer das Diffusionsmodell */
     double diffusion_anisotropy_ratio[3];
-        /* Ratio of three diffusion coefficients */  // PCH
+    /* Ratio of three diffusion coefficients */  // PCH
     int diffusion_function_name;
     /* Zugriff auf Number of Parameters */
     int GetNumberDiffusionValuesCompProperties(int);
