@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 2.8.3)
 if(CMAKE_VERSION VERSION_GREATER 3.1)
 	cmake_policy(SET CMP0054 NEW)
 endif()
-cmake_policy(SET CMP0011 OLD)
+cmake_policy(SET CMP0011 NEW)
 
 # Project name
 project(OGS-5)
