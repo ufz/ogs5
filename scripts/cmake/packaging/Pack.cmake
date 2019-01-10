@@ -15,22 +15,16 @@ else()
 endif()
 
 if(WIN32)
-	include(packaging/PackagingWin)
+    include(InstallRequiredSystemLibraries)
+    set(CPACK_GENERATOR ZIP)
 endif()
 if(UNIX)
-	include(packaging/PackagingLinux)
+    set(CPACK_GENERATOR TGZ)
+    # Adds the binaries location to the LD_LIBRARY_PATH
+    set(CMAKE_INSTALL_RPATH \$ORIGIN/)
 endif()
 if(APPLE)
-	include(packaging/PackagingMac)
+    set(CPACK_GENERATOR TGZ)
 endif()
-
-set(CPACK_COMPONENT_OGS_DISPLAY_NAME "Executable")
-set(CPACK_COMPONENT_OGS_DESCRIPTION "The command line executable")
-set(CPACK_COMPONENT_MSVC_REDIST_DISPLAY_NAME "C++ Redistributable")
-set(CPACK_COMPONENT_MSVC_REDIST_DESCRIPTION "Microsoft Visual C++ Redistributable")
-
-set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE 1)
-set(CPACK_PACKAGE_EXECUTABLES "ogs" "OGS Command Line")
-set(CPACK_COMPONENTS_ALL ${CPACK_COMPONENTS_ALL} ogs Unspecified)
 
 include (CPack)

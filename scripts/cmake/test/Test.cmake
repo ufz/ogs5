@@ -1,13 +1,19 @@
 if(DEFINED BENCHMARK_DIR)
 	find_path (BENCHMARK_DIR_FOUND .benchmarks ${BENCHMARK_DIR})
 else()
-	find_path (BENCHMARK_DIR_FOUND .benchmarks ${PROJECT_SOURCE_DIR}/../benchmarks)
+    find_path (BENCHMARK_DIR_FOUND .benchmarks
+        ${PROJECT_SOURCE_DIR}/../benchmarks
+        ${PROJECT_SOURCE_DIR}/benchmarks
+    )
 endif()
 
 if(DEFINED BENCHMARK_REF_DIR)
 	find_path (BENCHMARK_REF_DIR_FOUND .benchmarks_ref ${BENCHMARK_REF_DIR})
 else()
-	find_path (BENCHMARK_REF_DIR_FOUND .benchmarks_ref ${PROJECT_SOURCE_DIR}/../benchmarks_ref)
+    find_path (BENCHMARK_REF_DIR_FOUND .benchmarks_ref
+        ${PROJECT_SOURCE_DIR}/../benchmarks_ref
+        ${PROJECT_SOURCE_DIR}/benchmarks_ref
+    )
 endif()
 
 if(DEFINED TESTDATA_DIR)
@@ -22,6 +28,14 @@ enable_testing()
 
 if(NOT BENCHMARK_DIR_FOUND)
 	return()
+endif()
+
+if(DEFINED ENV{CTEST_NUM_THREADS})
+    set(NUM_CTEST_PROCESSORS $ENV{CTEST_NUM_THREADS})
+elseif(DEFINED ENV{NUM_THREADS})
+    set(NUM_CTEST_PROCESSORS $ENV{NUM_THREADS})
+else()
+    set(NUM_CTEST_PROCESSORS 3)
 endif()
 
 # Print benchmark config summary
@@ -54,16 +68,28 @@ foreach(LABEL all short normal long exceeding)
 		set(TARGET_NAME benchmarks-${LABEL})
 	endif()
 	add_custom_target(${TARGET_NAME}
-		COMMAND ${CMAKE_CTEST_COMMAND} --label-regex ${LABEL} --force-new-ctest-process --output-on-failure
-		${CONFIG_PARAMETER} --parallel ${PROCESSOR_COUNT} DEPENDS ogs
+        COMMAND ${CMAKE_CTEST_COMMAND} -T Test
+            --label-regex ${LABEL} --force-new-ctest-process --output-on-failure
+            ${CONFIG_PARAMETER} --parallel ${NUM_CTEST_PROCESSORS}
+        DEPENDS ogs
+        USES_TERMINAL
 	)
 endforeach()
 add_custom_target(benchmarks-short-normal
-	COMMAND ${CMAKE_CTEST_COMMAND} --label-regex "short\\|normal" --force-new-ctest-process --output-on-failure
-	${CONFIG_PARAMETER} --parallel ${PROCESSOR_COUNT} DEPENDS ogs)
+    COMMAND ${CMAKE_CTEST_COMMAND} -T Test
+        --label-regex "short\\|normal" --force-new-ctest-process --output-on-failure
+        ${CONFIG_PARAMETER} --parallel ${NUM_CTEST_PROCESSORS}
+    DEPENDS ogs
+    USES_TERMINAL
+)
 add_custom_target(benchmarks-short-normal-long
-	COMMAND ${CMAKE_CTEST_COMMAND} --label-regex "short\\|normal\\|long" --force-new-ctest-process --output-on-failure
-	${CONFIG_PARAMETER} --parallel ${PROCESSOR_COUNT} DEPENDS ogs)
+    COMMAND ${CMAKE_CTEST_COMMAND} -T Test
+        --label-regex "short\\|normal\\|long" --force-new-ctest-process
+        --output-on-failure
+        ${CONFIG_PARAMETER} --parallel ${NUM_CTEST_PROCESSORS}
+    DEPENDS ogs
+    USES_TERMINAL
+)
 
 set_directory_properties(PROPERTIES
 	ADDITIONAL_MAKE_CLEAN_FILES ${PROJECT_BINARY_DIR}/benchmarks
