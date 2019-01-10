@@ -54,7 +54,10 @@ if(OGS_NO_EXTERNAL_LIBS)
 	return()
 endif()
 
-find_path(OGS_LIBS_DIR_FOUND .dummy PATHS ${CMAKE_SOURCE_DIR}/../Libs NO_DEFAULT_PATH)
+find_path(OGS_LIBS_DIR_FOUND .dummy PATHS
+    ${CMAKE_SOURCE_DIR}/../Libs
+    /opt/ogs/ogs5-libs
+    NO_DEFAULT_PATH)
 if(OGS_LIBS_DIR_FOUND)
 	# Find precompiled libraries (for BRNS GEMS LIS)
 	find_path (OGS_PRECOMPILED_LIBS_DIR_FOUND BrnsDll.lib ${OGS_LIBS_DIR_FOUND}/precompiled)

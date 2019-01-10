@@ -1,5 +1,5 @@
 #!/usr/bin/env groovy
-@Library('jenkins-pipeline@1.0.15') _
+@Library('jenkins-pipeline@1.0.16') _
 
 pipeline {
     agent none
@@ -31,46 +31,143 @@ pipeline {
                         }
                     }
                 }
-                stage('Linux') {
+                stage('Linux-FEM') {
                     agent { label 'envinf1' }
                     steps {
-                        dir('benchmarks') { git 'https://github.com/ufz/ogs5-benchmarks.git' }
-                        dir('benchmarks_ref') { git 'https://github.com/ufz/ogs5-benchmarks_ref.git' }
                         script {
-                            configure {
-                                cmakeOptions =
-                                    "-DOGS_CONFIG=FEM " +
-                                    "-DOGS_USE_CVODE=ON " +
-                                    "-DOGS_NO_EXTERNAL_LIBS=ON " +
-                                    "-DNUMDIFF_TOOL_PATH=/usr/local/numdiff/5.8.1-1/bin/numdiff" +
-                                    "-DOGS_CPU_ARCHITECTURE=generic"
-                                dir="build_FEM"
-                                env="envinf1/cli.sh"
-                            }
-                            build {
-                                dir="build_FEM"
-                                env="envinf1/cli.sh"
-                                log="build.log"
-                            }
-                            build {
-                                dir="build_FEM"
-                                env="envinf1/cli.sh"
-                                target="benchmarks-short-normal-long"
+                            ogs5BuildLinux {
+                                config="FEM"
+                                cmakeOptions = " -DOGS_USE_CVODE=ON " +
+                                               " -DOGS_NO_EXTERNAL_LIBS=ON "
                             }
                         }
                     }
                     post {
-                        always {
-                            recordIssues enabledForFailure: true,
-                                tools: [gcc4(name: 'GCC', pattern: 'build_FEM/build.log')],
-                                unstableTotalAll: 3
-                            xunit([CTest(pattern: 'build_FEM/Testing/**/*.xml')])
-                            archiveArtifacts allowEmptyArchive: true,
-                                             artifacts: 'build_FEM/benchmarks/**/*.numdiff'
-                        }
-                        success {
-                            archiveArtifacts 'build_FEM/*.tar.gz'
-                        }
+                        always { script { ogs5PostAlways {
+                            config="FEM"
+                            warnings=1 } } }
+                        success { script { ogs5PostSuccess { config="FEM" } } }
+                    }
+                }
+                stage('Linux-SP') {
+                    agent { label 'envinf1' }
+                    steps {
+                        script { ogs5BuildLinux { config="SP" } }
+                    }
+                    post {
+                        always { script { ogs5PostAlways {
+                            config="SP"
+                            warnings=1} } }
+                        success { script { ogs5PostSuccess { config="SP" } } }
+                    }
+                }
+                stage('Linux-GEMS') {
+                    agent { label 'envinf1' }
+                    steps {
+                        script { ogs5BuildLinux { config="GEMS" } }
+                    }
+                    post {
+                        always { script { ogs5PostAlways {
+                            config="GEMS"
+                            warnings=73 } } }
+                        success { script { ogs5PostSuccess { config="GEMS" } } }
+                    }
+                }
+                stage('Linux-PQC') {
+                    agent { label 'envinf1' }
+                    steps {
+                        script { ogs5BuildLinux { config="PQC" } }
+                    }
+                    post {
+                        always { script { ogs5PostAlways {
+                            config="PQC"
+                            warnings=3 } } }
+                        success { script { ogs5PostSuccess { config="PQC" } } }
+                    }
+                }
+                stage('Linux-IPQC') {
+                    agent { label 'envinf1' }
+                    steps {
+                        script { ogs5BuildLinux { config="IPQC" } }
+                    }
+                    post {
+                        always { script { ogs5PostAlways {
+                            config="IPQC"
+                            warnings=112 } } }
+                        success { script { ogs5PostSuccess { config="IPQC" } } }
+                    }
+                }
+                stage('Linux-BRNS') {
+                    agent { label 'envinf1' }
+                    steps {
+                        script { ogs5BuildLinux { config="BRNS" } }
+                    }
+                    post {
+                        always { script { ogs5PostAlways {
+                            config="BRNS"
+                            warnings=4 } } }
+                        success { script { ogs5PostSuccess { config="BRNS" } } }
+                    }
+                }
+                stage('Linux-MKL') {
+                    agent { label 'envinf1' }
+                    steps {
+                        script { ogs5BuildLinux {
+                            config="MKL"
+                            cmakeOptions="-DMKL_DIR=/opt/intel/mkl"
+                        } }
+                    }
+                    post {
+                        always { script { ogs5PostAlways { config="MKL" } } }
+                        success { script { ogs5PostSuccess { config="MKL" } } }
+                    }
+                }
+                stage('Linux-LIS') {
+                    agent { label 'envinf1' }
+                    steps {
+                        script { ogs5BuildLinux { config="LIS" } }
+                    }
+                    post {
+                        always { script { ogs5PostAlways {
+                            config="LIS"
+                            warnings=0 } } }
+                        success { script { ogs5PostSuccess { config="LIS" } } }
+                    }
+                }
+                stage('Linux-MPI') {
+                    agent { label 'envinf1' }
+                    steps {
+                        script { ogs5BuildLinux { config="MPI" } }
+                    }
+                    post {
+                        always { script { ogs5PostAlways {
+                            config="MPI"
+                            warnings=2 } } }
+                        success { script { ogs5PostSuccess { config="MPI" } } }
+                    }
+                }
+                stage('Linux-PETSC') {
+                    agent { label 'envinf1' }
+                    steps {
+                        script { ogs5BuildLinux { config="PETSC" } }
+                    }
+                    post {
+                        always { script { ogs5PostAlways {
+                            config="PETSC"
+                            warnings=5 } } }
+                        success { script { ogs5PostSuccess { config="PETSC" } } }
+                    }
+                }
+                stage('Linux-PETSC_GEMS') {
+                    agent { label 'envinf1' }
+                    steps {
+                        script { ogs5BuildLinux { config="PETSC_GEMS" } }
+                    }
+                    post {
+                        always { script { ogs5PostAlways {
+                            config="PETSC_GEMS"
+                            warnings=92 } } }
+                        success { script { ogs5PostSuccess { config="PETSC_GEMS" } } }
                     }
                 }
             }

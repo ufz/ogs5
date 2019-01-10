@@ -18,4 +18,3 @@ module rm gmp/5.1.2-1
 module load gmp-shared/6.1.2-1
 
 export PATH=$PATH:/data/ogs/phreeqc/bin
-ln -s /opt/ogs/ogs5-libs Libs || :
