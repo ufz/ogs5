@@ -40,7 +40,7 @@ set_property(CACHE OGS_LSOLVER PROPERTY STRINGS
 option(BLUE_G "Blue/G optimization" OFF)
 option(PARALLEL_USE_MPI "Use MPI parallization" OFF)
 option(OGS_USE_JFNK "Use Jacobain free method for solving H2M" OFF)
-option(OGS_USE_LIS "Use Lis solver" OFF)
+option(OGS_USE_LIS "Use LIS solver" OFF)
 option(OGS_USE_MKL "Use PARDISO in MKL" OFF)
 option(OGS_USE_CVODE "Use sundials cvode for TNEQ/TES" OFF)
 set(OGS_CPU_ARCHITECTURE "native" CACHE STRING "Processor architecture, defaults to native.")
@@ -79,7 +79,7 @@ set(OGS_CONFIG_DEFAULT_LSOLVER "RF" CACHE INTERNAL "OGS default linear solver ty
 set(OGS_CONFIG_DEFAULT_CHEMSOLVER "NONE" CACHE INTERNAL "OGS default geochemical solver library")
 
 if (OGS_CONFIG STREQUAL SP)
-	set(OGS_CONFIG_DEFAULT_LSOLVER　"SP" CACHE INTERNAL "" FORCE)
+	set(OGS_CONFIG_DEFAULT_LSOLVER "SP" CACHE INTERNAL "" FORCE)
 elseif (OGS_CONFIG STREQUAL JFNK)
 	set(OGS_CONFIG_DEFAULT_LSOLVER "SP" CACHE INTERNAL "" FORCE)
 elseif (OGS_CONFIG STREQUAL GEMS)
