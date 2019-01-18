@@ -13,8 +13,8 @@ module load petsc/3.7.6_maint_gcc6.2.0_openmpi_gcc_1.8.8-1
 
 # Tools
 module load openmpi/gcc/1.8.8-1
-module load numdiff/5.8.1-1
-module rm gmp/5.1.2-1
+module load numdiff/5.9_gcc_6.2.0_1
+#module rm gmp/5.1.2-1
 module load gmp-shared/6.1.2-1
 
 export PATH=$PATH:/data/ogs/phreeqc/bin
