@@ -45,6 +45,8 @@
 #include "minkley.h"
 #include "burgers.h"
 
+#include "LinAlg/GaussAlgorithm.h"
+
 std::vector<SolidProp::CSolidProperties*> msp_vector;
 std::vector<std::string> msp_key_word_vector;  // OK
 
@@ -6046,6 +6048,9 @@ int CSolidProperties::CalStress_and_TangentialMatrix_SYS(
     if (pcs_deformation == 1)
         F = -1.0;
 
+    MathLib::GaussAlgorithm<Math_Group::Matrix> linear_solver(
+        *LocalJacobi, LocalJacobi->Rows());
+
     PLASTIC = 0;
     if (F > TolF && !PreLoad) /* In Yield Status */
     {
@@ -6576,8 +6581,8 @@ int CSolidProperties::CalStress_and_TangentialMatrix_SYS(
                         damping = 0.2;
 
                     //------  Solve the linear equation
-                    Gauss_Elimination(LocDim, *LocalJacobi, Li, x_l);
-                    Gauss_Back(LocDim, *LocalJacobi, rhs_l, Li, x_l);
+                    // the solution ooverrides rhs_l
+                    linear_solver.execute(rhs_l);
                     //------  End Solve the linear equation
 
                     //------ Compute the error of the solution
@@ -6608,7 +6613,9 @@ int CSolidProperties::CalStress_and_TangentialMatrix_SYS(
 
                     //----- Update the Newton-Raphson step
                     for (i = 0; i < LocDim; i++)
-                        x_l[i] *= damping;
+                    {
+                        x_l[i] =  rhs_l[i] * damping;
+                    }
 
                     for (i = 0; i < LengthStrs; i++)
                     {
@@ -6661,9 +6668,9 @@ int CSolidProperties::CalStress_and_TangentialMatrix_SYS(
                             rhs_l[i] = 1.0;
                     }
                     // the i_th column of the invJac matrix
-                    Gauss_Back(LocDim, *LocalJacobi, rhs_l, Li, x_l);
+                    linear_solver.executeWithExistedElimination(rhs_l);
                     for (i = 0; i < LocDim - 1; i++)
-                        (*inv_Jac)(i, j) = x_l[i];
+                        (*inv_Jac)(i, j) = rhs_l[i];
                 }
 
                 //- 2.  A*A*A*... -
