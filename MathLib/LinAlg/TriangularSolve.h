@@ -22,16 +22,15 @@ namespace MathLib
  * assumes \f$L_{ii} = 1.0\f$, \f$i=1,...,n\f$, \f$b\f$ is destroyed
  * @param L the lower triangular matrix
  * @param b at beginning the right hand side vector, at the end the solution
+ * @param dim the dimension of the matrix.
  * vector
  */
-template <typename FLOAT_TYPE>
-void forwardSolve(const Matrix<FLOAT_TYPE>& L, FLOAT_TYPE* b)
+template <typename Matrix>
+void forwardSolve(const Matrix& L, double* b, const std::size_t dim)
 {
-    size_t m(L.getNRows());
-
-    for (size_t r = 0; r < m; r++)
+    for (size_t r = 0; r < dim; r++)
     {
-        FLOAT_TYPE t(0.0);
+        double t(0.0);
         for (size_t c = 0; c < r; c++)
             t += L(r, c) * b[c];
         b[r] = b[r] - t;
@@ -43,15 +42,16 @@ void forwardSolve(const Matrix<FLOAT_TYPE>& L, FLOAT_TYPE* b)
  * \f$U\f$, where \f$U\f$ is a upper triangular matrix.
  * @param U upper triangular matrix
  * @param z at beginning the right hand side, at the end the solution
+ * @param dim the dimension of the matrix.
  */
-template <typename FLOAT_TYPE>
-void backwardSolve(const Matrix<FLOAT_TYPE>& U, FLOAT_TYPE* z)
+template <typename Matrix>
+void backwardSolve(const Matrix& U, double* z, const std::size_t dim)
 {
-    size_t m(U.getNRows()), n(U.getNCols());
+    const int m = static_cast<int>(dim);
     for (int r = m - 1; r >= 0; r--)
     {
-        FLOAT_TYPE t(0.0);
-        for (size_t c = r + 1; c < n; c++)
+        double t(0.0);
+        for (size_t c = r + 1; c < dim; c++)
         {
             t += U(r, c) * z[c];
         }
@@ -66,19 +66,19 @@ void backwardSolve(const Matrix<FLOAT_TYPE>& U, FLOAT_TYPE* z)
  * @param mat the upper triangular matrix
  * @param x the solution of the system of linear equations
  * @param b the right hand side
+ * @param dim the dimension of the matrix.
  */
-template <typename FLOAT_TYPE>
-void backwardSolve(Matrix<FLOAT_TYPE> const& mat, FLOAT_TYPE* x, FLOAT_TYPE* b)
+template <typename Matrix>
+void backwardSolve(Matrix const& mat, double* x, double const* const b,
+                   const std::size_t dim)
 {
-    size_t n_cols(mat.getNCols());
-    for (int r = (n_cols - 1); r >= 0; r--)
+    const int n = static_cast<int>(dim);
+    for (int i = 0; i < n; i++)
     {
-        FLOAT_TYPE t(0.0);
-
-        for (size_t c = r + 1; c < n_cols; c++)
-            t += mat(r, c) * b[c];
-        x[r] = (b[r] - t) / mat(r, r);
+        x[i] = b[i];
     }
+
+    backwardSolve(mat, x, dim);
 }
 }  // end namespace MathLib
 

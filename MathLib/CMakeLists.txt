@@ -5,11 +5,7 @@ set( HEADERS
 	InterpolationAlgorithms/InverseDistanceInterpolation.h
 	InterpolationAlgorithms/LinearIntervalInterpolation.h
 	InterpolationAlgorithms/PiecewiseLinearInterpolation.h
-	LinAlg/DenseDirectLinearSolver.h
-	LinAlg/DirectLinearSolver.h
 	LinAlg/GaussAlgorithm.h
-	LinAlg/IterativeLinearSolver.h
-	LinAlg/LinearSolver.h
 	LinAlg/TriangularSolve.h
 	LinAlg/VectorNorms.h
 	LinkedTriangle.h
@@ -24,7 +20,6 @@ set( SOURCES
 	EarClippingTriangulation.cpp
 	InterpolationAlgorithms/CubicSpline.cpp
 	InterpolationAlgorithms/PiecewiseLinearInterpolation.cpp
-	LinAlg/TriangularSolve.cpp
 	LinkedTriangle.cpp
 	MathTools.cpp
 )

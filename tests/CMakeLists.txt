@@ -29,6 +29,10 @@ set ( SOURCES ${SOURCES}
 	Matrix/testMatrix.cpp
     )
 
+set ( SOURCES ${SOURCES}
+	LinAlg/testGaussAlgorithm.cpp
+    )
+
 include_directories(
 	${CMAKE_SOURCE_DIR}/Base
 	${CMAKE_SOURCE_DIR}/FEM

@@ -19,8 +19,6 @@
 // BaseLib
 #include "swap.h"
 
-#include "Matrix.h"
-#include "DenseDirectLinearSolver.h"
 #include "TriangularSolve.h"
 
 namespace MathLib
@@ -33,8 +31,8 @@ namespace MathLib
  * the entries of A change! The solution for a specific
  * right hand side is computed by the method execute().
  */
-template <typename FLOAT_TYPE>
-class GaussAlgorithm : public MathLib::DenseDirectLinearSolver
+template <typename Matrix>
+class GaussAlgorithm
 {
 public:
     /**
@@ -46,17 +44,27 @@ public:
      * Attention: the given matrix will be destroyed!
      * @return a object of type GaussAlgorithm
      */
-    GaussAlgorithm(Matrix<FLOAT_TYPE>& A)
-        : _mat(A), _n(_mat.getNRows()), _perm(new size_t[_n])
+    GaussAlgorithm(Matrix& A, const std::size_t dim)
+        : _mat(A), _n(dim), _perm(std::vector<std::size_t>(dim, 0))
     {
-        size_t k, i, j, nr(_mat.getNRows()), nc(_mat.getNCols());
+    }
 
-        for (k = 0; k < nc; k++)
+    /**
+     * Method solves the linear system \f$A x = b\f$ (based on the LU
+     * factorization) using forward solve and backward solve
+     * @param b at the beginning the right hand side, at the end the solution
+     */
+    void execute(double* b)
+    {
+        const std::size_t nr(_n);
+        const std::size_t nc(_n);
+
+        for (std::size_t k = 0; k < nc; k++)
         {
             // search pivot
-            FLOAT_TYPE t = fabs(_mat(k, k));
+            double t = fabs(_mat(k, k));
             _perm[k] = k;
-            for (i = k + 1; i < nr; i++)
+            for (std::size_t i = k + 1; i < nr; i++)
             {
                 if (fabs(_mat(i, k)) > t)
                 {
@@ -68,40 +76,32 @@ public:
             // exchange rows
             if (_perm[k] != k)
             {
-                for (j = 0; j < nc; j++)
+                for (std::size_t j = 0; j < nc; j++)
                 {
                     BASELIB::swap(_mat(_perm[k], j), _mat(k, j));
                 }
             }
 
             // eliminate
-            for (i = k + 1; i < nr; i++)
+            for (std::size_t i = k + 1; i < nr; i++)
             {
-                const FLOAT_TYPE l(_mat(i, k) / _mat(k, k));
-                for (j = k; j < nc; j++)
+                const double l(_mat(i, k) / _mat(k, k));
+                for (std::size_t j = k; j < nc; j++)
                 {
                     _mat(i, j) -= _mat(k, j) * l;
                 }
                 _mat(i, k) = l;
             }
         }
+
+        executeWithExistedElimination(b);
     }
-    /**
-     * destructor, deletes the permutation
-     */
-    ~GaussAlgorithm() { delete[] _perm; }
-    /**
-     * Method solves the linear system \f$A x = b\f$ (based on the LU
-     * factorization) using forward solve and backward solve
-     * @param b at the beginning the right hand side, at the end the solution
-     */
-    void execute(FLOAT_TYPE* b) const
+
+    void executeWithExistedElimination(double* b)
     {
         permuteRHS(b);
-        forwardSolve<FLOAT_TYPE>(_mat,
-                                 b);  // L z = b, b will be overwritten by z
-        backwardSolve<FLOAT_TYPE>(
-            _mat, b);  // U x = z, b (z) will be overwritten by x
+        forwardSolve(_mat, b, _n);   // L z = b, b will be overwritten by z
+        backwardSolve(_mat, b, _n);  // U x = z, b (z) will be overwritten by x
     }
 
 private:
@@ -110,7 +110,7 @@ private:
      * row permutations of the LU factorization
      * @param b the entries of the vector b are permuted
      */
-    void permuteRHS(FLOAT_TYPE* b) const
+    void permuteRHS(double* b) const
     {
         for (size_t i = 0; i < _n; i++)
         {
@@ -124,17 +124,18 @@ private:
     /**
      * a reference to the matrix
      */
-    Matrix<FLOAT_TYPE>& _mat;
+    Matrix& _mat;
 
     /**
      * the size of the matrix
      */
-    size_t _n;
+    const size_t _n;
 
     /**
      * the permutation of the rows
      */
-    size_t* _perm;
+
+    std::vector<std::size_t> _perm;
 };
 }  // end namespace MathLib
 
