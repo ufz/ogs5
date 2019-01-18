@@ -7,7 +7,6 @@ set( HEADERS
 	InterpolationAlgorithms/PiecewiseLinearInterpolation.h
 	LinAlg/GaussAlgorithm.h
 	LinAlg/TriangularSolve.h
-	LinAlg/VectorNorms.h
 	LinkedTriangle.h
 	MathTools.h
 	Matrix.h
