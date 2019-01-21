@@ -347,11 +347,6 @@ private:
     std::vector<std::string> capacity_pcs_name_vector;
     std::vector<std::string> conductivity_pcs_name_vector;
 
-    // Mini linear solver
-    void Gauss_Elimination(const int DimE, Math_Group::Matrix& AA, int* L,
-                           double* xx);
-    void Gauss_Back(const int DimE, Math_Group::Matrix& AA, double* rhs, int* L,
-                    double* xx);
     // Thermal properties
     int thermal_conductivity_tensor_type;
     int thermal_conductivity_tensor_dim;
