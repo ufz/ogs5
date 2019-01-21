@@ -19,11 +19,11 @@ if(TESTDATA_DIR_FOUND)
 	)
 endif()
 
-if (NOT MSVC)
-	set ( SOURCES ${SOURCES}
-		testOgs.cxx
-		testBmSkel.cxx)
-endif ()
+#if (NOT MSVC)
+#	set ( SOURCES ${SOURCES}
+#		testOgs.cxx
+#		testBmSkel.cxx)
+#endif ()
 
 set ( SOURCES ${SOURCES}
 	Matrix/testMatrix.cpp
