@@ -23,6 +23,8 @@
 #include "display.h"
 #include "makros.h"
 
+#include <cstdarg>
+
 extern FILE* OpenMsgFile(void);
 extern void CloseMsgFile(FILE*);
 
@@ -56,13 +58,16 @@ void DisplayMsg(const char* s)
  Programming:
   03/2012 JT
 **************************************************************************/
-void ScreenMessage(const char* message)
+void ScreenMessage(const char *format , ... )
 {
 #ifdef USE_MPI
     if (myrank > 0)
         return;
 #endif
-    printf("%s", message);
+   va_list arglist;
+   va_start( arglist, format );
+   vprintf( format, arglist );
+   va_end( arglist );
 }
 
 /**************************************************************************/

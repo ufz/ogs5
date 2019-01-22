@@ -27,7 +27,7 @@
 //#include <ctype.h>
 
 /*JT: Send output message*/
-extern void ScreenMessage(const char* message);
+extern void ScreenMessage(const char *format , ... );
 /* Gibt Programm-Abspann aus */
 extern void DisplayMsg(const char* s);
 /* Schreibt Zeichenkette ohne Zeilenvorschub auf Standardausgabe */
