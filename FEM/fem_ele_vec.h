@@ -19,12 +19,20 @@
 
 #include "fem_ele.h"
 #include "FEMEnums.h"
+#include "Material/Solid/BGRaCreep.h"
 
 namespace SolidProp
 {
 class CSolidProperties;
 }
 
+namespace MaterialLib
+{
+namespace solid
+{
+class BGRaCreep;
+}
+}
 class CRFProcess;
 class CFluidProperties;
 class CMediumProperties;
@@ -62,6 +70,7 @@ public:
 
 private:
     // Friend class
+    friend class MaterialLib::solid::BGRaCreep;
     friend class SolidProp::CSolidProperties;
     friend class process::CRFProcessDeformation;
     friend class ::CMediumProperties;
