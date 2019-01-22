@@ -186,6 +186,8 @@ public:
                             Math_Group::Matrix& Consistent_Tangent,
                             double Temperature, double& local_res);
 
+    double getShearModulus(const double refence = 0.0) const;
+    double getYoungsModulus(const double refence = 0.0) const;
     double getBulkModulus() const;
     double getBiotsConstant() const { return biot_const; }
 
@@ -371,14 +373,6 @@ private:
 
     bool CheckTemperature_in_PhaseChange(const double T0, const double T1);
     double Enthalpy(double temperature, const double latent_factor);
-
-#ifdef RFW_FRACTURE
-    double Youngs_Modulus(CElem* elem, double refence = 0.0);
-    // RFW, for fracture calc
-    double Get_Youngs_Min_Aperture(CElem* elem);
-#else
-    double Youngs_Modulus(double refence = 0.0);
-#endif
 
     void CalcYoungs_SVV(const double strain_v);
 

@@ -1759,11 +1759,16 @@ void CSolidProperties::HeatConductivityTensor(const int dim, double* tensor,
         tensor[i] *= base_thermal_conductivity;
 }
 
+double CSolidProperties::getShearModulus(const double reference) const
+{
+    return 0.5 * getYoungsModulus(reference) / (1. + Poisson_Ratio());
+}
+
 /**************************************************************************
    FEMLib-Method: CSolidProperties::Youngs_Modulus(const double reference = 0.0)
 const Task: Get density Programing: 08/2004 WW Implementation
 **************************************************************************/
-double CSolidProperties::Youngs_Modulus(double reference)
+double CSolidProperties::getYoungsModulus(const double reference) const
 {
     double val = 0.0;
     switch (Youngs_mode)
@@ -2140,7 +2145,7 @@ void CSolidProperties::LocalNewtonMinkley(
 void CSolidProperties::Calculate_Lame_Constant()
 {
     double nv = Poisson_Ratio();
-    E = Youngs_Modulus();  // Constant at present
+    E = getYoungsModulus();  // Constant at present
     // WX:1.2013. time dependet
     if (Time_Dependent_E_nv_mode > 0)
     {
