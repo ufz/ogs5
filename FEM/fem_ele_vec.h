@@ -210,9 +210,8 @@ private:
     double* Disp;
 
     // Temperatures of nodes
-    double* Temp;
+    double* nodal_dT;
     double* T1;
-    double Tem;
 
     double _wettingS;
 

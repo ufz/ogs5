@@ -62,6 +62,8 @@ class Invariants;
 }
 namespace SolidProp
 {
+class BGRaCreep;
+
 typedef Eigen::Matrix<double, 6, 1> KVec;
 class CSolidProperties
 {
@@ -470,6 +472,8 @@ private:
     Burgers::SolidBurgers* material_burgers;
     SolidMath::Invariants* smath;
     FiniteElement::SolidReactiveSystem _reactive_system;
+
+    BGRaCreep* _bgra_creep;
 
     // Friends that can access to this data explicitly
     friend bool ::MSPRead(const std::string& given_file_base_name);
