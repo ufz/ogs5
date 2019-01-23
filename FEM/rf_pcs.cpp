@@ -5796,8 +5796,10 @@ else
 #endif
     IncorporateBoundaryConditions();
 
-    // ofstream Dum("rf_pcs.txt", ios::out); // WW
-    // eqs_new->Write(Dum);   Dum.close();
+#ifdef NEW_EQS
+   // ofstream Dum("rf_pcs.txt", ios::out); // WW
+   // eqs_new->Write(Dum);   Dum.close();
+#endif
 
 #define nOUTPUT_EQS_BIN
 #ifdef OUTPUT_EQS_BIN
@@ -6530,9 +6532,6 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
     CBoundaryCondition* m_bc;           // WW
     CFunction* m_fct = NULL;            // OK
     bool is_valid = false;              // OK
-#ifndef USE_PETSC
-    bool onExBoundary = false;  // WX
-#endif
     bool excavated = false;          // WX
     bool onDeactiveBoundary = true;  // WX:09.2011
 #if defined(USE_PETSC)  // || defined(other parallel libs)//03~04.3012. WW
@@ -6627,14 +6626,11 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
                               &valid) < MKleinsteZahl)
                 continue;
 
+
         // WX: 01.2011. for excavation bc, check if excavated and if on boundary
         if (m_bc->getExcav() > 0)
         {
             CNode* node;
-// unsigned int counter;	//void warning
-#ifndef USE_PETSC
-            onExBoundary = false;  // WX:01.2011
-#endif
             excavated = false;
 
             node = m_msh->nod_vector[m_bc_node->geo_node_number];
@@ -6646,37 +6642,6 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
                                          min_excavation_range))
             {
                 excavated = true;
-#ifndef USE_PETSC
-                for (unsigned int j = 0;
-                     j < node->getConnectedElementIDs().size();
-                     j++)
-                {
-                    CElem* elem =
-                        m_msh->ele_vector[node->getConnectedElementIDs()[j]];
-                    if (!elem->GetMark())
-                        continue;
-
-                    double const* tmp_ele_coor(elem->GetGravityCenter());
-                    // if(elem->GetPatchIndex()!=ExcavMaterialGroup){
-                    // if(elem->GetExcavState()==-1)
-                    if (elem->GetPatchIndex() !=
-                        static_cast<size_t>(ExcavMaterialGroup))
-                    // to be improved for more than 1 MG excavation
-                    {
-                        onExBoundary = true;
-                        break;
-                    }
-                    else if (tmp_ele_coor[ExcavDirection] >
-                                 min_excavation_range &&
-                             tmp_ele_coor[ExcavDirection] <
-                                 max_excavation_range)
-                    {
-                        onExBoundary = true;
-                        // tmp_counter1++;
-                        break;
-                    }
-                }
-#endif
             }
         }
 
@@ -6987,7 +6952,7 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
 #if !defined(USE_PETSC)  // && !defined(other parallel libs)//04.3013. WW
                 if (m_bc->getExcav() > 0)
                 {
-                    if (excavated && !onExBoundary)
+                    if (excavated)
                     {
 #ifdef NEW_EQS
                         eqs_p->SetKnownX_i(bc_eqs_index,
