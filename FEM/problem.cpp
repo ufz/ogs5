@@ -3508,9 +3508,19 @@ inline double Problem::HeatTransport()
     // CB This is a cheat to map a 2D horizontal heat pump distribution on a
     // vertical model
     if (REACTINT_vec.size() > 0)
+    {
         if (REACTINT_vec[0]->heatpump_2DhTO2Dv)
+        {
             REACTINT_vec[0]->Heatpump_2DhTO2Dv_Mapping(
                 true);  // Map Heat plume CL to 2D vertical
+        }
+    }
+
+    if (m_pcs->tim_type == TimType::STEADY)
+    {
+        m_pcs->selected = false;
+        error = 0.0;
+    }
 
     return error;
 }
