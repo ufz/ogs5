@@ -33,11 +33,13 @@ class BGRaCreep
 {
 public:
     BGRaCreep(const double A, const double n, const double sigma_f,
-              const double Q, const double tolerance, const int max_iterations)
+              const double Q, const double reference_temperture,
+              const double tolerance, const int max_iterations)
         : _a(A),
           _n(n),
           _sigma_f(sigma_f),
           _q(Q),
+		  _reference_temperture(reference_temperture),
           _tolerance(tolerance),
           _max_iterations(max_iterations),
           _jacobian(Math_Group::Matrix(6, 6))
@@ -64,11 +66,14 @@ public:
                          double const* const stress, double* dstress,
                          const int update_s);
 
+    double getReferenceTemterature() const { return _reference_temperture; }
+
 private:
     const double _a;        /// A parameter determined by experiment.
     const double _n;        /// Creep rate exponent n.
     const double _sigma_f;  /// A stress scaling factor.
-    const double _q;        /// Activation energy
+    const double _q;        /// Activation energy.
+    const double _reference_temperture;  /// Reference temperature.
 
     /// Tolerance for the convergence of nonlinear iterations.
     const double _tolerance;

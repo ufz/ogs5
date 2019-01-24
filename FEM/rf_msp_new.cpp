@@ -578,10 +578,11 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
             {
                 Creep_mode = 21;
                 in_sd.str(GetLineFromFile1(msp_file));
-                double A, n, sigma_f, Q, tolerance, max_iterations;
-                in_sd >> A >> n >> sigma_f >> Q >> tolerance >> max_iterations;
+                double A, n, sigma_f, Q, refT, tolerance, max_iterations;
+                in_sd >> A >> n >> sigma_f >> Q >> refT >> tolerance
+                      >> max_iterations;
                 in_sd.clear();
-                _bgra_creep = new BGRaCreep(A, n, sigma_f, Q, tolerance,
+                _bgra_creep = new BGRaCreep(A, n, sigma_f, Q, refT, tolerance,
                                             max_iterations);
             }
             // TN..................................................................

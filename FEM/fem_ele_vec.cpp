@@ -1942,7 +1942,6 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
     //  double J2=0.0;
     double dS = 0.0;
 
-    double T = 0.0;
     bool Strain_TCS = false;
 
 #ifdef JFNK_H2M
@@ -2216,13 +2215,14 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
                              dPhi = 1.0;
                        }
                        break;*/
-				case 9999: // BGRa creep, i,pplicit scheme
-					break;
+                case 9999: // BGRa creep, i,pplicit scheme
+                    break;
             }
         }
         // --------------------------------------------------------------------
         // Stress increment by heat, swelling, or heat
         //
+        double T = 0.0;
         if (Strain_TCS)
         {
             if (PModel == 3)
@@ -2243,16 +2243,7 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
                     strain_ne[i] -= ThermalExpansion * dT;
             }
             // Strain increment by creep
-            if (smat->Creep_mode == 21)  // BGRa with the implicit algorithm
-            {
-                De->multi(strain_ne, dstress);
-                for (i = 0; i < ns; i++)
-                    stress0[i] = (*eleV_DM->Stress)(i, gp);
-                smat->_bgra_creep->integrateStress(
-                    dt, T, *smat, *De, *ConsistDep, stress0, dstress, update);
-                dPhi = 1.0;
-            }
-            else
+            if (smat->Creep_mode != 21)  // not BGRa with the implicit algorithm
             {
                 if (smat->Creep_mode == 1 || smat->Creep_mode == 2 ||
                     smat->Creep_mode == 3 || smat->Creep_mode == 4)
@@ -2275,6 +2266,22 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
                      i++)  // JT: This was commented. It shouldn't be.
                     dstrain[i] += strain_ne[i];
             }
+        }
+
+        // Strain increment by creep
+        if (smat->Creep_mode == 21)  // BGRa with the implicit algorithm
+        {
+            double temperature = T;
+            if (temperature == 0.0)
+                temperature = smat->_bgra_creep->getReferenceTemterature();
+	           else
+                De->multi(strain_ne, dstress);
+
+            for (i = 0; i < ns; i++)
+                stress0[i] = (*eleV_DM->Stress)(i, gp);
+            smat->_bgra_creep->integrateStress(
+                dt, temperature, *smat, *De, *ConsistDep, stress0, dstress, update);
+            dPhi = 1.0;
         }
 
         if (smat->Creep_mode == 1001)  // BURGERS.
