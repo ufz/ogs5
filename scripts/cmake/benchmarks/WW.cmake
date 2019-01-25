@@ -139,6 +139,24 @@ Benchmark(AUTHOR WW
 )
 
 Benchmark(AUTHOR WW
+	PATH M/creep/ImplicitBGRa/ImplicitBGRa
+	CONFIG FEM
+	NUM_PROCESSORS 1
+	RUNTIME 140
+	OUTPUT_FILES
+		ImplicitBGRa_time_POINT1.tec
+)
+
+Benchmark(AUTHOR WW
+	PATH M/creep/CreepAfterExcavationImplicitBGRa/creep_after_excavation
+	CONFIG FEM
+	NUM_PROCESSORS 1
+	RUNTIME 320
+	OUTPUT_FILES
+		creep_after_excavation_time_point_top.tec
+)
+
+Benchmark(AUTHOR WW
 	PATH PETSc/h_tri/h_tri
 	CONFIG PETSC
 	NUM_PROCESSORS 3
