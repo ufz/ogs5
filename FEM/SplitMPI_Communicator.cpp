@@ -13,8 +13,7 @@ MPI_Comm comm_DDC;
 bool SplitMPI_Communicator::CreateCommunicator(MPI_Comm comm_world, int np,
                                                int nb_ddc)
 {
-    int n_DDC;
-    bool splitcomm;
+    bool splitcomm = false;
 
     if ((nb_ddc > 0) && (nb_ddc < np))
     {  // if the number of total cores is larger than the number of DDCs is the
@@ -22,7 +21,7 @@ bool SplitMPI_Communicator::CreateCommunicator(MPI_Comm comm_world, int np,
 // generated will be generated
 #ifdef OGS_FEM_IPQC
         splitcomm = true;
-        n_DDC = nb_ddc;  // number of ddc
+        const int n_DDC = nb_ddc;  // number of ddc
 
         int DDC_ranks[n_DDC];
         for (int k = 0; k < n_DDC; k++)
@@ -63,7 +62,6 @@ bool SplitMPI_Communicator::CreateCommunicator(MPI_Comm comm_world, int np,
        // np, no new MPI groups willnot be
         // generated;
         splitcomm = false;
-        n_DDC = np;
         comm_DDC = comm_world;
         MPI_Comm_size(comm_DDC, &mysize);
         MPI_Comm_rank(comm_DDC, &myrank);
