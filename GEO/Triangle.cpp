@@ -89,7 +89,7 @@ bool Triangle::containsPoint2D(const double* pnt) const
     mat(1, 1) = c[1] - a[1];
     double y[2] = {pnt[0] - a[0], pnt[1] - a[1]};
 
-    MathLib::GaussAlgorithm<MathLib::Matrix<double>> gauss(mat, mat.getNRows());
+    MathLib::GaussAlgorithm<MathLib::Matrix<double> > gauss(mat, mat.getNRows());
     gauss.execute(y);
 
     const double delta(std::numeric_limits<double>::epsilon());
@@ -121,7 +121,7 @@ void getPlaneCoefficients(Triangle const& tri, double c[3])
     c[1] = p1[2];
     c[2] = p2[2];
 
-    MathLib::GaussAlgorithm<MathLib::Matrix<double>> gauss(mat, mat.getNRows());
+    MathLib::GaussAlgorithm<MathLib::Matrix<double> > gauss(mat, mat.getNRows());
     gauss.execute(c);
 }
 

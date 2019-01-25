@@ -115,7 +115,7 @@ bool lineSegmentIntersect(const GEOLIB::Point& a, const GEOLIB::Point& b,
     rhs[0] = c_cpy[0] - a_cpy[0];
     rhs[1] = c_cpy[1] - a_cpy[1];
 
-    GaussAlgorithm<Matrix<double>> lu_solver(mat, mat.getNRows());
+    GaussAlgorithm<Matrix<double> > lu_solver(mat, mat.getNRows());
     lu_solver.execute(rhs);
     if (0 <= rhs[0] && rhs[0] <= 1.0 && 0 <= rhs[1] && rhs[1] <= 1.0)
     {
@@ -199,7 +199,7 @@ bool isPointInTriangle(const double q[3], const double a[3], const double b[3],
         v[0] * (q[0] - a[0]) + v[1] * (q[1] - a[1]) + v[2] * (q[2] - a[2]),
         w[0] * (q[0] - a[0]) + w[1] * (q[1] - a[1]) + w[2] * (q[2] - a[2])};
 
-    MathLib::GaussAlgorithm<Matrix<double>> gauss(mat, mat.getNRows());
+    MathLib::GaussAlgorithm<Matrix<double> > gauss(mat, mat.getNRows());
     gauss.execute(y);
 
     const double lower(-eps);
