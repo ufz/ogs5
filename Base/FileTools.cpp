@@ -158,7 +158,10 @@ std::string getCwd()
 #ifdef WIN32
     _getcwd(cwd, FILENAME_MAX);
 #else
-    getcwd(cwd, FILENAME_MAX);
+    if (getcwd(cwd, FILENAME_MAX) == NULL)
+    {
+        return "";
+    }
 #endif
     return cwd;
 }
