@@ -45,6 +45,8 @@
 #include "minkley.h"
 #include "burgers.h"
 
+#include "LinAlg/GaussAlgorithm.h"
+
 std::vector<SolidProp::CSolidProperties*> msp_vector;
 std::vector<std::string> msp_key_word_vector;  // OK
 
@@ -6046,6 +6048,9 @@ int CSolidProperties::CalStress_and_TangentialMatrix_SYS(
     if (pcs_deformation == 1)
         F = -1.0;
 
+    MathLib::GaussAlgorithm<Math_Group::Matrix> linear_solver(
+        *LocalJacobi, LocalJacobi->Rows());
+
     PLASTIC = 0;
     if (F > TolF && !PreLoad) /* In Yield Status */
     {
@@ -6576,8 +6581,8 @@ int CSolidProperties::CalStress_and_TangentialMatrix_SYS(
                         damping = 0.2;
 
                     //------  Solve the linear equation
-                    Gauss_Elimination(LocDim, *LocalJacobi, Li, x_l);
-                    Gauss_Back(LocDim, *LocalJacobi, rhs_l, Li, x_l);
+                    // the solution ooverrides rhs_l
+                    linear_solver.execute(rhs_l);
                     //------  End Solve the linear equation
 
                     //------ Compute the error of the solution
@@ -6608,7 +6613,9 @@ int CSolidProperties::CalStress_and_TangentialMatrix_SYS(
 
                     //----- Update the Newton-Raphson step
                     for (i = 0; i < LocDim; i++)
-                        x_l[i] *= damping;
+                    {
+                        x_l[i] =  rhs_l[i] * damping;
+                    }
 
                     for (i = 0; i < LengthStrs; i++)
                     {
@@ -6661,9 +6668,9 @@ int CSolidProperties::CalStress_and_TangentialMatrix_SYS(
                             rhs_l[i] = 1.0;
                     }
                     // the i_th column of the invJac matrix
-                    Gauss_Back(LocDim, *LocalJacobi, rhs_l, Li, x_l);
+                    linear_solver.executeWithExistedElimination(rhs_l);
                     for (i = 0; i < LocDim - 1; i++)
-                        (*inv_Jac)(i, j) = x_l[i];
+                        (*inv_Jac)(i, j) = rhs_l[i];
                 }
 
                 //- 2.  A*A*A*... -
@@ -7353,94 +7360,6 @@ void CSolidProperties::dfun2(const double* DevS, const double* RotV,
                 0.5 * (In1 * RotV[i] - mr * DevS[i]) * RotV[j] /
                     (PSI * In1 * In1);
         }
-    }
-}
-
-/**************************************************************************
-   ROCKFLOW - Funktion: CSolidProperties::Gauss_Elimination and Gauss_Back
-
-   Aufgabe: Mini linear equation solver by Gasssian elemination with
-           scaled partial pivoting.
-
-   Formalparameter: (E: Eingabe; R: Rueckgabe; X: Beides)
-   E :
-       const int DimE             : Dimension of the equations
-       double *AA                 : Matrix
-   double * rhs               : Right hand side
-   int *L                     : Teporarily used array
-   double *xx                 : Solution
-   Ergebnis:
-
-   Programmaenderungen:
-   08/2003   WW  Erste Version
-   08/2004   WW  Set as a member of CSolidProperties
- ***************************************************************************/
-void CSolidProperties::Gauss_Elimination(const int DimE, Matrix& AA, int* L,
-                                         double* xx)
-{
-    int i, j, k, jj, lk;
-    double var, R;
-
-    for (i = 0; i < DimE; i++)
-    {
-        L[i] = i;
-        var = 0.0;
-        for (j = 0; j < DimE; j++)
-        {
-            if (fabs(AA(i, j)) > var)
-                var = fabs(AA(i, j));
-            L[i] = i;
-        }
-        xx[i] = var;
-    }
-
-    for (k = 0; k < DimE - 1; k++)
-    {
-        var = 0.0;
-        jj = 0;
-        for (i = k; i < DimE; i++)
-        {
-            R = fabs(AA(L[i], k) / xx[L[i]]);
-
-            if (R > var)
-            {
-                jj = i;
-                var = R;
-            }
-        }
-        lk = L[jj];
-        L[jj] = L[k];
-        L[k] = lk;
-
-        for (i = k + 1; i < DimE; i++)
-        {
-            var = AA(L[i], k) / AA(lk, k);
-
-            for (j = k + 1; j < DimE; j++)
-                AA(L[i], j) -= var * AA(lk, j);
-            AA(L[i], k) = var;
-        }
-    }
-}
-
-void CSolidProperties::Gauss_Back(const int DimE, Matrix& AA, double* rhs,
-                                  int* L, double* xx)
-{
-    int i, j, k;
-    double var;
-
-    /* Back substituting */
-    for (k = 0; k < DimE - 1; k++)
-        for (i = k + 1; i < DimE; i++)
-            rhs[L[i]] -= AA(L[i], k) * rhs[L[k]];
-
-    xx[DimE - 1] = rhs[L[DimE - 1]] / AA(L[DimE - 1], DimE - 1);
-    for (i = DimE - 2; i >= 0; i--)
-    {
-        var = rhs[L[i]];
-        for (j = i + 1; j < DimE; j++)
-            var -= AA(L[i], j) * xx[j];
-        xx[i] = var / AA(L[i], i);
     }
 }
 
