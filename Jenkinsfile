@@ -43,9 +43,7 @@ pipeline {
                         }
                     }
                     post {
-                        always { script { ogs5PostAlways {
-                            config="FEM"
-                            warnings=1 } } }
+                        always { script { ogs5PostAlways { config="FEM" } } }
                         success { script { ogs5PostSuccess { config="FEM" } } }
                     }
                 }
@@ -55,9 +53,7 @@ pipeline {
                         script { ogs5BuildLinux { config="SP" } }
                     }
                     post {
-                        always { script { ogs5PostAlways {
-                            config="SP"
-                            warnings=1} } }
+                        always { script { ogs5PostAlways { config="SP" } } }
                         success { script { ogs5PostSuccess { config="SP" } } }
                     }
                 }
@@ -69,7 +65,7 @@ pipeline {
                     post {
                         always { script { ogs5PostAlways {
                             config="GEMS"
-                            warnings=73 } } }
+                            warnings=36 } } }
                         success { script { ogs5PostSuccess { config="GEMS" } } }
                     }
                 }
@@ -79,9 +75,7 @@ pipeline {
                         script { ogs5BuildLinux { config="PQC" } }
                     }
                     post {
-                        always { script { ogs5PostAlways {
-                            config="PQC"
-                            warnings=3 } } }
+                        always { script { ogs5PostAlways { config="PQC" } } }
                         success { script { ogs5PostSuccess { config="PQC" } } }
                     }
                 }
@@ -91,9 +85,7 @@ pipeline {
                         script { ogs5BuildLinux { config="IPQC" } }
                     }
                     post {
-                        always { script { ogs5PostAlways {
-                            config="IPQC"
-                            warnings=112 } } }
+                        always { script { ogs5PostAlways { config="IPQC" } } }
                         success { script { ogs5PostSuccess { config="IPQC" } } }
                     }
                 }
@@ -105,7 +97,7 @@ pipeline {
                     post {
                         always { script { ogs5PostAlways {
                             config="BRNS"
-                            warnings=4 } } }
+                            warnings=3 } } }
                         success { script { ogs5PostSuccess { config="BRNS" } } }
                     }
                 }
@@ -140,9 +132,7 @@ pipeline {
                         script { ogs5BuildLinux { config="MPI" } }
                     }
                     post {
-                        always { script { ogs5PostAlways {
-                            config="MPI"
-                            warnings=2 } } }
+                        always { script { ogs5PostAlways { config="MPI" } } }
                         success { script { ogs5PostSuccess { config="MPI" } } }
                     }
                 }
@@ -154,7 +144,7 @@ pipeline {
                     post {
                         always { script { ogs5PostAlways {
                             config="PETSC"
-                            warnings=5 } } }
+                            warnings=4 } } }
                         success { script { ogs5PostSuccess { config="PETSC" } } }
                     }
                 }
@@ -166,7 +156,7 @@ pipeline {
                     post {
                         always { script { ogs5PostAlways {
                             config="PETSC_GEMS"
-                            warnings=92 } } }
+                            warnings=36 } } }
                         success { script { ogs5PostSuccess { config="PETSC_GEMS" } } }
                     }
                 }
