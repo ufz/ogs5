@@ -1105,31 +1105,32 @@ CSparseMatrix::CSparseMatrix(const SparseTable& sparse_table, const int dof)
     zero_e = 0.;
 //
 #if defined(LIS) || defined(MKL)  // PCH
-    int counter, counter_ptr = 0, counter_col_idx = 0;
-    int i, k, ii, jj, J, K;
-    int row_in_sparse_table;
+    int counter_ptr = 0, counter_col_idx = 0;
 
     ptr = new int[rows * dof + 1];
     col_idx = new int[dof * dof * size_entry_column];
     entry_index = new int[dof * dof * size_entry_column];
 
+    int i = 0;
+    int ii = 0;
     for (ii = 0; ii < DOF; ii++)
         for (i = 0; i < rows; i++)
         {
             // Store ptr arrary for CRS
             ptr[i + rows * ii] = counter_ptr;
-            row_in_sparse_table = row_index_mapping_o2n[i];
-            for (jj = 0; jj < DOF; jj++)
+            const int row_in_sparse_table = row_index_mapping_o2n[i];
+            for (int jj = 0; jj < DOF; jj++)
             {
-                counter = row_in_sparse_table;
-                for (k = 0; k < max_columns; k++)
+                int counter = row_in_sparse_table;
+                for (int k = 0; k < max_columns; k++)
                 {
                     if (row_in_sparse_table < num_column_entries[k])
                     {
                         // I = ii * rows + i; // row in global matrix
                         // column in global matrix
-                        J = jj * rows + entry_column[counter];
-                        K = (ii * DOF + jj) * size_entry_column + counter;
+                        const int J = jj * rows + entry_column[counter];
+                        const int K = (ii * DOF + jj) *
+                                          size_entry_column + counter;
 
                         // Store column index for CRS
                         col_idx[counter_col_idx] = J;

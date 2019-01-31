@@ -5444,8 +5444,8 @@ int REACT::WriteInputPhreeqcLib(long index, stringstream* out_buff, int* nl)
 
             // get height of node z
             CFEMesh* m_msh = fem_msh_vector[0];  // SB: ToDo hart gesetzt
-            MeshLib::CNode* m_nod = NULL;
-            m_nod = m_msh->nod_vector[index];
+            // MeshLib::CNode* m_nod = NULL;
+            // m_nod = m_msh->nod_vector[index];
             z = m_msh->nod_vector[index]->getData()[2];
 
             // get piezometric hight h
@@ -5828,7 +5828,6 @@ int REACT::ReadOutputPhreeqcNewLib(double* pqc_vec)
     int ntot;
     int index, j;
     double dval, dval1;
-    CRFProcess* m_pcs = NULL;
     int n1, n2, n3, n4, dix = 0;
     CTimeDiscretization* m_tim = NULL;
 
@@ -5866,13 +5865,11 @@ int REACT::ReadOutputPhreeqcNewLib(double* pqc_vec)
             j++;
             if (this->gamma_Hplus > 0)
             {
-                m_pcs = pcs_vector[pqc_process[j]];
                 pcs_vector[pqc_process[j]]->SetNodeValue(
                     index, pqc_index[j] + dix, pqc_vec[index * ntot + j]);
             }
             // pe
             j++;
-            m_pcs = pcs_vector[pqc_process[j]];
             pcs_vector[pqc_process[j]]->SetNodeValue(
                 index, pqc_index[j] + dix, pqc_vec[index * ntot + j]);
 

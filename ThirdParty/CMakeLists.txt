@@ -1,4 +1,17 @@
 add_subdirectory(Brent)
+
+if(COMPILER_IS_GCC)
+    add_compile_options(
+        -Wno-unused-result
+        -Wno-unused-variable
+        -Wno-unused-but-set-variable
+        -Wno-unused-parameter
+        -Wno-sign-compare
+        -Wno-format
+        -Wno-extra
+    )
+endif()
+
 if(OGS_USE_CVODE)
 	set(EXAMPLES_ENABLE OFF CACHE BOOL "ld the SUNDIALS examples")
 	add_subdirectory(cvode)
