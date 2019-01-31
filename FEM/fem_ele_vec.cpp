@@ -26,6 +26,9 @@
 
 #include "rf_mfp_new.h"
 #include "rf_msp_new.h"
+
+#include "Material/Solid/BGRaCreep.h"
+
 #include "tools.h"  //12.2009. WW
 // Equation
 #if defined(NEW_EQS)
@@ -1950,8 +1953,7 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
         JFNK = true;
 #endif
     //
-    const double ThermalExpansion = (smat->Thermal_Expansion() > 0.0) ?
-        smat->Thermal_Expansion() : 0.0;
+    const double ThermalExpansion = smat->Thermal_Expansion();
 
     // Get porosity model
     // ---- Material properties

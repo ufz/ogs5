@@ -19,7 +19,6 @@
 
 #include "fem_ele.h"
 #include "FEMEnums.h"
-#include "Material/Solid/BGRaCreep.h"
 
 namespace SolidProp
 {
