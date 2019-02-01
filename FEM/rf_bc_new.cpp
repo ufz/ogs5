@@ -851,22 +851,21 @@ bool BCRead(std::string const& file_base_name,
     std::ifstream bc_file(bc_file_name.data(), std::ios::in);
     if (!bc_file.good())
     {
-        std::cout << "! Error in BCRead: No boundary conditions !"
-                  << "\n";
+        Display::ScreenMessage(
+            "! Error in BCRead: No boundary conditions !\n");
         return false;
     }
 
     // Keyword loop
-    std::cout << "BCRead ... " << std::flush;
+    Display::ScreenMessage("BCRead ... ");
     while (!bc_file.eof())
     {
         bc_file.getline(line, MAX_ZEILE);
         line_string = line;
         if (line_string.find("#STOP") != std::string::npos)
         {
-            std::cout << "done, read " << bc_list.size()
-                      << " boundary conditions"
-                      << "\n";
+            Display::ScreenMessage("done, read %d boundary conditions.\n",
+                                   bc_list.size());
             return true;
         }
         if (line_string.find("#BOUNDARY_CONDITION") != std::string::npos)
@@ -1764,8 +1763,10 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs,
     }  // list
 
     clock_t end_time(clock());
-    std::cout << "\t[BC] set BC took "
-              << (end_time - start_time) / (double)(CLOCKS_PER_SEC) << "\n";
+
+    Display::ScreenMessage(
+        "\t[BC] set BC took %0.3e\n",
+        (end_time - start_time) / (double)(CLOCKS_PER_SEC));
 
     start_time = clock();
     // SetTransientBCtoNodes  10/2008 WW/CB Implementation
@@ -1850,8 +1851,9 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs,
     }
 
     end_time = clock();
-    std::cout << "\t[BC] set transient BC took "
-              << (end_time - start_time) / (double)(CLOCKS_PER_SEC) << "\n";
+    Display::ScreenMessage(
+        "\t[BC] set transient BC took %0.3e\n",
+        (end_time - start_time) / (double)(CLOCKS_PER_SEC));
 }
 
 /**************************************************************************

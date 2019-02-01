@@ -160,8 +160,7 @@ bool CPRead(std::string file_base_name)
 
     //========================================================================
     cp_vec.clear();
-    cout << "CPRead"
-         << "\n";
+    Display::ScreenMessage("CPRead\n");
     // Schleife ueber alle Phasen bzw. Komponenten
     while (!cp_file.eof())
     {

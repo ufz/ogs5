@@ -297,11 +297,13 @@ int main(int argc, char* argv[])
     // No default linear solver package is in use.
     if (solver_pkg_name.find("Default") == std::string::npos)
     {
-        std::cout << "\nWarning: " << solver_pkg_name
-                  << " other than the OGS default one is in use." << std::endl;
-        std::cout << "         The solver setting may need to be adjusted for "
-                     "the solution accuracy!"
-                  << std::endl;
+        Display::ScreenMessage(
+            "\nWarning: %s other than the OGS default one is in use.\n",
+            solver_pkg_name.data());
+
+        Display::ScreenMessage(
+            "         The solver setting may need to be adjusted for "
+                     "the solution accuracy!\n");
     }
 
     // LB Check if file exists
@@ -309,7 +311,8 @@ int main(int argc, char* argv[])
     tmpFilename.append(".pcs");
     if (!IsFileExisting(tmpFilename))
     {
-        std::cout << " Error: Cannot find file " << FileName << "\n";
+        Display::ScreenMessage(" Error: Cannot find file %s\n",
+                               tmpFilename.data());
         return 1;
     }
 

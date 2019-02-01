@@ -133,8 +133,8 @@ bool REACINTRead(string file_base_name)
     rei_file.seekg(0L, ios::beg);  // rewind?
     //========================================================================
     // Keyword loop
-    cout << "REIRead"
-         << "\n";
+    Display::ScreenMessage("REIRead ... \n");
+
     while (!rei_file.eof())
     {
         rei_file.getline(line, MAX_ZEILE);
@@ -154,8 +154,8 @@ bool REACINTRead(string file_base_name)
 
     if (!m_rei)
     {
-        cout << " No keyword #REACTION_INTERFACE specified - setting defaults"
-             << "\n";
+        Display::ScreenMessage(
+            " No keyword #REACTION_INTERFACE specified - setting defaults\n");
         m_rei = new REACTINT();
         REACTINT_vec.push_back(m_rei);
     }

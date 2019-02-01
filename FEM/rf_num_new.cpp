@@ -206,8 +206,8 @@ bool NUMRead(string file_base_name)
     num_file.seekg(0L, ios::beg);
     //========================================================================
     // Keyword loop
-    cout << "NUMRead"
-         << "\n";
+    Display::ScreenMessage("NUMRead ...\n");
+
     int max_num_integration_pnts = 0;
     while (!num_file.eof())
     {
@@ -223,6 +223,8 @@ bool NUMRead(string file_base_name)
                 num_vector[i]->ele_gauss_points = max_num_integration_pnts;
             }
 
+            Display::ScreenMessage("done, read %d numerical properties\n",
+                                   num_vector.size());
             return true;
         }
         //
@@ -766,11 +768,12 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
                                                // step will be dampened
             line >> newton_damping_factor;     // dampened by this factor
             line.clear();
-            std::cout << "NR step will be damped by " << newton_damping_factor
-                      << " if relative residual or relative unknown increment "
-                         "decrease by less than "
-                      << newton_damping_tolerance
-                      << " from one iteration to the next." << std::endl;
+            Display::ScreenMessage(
+                "NR step will be damped by %g"
+                " if relative residual or relative unknown increment "
+                " decrease by less than %g"
+                " from one iteration to the next.\n",
+                newton_damping_factor, newton_damping_tolerance);
             continue;
         }
         // Extended convergence test for Newton

@@ -189,8 +189,7 @@ void CRFProcessDeformation::Initialization()
 
     if (!msp_vector.size())
     {
-        std::cout << "***ERROR: MSP data not found!"
-                  << "\n";
+        Display::ScreenMessage("***ERROR: MSP data not found!");
         return;
     }
     InitialMBuffer();
@@ -245,8 +244,8 @@ void CRFProcessDeformation::InitialNodeValueHpcs()
         const int idx_p2_1 = h_pcs->GetNodeValueIndex("PRESSURE2") + 1;
         for (std::size_t i = 0; i < m_msh->GetNodesNumber(false); i++)
         {
-            h_pcs->SetNodeValue(
-                i, idx_p2_ini, h_pcs->GetNodeValue(i, idx_p2_1));
+            h_pcs->SetNodeValue(i, idx_p2_ini,
+                                h_pcs->GetNodeValue(i, idx_p2_1));
         }
     }
 
@@ -367,8 +366,7 @@ void CRFProcessDeformation::InitialMBuffer()
 {
     if (!msp_vector.size())
     {
-        cout << "No .msp file.   "
-             << "\n";
+        Display::ScreenMessage("No .msp file found");
         abort();
     }
 
@@ -415,19 +413,13 @@ void CRFProcessDeformation::InitialMBuffer()
  **************************************************************************/
 double CRFProcessDeformation::Execute(int loop_process_number)
 {
-#if defined(USE_MPI) || defined(USE_PETSC)
-    if (myrank == 1)
-    {
-#endif
-        std::cout << "\n      ================================================"
-                  << "\n";
-        std::cout << "    ->Process " << loop_process_number << ": "
-                  << convertProcessTypeToString(getProcessType()) << "\n";
-        std::cout << "      ================================================"
-                  << "\n";
-#if defined(USE_MPI) || defined(USE_PETSC)
-    }
-#endif
+    Display::ScreenMessage(
+        "      ================================================\n");
+    Display::ScreenMessage("      ->Process %d: %s\n",
+                           loop_process_number,
+                           convertProcessTypeToString(getProcessType()).data());
+    Display::ScreenMessage(
+        "      ================================================\n");
 
     clock_t dm_time;
 
@@ -639,20 +631,9 @@ double CRFProcessDeformation::Execute(int loop_process_number)
             Norm = 1.0e+8;
             NormU = 1.0e+8;
 
-#if defined(USE_MPI) || defined(USE_PETSC)
-            if (myrank == 0)
-            {
-#endif
-                // Screan printing:
-                std::cout << "      Starting loading step " << l << "/"
-                          << number_of_load_steps
-                          << ".  Load factor: " << LoadFactor << "\n";
-                std::cout
-                    << "      ------------------------------------------------"
-                    << "\n";
-#if defined(USE_MPI) || defined(USE_PETSC)
-            }
-#endif
+            Display::ScreenMessage("      Starting loading step %d/%d\n", l,
+                                   number_of_load_steps);
+            Display::ScreenMessage("      Load factor: %g\n", LoadFactor);
         }
         ite_steps = 0;
         while (ite_steps < MaxIteration)
@@ -677,21 +658,19 @@ double CRFProcessDeformation::Execute(int loop_process_number)
             SetZeroLinearSolver(eqs);
 #endif
 
-// Assemble and solve system equation
-/*
-   #ifdef MFC
-        CString m_str;
-        m_str.Format("Time step: t=%e sec, %s, Load step: %i, NR-Iteration: %i,
-   Calculate element matrices",\
-                      aktuelle_zeit,pcs_type_name.c_str(),l,ite_steps);
-        pWin->SendMessage(WM_SETMESSAGESTRING,0,(LPARAM)(LPCSTR)m_str);
-   #endif
- */
-#if defined(USE_MPI) || defined(USE_PETSC)  // WW
-            if (myrank == 0)
-#endif
-                std::cout << "      Assembling equation system..."
-                          << "\n";
+            // Assemble and solve system equation
+            /*
+               #ifdef MFC
+                    CString m_str;
+                    m_str.Format("Time step: t=%e sec, %s, Load step: %i,
+               NR-Iteration: %i,
+               Calculate element matrices",\
+                                  aktuelle_zeit,pcs_type_name.c_str(),l,ite_steps);
+                    pWin->SendMessage(WM_SETMESSAGESTRING,0,(LPARAM)(LPCSTR)m_str);
+               #endif
+             */
+
+            Display::ScreenMessage("      Assembling equation system...\n");
 
 #if defined(USE_MPI) || defined(USE_PETSC)  // WW
             clock_t cpu_time = 0;           // WW
@@ -717,12 +696,9 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 //
 #endif
 
-#if defined(USE_MPI) || defined(USE_PETSC)  // WW
-            if (myrank == 0)
-#endif
-                std::cout << "      Calling linear solver..."
-                          << "\n";
-/// Linear solver
+            Display::ScreenMessage("      Calling linear solver...\n");
+
+// Linear solver
 #if defined(USE_PETSC)  //|| defined(other parallel libs)//03~04.3012. WW
             eqs_new->Solver();
             eqs_new->MappingSolution();
@@ -819,37 +795,30 @@ double CRFProcessDeformation::Execute(int loop_process_number)
                     // CRFProcess::CalcIterationNODError to calculate
                     // cpl_max_relative_error and cpl_num_dof_errors;
                 }
-//
-#if defined(USE_MPI) || defined(USE_PETSC)
-                if (myrank == 0)
-                {
-#endif
-                    // Screan printing:
-                    std::cout << "      -->End of Newton-Raphson iteration: "
-                              << ite_steps << "/" << MaxIteration << "\n";
-                    cout.width(8);
-                    cout.precision(2);
-                    cout.setf(ios::scientific);
-                    std::cout << "         DeltaU/DeltaU0"
-                              << "  "
-                              << "DeltaU"
-                              << "  "
-                              << "DeltaF/DeltaF0  "
-                              << "  "
-                              << "DeltaF"
-                              << "  "
-                              << "Damping"
-                              << "\n";
-                    std::cout << "         " << ErrorU << "  " << NormU << "  "
-                              << Error << "   " << Norm << "   "
-                              << "   " << damping << "\n";
-                    std::cout
-                        << "      "
-                           "------------------------------------------------"
-                        << "\n";
-#if defined(USE_MPI) || defined(USE_PETSC)
-                }
-#endif
+
+                Display::ScreenMessage(
+                    "      -->End of Newton-Raphson iteration: %d/%d\n",
+                    ite_steps, MaxIteration);
+                Display::ScreenMessage(
+                    "     "
+                    "------------------------------------------------\n");
+                Display::ScreenMessage(
+                    "      DeltaU/DeltaU0"
+                    "  DeltaU"
+                    "     DeltaF/DeltaF0"
+                    "  DeltaF"
+                    "      Damping\n");
+                Display::ScreenMessage(
+                    "      %0.3e    "
+                    "   %0.3e"
+                    "  %0.3e"
+                    "       %0.3e"
+                    "   %0.3e\n",
+                    ErrorU, NormU, Error, Norm, damping);
+                Display::ScreenMessage(
+                    "     "
+                    "------------------------------------------------\n");
+
                 if (Error <= Tolerance_global_Newton &&
                     Norm <= m_num->nls_abs_residual_tolerance &&
                     NormU <= m_num->nls_abs_unknown_tolerance &&
@@ -881,8 +850,8 @@ double CRFProcessDeformation::Execute(int loop_process_number)
     // Load step
     //
     // For coupling control
-    std::cout << "      Deformation process converged."
-              << "\n";
+    Display::ScreenMessage("      Deformation process converged.\n");
+
     Error = 0.0;
     if (type / 10 != 4)  // Partitioned scheme
     {
@@ -906,19 +875,13 @@ double CRFProcessDeformation::Execute(int loop_process_number)
         Trace_Discontinuity();
     //
     dm_time += clock();
-#if defined(USE_MPI) || defined(USE_PETSC)  // WW
-    if (myrank == 0)
-    {
-#endif
-        std::cout << "      CPU time elapsed in deformation: "
-                  << (double)dm_time / CLOCKS_PER_SEC << "s"
-                  << "\n";
-        std::cout << "      ------------------------------------------------"
-                  << "\n";
-#if defined(USE_MPI) || defined(USE_PETSC)  // WW
-    }
-#endif
-    // Recovery the old solution.  Temp --> u_n	for flow proccess
+
+    Display::ScreenMessage("      CPU time elapsed in deformation: %g s\n",
+                           (double)dm_time / CLOCKS_PER_SEC);
+    Display::ScreenMessage(
+        "      ------------------------------------------------\n");
+
+    // Recovery the old solution.  Temp --> u_n	for flow process
     if (m_num->nls_method != 2)
         RecoverSolution();
 //
@@ -2681,7 +2644,7 @@ void CRFProcessDeformation::GlobalAssembly()
 #ifdef USE_MPI
     if (dom_vector.size() > 0)
     {
-        std::cout << "      Domain Decomposition " << myrank << '\n';
+        // std::cout << "      Domain Decomposition " << myrank << '\n';
 
         CPARDomain* m_dom = NULL;
         m_dom = dom_vector[myrank];
@@ -2715,7 +2678,7 @@ void CRFProcessDeformation::GlobalAssembly()
     // DDC
     if (dom_vector.size() > 0)
     {
-        cout << "      Domain Decomposition" << '\n';
+        Display::ScreenMessage("      Domain Decomposition\n");
         CPARDomain* m_dom = NULL;
         for (int j = 0; j < (int)dom_vector.size(); j++)
         {
@@ -2741,7 +2704,7 @@ void CRFProcessDeformation::GlobalAssembly()
     // STD
     else
 #endif  //#if !defined(USE_PETSC) // && !defined(other parallel libs)//10.3012.
-        // WW
+    // WW
     {
         GlobalAssembly_DM();
 
@@ -2790,8 +2753,8 @@ void CRFProcessDeformation::GlobalAssembly()
             else
                 CalcBC_or_SecondaryVariable_Dynamics(true);
         }
-        //  {  		MXDumpGLS("rf_pcs1.txt",1,eqs->b,eqs->x);  //abort();}
-        //
+//  {  		MXDumpGLS("rf_pcs1.txt",1,eqs->b,eqs->x);  //abort();}
+//
 
 #define atest_dump
 #ifdef test_dump
@@ -3313,7 +3276,7 @@ void CRFProcessDeformation::ReleaseLoadingByExcavation()
              << "\n";
         abort();
     }
-    // 2. Compute the released node loading
+// 2. Compute the released node loading
 
 #if !defined(NEW_EQS) && !defined(USE_PETSC)  // WW. 06.11.2008, 04.2012
     SetLinearSolver(eqs);
@@ -3648,17 +3611,17 @@ bool CRFProcessDeformation::CalcBC_or_SecondaryVariable_Dynamics(bool BC)
             //
             v = GetNodeValue(i, idx_disp[k]);
             v += GetNodeValue(i, idx_vel[k]) * dt +
-                 0.5 * dt * dt *
-                     (ARRAY[i + Shift[k]] + m_num->GetDynamicDamping_beta2() *
-                                                GetNodeValue(i, idx_acc0[k]));
+                 0.5 * dt * dt * (ARRAY[i + Shift[k]] +
+                                  m_num->GetDynamicDamping_beta2() *
+                                      GetNodeValue(i, idx_acc0[k]));
             SetNodeValue(i, idx_disp[k], v);
             if (bc_type[i] & (int)MathLib::fastpow(2, k + problem_dimension_dm))
                 continue;
             // v
             v = GetNodeValue(i, idx_vel[k]);
-            v += dt * ARRAY[i + Shift[k]] + m_num->GetDynamicDamping_beta1() *
-                                                dt *
-                                                GetNodeValue(i, idx_acc0[k]);
+            v += dt * ARRAY[i + Shift[k]] +
+                 m_num->GetDynamicDamping_beta1() * dt *
+                     GetNodeValue(i, idx_acc0[k]);
             SetNodeValue(i, idx_vel[k], v);
         }
 

@@ -25,6 +25,8 @@
 
 #include "Eigen/Dense"
 
+#include "display.h"
+
 // FEM-Makros
 #include "makros.h"
 #include "rf_pcs.h"
@@ -8815,14 +8817,19 @@ bool MSPRead(const std::string& given_file_base_name)
     msp_file.seekg(0L, std::ios::beg);
     //========================================================================
     // Keyword loop
-    std::cout << "MSPRead"
-              << "\n";
+    Display::ScreenMessage("MSPRead ... \n");
+
     while (!msp_file.eof())
     {
         msp_file.getline(line, MAX_ZEILE);
         line_string = line;
         if (line_string.find("#STOP") != string::npos)
+        {
+            Display::ScreenMessage(
+                "done, read %d sets of solid properties terms\n",
+                msp_vector.size());
             return true;
+        }
         //----------------------------------------------------------------------
         // keyword found
         if (line_string.find("#SOLID_PROPERTIES") != std::string::npos)

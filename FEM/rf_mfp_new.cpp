@@ -19,8 +19,7 @@
 #include <cfloat>
 #include <limits>
 
-// FEM-Makros
-//#include "mathlib.h"
+#include "display.h"
 #include "eos.h"  //NB
 // GeoSys-GeoLib
 #include "files0.h"
@@ -208,9 +207,10 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
                     break;  // OXYGEN
                 default:
                 {
-                    std::cout << "Fluid type of " << name
-                              << " is not valid. Take the default type of WATER"
-                              << std::endl;
+                    Display::ScreenMessage(
+                        "Fluid type of %s "
+                        " is not valid. Take the default type of WATER",
+                        name.data());
                     fluid_id = 1;
                 }
             }
@@ -870,8 +870,7 @@ bool MFPRead(std::string file_base_name)
     mfp_file.seekg(0L, std::ios::beg);
     //========================================================================
     // Keyword loop
-    std::cout << "MFPRead"
-              << "\n";
+    Display::ScreenMessage("MFPRead\n");
     while (!mfp_file.eof())
     {
         mfp_file.getline(line, MAX_ZEILE);
@@ -911,8 +910,7 @@ bool MFPRead(std::string file_base_name)
     // Test
     if (mfp_vector.size() == 0)
     {
-        std::cout << "Error in MFPRead: no MFP data"
-                  << "\n";
+        Display::ScreenMessage("Error in MFPRead: no MFP data\n");
         abort();
     }
     //----------------------------------------------------------------------

@@ -10,12 +10,16 @@
  *              http://www.opengeosys.org/project/license
  */
 
+
+#include "Surface.h"
+
 #include <list>
+
+#include "display.h"
 
 // GEOLIB
 #include "AxisAlignedBoundingBox.h"
 #include "Polygon.h"
-#include "Surface.h"
 
 // MathLib
 #include "AnalyticalGeometry.h"
@@ -74,10 +78,9 @@ Surface* Surface::createSurface(const Polyline& ply)
              ++simple_polygon_it)
         {
             std::list<GEOLIB::Triangle> triangles;
-            std::cout << "triangulation of surface: ... " << std::flush;
+            Display::ScreenMessage("triangulation of surface: ... ");
             MathLib::EarClippingTriangulation(*simple_polygon_it, triangles);
-            std::cout << "done - " << triangles.size() << " triangles "
-                      << "\n";
+            Display::ScreenMessage("done - %d triangles\n", triangles.size());
 
             // add Triangles to Surface
             std::list<GEOLIB::Triangle>::const_iterator it(triangles.begin());

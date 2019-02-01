@@ -403,8 +403,9 @@ void CURRead(std::string base_file_name)
     cur_file.seekg(0L, std::ios::beg);
     //========================================================================
     // keyword loop
-    std::cout << "CURRead"
-              << "\n";
+
+    Display::ScreenMessage("CURRead\n");
+
     while (!cur_file.eof())
     {
         cur_file.getline(line, MAX_ZEILE);

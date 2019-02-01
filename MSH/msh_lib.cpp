@@ -19,13 +19,16 @@
 #include <string>
 #include <vector>
 
+// MSHLib
+#include "msh_lib.h"
+
+#include "display.h"
+
 #include "memory.h"
 
 // GEOLib
 #include "files0.h"
 #include "geo_lib.h"
-// MSHLib
-#include "msh_lib.h"
 // PCSLib
 #include "mathlib.h"
 #include "rf_mmp_new.h"  //OK411
@@ -78,8 +81,8 @@ void FEMRead(const std::string& file_base_name, std::vector<CFEMesh*>& mesh_vec,
     if (!msh_file_ascii.is_open())
         std::cout << "CFEMesh::FEMRead() - Could not open file...\n";
 
-    std::cout << "MSHRead:  ASCII file"
-              << "\n";
+    Display::ScreenMessage("MSHRead:  ASCII file\n");
+
     std::string line_string("");
     getline(msh_file_ascii, line_string);
 

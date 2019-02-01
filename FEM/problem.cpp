@@ -966,19 +966,7 @@ void Problem::SetActiveProcesses()
  ***************************************************************************/
 void Problem::PCSCreate()
 {
-#if defined(USE_PETSC) || defined(USE_MPI) || defined(USE_MPI_PARPROC) || \
-    defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS)
-    if (mrank == 0)
-    {
-#endif
-        std::cout << "---------------------------------------------"
-                  << "\n";
-        std::cout << "Create PCS processes"
-                  << "\n";
-#if defined(USE_PETSC) || defined(USE_MPI) || defined(USE_MPI_PARPROC) || \
-    defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS)
-    }
-#endif
+    Display::ScreenMessage("Create PCS processes\n");
 
     size_t no_processes = pcs_vector.size();
     // OK_MOD if(pcs_deformation>0) Init_Linear_Elements();
@@ -994,37 +982,6 @@ void Problem::PCSCreate()
 
     for (size_t i = 0; i < no_processes; i++)
     {
-#if defined(USE_PETSC) || defined(USE_MPI) || defined(USE_MPI_PARPROC) || \
-    defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS)
-        if (mrank == 0)
-        {
-#endif
-            std::cout << "............................................."
-                      << "\n";
-            FiniteElement::ProcessType pcs_type(
-                pcs_vector[i]->getProcessType());
-            std::cout << "Create: "
-                      << FiniteElement::convertProcessTypeToString(pcs_type)
-                      << "\n";
-            //		if (!pcs_vector[i]->pcs_type_name.compare("MASS_TRANSPORT"))
-            //{
-            // YS   // TF
-            // if (pcs_type != FiniteElement::MASS_TRANSPORT && pcs_type !=
-            // FiniteElement::FLUID_MOMENTUM
-            //				&& pcs_type != FiniteElement::RANDOM_WALK)
-            if (pcs_type == FiniteElement::MASS_TRANSPORT)  // SB
-            {
-                std::cout << " for "
-                          << pcs_vector[i]->pcs_primary_function_name[0] << " ";
-                std::cout << " pcs_component_number "
-                          << pcs_vector[i]->pcs_component_number;
-            }
-            std::cout << "\n";
-#if defined(USE_PETSC) || defined(USE_MPI) || defined(USE_MPI_PARPROC) || \
-    defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS)
-        }
-#endif
-
         pcs_vector[i]->Create();
     }
 
@@ -1080,8 +1037,7 @@ void Problem::PCSRestart()
 
     if (ok == 0)
     {
-        std::cout << "RFR: no restart data"
-                  << "\n";
+        Display::ScreenMessage("RFR: no restart data\n");
         return;
     }
 
@@ -1252,39 +1208,31 @@ void Problem::Euler_TimeDiscretize()
         aktueller_zeitschritt++;
         current_time += dt;
         aktuelle_zeit = current_time;
-//
-// Print messsage
-#if defined(USE_PETSC) || defined(USE_MPI) || defined(USE_MPI_PARPROC) || \
-    defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS)
-        if (mrank == 0)
+
+        Display::ScreenMessage(
+            "\n\n#################################################"
+            "############\n");
+
+        Display::ScreenMessage("Time step: %g"
+                               "|  Time: %g"
+                               "|  Time step size: %g\n",
+                               aktueller_zeitschritt, current_time, dt);
+        if (dt_rec > dt)
         {
-#endif
-            std::cout << "\n\n#################################################"
-                         "############\n";
-            std::cout << "Time step: " << aktueller_zeitschritt
-                      << "|  Time: " << current_time
-                      << "|  Time step size: " << dt << "\n";
-            if (dt_rec > dt)
-            {
-                std::cout << "This time step size was modified to match a "
-                             "critical time!"
-                          << "\n";
-            }
-#if defined(USE_PETSC) || defined(USE_MPI) || defined(USE_MPI_PARPROC) || \
-    defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS)
+            Display::ScreenMessage(
+                "This time step size was modified to match a "
+                         "critical time!\n");
         }
-#endif
+
         if (CouplingLoop())
         {
             // ---------------------------------
             // TIME STEP ACCEPTED
             // ---------------------------------
             last_dt_accepted = true;
-#if defined(USE_PETSC) || defined(USE_MPI) || defined(USE_MPI_PARPROC) || \
-    defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS)
-            if (mrank == 0)
-#endif
-                Display::ScreenMessage("This step is accepted.\n");
+
+            Display::ScreenMessage("This step is accepted.\n");
+
             PostCouplingLoop();
             if (print_result)
             {
@@ -1373,55 +1321,51 @@ void Problem::Euler_TimeDiscretize()
         //		// executing only one time step for profiling
         //		current_time = end_time;
     }
-#if defined(USE_PETSC) || defined(USE_MPI) || defined(USE_MPI_PARPROC) || \
-    defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS) || defined(USE_MPI_KRC)
-    if (mrank == 0)
+
+    Display::ScreenMessage(
+            "\n----------------------------------------------------\n");
+    for (i = 0; i < (int)active_process_index.size(); i++)  // JT2012
     {
-#endif
-        std::cout << "\n----------------------------------------------------\n";
-        for (i = 0; i < (int)active_process_index.size(); i++)  // JT2012
+        m_tim = total_processes[active_process_index[i]]->Tim;
+
+        Display::ScreenMessage(
+            "\nFor process: %s\n",
+            convertProcessTypeToString(
+                total_processes[active_process_index[i]]
+                    ->getProcessType()).data());
+        if (m_tim->time_control_type == TimeControlType::FIXED_STEPS)
         {
-            m_tim = total_processes[active_process_index[i]]->Tim;
-            std::cout << "\nFor process: "
-                      << convertProcessTypeToString(
-                             total_processes[active_process_index[i]]
-                                 ->getProcessType())
-                      << "\n";
-            if (m_tim->time_control_type == TimeControlType::FIXED_STEPS)
-            {
-                std::cout << "No time control for this process."
-                          << "\n";
-            }
-            else
-            {
-                std::cout << "Accepted time steps:                "
-                          << m_tim->accepted_step_count << "\n";
-                std::cout << "Rejected time steps:                "
-                          << m_tim->rejected_step_count << "\n";
-            }
-            if (total_processes[active_process_index[i]]
-                    ->m_num->nls_max_iterations > 1)
-            {
-                std::cout << "Number of non-converged iterations: "
-                          << total_processes[active_process_index[i]]
-                                 ->num_notsatisfied
-                          << "\n";
-                std::cout
-                    << "Number of stagnated iterations:     "
-                    << total_processes[active_process_index[i]]->num_diverged
-                    << "\n";
-            }
+             Display::ScreenMessage("No time control for this process.\n");
         }
-        std::cout << "\n----------------------------------------------------\n";
-#if defined(USE_PETSC) || defined(USE_MPI) || defined(USE_MPI_PARPROC) || \
-    defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS) || defined(USE_MPI_KRC)
+        else
+        {
+            Display::ScreenMessage("Accepted time steps: %d\n",
+                                   m_tim->accepted_step_count);
+            Display::ScreenMessage("Rejected time steps: %d\n",
+                                   m_tim->rejected_step_count);
+        }
+        if (total_processes[active_process_index[i]]
+                ->m_num->nls_max_iterations > 1)
+        {
+            Display::ScreenMessage(
+                "Number of non-converged iterations: %d\n",
+                total_processes[active_process_index[i]]
+                             ->num_notsatisfied);
+            Display::ScreenMessage(
+                "Number of stagnated iterations: %d\n",
+                total_processes[active_process_index[i]]->num_diverged);
+        }
+    }
+    Display::ScreenMessage(
+        "----------------------------------------------------\n");
 
 #if defined(USE_PETSC)  // 05.2014. WW
+    if (mrank == 0)
+    {
         for (size_t i = 0; i < out_vector.size(); i++)
         {
             out_vector[i]->NODDomainWriteBinary_Header();
         }
-#endif
     }
 #endif
 }
@@ -1597,15 +1541,18 @@ bool Problem::CouplingLoop()
                         max_outer_error =
                             MMax(max_outer_error, max_inner_error);
                     //
-                    std::cout << "\n==========================================="
-                                 "===========\n";
-                    std::cout << "Inner coupling loop " << inner_index + 1
-                              << "/" << inner_max << " complete."
-                              << "\n";
-                    std::cout << "Max coupling error (relative to tolerance): "
-                              << max_inner_error << "\n";
-                    std::cout << "============================================="
-                                 "=========\n";
+                    Display::ScreenMessage(
+                    "\n==========================================="
+                     "===========\n");
+                    Display::ScreenMessage(
+                        "Inner coupling loop %d/%d complete.\n",
+                        inner_index + 1, inner_max);
+                    Display::ScreenMessage(
+                        "Max coupling error (relative to tolerance): %0.3e\n",
+                        max_inner_error);
+                    Display::ScreenMessage(
+                        "============================================="
+                        "=========\n");
                     //
                     // Coupling convergence criteria (use loop minimum from
                     // a_pcs because this is where the coupled process was
@@ -1675,10 +1622,9 @@ if(has_constrained_bc > 0)
 #else
                     const int rank = -1;
 #endif
-                    if (rank < 1)
-                        std::cout
-                            << "this process has constrained BCs. reapply BCs."
-                            << std::endl;
+                    Display::ScreenMessage(
+                        "this process has constrained BCs. reapply BCs.\n");
+
                     a_pcs->IncorporateBoundaryConditions(rank);
                 }
             }
@@ -1687,21 +1633,21 @@ if(has_constrained_bc > 0)
         }
         if (!accept)
         {
-            std::cout << "\n";
             break;
         }
         //
         if (cpl_overall_max_iterations > 1)
         {
-            std::cout
-                << "\n======================================================\n";
-            std::cout << "Outer coupling loop " << outer_index + 1 << "/"
-                      << cpl_overall_max_iterations << " complete."
-                      << "\n";
-            std::cout << "Max coupling error (relative to tolerance): "
-                      << max_outer_error << "\n";
-            std::cout
-                << "======================================================\n";
+            Display::ScreenMessage(
+                "\n======================================================\n");
+            Display::ScreenMessage("Outer coupling loop %d/%d complete.\n",
+                                   outer_index + 1,
+                                   cpl_overall_max_iterations);
+             Display::ScreenMessage(
+                 "Max coupling error (relative to tolerance): %0.3e\n",
+                 max_outer_error);
+            Display::ScreenMessage(
+                "======================================================\n");
 
             // update max cpl error variable in all processes
             for (std::size_t i(0); i < active_process_index.size(); i++)
@@ -1711,10 +1657,7 @@ if(has_constrained_bc > 0)
                 thisPCS->cpl_max_relative_error_overall = max_outer_error;
             }
         }
-        else
-        {
-            std::cout << "\n";
-        }
+
         // Coupling convergence criteria
         // if(max_outer_error <= 1.0 && outer_index+2 >
         // cpl_overall_min_iterations) // JT: error is relative to the

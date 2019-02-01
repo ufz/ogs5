@@ -18,6 +18,9 @@
 //#include <iostream>
 //#include <limits>	// PCH to better use system max and min
 #include "memory.h"
+
+#include "display.h"
+
 // Method
 #include "mathlib.h"
 // Problems
@@ -499,7 +502,8 @@ CFiniteElementStd::CFiniteElementStd(CRFProcess* Pcs, const int C_Sys_Flad,
         if (!done)
         {
             done = true;
-            std::cout << "->  Gass flow is formulated as mass balance." << '\n';
+            Display::ScreenMessage(
+                "->  Gass flow is formulated as mass balance.\n");
         }
     }
 #if defined(USE_PETSC)       // || defined(other parallel libs)//03~04.3012. WW
