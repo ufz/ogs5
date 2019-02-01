@@ -452,17 +452,17 @@ std::ios::pos_type CTimeDiscretization::Read(std::ifstream* tim_file)
                             break;
                         //
                         case FiniteElement::BNORM:
-                            ScreenMessage(
+                            Display::ScreenMessage(
                                 "ERROR in TIMRead. BNORM not configured for "
                                 "time control.\n");
-                            ScreenMessage(
+                            Display::ScreenMessage(
                                 "We suggest ENORM as a valid companion for "
                                 "NEWTON couplings.\n");
                             exit(1);
                             break;
                         //
                         default:
-                            ScreenMessage(
+                            Display::ScreenMessage(
                                 "ERROR in TIMRead. Invalid error method "
                                 "selected for dynamic time control.\n");
                             exit(1);
@@ -715,7 +715,7 @@ std::ios::pos_type CTimeDiscretization::Read(std::ifstream* tim_file)
                 }
                 else
                 {
-                    ScreenMessage("ERROR: Unrecognized time control type.\n");
+                    Display::ScreenMessage("ERROR: Unrecognized time control type.\n");
                     exit(1);
                 }
             }  // end of while
@@ -1547,9 +1547,9 @@ double CTimeDiscretization::StableErrorAdaptive(void)
 
             if (!m_pcs)
             {  // does this ever trigger?
-                ScreenMessage(
+                Display::ScreenMessage(
                     "-> ERROR in StableErrorAdaptive: PCS not found\n");
-                // ScreenMessage("-> ERROR in " +
+                // Display::ScreenMessage("-> ERROR in " +
                 // convertTimeControlTypeToString(time_control_type).c_str() +
                 // ": PCS not found\n");	//why is this not possible?
                 return 0.0;
@@ -1872,7 +1872,7 @@ double CTimeDiscretization::SelfAdaptiveTimeControl(void)
     }
     if (!m_pcs)
     {
-        ScreenMessage("-> ERROR in SelfAdaptiveTimeControl(): PCS not found\n");
+        Display::ScreenMessage("-> ERROR in SelfAdaptiveTimeControl(): PCS not found\n");
         return 0.0;
     }
 

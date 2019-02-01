@@ -278,7 +278,7 @@ ios::pos_type CInitialCondition::Read(std::ifstream* ic_file,
                 }
                 else
                 {
-                    DisplayErrorMsg(
+                    Display::DisplayErrorMsg(
                         "Error: In reading IC file, the input component names "
                         "are not found in MCP file!!!");
                     exit(1);
@@ -309,7 +309,7 @@ ios::pos_type CInitialCondition::Read(std::ifstream* ic_file,
             }
             else
             {
-                DisplayErrorMsg(
+                Display::DisplayErrorMsg(
                     "Error: In reading BC file, the input component names are "
                     "not found in MCP file!!!");
                 exit(1);

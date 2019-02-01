@@ -295,7 +295,7 @@ std::ios::pos_type CSourceTerm::Read(std::ifstream* st_file,
                 }
                 else
                 {
-                    DisplayErrorMsg(
+                    Display::DisplayErrorMsg(
                         "Error: In reading ST file, the input component names "
                         "are not found in MCP file!!!");
                     exit(1);
@@ -326,7 +326,7 @@ std::ios::pos_type CSourceTerm::Read(std::ifstream* st_file,
             }
             else
             {
-                DisplayErrorMsg(
+                Display::DisplayErrorMsg(
                     "Error: In reading ST file, the input component names are "
                     "not found in MCP file!!!");
                 exit(1);

@@ -28,6 +28,8 @@
 extern FILE* OpenMsgFile(void);
 extern void CloseMsgFile(FILE*);
 
+namespace Display
+{
 /**************************************************************************/
 /* ROCKFLOW - Funktion: DisplayMsg
  */
@@ -181,3 +183,4 @@ void DisplayErrorMsg(const char* s)
     fprintf(f, "\n!!!!!!!!  %s\n\n            ", s);
     CloseMsgFile(f);
 }
+} // End of name space.

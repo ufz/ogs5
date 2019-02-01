@@ -682,7 +682,7 @@ double* MMachVec(long g)
     zwerg = (double*)Malloc(sizeof(double) * g);
 #ifdef ERROR_CONTROL
     if (zwerg == NULL)
-        DisplayErrorMsg("zuwenig Speicher in MMachVec");
+        Display::DisplayErrorMsg("zuwenig Speicher in MMachVec");
 #endif
     return zwerg;
 } /* MMachVec */
@@ -708,7 +708,7 @@ void MNullVec(double* zwerg, long g)
     zwerg = (double*)Malloc(sizeof(double) * g);
 #ifdef ERROR_CONTROL
     if (zwerg == NULL)
-        DisplayErrorMsg("Fehler in MNullVec");
+        Display::DisplayErrorMsg("Fehler in MNullVec");
 #endif
 #ifdef SX
 #pragma cdir nodep
@@ -742,7 +742,7 @@ void MKopierVec(double* vecquelle, double* vecziel, long g)
     register long i;
 #ifdef ERROR_CONTROL
     if ((vecquelle == NULL) || (vecziel == NULL))
-        DisplayErrorMsg("Fehler in MLoeschVec");
+        Display::DisplayErrorMsg("Fehler in MLoeschVec");
 #endif
 #ifdef SX
 #pragma cdir nodep
@@ -861,10 +861,10 @@ int MMultVecVec(double* vec1, long gv1, double* vec2, long gv2, double* mato,
     if (check_err)
     {
         if (gv1 != mo)
-            DisplayErrorMsg(
+            Display::DisplayErrorMsg(
                 "MMultVecVec: Groesse von Matrix und Vektor 1 passen nicht");
         if (gv2 != no)
-            DisplayErrorMsg(
+            Display::DisplayErrorMsg(
                 "MMultVecVec: Groesse von Matrix und Vektor 2 passen nicht");
     }
 
@@ -920,10 +920,10 @@ int MMultVecMat(double* vec, long gv, double* mat, long m, long n, double* veco,
     if (check_err)
     {
         if (gv != m)
-            DisplayErrorMsg(
+            Display::DisplayErrorMsg(
                 "MMultVecMat: Groesse von Matrix und Vektor passen nicht");
         if (go != n)
-            DisplayErrorMsg(
+            Display::DisplayErrorMsg(
                 "MMultVecMat: Groesse von Ergebnis-Vektor stimmt nicht");
     }
 
@@ -982,10 +982,10 @@ int MMultMatVec(/* Matrix */
     if (check_err)
     {
         if (g != n)
-            DisplayErrorMsg(
+            Display::DisplayErrorMsg(
                 "MMultMatVec: Groesse von Matrix und Vektor passen nicht");
         if (r != m)
-            DisplayErrorMsg(
+            Display::DisplayErrorMsg(
                 "MMultMatVec: Groesse von Ergebnis-Vektor stimmt nicht");
     }
 
@@ -1058,7 +1058,7 @@ int MMultMatMat(double* mat1, long m1, long n1, double* mat2, long m2, long n2,
 #ifdef ERROR_CONTROL
     if ((m1 != mo) || (n2 != no) || (n1 != m2))
     {
-        DisplayErrorMsg("MMultMatMat:Die Matrizen passen nicht zueinander !");
+        Display::DisplayErrorMsg("MMultMatMat:Die Matrizen passen nicht zueinander !");
         return 0;
     }
 #endif

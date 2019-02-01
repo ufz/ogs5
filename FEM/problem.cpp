@@ -1183,7 +1183,7 @@ void Problem::Euler_TimeDiscretize()
     //
     CTimeDiscretization* m_tim = NULL;
     aktueller_zeitschritt = 0;
-    ScreenMessage("\n\n***Start time steps\n");
+    Display::ScreenMessage("\n\n***Start time steps\n");
 //
 // Output zero time initial values
 #if defined(USE_MPI) || defined(USE_MPI_KRC)
@@ -1230,7 +1230,7 @@ void Problem::Euler_TimeDiscretize()
 
         if (!last_dt_accepted && dt == previous_rejected_dt)
         {
-            ScreenMessage(
+            Display::ScreenMessage(
                 "Stop this simulation. New time step size is same as the "
                 "rejected one.\n");
             break;
@@ -1284,7 +1284,7 @@ void Problem::Euler_TimeDiscretize()
     defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS)
             if (mrank == 0)
 #endif
-                ScreenMessage("This step is accepted.\n");
+                Display::ScreenMessage("This step is accepted.\n");
             PostCouplingLoop();
             if (print_result)
             {
@@ -1312,7 +1312,7 @@ void Problem::Euler_TimeDiscretize()
         }
         else if (isSteadySimulation)
         {
-            ScreenMessage(
+            Display::ScreenMessage(
                 "This time step is rejected. We stop the simulation because "
                 "this is steady state simulation.\n");
             break;
@@ -1323,7 +1323,7 @@ void Problem::Euler_TimeDiscretize()
             // TIME STEP FAILED
             // ---------------------------------
             last_dt_accepted = false;
-            ScreenMessage(
+            Display::ScreenMessage(
                 "This step is rejected: Redo, with a new time step.\n");
             rejected_times++;
             current_time -= dt;
@@ -1364,7 +1364,7 @@ void Problem::Euler_TimeDiscretize()
                 }
             }
         }
-        ScreenMessage(
+        Display::ScreenMessage(
             "\n#############################################################"
             "\n");
         if (aktueller_zeitschritt >= max_time_steps)

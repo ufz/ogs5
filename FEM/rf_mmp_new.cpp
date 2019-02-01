@@ -812,7 +812,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
                 {
                     if (!PCSGet("DEFORMATION"))
                     {
-                        ScreenMessage(
+                        Display::ScreenMessage(
                             "Error: Porosity model 7 must be combined with "
                             "deformation process");
                         exit(EXIT_FAILURE);
@@ -1154,7 +1154,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
                     case 2:  // krg = 1.0 - krl (only for gas phase)
                         if (k == 0)
                         {
-                            ScreenMessage(
+                            Display::ScreenMessage(
                                 "ERROR in MMPRead: Relative permeability model "
                                 "2 is only valid for the gas phase.\n");
                             exit(0);
@@ -1308,7 +1308,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
                     //
                     default:
                     {
-                        ScreenMessage(
+                        Display::ScreenMessage(
                             "Error in MMPRead: no valid permeability "
                             "saturation model.\n");
                         abort();
@@ -1685,7 +1685,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
                     if (capillary_pressure_values[2] >= 0.0)
                     {  // Then a constant saturation value has been entered.
                        // This is model #2.
-                        ScreenMessage(
+                        Display::ScreenMessage(
                             "WARNING in MMPRead. Capillary pressure model 1 "
                             "used for a constant saturation. THIS IS "
                             "NOW MODEL #2. PLEASE SWITCH TO MODEL #2.\n");
@@ -1772,7 +1772,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
                     in >> capillary_pressure_values[0];  // Pb
                     break;
                 default:
-                    ScreenMessage(
+                    Display::ScreenMessage(
                         "Error in MMPRead: no valid capillary pressure "
                         "model.\n");
                     exit(1);
@@ -1780,13 +1780,13 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
             }
             if (old_format)
             {
-                ScreenMessage(
+                Display::ScreenMessage(
                     "\n--\n Adopting capillary pressure saturation parameters "
                     "from the\n");
-                ScreenMessage(
+                Display::ScreenMessage(
                     " relative permeability function for phase 0. "
                     "Alternatively, you\n");
-                ScreenMessage(
+                Display::ScreenMessage(
                     " may enter capillary pressure specific parameters "
                     "directly.\n--/n");
             }
@@ -2506,7 +2506,7 @@ double CMediumProperties::PermeabilitySaturationFunction(
     switch (model)
     {
         default:
-            ScreenMessage(
+            Display::ScreenMessage(
                 "ERROR in PermeabilitySaturationFunction(): Unrecognized "
                 "relative permeability method.\n");
             exit(0);
@@ -2526,7 +2526,7 @@ double CMediumProperties::PermeabilitySaturationFunction(
         case 2:  // krg = 1.0 - krl
             // No need to come here. Method will have been shifted to the liquid
             // phase.
-            ScreenMessage(
+            Display::ScreenMessage(
                 "ERROR in PermeabilitySaturationFunction(). Shouldn't be "
                 "here.\n");
             break;
@@ -4352,7 +4352,7 @@ double CMediumProperties::Porosity(CElement* assem)
 #endif
 
         default:
-            DisplayMsgLn("Unknown porosity model!");
+            Display::DisplayMsgLn("Unknown porosity model!");
             break;
     }
     //----------------------------------------------------------------------
@@ -5153,7 +5153,7 @@ double CMediumProperties::CapillaryPressureFunction(
     switch (capillary_pressure_model)
     {
         default:
-            ScreenMessage(
+            Display::ScreenMessage(
                 "Error in CFluidProperties::CapillaryPressure: no valid "
                 "material model.\n");
             exit(0);
@@ -5170,8 +5170,8 @@ double CMediumProperties::CapillaryPressureFunction(
         //
         case 2:  // Constant saturation for pp models (for WX, from JT) (MUST BE
                  // A PP MODEL, SO WON'T COME HERE)
-            ScreenMessage("ERROR: in CFluidProperties::CapillaryPressure:");
-            ScreenMessage(
+            Display::ScreenMessage("ERROR: in CFluidProperties::CapillaryPressure:");
+            Display::ScreenMessage(
                 "Constant saturation is not possible for a PS model "
                 "(PwSnw).\n");
             exit(0);
@@ -5232,7 +5232,7 @@ double CMediumProperties::SaturationCapillaryPressureFunction(
     switch (capillary_pressure_model)
     {
         default:
-            ScreenMessage(
+            Display::ScreenMessage(
                 "Error in "
                 "CFluidProperties::SaturationCapillaryPressureFunction: no "
                 "valid material model.\n");
@@ -5249,10 +5249,10 @@ double CMediumProperties::SaturationCapillaryPressureFunction(
             break;
         //
         case 1:  // Constant capillary pressure for ps models
-            ScreenMessage(
+            Display::ScreenMessage(
                 "ERROR: in "
                 "CFluidProperties::SaturationCapillaryPressureFunction:");
-            ScreenMessage(
+            Display::ScreenMessage(
                 "Constant capillary pressure is not possible for a pressure "
                 "model (PcPnw, PwPnw, or Richards).\n");
             exit(0);
@@ -5341,7 +5341,7 @@ Richard's flow) return 0.0;
     switch(capillary_pressure_model)
     {
         default:
-            ScreenMessage("Error in
+            Display::ScreenMessage("Error in
 CFluidProperties::SaturationPressureDependency: no valid material model.\n");
             exit(0);
             break;
@@ -5413,7 +5413,7 @@ double CMediumProperties::PressureSaturationDependency(
     switch (capillary_pressure_model)
     {
         default:
-            ScreenMessage(
+            Display::ScreenMessage(
                 "Error in CFluidProperties::PressureSaturationDependency: no "
                 "valid material model.\n");
             exit(0);
@@ -6302,7 +6302,7 @@ double GetAverageHetVal2(long EleIndex,
     {
         ihet = GetNearestHetVal2(EleIndex, m_msh, xvals, yvals, zvals, mmpvals);
         if (ihet < 0)
-            DisplayMsgLn(" Error getting nearest het_value location");
+            Display::DisplayMsgLn(" Error getting nearest het_value location");
         else
             average = mmpvals[ihet];
     }
@@ -7316,7 +7316,7 @@ double CMediumProperties::TortuosityFunction(long number, double* gp,
             tortuosity = Porosity(number, theta) * tortuosity_model_values[0];
             break;
         default:
-            DisplayMsgLn("Unknown tortuosisty model!");
+            Display::DisplayMsgLn("Unknown tortuosisty model!");
             break;
     }
     return tortuosity;
@@ -7994,7 +7994,7 @@ double CMediumProperties::StorageFunction(long index, double* gp, double theta)
                           << std::endl;
             break;
         default:
-            storage = 0.0;  // OK DisplayMsgLn("The requested storativity model
+            storage = 0.0;  // OK Display::DisplayMsgLn("The requested storativity model
                             // is unknown!!!");
             break;
     }
@@ -8146,8 +8146,8 @@ double CMediumProperties::PermeabilityPressureFunction(long index, double* gp,
             switch (ElGetElementType(index))
             {
                 default:
-                    DisplayMsgLn("Error in GetSoilRelPermPress!");
-                    DisplayMsgLn("  Nonlinear permeability not available!");
+                    Display::DisplayMsgLn("Error in GetSoilRelPermPress!");
+                    Display::DisplayMsgLn("  Nonlinear permeability not available!");
                     abort();
                 case 2:
                     Calc2DElementJacobiMatrix(index, 0.0, 0.0, invjac, &detjac);

@@ -220,7 +220,7 @@ void REACT_BRNS::InitBRNS(Problem* myProblem)
         AfxMessageBox(
             "!!! Node number and Components Number must be bigger than zero!");
 #endif
-        DisplayErrorMsg(
+        Display::DisplayErrorMsg(
             "!!! Node number and Components Number must be bigger than zero!");
         abort();
     }
@@ -265,7 +265,7 @@ void REACT_BRNS::InitBRNS(Problem* myProblem)
             // end of if (this_pcs)
             else  // not getting the pointer to the proper PCS.
             {
-                DisplayErrorMsg(
+                Display::DisplayErrorMsg(
                     "!!! In InitBRNS, can not find corresponding PCS!");
                 abort();
             }
@@ -339,7 +339,7 @@ void REACT_BRNS::GSRF2Buffer(long i)
                 "!!! In Data transfer for BRNS, can not find corresponding "
                 "PCS!");
 #endif
-            DisplayErrorMsg(
+            Display::DisplayErrorMsg(
                 "!!! In Data transfer for BRNS, can not find corresponding "
                 "PCS!");
             abort();
@@ -373,7 +373,7 @@ void REACT_BRNS::Buffer2GSRF(long i)
                 "!!! In Data transfer for BRNS, can not find corresponding "
                 "PCS!");
 #endif
-            DisplayErrorMsg(
+            Display::DisplayErrorMsg(
                 "!!! In Data transfer for BRNS, can not find corresponding "
                 "PCS!");
             abort();
@@ -689,7 +689,7 @@ int REACT_BRNS::SetPorosityValue_MT(long ele_Index,
 #ifdef USE_MPI_BRNS
                 if (myrank == 0 /*should be set to root*/)
 #endif
-                    DisplayErrorMsg(
+                    Display::DisplayErrorMsg(
                         "Error: Not implemented for the flow in BRNS case!!!");
                 break;
         }

@@ -255,7 +255,7 @@ bool REACTINT::Read(ifstream* rfd_file)
                         speciesname = "NIX";
                     }
                     else
-                        DisplayMsgLn(
+                        Display::DisplayMsgLn(
                             " ERROR reading Water concentration relevant "
                             "Species  - skipping");
                     in.clear();

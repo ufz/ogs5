@@ -58,7 +58,7 @@ namespace FileIO
 ////					setProcess(cp_vec[cp_name_2_idx[tmp]]->getProcess());
 ////					setProcessPrimaryVariable(CONCENTRATION);
 ////				} else {
-////					DisplayErrorMsg(
+////					Display::DisplayErrorMsg(
 ////							"Error: In reading BC file, the input component names
 ///are
 /// not found in MCP file!!!"); /					exit(1); /				} /
@@ -78,7 +78,7 @@ namespace FileIO
 ////					setProcess(cp_vec[cp_name_2_idx[tmp]]->getProcess());
 ////					setProcessPrimaryVariable(CONCENTRATION);
 ////				} else {
-////					DisplayErrorMsg(
+////					Display::DisplayErrorMsg(
 ////							"Error: In reading BC file, the input component names
 ///are not found
 /// in MCP file!!!"); /					exit(1); /				} /			} /

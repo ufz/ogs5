@@ -290,7 +290,7 @@ bool MicrobeData::Read(ifstream* rfd_file)
                 _drmc_ = true;
             else
             {
-                DisplayMsgLn(" ERROR reading Microbe _drmc_ Terms  - skipping");
+                Display::DisplayMsgLn(" ERROR reading Microbe _drmc_ Terms  - skipping");
                 return false;
             }
             in.clear();
@@ -1760,7 +1760,7 @@ bool CKinReact::Read(std::ifstream* rfd_file, const GEOLIB::GEOObjects& geo_obj,
                     monod.push_back(m_monod);
                 else
                 {
-                    DisplayMsgLn(" ERROR reading Monod Terms  - skipping");
+                    Display::DisplayMsgLn(" ERROR reading Monod Terms  - skipping");
                     number_monod--;
                     delete m_monod;
                 }
@@ -1809,7 +1809,7 @@ bool CKinReact::Read(std::ifstream* rfd_file, const GEOLIB::GEOObjects& geo_obj,
                     }
                 }
                 else
-                    DisplayMsgLn(" ERROR reading Threshhold Terms  - skipping");
+                    Display::DisplayMsgLn(" ERROR reading Threshhold Terms  - skipping");
                 in.clear();
             }
         //....................................................................
@@ -1842,7 +1842,7 @@ bool CKinReact::Read(std::ifstream* rfd_file, const GEOLIB::GEOObjects& geo_obj,
                 else
                 {
                     delete m_inhibit;  // CB_merge_0513 ??
-                    DisplayMsgLn(" ERROR reading Inhibition Terms  - skipping");
+                    Display::DisplayMsgLn(" ERROR reading Inhibition Terms  - skipping");
                     number_inhibit--;
                 }
 
@@ -1877,7 +1877,7 @@ bool CKinReact::Read(std::ifstream* rfd_file, const GEOLIB::GEOObjects& geo_obj,
                     production.push_back(m_production);
                 else
                 {
-                    DisplayMsgLn(" ERROR reading Production Terms  - skipping");
+                    Display::DisplayMsgLn(" ERROR reading Production Terms  - skipping");
                     number_production--;
                 }
                 in.clear();
@@ -2231,7 +2231,7 @@ bool CKinReact::Read(std::ifstream* rfd_file, const GEOLIB::GEOObjects& geo_obj,
                         speciesname = "NIX";
                     }
                     else
-                        DisplayMsgLn(
+                        Display::DisplayMsgLn(
                             " ERROR reading Mechanism Species  - skipping");
                     in.clear();
                 }
@@ -2240,7 +2240,7 @@ bool CKinReact::Read(std::ifstream* rfd_file, const GEOLIB::GEOObjects& geo_obj,
             }  // successfull read
             else
             {
-                DisplayMsgLn(" ERROR reading Mechanism Terms  - skipping");
+                Display::DisplayMsgLn(" ERROR reading Mechanism Terms  - skipping");
                 number_Mech--;
                 delete m_mech;
             }
@@ -2628,7 +2628,7 @@ void CKinReact::ReadReactionEquation(string line_string_all)
     partners = 0;
     ih1 = (int)line_string.find(" = ");
     if (ih1 < 0)
-        DisplayMsgLn(" Error in keyword REACTION");
+        Display::DisplayMsgLn(" Error in keyword REACTION");
     // Exception handling
     while (indexhigh < linelength)
     {
@@ -8421,14 +8421,14 @@ void CKinReactData::PreprocessMinKin()
                 break;
             case 1: /* DH*/
                 if (Imax > 0.1)
-                    DisplayMsgLn(
+                    Display::DisplayMsgLn(
                         "Warning in CKinReactData::PreprocessMinkin(): I > 0.1 "
                         "--> use of DH activity model is not "
                         "recomended!");
                 break;
             case 2: /* Davies*/
                 if (Imin < 0.1)
-                    DisplayMsgLn(
+                    Display::DisplayMsgLn(
                         "Warning in CKinReactData::PreprocessMinkin(): I < 0.1 "
                         "--> use of Davies activity model is not "
                         "recomended!");
@@ -8436,7 +8436,7 @@ void CKinReactData::PreprocessMinKin()
             case 3: /* CHEMAPP*/
                 break;
             default:
-                DisplayMsgLn(
+                Display::DisplayMsgLn(
                     "Unknown activity model in "
                     "CKinReactData::PreprocessMinkin()!");
                 break;
@@ -8605,7 +8605,7 @@ void CKinReactData::PreprocessMinKin()
 #endif
             break;
         default:
-            DisplayMsgLn(
+            Display::DisplayMsgLn(
                 "Unknown activity model in CKinReactData::PreprocessMinkin()!");
             break;
     } /* switch */

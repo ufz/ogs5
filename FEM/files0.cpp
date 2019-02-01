@@ -215,7 +215,7 @@ int ReadData(const char* dateiname,
     // Check line ending of input files
     if (!checkFormatOfInputFiles(dateiname))
     {
-        ScreenMessage("terminate this program");
+        Display::ScreenMessage("terminate this program");
         exit(0);
     }
     //----------------------------------------------------------------------
@@ -340,7 +340,7 @@ void CloseMsgFile(FILE* f)
 {
     if (f != stdout)
         if (fclose(f))
-            DisplayErrorMsg(
+            Display::DisplayErrorMsg(
                 "Fehler: Message-Protokolldatei konnte nicht geschlossen "
                 "werden !!");
 }

@@ -163,7 +163,7 @@ void BGRaCreep::integrateStress(const double dt, const double T,
 
     if (it == _max_iterations - 1)
     {
-        ScreenMessage(
+        Display::ScreenMessage(
             "The local Newton method did not converge within the given "
             "number of iterations. Iteration: %d, residual norm: "
             "%g",

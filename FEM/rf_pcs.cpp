@@ -573,10 +573,10 @@ CRFProcess::~CRFProcess(void)
 #endif
     if (_init_domain_data_type == FiniteElement::READ)
     {
-        ScreenMessage(
+        Display::ScreenMessage(
             "!!!Waning: Reading and writing solutions (reload=3)\
                                   are selected in this computation.\n");
-        ScreenMessage(
+        Display::ScreenMessage(
             "\t Please make sure that the original initial\
                                 data files are used.\n");
     }
@@ -1086,7 +1086,7 @@ void CRFProcess::SetBoundaryConditionAndSourceTerm()
     {
         const int DOF = GetPrimaryVNumber();
         // BC - create BC groups for each process
-        ScreenMessage("-> Create BC\n");
+        Display::ScreenMessage("-> Create BC\n");
         CBoundaryConditionsGroup* m_bc_group = NULL;
 
         // 25.08.2011. WW
@@ -1130,7 +1130,7 @@ void CRFProcess::SetBoundaryConditionAndSourceTerm()
                 Write_Processed_BC();
         }
         // ST - create ST groups for each process
-        ScreenMessage("-> Create ST\n");
+        Display::ScreenMessage("-> Create ST\n");
         CSourceTermGroup* m_st_group = NULL;
 
         if (WriteSourceNBC_RHS == 2)  // Read from file
@@ -5217,7 +5217,7 @@ void CRFProcess::CalculateElementMatrices(void)
         case 66:  // OF
             break;
         default:
-            DisplayMsgLn(
+            Display::DisplayMsgLn(
                 "CalculateElementMatrices: no CalculateElementMatrices "
                 "specified");
             abort();
@@ -6374,7 +6374,7 @@ void CRFProcess::AssembleSystemMatrixNew(void)
             // SMAssembleMatrix(eqs->b,eqs->x,ddummy,this);
             break;
         default:
-            DisplayMsgLn(
+            Display::DisplayMsgLn(
                 "CalculateElementMatrices: no CalculateElementMatrices "
                 "specified");
             abort();
@@ -8690,7 +8690,7 @@ void CRFProcess::PCSMoveNOD(void)
             MSHMoveNODUcFlow(this);
             break;
         default:
-            DisplayMsgLn("PCSMoveNOD: no valid process");
+            Display::DisplayMsgLn("PCSMoveNOD: no valid process");
             abort();
     }
 }
@@ -8864,14 +8864,14 @@ string GetPFNamebyCPName(string inname)
 
 int GetRFProcessNumPhases(void)
 {
-    // DisplayMsgLn("GetRFProcessNumPhases - to be removed");
+    // Display::DisplayMsgLn("GetRFProcessNumPhases - to be removed");
     int no_phases = (int)mfp_vector.size();
     return no_phases;
 }
 
 long GetRFProcessNumComponents(void)
 {
-    // DisplayMsgLn("GetRFProcessNumComponents - to be removed");
+    // Display::DisplayMsgLn("GetRFProcessNumComponents - to be removed");
     int no_components = (int)cp_vec.size();
     return no_components;
 }
@@ -9467,7 +9467,7 @@ double CRFProcess::CalcIterationNODError(FiniteElement::ErrorMethod method,
             break;
         //
         default:
-            ScreenMessage(
+            Display::ScreenMessage(
                 "ERROR: Invalid error method for Iteration or Coupling Node "
                 "error.\n");
             return 0.0;

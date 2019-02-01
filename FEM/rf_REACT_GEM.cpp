@@ -1704,12 +1704,12 @@ short REACT_GEM::GetSoComponentValue_MT(long node_Index, int timelevel,
                     node_Index, m_pcs->GetNodeValueIndex(str) + timelevel);
             else
             {
-                // DisplayErrorMsg("Error: Corresponding Component NOT FOUND in
+                // Display::DisplayErrorMsg("Error: Corresponding Component NOT FOUND in
                 // GEM part!!"); return 0;
             }
         }
     }
-    // DisplayErrorMsg("Error: MASS TRANSPORT NOT FOUND!!");
+    // Display::DisplayErrorMsg("Error: MASS TRANSPORT NOT FOUND!!");
     return 1;
 }
 /*

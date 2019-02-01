@@ -453,7 +453,7 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
                     break;
                 //
                 default:
-                    ScreenMessage(
+                    Display::ScreenMessage(
                         "ERROR in NUMRead. Invalid non-linear iteration error "
                         "method selected.\n");
                     exit(1);
@@ -472,13 +472,13 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
         }
         else if (line_string.find("$NON_LINEAR_SOLVER") != string::npos)
         {
-            ScreenMessage(" --\n Using old $NON_LINEAR_SOLVER keyword.\n");
-            ScreenMessage(
+            Display::ScreenMessage(" --\n Using old $NON_LINEAR_SOLVER keyword.\n");
+            Display::ScreenMessage(
                 " Eventually this will be obsolete. Consider switching to\n");
-            ScreenMessage(
+            Display::ScreenMessage(
                 " $NON_LINEAR_ITERATIONS for better results and greater "
                 "flexibility.\n");
-            ScreenMessage(" --\n");
+            Display::ScreenMessage(" --\n");
             //
             // JT:	in >> method_name
             //		in >> tolerance
@@ -551,8 +551,8 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
         // JT subkeyword found
         if (line_string.find("$COUPLING_ITERATIONS") != string::npos)
         {
-            ScreenMessage("$COUPLING_ITERATIONS keyword obsolete.\n");
-            ScreenMessage(
+            Display::ScreenMessage("$COUPLING_ITERATIONS keyword obsolete.\n");
+            Display::ScreenMessage(
                 "Use $COUPLING_CONTROL and $COUPLED_PROCESS for process "
                 "couplings.\n");
             exit(1);
@@ -599,17 +599,17 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
                     break;
                 //
                 case FiniteElement::BNORM:
-                    ScreenMessage(
+                    Display::ScreenMessage(
                         "ERROR in NUMRead. BNORM not configured for process "
                         "couplings.\n");
-                    ScreenMessage(
+                    Display::ScreenMessage(
                         "We suggest ENORM as a valid companion for NEWTON "
                         "couplings.\n");
                     exit(1);
                     break;
                 //
                 default:
-                    ScreenMessage(
+                    Display::ScreenMessage(
                         "ERROR in NUMRead. Invalid coupling error method "
                         "selected.\n");
                     exit(1);
@@ -647,7 +647,7 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
             }
             else
             {
-                ScreenMessage(
+                Display::ScreenMessage(
                     "WARNING. $COUPLED_PROCESS keyword encountered, but a "
                     "valid process OR primary variable was not "
                     "found.\n");

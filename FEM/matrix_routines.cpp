@@ -317,7 +317,7 @@ void MX_Exit(const char* caller, int errcode)
             strcat(text, "Argumente falsch");
             break;
     }
-    DisplayErrorMsg(strcat(text, " -> Abbruch!"));
+    Display::DisplayErrorMsg(strcat(text, " -> Abbruch!"));
     exit(1);
 }
 
@@ -725,25 +725,25 @@ void* M2DestroyMatrix(void)
                 zaehler += ((Zeil2(j).max_anz - sp2_start) / sp2_inc);
             }
         }
-        DisplayMsgLn("Statistische Auswertung der Speicherstruktur:");
-        DisplayMsg(" - max. Dimension des Gleichungssystems: ");
-        DisplayLong(w->max_size);
-        DisplayMsgLn("");
-        DisplayMsg(" - Ausgangsgroesse der Zeileneintraege sp2_start: ");
-        DisplayLong((long)sp2_start);
-        DisplayMsgLn("");
-        DisplayMsg(" - Erhoehung der Zeileneintraege sp2_inc: ");
-        DisplayLong((long)sp2_inc);
-        DisplayMsgLn("");
-        DisplayMsg(" - Anzahl der erhoehten Zeileneintraege: ");
-        DisplayLong(anz_inc);
-        DisplayMsgLn("");
-        DisplayMsg(" - Groesste Groesse eines Zeileneintrages: ");
-        DisplayLong(max_inc);
-        DisplayMsgLn("");
-        DisplayMsg(" - Gesamtzahl der Erhoehungen aller Zeileneintraege: ");
-        DisplayLong(zaehler);
-        DisplayMsgLn("");
+        Display::DisplayMsgLn("Statistische Auswertung der Speicherstruktur:");
+        Display::DisplayMsg(" - max. Dimension des Gleichungssystems: ");
+        Display::DisplayLong(w->max_size);
+        Display::DisplayMsgLn("");
+        Display::DisplayMsg(" - Ausgangsgroesse der Zeileneintraege sp2_start: ");
+        Display::DisplayLong((long)sp2_start);
+        Display::DisplayMsgLn("");
+        Display::DisplayMsg(" - Erhoehung der Zeileneintraege sp2_inc: ");
+        Display::DisplayLong((long)sp2_inc);
+        Display::DisplayMsgLn("");
+        Display::DisplayMsg(" - Anzahl der erhoehten Zeileneintraege: ");
+        Display::DisplayLong(anz_inc);
+        Display::DisplayMsgLn("");
+        Display::DisplayMsg(" - Groesste Groesse eines Zeileneintrages: ");
+        Display::DisplayLong(max_inc);
+        Display::DisplayMsgLn("");
+        Display::DisplayMsg(" - Gesamtzahl der Erhoehungen aller Zeileneintraege: ");
+        Display::DisplayLong(zaehler);
+        Display::DisplayMsgLn("");
     }
 #endif
 
@@ -777,25 +777,25 @@ void* M34DestroyMatrix(void)
                 zaehler += (Sp34(j).max_anz - sp2_start) / sp2_inc;
             }
         }
-        DisplayMsgLn("Statistische Auswertung der Speicherstruktur:");
-        DisplayMsg(" - max. Dimension des Gleichungssystems: ");
-        DisplayLong(w->max_size);
-        DisplayMsgLn("");
-        DisplayMsg(" - Ausgangsgroesse der Zeileneintraege sp2_start: ");
-        DisplayLong((long)sp2_start);
-        DisplayMsgLn("");
-        DisplayMsg(" - Erhoehung der Zeileneintraege sp2_inc: ");
-        DisplayLong((long)sp2_inc);
-        DisplayMsgLn("");
-        DisplayMsg(" - Anzahl der erhoehten Zeileneintraege: ");
-        DisplayLong(anz_inc);
-        DisplayMsgLn("");
-        DisplayMsg(" - Groesste Groesse eines Zeileneintrages: ");
-        DisplayLong(max_inc);
-        DisplayMsgLn("");
-        DisplayMsg(" - Gesamtzahl der Erhoehungen aller Zeileneintraege: ");
-        DisplayLong(zaehler);
-        DisplayMsgLn("");
+        Display::DisplayMsgLn("Statistische Auswertung der Speicherstruktur:");
+        Display::DisplayMsg(" - max. Dimension des Gleichungssystems: ");
+        Display::DisplayLong(w->max_size);
+        Display::DisplayMsgLn("");
+        Display::DisplayMsg(" - Ausgangsgroesse der Zeileneintraege sp2_start: ");
+        Display::DisplayLong((long)sp2_start);
+        Display::DisplayMsgLn("");
+        Display::DisplayMsg(" - Erhoehung der Zeileneintraege sp2_inc: ");
+        Display::DisplayLong((long)sp2_inc);
+        Display::DisplayMsgLn("");
+        Display::DisplayMsg(" - Anzahl der erhoehten Zeileneintraege: ");
+        Display::DisplayLong(anz_inc);
+        Display::DisplayMsgLn("");
+        Display::DisplayMsg(" - Groesste Groesse eines Zeileneintrages: ");
+        Display::DisplayLong(max_inc);
+        Display::DisplayMsgLn("");
+        Display::DisplayMsg(" - Gesamtzahl der Erhoehungen aller Zeileneintraege: ");
+        Display::DisplayLong(zaehler);
+        Display::DisplayMsgLn("");
     }
 #endif
 
@@ -3079,11 +3079,11 @@ void M1Vorkond(int aufgabe, double* x, double* b)
                         }
                         else
                         {
-                            DisplayMsg("!!! Equation system: Line: ");
-                            DisplayLong(i);
-                            DisplayMsg(" Value: ");
-                            DisplayDouble(Aik1(i, i), 0, 0);
-                            DisplayMsgLn(
+                            Display::DisplayMsg("!!! Equation system: Line: ");
+                            Display::DisplayLong(i);
+                            Display::DisplayMsg(" Value: ");
+                            Display::DisplayDouble(Aik1(i, i), 0, 0);
+                            Display::DisplayMsgLn(
                                 "!!! Diagonal near zero! Disable diagonal "
                                 "preconditioner!");
                             exit(1);
@@ -3230,12 +3230,12 @@ void M2Vorkond(int aufgabe, double* x, double* b)
                         }
                         else
                         {
-                            DisplayMsg("!!! Equation system: Line: ");
-                            DisplayLong(k);
-                            DisplayMsg(" Value: ");
-                            DisplayDouble(Diag2(k), 0, 0);
-                            DisplayMsgLn("");
-                            DisplayMsgLn(
+                            Display::DisplayMsg("!!! Equation system: Line: ");
+                            Display::DisplayLong(k);
+                            Display::DisplayMsg(" Value: ");
+                            Display::DisplayDouble(Diag2(k), 0, 0);
+                            Display::DisplayMsgLn("");
+                            Display::DisplayMsgLn(
                                 "!!! Diagonal near zero! Disable diagonal "
                                 "preconditioner!");
                             exit(1);
@@ -3259,7 +3259,7 @@ void M2Vorkond(int aufgabe, double* x, double* b)
         case 3: /* Linkstransformationen */
             if
                 VK_Modus(VK_iLDU) /*  incomplete L(D)U-Zerlegung geht nicht! */
-                    DisplayMsgLn("Modell 2: kein ILU-Vorkonditionierer!");
+                    Display::DisplayMsgLn("Modell 2: kein ILU-Vorkonditionierer!");
             //--------------------------------------------------------------------
     }
     //======================================================================
@@ -3309,12 +3309,12 @@ void M34Vorkond(int aufgabe, double* x, double* b)
                     }
                     /*
                        else {
-                       DisplayMsg("!!! Equation system: Line: ");
-                       DisplayLong(k);
-                       DisplayMsg(" Value: ");
-                       DisplayDouble(w -> Diag[k], 0, 0);
-                       DisplayMsgLn("");
-                       DisplayMsgLn("!!! Diagonal near zero! Disable diagonal
+                       Display::DisplayMsg("!!! Equation system: Line: ");
+                       Display::DisplayLong(k);
+                       Display::DisplayMsg(" Value: ");
+                       Display::DisplayDouble(w -> Diag[k], 0, 0);
+                       Display::DisplayMsgLn("");
+                       Display::DisplayMsgLn("!!! Diagonal near zero! Disable diagonal
                        preconditioner!"); exit(1);
                        }*/
 
@@ -3470,12 +3470,12 @@ void M5Vorkond(int aufgabe, double* x, double* b)
                         }
                         else
                         {
-                            DisplayMsg("!!! Equation system: Line: ");
-                            DisplayLong(k);
-                            DisplayMsg(" Value: ");
-                            DisplayDouble(Diag2(k), 0, 0);
-                            DisplayMsgLn("");
-                            DisplayMsgLn(
+                            Display::DisplayMsg("!!! Equation system: Line: ");
+                            Display::DisplayLong(k);
+                            Display::DisplayMsg(" Value: ");
+                            Display::DisplayDouble(Diag2(k), 0, 0);
+                            Display::DisplayMsgLn("");
+                            Display::DisplayMsgLn(
                                 "!!! Diagonal near zero! Disable diagonal "
                                 "preconditioner!");
                             exit(1);
@@ -3523,12 +3523,12 @@ void M5Vorkond(int aufgabe, double* x, double* b)
                           for (i = 0; i < Zeil2(k).anz; i++)
                             Aik2(k, i) *= h;
                         } else {
-                          DisplayMsg("!!! Equation system: Line: ");
-                       DisplayLong(k);
-                       DisplayMsg(" Value: ");
-                       DisplayDouble(Diag2(k), 0, 0);
-                       DisplayMsgLn("");
-                       DisplayMsgLn("!!! Diagonal near zero! Disable diagonal
+                          Display::DisplayMsg("!!! Equation system: Line: ");
+                       Display::DisplayLong(k);
+                       Display::DisplayMsg(" Value: ");
+                       Display::DisplayDouble(Diag2(k), 0, 0);
+                       Display::DisplayMsgLn("");
+                       Display::DisplayMsgLn("!!! Diagonal near zero! Disable diagonal
                        preconditioner!"); exit(1);
                        }
                        }
@@ -3551,7 +3551,7 @@ void M5Vorkond(int aufgabe, double* x, double* b)
         case 3: /* Linkstransformationen */
             if
                 VK_Modus(VK_iLDU) /*  incomplete L(D)U-Zerlegung geht nicht! */
-                    DisplayMsgLn("Modell 2: kein ILU-Vorkonditionierer!");
+                    Display::DisplayMsgLn("Modell 2: kein ILU-Vorkonditionierer!");
             //--------------------------------------------------------------------
     }
     //======================================================================

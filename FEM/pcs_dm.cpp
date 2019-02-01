@@ -543,7 +543,7 @@ double CRFProcessDeformation::Execute(int loop_process_number)
        loading  2
        //---------------------------------------------------------------------
        // InitializeNewtonSteps(1); // u=0
-       DisplayMsgLn("\nEvaluate load ratio: ");
+       Display::DisplayMsgLn("\nEvaluate load ratio: ");
        PreLoad = 1;
        GlobalAssembly();
        PreLoad = 0;
@@ -3127,7 +3127,7 @@ void CRFProcessDeformation::WriteGaussPointStress(const bool last_step)
 #else
     const std::string StressFileName = FileName + ".sts";
 #endif
-    ScreenMessage("-> Write initial stress \n");
+    Display::ScreenMessage("-> Write initial stress \n");
     fstream file_stress(StressFileName.data(),
                         ios::binary | ios::out | ios::trunc);
     ElementValue_DM* eleV_DM = NULL;
@@ -3183,7 +3183,7 @@ void CRFProcessDeformation::ReadGaussPointStress()
     const std::string StressFileName = FileName + ".sts";
 #endif
 
-    ScreenMessage("-> Read initial stress \n");
+    Display::ScreenMessage("-> Read initial stress \n");
     fstream file_stress(StressFileName.data(), ios::binary | ios::in);
     ElementValue_DM* eleV_DM = NULL;
     //

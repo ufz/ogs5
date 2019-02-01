@@ -26,21 +26,22 @@
 #include <cstring>
 //#include <ctype.h>
 
+namespace Display
+{
 /*JT: Send output message*/
-extern void ScreenMessage(const char *format , ... );
+void ScreenMessage(const char *format , ... );
 /* Gibt Programm-Abspann aus */
-extern void DisplayMsg(const char* s);
+void DisplayMsg(const char* s);
 /* Schreibt Zeichenkette ohne Zeilenvorschub auf Standardausgabe */
-extern void DisplayMsgLn(const char* s);
+void DisplayMsgLn(const char* s);
 /* Schreibt Zeichenkette mit Zeilenruecklauf auf Standardausgabe */
-extern void DisplayDouble(double x, int i, int j);
+void DisplayDouble(double x, int i, int j);
 /* Schreibt Double-Wert ohne Zeilenvorschub auf Standardausgabe */
-extern void DisplayLong(long x);
+void DisplayLong(long x);
 /* Schreibt Vektor auf Standardausgabe */
 // OK411 extern void DisplayDoubleMatrix ( double *mat, long m, long n, char
 // *text );
 /* Schreibt Matrix auf Standardausgabe */
-extern void DisplayErrorMsg(const char* s);
-/* Schreibt Fehlermeldung auf Standardausgabe */
-/* Schreibt Laufzeitmeldung auf Standardausgabe */
+void DisplayErrorMsg(const char* s);
+}
 #endif
