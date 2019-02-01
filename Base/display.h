@@ -30,6 +30,8 @@ namespace Display
 {
 /*JT: Send output message*/
 void ScreenMessage(const char *format , ... );
+void ScreenMessageNoMPIRank(const char *format , ... );
+
 /* Gibt Programm-Abspann aus */
 void DisplayMsg(const char* s);
 /* Schreibt Zeichenkette ohne Zeilenvorschub auf Standardausgabe */

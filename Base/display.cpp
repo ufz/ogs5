@@ -62,10 +62,19 @@ void DisplayMsg(const char* s)
 **************************************************************************/
 void ScreenMessage(const char *format , ... )
 {
-#ifdef USE_MPI
+#if defined(USE_PETSC) || defined(USE_MPI) || defined(USE_MPI_PARPROC) || \
+    defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS)
     if (myrank > 0)
         return;
 #endif
+   va_list arglist;
+   va_start( arglist, format );
+   vprintf( format, arglist );
+   va_end( arglist );
+}
+
+void ScreenMessageNoMPIRank(const char *format , ... )
+{
    va_list arglist;
    va_start( arglist, format );
    vprintf( format, arglist );
