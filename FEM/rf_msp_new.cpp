@@ -42,6 +42,7 @@
 #include "tools.h"   // GetLineFromFile
 #include "PhysicalConstant.h"
 
+#include "Material/Solid/BGRaCreep.h"
 #include "minkley.h"
 #include "burgers.h"
 
@@ -554,7 +555,8 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
                 in_sd >> (*data_Creep)(1);
                 in_sd.clear();
             }
-            if (line_string.find("BGRA") != string::npos)
+            if (line_string.find("BGRA") != string::npos &&
+                line_string.find("IMPLICIT") == string::npos)
             {
                 Creep_mode = 2;
                 /*! \subsection Temperature dependent creep model by BGR */
@@ -571,6 +573,17 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
                 in_sd >> (*data_Creep)(1);
                 in_sd >> (*data_Creep)(2);
                 in_sd.clear();
+            }
+            if (line_string.find("BGRA_IMPLICIT") != string::npos)
+            {
+                Creep_mode = 21;
+                in_sd.str(GetLineFromFile1(msp_file));
+                double A, n, sigma_f, Q, refT, tolerance, max_iterations;
+                in_sd >> A >> n >> sigma_f >> Q >> refT >> tolerance
+                      >> max_iterations;
+                in_sd.clear();
+                _bgra_creep = new BGRaCreep(A, n, sigma_f, Q, refT, tolerance,
+                                            max_iterations);
             }
             // TN..................................................................
             if (line_string.find("BGRB") != string::npos)
@@ -1096,7 +1109,8 @@ CSolidProperties::CSolidProperties()
       data_Capacity(NULL),
       data_Conductivity(NULL),
       data_Plasticity(NULL),
-      data_Creep(NULL)
+      data_Creep(NULL),
+      _bgra_creep(NULL)
 {
     PoissonRatio = 0.2;
     ThermalExpansion = 0.0;
@@ -1332,6 +1346,9 @@ CSolidProperties::~CSolidProperties()
     material_minkley = NULL;
     material_burgers = NULL;
     smath = NULL;
+
+    if(_bgra_creep)
+        delete _bgra_creep;
 }
 //----------------------------------------------------------------------------
 
@@ -1759,11 +1776,16 @@ void CSolidProperties::HeatConductivityTensor(const int dim, double* tensor,
         tensor[i] *= base_thermal_conductivity;
 }
 
+double CSolidProperties::getShearModulus(const double reference) const
+{
+    return 0.5 * getYoungsModulus(reference) / (1. + Poisson_Ratio());
+}
+
 /**************************************************************************
    FEMLib-Method: CSolidProperties::Youngs_Modulus(const double reference = 0.0)
 const Task: Get density Programing: 08/2004 WW Implementation
 **************************************************************************/
-double CSolidProperties::Youngs_Modulus(double reference)
+double CSolidProperties::getYoungsModulus(const double reference) const
 {
     double val = 0.0;
     switch (Youngs_mode)
@@ -2140,7 +2162,7 @@ void CSolidProperties::LocalNewtonMinkley(
 void CSolidProperties::Calculate_Lame_Constant()
 {
     double nv = Poisson_Ratio();
-    E = Youngs_Modulus();  // Constant at present
+    E = getYoungsModulus();  // Constant at present
     // WX:1.2013. time dependet
     if (Time_Dependent_E_nv_mode > 0)
     {

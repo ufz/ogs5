@@ -26,6 +26,9 @@
 
 #include "rf_mfp_new.h"
 #include "rf_msp_new.h"
+
+#include "Material/Solid/BGRaCreep.h"
+
 #include "tools.h"  //12.2009. WW
 // Equation
 #if defined(NEW_EQS)
@@ -92,9 +95,8 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
       smat(NULL),
       m_mfp(NULL),
       m_mmp(NULL),
-      Temp(NULL),
+      nodal_dT(NULL),
       T1(NULL),
-      Tem(PhysicalConstant::CelsiusZeroInKelvin + 20.0),
       _wettingS(1.),
       eleV_DM(NULL),
       _nodal_p1(NULL),
@@ -341,7 +343,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
     {
         idx_T0 = t_pcs->GetNodeValueIndex("TEMPERATURE1");
         idx_T1 = idx_T0 + 1;
-        Temp = new double[max_nnodes_LE];
+        nodal_dT = new double[max_nnodes_LE];
         T1 = new double[max_nnodes_LE];
     }
 
@@ -395,7 +397,7 @@ CFiniteElementVec::~CFiniteElementVec()
     delete AuxMatrix;
     delete AuxMatrix2;  // NW
     delete[] Disp;
-    delete[] Temp;
+    delete[] nodal_dT;
     delete[] T1;
     delete[] Sxx;
     delete[] Syy;
@@ -464,7 +466,7 @@ CFiniteElementVec::~CFiniteElementVec()
     AuxMatrix = NULL;
     AuxMatrix2 = NULL;  // NW
     Disp = NULL;
-    Temp = NULL;
+    nodal_dT = NULL;
     T1 = NULL;
     Sxx = NULL;
     Syy = NULL;
@@ -1929,7 +1931,6 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
 {
     long i;
 
-    Matrix* p_D = NULL;
     eleV_DM = ele_value_dm[MeshElement->GetIndex()];
 
     // ---- Gauss integral
@@ -1938,14 +1939,12 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
     gp_t = 0;
     double fkt = 0.0;
 
-    // WW double *DevStress ;
-    const int PModel = smat->Plasticity_type;
+    const int PModel = (smat->CreepModel() != 21) ? smat->Plasticity_type
+        : 9999;
     double dPhi = 0.0;  // Sclar factor for the plastic strain
     //  double J2=0.0;
     double dS = 0.0;
 
-    double ThermalExpansion = 0.0;
-    double t1 = 0.0;
     bool Strain_TCS = false;
 
 #ifdef JFNK_H2M
@@ -1954,10 +1953,7 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
         JFNK = true;
 #endif
     //
-    ThermalExpansion = 0.0;
-    // Thermal effect
-    if (smat->Thermal_Expansion() > 0.0)
-        ThermalExpansion = smat->Thermal_Expansion();
+    const double ThermalExpansion = smat->Thermal_Expansion();
 
     // Get porosity model
     // ---- Material properties
@@ -1978,8 +1974,8 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
         for (i = 0; i < nnodes; i++)
         {
             T1[i] = t_pcs->GetNodeValue(nodes[i], idx_T1);
-            Temp[i] = t_pcs->GetNodeValue(nodes[i], idx_T1) -
-                      t_pcs->GetNodeValue(nodes[i], idx_T0);
+            nodal_dT[i] = t_pcs->GetNodeValue(nodes[i], idx_T1) -
+                          t_pcs->GetNodeValue(nodes[i], idx_T0);
         }
     //
 
@@ -2221,11 +2217,14 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
                              dPhi = 1.0;
                        }
                        break;*/
+                case 9999: // BGRa creep, i,pplicit scheme
+                    break;
             }
         }
         // --------------------------------------------------------------------
         // Stress increment by heat, swelling, or heat
         //
+        double T = 0.0;
         if (Strain_TCS)
         {
             if (PModel == 3)
@@ -2239,37 +2238,52 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
             //
             if (T_Flag)  // Contribution by thermal expansion
             {
-                Tem = 0.0;
-                t1 = 0.0;
-                for (i = 0; i < nnodes; i++)
-                {
-                    Tem += shapefct[i] * Temp[i];
-                    t1 += shapefct[i] * T1[i];
-                }
+                const double dT = interpolate(nodal_dT, 1);
+                T = interpolate(T1, 1);
                 for (i = 0; i < 3;
                      i++)  // JT: This was commented. SHOULDN'T BE!
-                    strain_ne[i] -= ThermalExpansion * Tem;
+                    strain_ne[i] -= ThermalExpansion * dT;
             }
             // Strain increment by creep
-            if (smat->Creep_mode == 1 || smat->Creep_mode == 2 ||
-                smat->Creep_mode == 3 || smat->Creep_mode == 4)
-            // TN:add BGRb BGRsf,WX
+            if (smat->Creep_mode != 21)  // not BGRa with the implicit algorithm
             {
-                for (i = 0; i < ns; i++)
-                    stress_ne[i] = (*eleV_DM->Stress)(i, gp);
-                smat->AddStain_by_Creep(ns, stress_ne, strain_ne, t1);
+                if (smat->Creep_mode == 1 || smat->Creep_mode == 2 ||
+                    smat->Creep_mode == 3 || smat->Creep_mode == 4)
+                // TN:add BGRb BGRsf,WX
+                {
+                    for (i = 0; i < ns; i++)
+                        stress_ne[i] = (*eleV_DM->Stress)(i, gp);
+                    smat->AddStain_by_Creep(ns, stress_ne, strain_ne, T);
+                }
+                if (smat->Creep_mode ==
+                    1000)  // HL_ODS. Strain increment by creep
+                {
+                    for (i = 0; i < ns; i++)
+                        stress_ne[i] = (*eleV_DM->Stress)(i, gp);
+                    smat->AddStain_by_HL_ODS(eleV_DM, stress_ne, strain_ne, T);
+                }
+                // Stress deduced by thermal or swelling strain incremental:
+                De->multi(strain_ne, dstress);
+                for (i = 0; i < ns;
+                     i++)  // JT: This was commented. It shouldn't be.
+                    dstrain[i] += strain_ne[i];
             }
-            if (smat->Creep_mode == 1000)  // HL_ODS. Strain increment by creep
-            {
-                for (i = 0; i < ns; i++)
-                    stress_ne[i] = (*eleV_DM->Stress)(i, gp);
-                smat->AddStain_by_HL_ODS(eleV_DM, stress_ne, strain_ne, t1);
-            }
-            // Stress deduced by thermal or swelling strain incremental:
-            De->multi(strain_ne, dstress);
-            for (i = 0; i < ns;
-                 i++)  // JT: This was commented. It shouldn't be.
-                dstrain[i] += strain_ne[i];
+        }
+
+        // Strain increment by creep
+        if (smat->Creep_mode == 21)  // BGRa with the implicit algorithm
+        {
+            double temperature = T;
+            if (temperature == 0.0)
+                temperature = smat->_bgra_creep->getReferenceTemterature();
+	           else
+                De->multi(strain_ne, dstress);
+
+            for (i = 0; i < ns; i++)
+                stress0[i] = (*eleV_DM->Stress)(i, gp);
+            smat->_bgra_creep->integrateStress(
+                dt, temperature, *smat, *De, *ConsistDep, stress0, dstress, update);
+            dPhi = 1.0;
         }
 
         if (smat->Creep_mode == 1001)  // BURGERS.
@@ -2306,7 +2320,7 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
             // strain)
             double local_res;
             smat->LocalNewtonBurgers(dt, strain_curr, stress_curr, eps_K_curr,
-                                     eps_M_curr, ConsD, t1, local_res);
+                                     eps_M_curr, ConsD, T, local_res);
 
             // Then update (and reduce for 2D) stress increment vector and
             // reduce (for 2D) ConsistDep, update internal variables
@@ -2369,7 +2383,7 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
             double local_res(0.);
             smat->LocalNewtonMinkley(dt, strain_curr, stress_curr, eps_K_curr,
                                      eps_M_curr, eps_pl_curr, e_pl_v, e_pl_eff,
-                                     lam, ConsD, t1, local_res);
+                                     lam, ConsD, T, local_res);
 
             // Then update (and reduce for 2D) stress increment vector and
             // reduce (for 2D) ConsistDep, update internal variables
@@ -2431,18 +2445,16 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
             //---------------------------------------------------------
             // Assemble matrices and RHS
             //---------------------------------------------------------
-            if (dPhi <= 0.0)
-                p_D = De;
-            else
-                p_D = ConsistDep;
             for (i = 0; i < ns; i++)
                 stress0[i] = (*eleV_DM->Stress0)(i, gp);
+            Matrix const* const p_D = (dPhi <= 0.0) ? De : ConsistDep;
             ComputeMatrix_RHS(fkt, p_D);
         }
         else  // Update stress
-
+        {
             for (i = 0; i < ns; i++)
                 (*eleV_DM->Stress)(i, gp) = dstress[i];
+        }
     }
     // The mapping of Gauss point strain to element nodes
     if (update)
@@ -3335,7 +3347,7 @@ void CFiniteElementVec::LocalAssembly_EnhancedStrain(const int update)
 
     bool isLoop = true;  // Used only to avoid warnings with .net
 
-    double ThermalExpansion = 0.0, Tem = 0.0;
+    double ThermalExpansion = 0.0;
     gp = 0;
     BDG->LimitSize(2, 2 * nnodesHQ);
     PDB->LimitSize(2 * nnodesHQ, 2);
@@ -3346,7 +3358,7 @@ void CFiniteElementVec::LocalAssembly_EnhancedStrain(const int update)
         if (smat->Thermal_Expansion() > 0.0)
             ThermalExpansion = smat->Thermal_Expansion();
         for (int i = 0; i < nnodes; i++)
-            Temp[i] = t_pcs->GetNodeValue(nodes[i], idx_T1) -
+            nodal_dT[i] = t_pcs->GetNodeValue(nodes[i], idx_T1) -
                       t_pcs->GetNodeValue(nodes[i], idx_T0);
     }
 
@@ -3452,11 +3464,9 @@ void CFiniteElementVec::LocalAssembly_EnhancedStrain(const int update)
         if (T_Flag)  // Contribution by thermal expansion
         {
             getShapefunctValues(gp, 1);  // Linear interpolation function
-            Tem = 0.0;
-            for (int i = 0; i < nnodes; i++)
-                Tem += shapefct[i] * Temp[i];
+            const double dT = interpolate(nodal_dT, 1);
             for (size_t i = 0; i < 3; i++)
-                dstrain[i] -= ThermalExpansion * Tem;
+                dstrain[i] -= ThermalExpansion * dT;
         }
         /*
            for(int i=0; i<ns; i++) dstress[i] = (*eleV_DM->Stress)(i,gp);
@@ -3547,11 +3557,9 @@ void CFiniteElementVec::LocalAssembly_EnhancedStrain(const int update)
         if (T_Flag)  // Contribution by thermal expansion
         {
             getShapefunctValues(gp, 1);  // Linear interpolation function
-            Tem = 0.0;
-            for (int i = 0; i < nnodes; i++)
-                Tem += shapefct[i] * Temp[i];
+            const double dT = interpolate(nodal_dT, 1);
             for (size_t i = 0; i < 3; i++)
-                dstrain[i] -= ThermalExpansion * Tem;
+                dstrain[i] -= ThermalExpansion * dT;
         }
 
         // Ehhanced strain:

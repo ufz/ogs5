@@ -25,6 +25,13 @@ namespace SolidProp
 class CSolidProperties;
 }
 
+namespace MaterialLib
+{
+namespace solid
+{
+class BGRaCreep;
+}
+}
 class CRFProcess;
 class CFluidProperties;
 class CMediumProperties;
@@ -62,6 +69,7 @@ public:
 
 private:
     // Friend class
+    friend class MaterialLib::solid::BGRaCreep;
     friend class SolidProp::CSolidProperties;
     friend class process::CRFProcessDeformation;
     friend class ::CMediumProperties;
@@ -201,9 +209,8 @@ private:
     double* Disp;
 
     // Temperatures of nodes
-    double* Temp;
+    double* nodal_dT;
     double* T1;
-    double Tem;
 
     double _wettingS;
 

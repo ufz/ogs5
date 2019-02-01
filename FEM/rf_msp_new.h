@@ -62,6 +62,8 @@ class Invariants;
 }
 namespace SolidProp
 {
+class BGRaCreep;
+
 typedef Eigen::Matrix<double, 6, 1> KVec;
 class CSolidProperties
 {
@@ -186,6 +188,8 @@ public:
                             Math_Group::Matrix& Consistent_Tangent,
                             double Temperature, double& local_res);
 
+    double getShearModulus(const double refence = 0.0) const;
+    double getYoungsModulus(const double refence = 0.0) const;
     double getBulkModulus() const;
     double getBiotsConstant() const { return biot_const; }
 
@@ -372,14 +376,6 @@ private:
     bool CheckTemperature_in_PhaseChange(const double T0, const double T1);
     double Enthalpy(double temperature, const double latent_factor);
 
-#ifdef RFW_FRACTURE
-    double Youngs_Modulus(CElem* elem, double refence = 0.0);
-    // RFW, for fracture calc
-    double Get_Youngs_Min_Aperture(CElem* elem);
-#else
-    double Youngs_Modulus(double refence = 0.0);
-#endif
-
     void CalcYoungs_SVV(const double strain_v);
 
     // For transverse isotropic linear elasticity: UJG 24.11.2009
@@ -476,6 +472,8 @@ private:
     Burgers::SolidBurgers* material_burgers;
     SolidMath::Invariants* smath;
     FiniteElement::SolidReactiveSystem _reactive_system;
+
+    BGRaCreep* _bgra_creep;
 
     // Friends that can access to this data explicitly
     friend bool ::MSPRead(const std::string& given_file_base_name);
