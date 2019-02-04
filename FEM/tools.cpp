@@ -48,6 +48,7 @@
 #include "msh_elem.h"
 #include "msh_lib.h"
 using namespace std;
+using namespace Display;
 
 Kurven* kurven = NULL;
 int anz_kurven = 0;
@@ -123,10 +124,10 @@ double GetCurveValue(int kurve, int methode, double punkt, int* gueltig)
 #ifdef ERROR_CONTROL
     if ((kurve < 0) || (kurve >= anz_kurven))
     {
-        Display::DisplayMsgLn("");
-        Display::DisplayMsg("PANIC! Curve ");
-        Display::DisplayLong(kurve);
-        Display::DisplayMsgLn(" is requested but not defined!");
+        DisplayMsgLn("");
+        DisplayMsg("PANIC! Curve ");
+        DisplayLong(kurve);
+        DisplayMsgLn(" is requested but not defined!");
         abort();
     }
 #endif
@@ -155,7 +156,7 @@ double GetCurveValue(int kurve, int methode, double punkt, int* gueltig)
     switch (methode)
     {
         default:
-            Display::ScreenMessage("ERROR: GetCurveValue() --> Invalid curve.\n");
+            ScreenMessage("ERROR: GetCurveValue() --> Invalid curve.\n");
             return 0.0;
         //
         case 0:  // Linear Interpolation
@@ -203,10 +204,10 @@ double GetCurveValueInverse(int kurve, int methode, double wert, int* gueltig)
 #ifdef ERROR_CONTROL
     if ((kurve < 0) || (kurve >= anz_kurven))
     {
-        Display::DisplayMsgLn("");
-        Display::DisplayMsg("PANIC! Curve ");
-        Display::DisplayLong(kurve);
-        Display::DisplayMsgLn(" is requested but not defined!");
+        DisplayMsgLn("");
+        DisplayMsg("PANIC! Curve ");
+        DisplayLong(kurve);
+        DisplayMsgLn(" is requested but not defined!");
         abort();
     }
 #endif
@@ -256,7 +257,7 @@ double GetCurveValueInverse(int kurve, int methode, double wert, int* gueltig)
     switch (methode)
     {
         default:
-            Display::ScreenMessage("ERROR: GetCurveValue() --> Invalid curve.\n");
+            ScreenMessage("ERROR: GetCurveValue() --> Invalid curve.\n");
             return 0.0;
         //
         case 0:  // Lineare Interpolation
@@ -311,10 +312,10 @@ double GetCurveDerivative(int kurve, int methode, double punkt, int* gueltig)
 #ifdef ERROR_CONTROL
     if ((kurve < 0) || (kurve >= anz_kurven))
     {
-        Display::DisplayMsgLn("");
-        Display::DisplayMsg("PANIC! Curve ");
-        Display::DisplayLong(kurve);
-        Display::DisplayMsgLn(" is requested but not defined!");
+        DisplayMsgLn("");
+        DisplayMsg("PANIC! Curve ");
+        DisplayLong(kurve);
+        DisplayMsgLn(" is requested but not defined!");
         abort();
     }
 #endif
@@ -423,10 +424,10 @@ double GetCurveInverseDerivative(int kurve,
 #ifdef ERROR_CONTROL
     if ((kurve < 0) || (kurve >= anz_kurven))
     {
-        Display::DisplayMsgLn("");
-        Display::DisplayMsg("PANIC! Curve ");
-        Display::DisplayLong(kurve);
-        Display::DisplayMsgLn(" is requested but not defined!");
+        DisplayMsgLn("");
+        DisplayMsg("PANIC! Curve ");
+        DisplayLong(kurve);
+        DisplayMsgLn(" is requested but not defined!");
         abort();
     }
 #endif
@@ -553,7 +554,7 @@ int FctCurves(char* data, int found, FILE* f)
     int i;
 
 #ifdef TESTFILES
-    Display::DisplayMsgLn("Eingabedatenbank, Schluesselwort CURVES");
+    DisplayMsgLn("Eingabedatenbank, Schluesselwort CURVES");
 #endif
 
     LineFeed(f);
@@ -717,14 +718,14 @@ int FctCurves(char* data, int found, FILE* f)
 //	long NumberOfElementsPerLayer = -1;
 //	MeshLib::CElem* m_ele = NULL;
 //	//------------------------------------------------------------------------
-//	Display::DisplayMsgLn("Input file Heterogeneous Fields ");
+//	DisplayMsgLn("Input file Heterogeneous Fields ");
 //	//------------------------------------------------------------------------
 //	// File handling
 //	ein.open(name_file);
 //	if(!ein)
 //	{
-//		//Display::DisplayMsgLn(" ERROR opening file with heterogeneous fields!");
-//		//Display::DisplayMsgLn(" File does not exist.");
+//		//DisplayMsgLn(" ERROR opening file with heterogeneous fields!");
+//		//DisplayMsgLn(" File does not exist.");
 //		cout << " FctReadHeterogeneousFields" << "\n";
 //		cout << " Cannot find " << name_file << "\n";
 //		exit(1);
@@ -837,7 +838,7 @@ int FctCurves(char* data, int found, FILE* f)
 //	}
 //	//Warning
 //	if(no_values < NumberOfElementsPerLayer)
-//		Display::DisplayMsgLn(
+//		DisplayMsgLn(
 //		        "Warning! Fewer element values in File for heterogeneous
 // permeability field than elements in element
 // list");
@@ -904,20 +905,20 @@ int FctCurves(char* data, int found, FILE* f)
 //			{
 //				ihet = GetNearestHetVal(i, m_msh, no_values, invals);
 //				if(ihet < 0)
-//					Display::DisplayMsgLn(" Error getting nearest het_value location");
+//					DisplayMsgLn(" Error getting nearest het_value location");
 //				else
 //					for(j = 0; j < nof; j++)
 //						values[j] = invals[ihet][j + 3];
-//				//Display::DisplayMsg(" Het Val for element: "); Display::DisplayLong(i);
-// Display::DisplayMsg(" with coordinates ");
-//				//Display::DisplayDouble(x,0,0); Display::DisplayMsg(", "); Display::DisplayDouble(y,0,0);
-// Display::DisplayMsg(", "); Display::DisplayDouble(z,0,0);
-// Display::DisplayMsg("       found at: ");
-//				//Display::DisplayDouble(invals[ihet][0],0,0); Display::DisplayMsg(", ");
-// Display::DisplayDouble(invals[ihet][1],0,0);
-// Display::DisplayMsg(",
+//				//DisplayMsg(" Het Val for element: "); DisplayLong(i);
+// DisplayMsg(" with coordinates ");
+//				//DisplayDouble(x,0,0); DisplayMsg(", "); DisplayDouble(y,0,0);
+// DisplayMsg(", "); DisplayDouble(z,0,0);
+// DisplayMsg("       found at: ");
+//				//DisplayDouble(invals[ihet][0],0,0); DisplayMsg(", ");
+// DisplayDouble(invals[ihet][1],0,0);
+// DisplayMsg(",
 //");
-// Display::DisplayDouble(invals[ihet][2],0,0); Display::DisplayMsgLn(". ");
+// DisplayDouble(invals[ihet][2],0,0); DisplayMsgLn(". ");
 //			}
 //			//.....................................................................
 //			//Get all values in Element and calculate the geometric mean
@@ -925,11 +926,11 @@ int FctCurves(char* data, int found, FILE* f)
 //			{
 //				values[0] = GetAverageHetVal(i, m_msh, no_values, invals);
 //
-//				Display::DisplayMsgLn(" AverageHetVal ");
-//				Display::DisplayMsg(" Element ");
-//				Display::DisplayDouble(i,0,0);
-//				Display::DisplayMsg("  Value: ");
-//				Display::DisplayDouble(values[0],0,0);
+//				DisplayMsgLn(" AverageHetVal ");
+//				DisplayMsg(" Element ");
+//				DisplayDouble(i,0,0);
+//				DisplayMsg("  Value: ");
+//				DisplayDouble(values[0],0,0);
 //			}
 //			// save values
 //			m_ele = m_msh->ele_vector[i];
@@ -1068,7 +1069,7 @@ double GetAverageHetVal(long EleIndex,
     {
         ihet = GetNearestHetVal(EleIndex, m_msh, no_values, invals);
         if (ihet < 0)
-            Display::DisplayMsgLn(" Error getting nearest het_value location");
+            DisplayMsgLn(" Error getting nearest het_value location");
         else
             average = invals[ihet][j + 3];
     }
@@ -1286,7 +1287,7 @@ double GetHetValue(int ele_no, char* inname)
             return value;
         }
     }
-    Display::DisplayMsgLn(" Error - No het. Field Value found");
+    DisplayMsgLn(" Error - No het. Field Value found");
     return -1.0;
 }
 

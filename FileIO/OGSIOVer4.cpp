@@ -39,6 +39,7 @@
 #include "EarClippingTriangulation.h"
 
 using namespace GEOLIB;
+using namespace Display;
 
 namespace FileIO
 {
@@ -655,7 +656,7 @@ std::string readSurfaces(std::istream& in, std::vector<Surface*>& sfc_vec,
 bool readGLIFileV4(const std::string& fname, GEOObjects* geo,
                    std::string& unique_name, std::vector<std::string>& errors)
 {
-    Display::ScreenMessage(
+    ScreenMessage(
         "GEOLIB::readGLIFile open stream from file %s ...", fname.data());
 
     std::ifstream in(fname.c_str());
@@ -666,7 +667,7 @@ bool readGLIFileV4(const std::string& fname, GEOObjects* geo,
         return false;
     }
 
-    Display::ScreenMessage("done\n");
+    ScreenMessage("done\n");
 
     std::string tag;
     while (tag.find("#POINTS") == std::string::npos && !in.eof())
@@ -677,9 +678,9 @@ bool readGLIFileV4(const std::string& fname, GEOObjects* geo,
         new std::map<std::string, size_t>);
     bool zero_based_idx(true);
     std::vector<Point*>* pnt_vec(new std::vector<Point*>);
-    Display::ScreenMessage("read points from stream ... \n");
+    ScreenMessage("read points from stream ... \n");
     tag = readPoints(in, pnt_vec, zero_based_idx, pnt_id_names_map);
-    Display::ScreenMessage(" ok, %d points read\n", pnt_vec->size());
+    ScreenMessage(" ok, %d points read\n", pnt_vec->size());
 
     unique_name = BaseLib::getFileNameFromPath(fname, true);
     if (!pnt_vec->empty())
@@ -696,11 +697,11 @@ bool readGLIFileV4(const std::string& fname, GEOObjects* geo,
     std::vector<Polyline*>* ply_vec(new std::vector<Polyline*>);
     if (tag.find("#POLYLINE") != std::string::npos && in)
     {
-        Display::ScreenMessage("read polylines from stream ... \n");
+        ScreenMessage("read polylines from stream ... \n");
         tag = readPolylines(in, ply_vec, *ply_names, *pnt_vec, zero_based_idx,
                             geo->getPointVecObj(unique_name)->getIDMap(), path,
                             errors);
-        Display::ScreenMessage(" ok, %d  polylines read.\n", ply_vec->size());
+        ScreenMessage(" ok, %d  polylines read.\n", ply_vec->size());
     }
     else
         std::cerr
@@ -711,10 +712,10 @@ bool readGLIFileV4(const std::string& fname, GEOObjects* geo,
     std::map<std::string, size_t>* sfc_names(new std::map<std::string, size_t>);
     if (tag.find("#SURFACE") != std::string::npos && in)
     {
-        Display::ScreenMessage("read surfaces from stream ... \n");
+        ScreenMessage("read surfaces from stream ... \n");
         tag = readSurfaces(in, *sfc_vec, *sfc_names, *ply_vec, *ply_names,
                            *pnt_vec, path, errors);
-        Display::ScreenMessage(" ok, %d surfaces read.\n", sfc_vec->size());
+        ScreenMessage(" ok, %d surfaces read.\n", sfc_vec->size());
     }
     else
         std::cerr

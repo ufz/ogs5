@@ -87,6 +87,7 @@ using FiniteElement::CFiniteElementVec;
 using FiniteElement::ElementValue_DM;
 using Math_Group::Matrix;
 using SolidProp::CSolidProperties;
+using namespace Display;
 
 namespace process
 {
@@ -189,7 +190,7 @@ void CRFProcessDeformation::Initialization()
 
     if (!msp_vector.size())
     {
-        Display::ScreenMessage("***ERROR: MSP data not found!");
+        ScreenMessage("***ERROR: MSP data not found!");
         return;
     }
     InitialMBuffer();
@@ -366,7 +367,7 @@ void CRFProcessDeformation::InitialMBuffer()
 {
     if (!msp_vector.size())
     {
-        Display::ScreenMessage("No .msp file found");
+        ScreenMessage("No .msp file found");
         abort();
     }
 
@@ -413,12 +414,12 @@ void CRFProcessDeformation::InitialMBuffer()
  **************************************************************************/
 double CRFProcessDeformation::Execute(int loop_process_number)
 {
-    Display::ScreenMessage(
+    ScreenMessage(
         "      ================================================\n");
-    Display::ScreenMessage("      ->Process %d: %s\n",
+    ScreenMessage("      ->Process %d: %s\n",
                            loop_process_number,
                            convertProcessTypeToString(getProcessType()).data());
-    Display::ScreenMessage(
+    ScreenMessage(
         "      ================================================\n");
 
     clock_t dm_time;
@@ -535,7 +536,7 @@ double CRFProcessDeformation::Execute(int loop_process_number)
        loading  2
        //---------------------------------------------------------------------
        // InitializeNewtonSteps(1); // u=0
-       Display::DisplayMsgLn("\nEvaluate load ratio: ");
+       DisplayMsgLn("\nEvaluate load ratio: ");
        PreLoad = 1;
        GlobalAssembly();
        PreLoad = 0;
@@ -631,9 +632,9 @@ double CRFProcessDeformation::Execute(int loop_process_number)
             Norm = 1.0e+8;
             NormU = 1.0e+8;
 
-            Display::ScreenMessage("      Starting loading step %d/%d\n", l,
+            ScreenMessage("      Starting loading step %d/%d\n", l,
                                    number_of_load_steps);
-            Display::ScreenMessage("      Load factor: %g\n", LoadFactor);
+            ScreenMessage("      Load factor: %g\n", LoadFactor);
         }
         ite_steps = 0;
         while (ite_steps < MaxIteration)
@@ -670,7 +671,7 @@ double CRFProcessDeformation::Execute(int loop_process_number)
                #endif
              */
 
-            Display::ScreenMessage("      Assembling equation system...\n");
+            ScreenMessage("      Assembling equation system...\n");
 
 #if defined(USE_MPI) || defined(USE_PETSC)  // WW
             clock_t cpu_time = 0;           // WW
@@ -696,7 +697,7 @@ double CRFProcessDeformation::Execute(int loop_process_number)
 //
 #endif
 
-            Display::ScreenMessage("      Calling linear solver...\n");
+            ScreenMessage("      Calling linear solver...\n");
 
 // Linear solver
 #if defined(USE_PETSC)  //|| defined(other parallel libs)//03~04.3012. WW
@@ -796,26 +797,26 @@ double CRFProcessDeformation::Execute(int loop_process_number)
                     // cpl_max_relative_error and cpl_num_dof_errors;
                 }
 
-                Display::ScreenMessage(
+                ScreenMessage(
                     "      -->End of Newton-Raphson iteration: %d/%d\n",
                     ite_steps, MaxIteration);
-                Display::ScreenMessage(
+                ScreenMessage(
                     "     "
                     "------------------------------------------------\n");
-                Display::ScreenMessage(
+                ScreenMessage(
                     "      DeltaU/DeltaU0"
                     "  DeltaU"
                     "     DeltaF/DeltaF0"
                     "  DeltaF"
                     "      Damping\n");
-                Display::ScreenMessage(
+                ScreenMessage(
                     "      %0.3e    "
                     "   %0.3e"
                     "  %0.3e"
                     "       %0.3e"
                     "   %0.3e\n",
                     ErrorU, NormU, Error, Norm, damping);
-                Display::ScreenMessage(
+                ScreenMessage(
                     "     "
                     "------------------------------------------------\n");
 
@@ -850,7 +851,7 @@ double CRFProcessDeformation::Execute(int loop_process_number)
     // Load step
     //
     // For coupling control
-    Display::ScreenMessage("      Deformation process converged.\n");
+    ScreenMessage("      Deformation process converged.\n");
 
     Error = 0.0;
     if (type / 10 != 4)  // Partitioned scheme
@@ -876,9 +877,9 @@ double CRFProcessDeformation::Execute(int loop_process_number)
     //
     dm_time += clock();
 
-    Display::ScreenMessage("      CPU time elapsed in deformation: %g s\n",
+    ScreenMessage("      CPU time elapsed in deformation: %g s\n",
                            (double)dm_time / CLOCKS_PER_SEC);
-    Display::ScreenMessage(
+    ScreenMessage(
         "      ------------------------------------------------\n");
 
     // Recovery the old solution.  Temp --> u_n	for flow process
@@ -2678,7 +2679,7 @@ void CRFProcessDeformation::GlobalAssembly()
     // DDC
     if (dom_vector.size() > 0)
     {
-        Display::ScreenMessage("      Domain Decomposition\n");
+        ScreenMessage("      Domain Decomposition\n");
         CPARDomain* m_dom = NULL;
         for (int j = 0; j < (int)dom_vector.size(); j++)
         {
@@ -3090,7 +3091,7 @@ void CRFProcessDeformation::WriteGaussPointStress(const bool last_step)
 #else
     const std::string StressFileName = FileName + ".sts";
 #endif
-    Display::ScreenMessage("-> Write initial stress \n");
+    ScreenMessage("-> Write initial stress \n");
     fstream file_stress(StressFileName.data(),
                         ios::binary | ios::out | ios::trunc);
     ElementValue_DM* eleV_DM = NULL;
@@ -3146,7 +3147,7 @@ void CRFProcessDeformation::ReadGaussPointStress()
     const std::string StressFileName = FileName + ".sts";
 #endif
 
-    Display::ScreenMessage("-> Read initial stress \n");
+    ScreenMessage("-> Read initial stress \n");
     fstream file_stress(StressFileName.data(), ios::binary | ios::in);
     ElementValue_DM* eleV_DM = NULL;
     //

@@ -35,7 +35,9 @@
 #include "rfmat_cp.h"
 #include "tools.h"
 #include <cctype>
-// WW #include "elements.h" //set functions for stability criteria
+
+using namespace Display;
+
 // ToDo
 double aktuelle_zeit;
 size_t aktueller_zeitschritt = 0;
@@ -452,17 +454,17 @@ std::ios::pos_type CTimeDiscretization::Read(std::ifstream* tim_file)
                             break;
                         //
                         case FiniteElement::BNORM:
-                            Display::ScreenMessage(
+                            ScreenMessage(
                                 "ERROR in TIMRead. BNORM not configured for "
                                 "time control.\n");
-                            Display::ScreenMessage(
+                            ScreenMessage(
                                 "We suggest ENORM as a valid companion for "
                                 "NEWTON couplings.\n");
                             exit(1);
                             break;
                         //
                         default:
-                            Display::ScreenMessage(
+                            ScreenMessage(
                                 "ERROR in TIMRead. Invalid error method "
                                 "selected for dynamic time control.\n");
                             exit(1);
@@ -715,7 +717,7 @@ std::ios::pos_type CTimeDiscretization::Read(std::ifstream* tim_file)
                 }
                 else
                 {
-                    Display::ScreenMessage("ERROR: Unrecognized time control type.\n");
+                    ScreenMessage("ERROR: Unrecognized time control type.\n");
                     exit(1);
                 }
             }  // end of while
@@ -759,7 +761,7 @@ bool TIMRead(std::string file_base_name)
     tim_file.seekg(0L, std::ios::beg);
     //========================================================================
     // Keyword loop
-    Display::ScreenMessage("TIMRead ... ");
+    ScreenMessage("TIMRead ... ");
 
     while (!tim_file.eof())
     {
@@ -767,7 +769,7 @@ bool TIMRead(std::string file_base_name)
         line_string = line;
         if (line_string.find("#STOP") != std::string::npos)
         {
-            Display::ScreenMessage("done, read %d time stepping definitions\n",
+            ScreenMessage("done, read %d time stepping definitions\n",
                                    time_vector.size());
             return true;
         }
@@ -791,7 +793,7 @@ bool TIMRead(std::string file_base_name)
                          << "\n";
                 if (!m_tim->tim_discrete->good())
                 {
-                    Display::ScreenMessage(
+                    ScreenMessage(
                         "Warning : Time-Discrete files are not found\n");
                 }
             }
@@ -1554,9 +1556,9 @@ double CTimeDiscretization::StableErrorAdaptive(void)
 
             if (!m_pcs)
             {  // does this ever trigger?
-                Display::ScreenMessage(
+                ScreenMessage(
                     "-> ERROR in StableErrorAdaptive: PCS not found\n");
-                // Display::ScreenMessage("-> ERROR in " +
+                // ScreenMessage("-> ERROR in " +
                 // convertTimeControlTypeToString(time_control_type).c_str() +
                 // ": PCS not found\n");	//why is this not possible?
                 return 0.0;
@@ -1879,7 +1881,7 @@ double CTimeDiscretization::SelfAdaptiveTimeControl(void)
     }
     if (!m_pcs)
     {
-        Display::ScreenMessage("-> ERROR in SelfAdaptiveTimeControl(): PCS not found\n");
+        ScreenMessage("-> ERROR in SelfAdaptiveTimeControl(): PCS not found\n");
         return 0.0;
     }
 

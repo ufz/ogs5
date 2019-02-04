@@ -42,6 +42,7 @@
 #include <sys/stat.h>    //for check if files exist
 
 using namespace std;
+using namespace Display;
 
 CECLIPSEBlock::CECLIPSEBlock(long Nodelength, long Facelength)
 {
@@ -5448,7 +5449,7 @@ std::string CECLIPSEData::ExecuteEclipse(long Timestep, CRFProcess* m_pcs,
                 // tempstring << "\n";
                 if (system(tempstring.c_str()))
                 {
-                    Display::DisplayMsgLn("Warnung: Eclipse doesn't run properly!!! ");
+                    DisplayMsgLn("Warnung: Eclipse doesn't run properly!!! ");
                     return 0;
                 }
             }
@@ -5461,7 +5462,7 @@ std::string CECLIPSEData::ExecuteEclipse(long Timestep, CRFProcess* m_pcs,
                 // tempstring = EclipseExe + " " + projectname;
                 if (system(tempstring.c_str()))
                 {
-                    Display::DisplayMsgLn("Warnung: Eclipse doesn't run properly!!! ");
+                    DisplayMsgLn("Warnung: Eclipse doesn't run properly!!! ");
                     return 0;
                 }
             }
@@ -5529,7 +5530,7 @@ std::string CECLIPSEData::ExecuteEclipse(long Timestep, CRFProcess* m_pcs,
                 // tempstring << "\n";
                 if (system(tempstring.c_str()))
                 {
-                    Display::DisplayMsgLn("Warnung: Eclipse doesn't run properly!!! ");
+                    DisplayMsgLn("Warnung: Eclipse doesn't run properly!!! ");
                     return 0;
                 }
             }
@@ -5544,7 +5545,7 @@ std::string CECLIPSEData::ExecuteEclipse(long Timestep, CRFProcess* m_pcs,
                 // tempstring = EclipseExe + " " + projectname; //WTP
                 if (system(tempstring.c_str()))
                 {
-                    Display::DisplayMsgLn("Warnung: Eclipse doesn't run properly!!! ");
+                    DisplayMsgLn("Warnung: Eclipse doesn't run properly!!! ");
                     return 0;
                 }
             }
@@ -5586,13 +5587,13 @@ bool CECLIPSEData::CleanUpEclipseFiles(std::string folder,
     systemcommand = system_delete + folder + "TEMPORARYRESULTS.*";
     if (system(systemcommand.c_str()))
     {
-        Display::DisplayMsgLn("Could not delete temporary result files! ");
+        DisplayMsgLn("Could not delete temporary result files! ");
         // SB why return return 0;
     }
 
     /*  systemcommand = system_delete + projectname + ".FSAVE" + system_noquery;
     if (system(systemcommand.c_str())){
-        // Display::DisplayMsgLn("Could not delete result .FSAVE files! ");
+        // DisplayMsgLn("Could not delete result .FSAVE files! ");
         //SB ?? why return return 0;
     } */
 
@@ -5623,7 +5624,7 @@ bool CECLIPSEData::CleanUpEclipseFiles(std::string folder,
     }
     if (system(systemcommand.c_str()))
     {
-        Display::DisplayMsgLn("Could not rename the temporary result files .F*! ");
+        DisplayMsgLn("Could not rename the temporary result files .F*! ");
         // return 0;
     }
     if (this->Windows_System == false)
@@ -5631,44 +5632,44 @@ bool CECLIPSEData::CleanUpEclipseFiles(std::string folder,
         systemcommand = "rm " + projectname + extension;
         if (system(systemcommand.c_str()))
         {
-            Display::DisplayMsgLn(
+            DisplayMsgLn(
                 "Could not delete the temporary result files basename.F*! ");
             // return 0;
         }
     }
     // systemcommand = system_delete + projectname + ".F*" + system_noquery;
     // if (system(systemcommand.c_str())){
-    //	Display::DisplayMsgLn("Could not delete result files! ");
+    //	DisplayMsgLn("Could not delete result files! ");
     //	return 0;
     //}
     systemcommand = system_delete + projectname + ".A*" + system_noquery;
     if (system(systemcommand.c_str()))
     {
-        Display::DisplayMsgLn("Could not delete result files .A*! ");
+        DisplayMsgLn("Could not delete result files .A*! ");
         // return 0;
     }
     systemcommand = system_delete + projectname + ".P*" + system_noquery;
     if (system(systemcommand.c_str()))
     {
-        Display::DisplayMsgLn("Could not delete result files .P*! ");
+        DisplayMsgLn("Could not delete result files .P*! ");
         // return 0;
     }
     systemcommand = system_delete + projectname + ".R*" + system_noquery;
     if (system(systemcommand.c_str()))
     {
-        Display::DisplayMsgLn("Could not delete result files .R*! ");
+        DisplayMsgLn("Could not delete result files .R*! ");
         // return 0;
     }
     systemcommand = system_delete + projectname + ".M*" + system_noquery;
     if (system(systemcommand.c_str()))
     {
-        Display::DisplayMsgLn("Could not delete result files .M*! ");
+        DisplayMsgLn("Could not delete result files .M*! ");
         // return 0;
     }
     systemcommand = system_delete + projectname + ".DB*" + system_noquery;
     if (system(systemcommand.c_str()))
     {
-        Display::DisplayMsgLn("Could not delete result files .DB*! ");
+        DisplayMsgLn("Could not delete result files .DB*! ");
         // return 0;
     }
 

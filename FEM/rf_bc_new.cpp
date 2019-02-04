@@ -82,6 +82,8 @@ double cputime(double x)
 }
 #endif
 
+using namespace Display;
+
 CBoundaryConditionNode::CBoundaryConditionNode() : node_value_offset(0.0)
 {
     conditional = false;
@@ -276,7 +278,7 @@ std::ios::pos_type CBoundaryCondition::Read(std::ifstream* bc_file,
                 }
                 else
                 {
-                    Display::DisplayErrorMsg(
+                    DisplayErrorMsg(
                         "Error: In reading BC file, the input component names "
                         "are not found in MCP file!!!");
                     exit(1);
@@ -309,7 +311,7 @@ std::ios::pos_type CBoundaryCondition::Read(std::ifstream* bc_file,
                 }
                 else
                 {
-                    Display::DisplayErrorMsg(
+                    DisplayErrorMsg(
                         "Error: In reading BC file, the input component names "
                         "are not found in MCP file!!!");
                     exit(1);
@@ -851,20 +853,20 @@ bool BCRead(std::string const& file_base_name,
     std::ifstream bc_file(bc_file_name.data(), std::ios::in);
     if (!bc_file.good())
     {
-        Display::ScreenMessage(
+        ScreenMessage(
             "! Error in BCRead: No boundary conditions !\n");
         return false;
     }
 
     // Keyword loop
-    Display::ScreenMessage("BCRead ... ");
+    ScreenMessage("BCRead ... ");
     while (!bc_file.eof())
     {
         bc_file.getline(line, MAX_ZEILE);
         line_string = line;
         if (line_string.find("#STOP") != std::string::npos)
         {
-            Display::ScreenMessage("done, read %d boundary conditions.\n",
+            ScreenMessage("done, read %d boundary conditions.\n",
                                    bc_list.size());
             return true;
         }
@@ -1764,7 +1766,7 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs,
 
     clock_t end_time(clock());
 
-    Display::ScreenMessage(
+    ScreenMessage(
         "\t[BC] set BC took %0.3e\n",
         (end_time - start_time) / (double)(CLOCKS_PER_SEC));
 
@@ -1851,7 +1853,7 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs,
     }
 
     end_time = clock();
-    Display::ScreenMessage(
+    ScreenMessage(
         "\t[BC] set transient BC took %0.3e\n",
         (end_time - start_time) / (double)(CLOCKS_PER_SEC));
 }

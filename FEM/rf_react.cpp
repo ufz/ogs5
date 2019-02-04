@@ -43,6 +43,7 @@
 
 #include <vector>
 using namespace std;
+using namespace Display;
 
 void destroy_react(void* item);
 
@@ -100,7 +101,7 @@ void REACT::ExecuteReactionsPHREEQC(void)
     FILE *indatei, *fphinp, *fsel_out = NULL;
     char fsout[80];
 
-    Display::DisplayMsgLn("ExecuteReactionsPHREEQC:");
+    DisplayMsgLn("ExecuteReactionsPHREEQC:");
 
     /* Initialize arrays of concentrations and array for reaction rates (list,
      * in pretimeloop)*/
@@ -142,7 +143,7 @@ void REACT::ExecuteReactionsPHREEQC(void)
         }
         else
         {
-            Display::DisplayMsgLn("The file phinput.dat could not be opened !");
+            DisplayMsgLn("The file phinput.dat could not be opened !");
             exit(1);
         }
 
@@ -156,14 +157,14 @@ void REACT::ExecuteReactionsPHREEQC(void)
         fsel_out = fopen(fsout, "r");
         if ((ok) && !fsel_out)
         {
-            Display::DisplayMsgLn("The selected output file doesn't exist!!!");
+            DisplayMsgLn("The selected output file doesn't exist!!!");
             exit(1);
         }
         else if (ok)
         {
             ok = ReadOutputPhreeqc(fsout);
             if (!ok)
-                Display::DisplayMsgLn(" Error in call to PHREEQC !!!");
+                DisplayMsgLn(" Error in call to PHREEQC !!!");
             fclose(fsel_out);
         }
     } /* if flag */
@@ -182,24 +183,24 @@ void REACT::ExecuteReactionsPHREEQC(void)
     /* test output*/
     /*
        for(comp=0; comp<this->number_of_comp;comp++){
-        Display::DisplayMsg("component : "); Display::DisplayLong(comp);Display::DisplayMsg(", name = ");
-       Display::DisplayMsg(this->name[comp]);Display::DisplayMsgLn(". ");
-        Display::DisplayMsgLn("val_in: ");
+        DisplayMsg("component : "); DisplayLong(comp);DisplayMsg(", name = ");
+       DisplayMsg(this->name[comp]);DisplayMsgLn(". ");
+        DisplayMsgLn("val_in: ");
         for(i=0;i<this->nodenumber;i++){
-       Display::DisplayDouble(this->val_in[comp][i],0,0); Display::DisplayMsg(", ");}
-        Display::DisplayMsgLn(" ");
-        Display::DisplayMsgLn("val_out: ");
+       DisplayDouble(this->val_in[comp][i],0,0); DisplayMsg(", ");}
+        DisplayMsgLn(" ");
+        DisplayMsgLn("val_out: ");
         for(i=0;i<this->nodenumber;i++){
-       Display::DisplayDouble(this->val_out[comp][i],0,0); Display::DisplayMsg(", ");}
-        Display::DisplayMsgLn(" ");
+       DisplayDouble(this->val_out[comp][i],0,0); DisplayMsg(", ");}
+        DisplayMsgLn(" ");
 
-        Display::DisplayMsgLn("rate : ");
-       for(i=0;i<this->nodenumber;i++){	Display::DisplayDouble(this->rate[comp][i],0,0);
-       Display::DisplayMsg(", ");} Display::DisplayMsgLn(" ");
+        DisplayMsgLn("rate : ");
+       for(i=0;i<this->nodenumber;i++){	DisplayDouble(this->rate[comp][i],0,0);
+       DisplayMsg(", ");} DisplayMsgLn(" ");
        }
-       Display::DisplayMsgLn("rateflag : ");
-       for(i=0;i<this->nodenumber;i++){	Display::DisplayDouble((double)
-       this->rateflag[i],0,0); Display::DisplayMsg(", ");} Display::DisplayMsgLn(" ");
+       DisplayMsgLn("rateflag : ");
+       for(i=0;i<this->nodenumber;i++){	DisplayDouble((double)
+       this->rateflag[i],0,0); DisplayMsg(", ");} DisplayMsgLn(" ");
      */
 } /* End of ExecuteReactionsPHREEQC */
 
@@ -1739,13 +1740,13 @@ void REACT::InitREACT(void)
                 {
                     if (abs(this->val_in[comp][i]) > MKleinsteZahl)
                     {
-                        Display::DisplayMsg(" Neg. conc for component ");
-                        Display::DisplayLong((long)comp);
-                        Display::DisplayMsg(" at node ");
-                        Display::DisplayLong((long)i);
-                        Display::DisplayMsg("; conc = ");
-                        Display::DisplayDouble(this->val_in[comp][i], 0, 0);
-                        Display::DisplayMsgLn(" ");
+                        DisplayMsg(" Neg. conc for component ");
+                        DisplayLong((long)comp);
+                        DisplayMsg(" at node ");
+                        DisplayLong((long)i);
+                        DisplayMsg("; conc = ");
+                        DisplayDouble(this->val_in[comp][i], 0, 0);
+                        DisplayMsgLn(" ");
                     }
                     this->val_in[comp][i] = 0.0 * this->val_in[comp][i];
                 }
@@ -1834,13 +1835,13 @@ void REACT::InitREACT0()
                 {
                     if (abs(this->val_in[comp][i]) > MKleinsteZahl)
                     {
-                        Display::DisplayMsg(" Neg. conc for component ");
-                        Display::DisplayLong((long)comp);
-                        Display::DisplayMsg(" at node ");
-                        Display::DisplayLong((long)i);
-                        Display::DisplayMsg("; conc = ");
-                        Display::DisplayDouble(this->val_in[comp][i], 0, 0);
-                        Display::DisplayMsgLn(" ");
+                        DisplayMsg(" Neg. conc for component ");
+                        DisplayLong((long)comp);
+                        DisplayMsg(" at node ");
+                        DisplayLong((long)i);
+                        DisplayMsg("; conc = ");
+                        DisplayDouble(this->val_in[comp][i], 0, 0);
+                        DisplayMsgLn(" ");
                     }
                     this->val_in[comp][i] = 0.0 * this->val_in[comp][i];
                 }
@@ -2173,8 +2174,8 @@ int REACT::ReadReactionModel(FILE* File)
     /* Open input file  and read the reaction model values*/
     if (indatei == NULL) /*input dateien does not exist*/
     {
-        Display::DisplayMsgLn("");
-        Display::DisplayMsgLn(" The input file *.pqc does not exist!!!");
+        DisplayMsgLn("");
+        DisplayMsgLn(" The input file *.pqc does not exist!!!");
         exit(1);
     } /*end if*/
 
@@ -2246,7 +2247,7 @@ int REACT::ReadReactionModel(FILE* File)
                 while (fgets(str, 256, indatei) && (!strstr(str, "#ende")))
                     if (strstr(str, "-file"))
                     {
-                        Display::DisplayMsgLn("-file in *.pqc found");
+                        DisplayMsgLn("-file in *.pqc found");
                         p = 0;
                         StringReadStr(&sub, str, &p);
                         StringReadStr(&sub1, &str[p], &p);
@@ -2267,7 +2268,7 @@ int REACT::ReadReactionModel(FILE* File)
     nj = rcml_number_of_master_species + rcml_number_of_equi_phases +
          rcml_number_of_ion_exchanges;
     if (nj + 2 != this->number_of_comp)
-        Display::DisplayMsgLn(
+        DisplayMsgLn(
             "!!!Error:Number of components in file *.pqc is not equal to that "
             "in file *.rfd!");
     //      fclose(indatei);
@@ -2742,15 +2743,15 @@ int REACT::ReadInputPhreeqc(long index, FILE* fpqc, FILE* Fphinp)
 
     if (indatei == NULL)
     {
-        Display::DisplayMsgLn("Erro:The input file *.pqc doesn't exist!!!");
+        DisplayMsgLn("Erro:The input file *.pqc doesn't exist!!!");
         return 0;
     }
 
     /* zeilenweise lesen */
     while (fgets(str, 256, indatei))
     {
-        //    Display::DisplayMsgLn("");
-        //    Display::DisplayMsgLn(str);
+        //    DisplayMsgLn("");
+        //    DisplayMsgLn(str);
 
         pos = 0;
         // WW beginn=1;
@@ -2779,12 +2780,12 @@ int REACT::ReadInputPhreeqc(long index, FILE* fpqc, FILE* Fphinp)
                 while (fgets(str, 256, indatei) && (!strstr(str, "#ende")))
                 {
                     if ((!strstr(str, "# comp")) && (!strstr(str, "# temp")))
-                        //               Display::DisplayMsgLn(" #ende and # not found");
+                        //               DisplayMsgLn(" #ende and # not found");
                         FilePrintString(f, str);
 
                     else
                     {
-                        //                Display::DisplayMsgLn(" # comp found ");
+                        //                DisplayMsgLn(" # comp found ");
                         // sscanf(str, "%s");
                         StrReadStr(s, str, f, /*TFString,*/ &pos);
 
@@ -2886,7 +2887,7 @@ int REACT::ReadInputPhreeqc(long index, FILE* fpqc, FILE* Fphinp)
 
                                 if (pH_flag < 0)
                                 {
-                                    Display::DisplayMsgLn(
+                                    DisplayMsgLn(
                                         "pH is not included in the transport "
                                         "but will be calculated in the "
                                         "reaction");
@@ -2940,7 +2941,7 @@ int REACT::ReadInputPhreeqc(long index, FILE* fpqc, FILE* Fphinp)
 
                                 if (pe_flag < 0)
                                 {
-                                    Display::DisplayMsgLn(
+                                    DisplayMsgLn(
                                         "pe is not included in the transport "
                                         "but will be calculated in the "
                                         "reaction");
@@ -4128,11 +4129,11 @@ int REACT::Call_Phreeqc(void)
     strcpy(m_phreeqc, mm_phreeqc.c_str());
 #ifdef PHREEQC
     if (!system(m_phreeqc))
-        //    Display::DisplayMsgLn("Phreeqc runs succesfully! ");
+        //    DisplayMsgLn("Phreeqc runs succesfully! ");
         return 1;
     else
     {
-        Display::DisplayMsgLn("Warnung: Phreeqc doesn't run properly!!! ");
+        DisplayMsgLn("Warnung: Phreeqc doesn't run properly!!! ");
         exit(1);
     }
 #endif
@@ -4174,7 +4175,7 @@ int REACT::ReadOutputPhreeqc(char* fout)
     ein.open(fout);
     if (!ein)
     {
-        Display::DisplayMsgLn("The selected output file doesn't exist!!!");
+        DisplayMsgLn("The selected output file doesn't exist!!!");
         return 0;
     }
     /* get total number of species in PHREEQC output file */
@@ -4639,7 +4640,7 @@ void REACT::CalculateReactionRateFlag(void)
     else
     {
         // determine for each node separately
-        Display::DisplayMsgLn(" sum of rates ");
+        DisplayMsgLn(" sum of rates ");
 
         helprates = (double*)Malloc(np * sizeof(double));
         for (j = 0; j < np; j++)
@@ -4651,17 +4652,17 @@ void REACT::CalculateReactionRateFlag(void)
             rate = 0.0;
             for (comp = 0; comp < np; comp++)
                 rate = rate + fabs(this->rate[comp][i] * this->val_in[comp][i]);
-            Display::DisplayLong(i);
-            Display::DisplayMsg(": ");
-            Display::DisplayDouble(rate, 0, 0);
-            Display::DisplayMsgLn(" ");
+            DisplayLong(i);
+            DisplayMsg(": ");
+            DisplayDouble(rate, 0, 0);
+            DisplayMsgLn(" ");
 
             if (rate > schwellwert)
                 this->rateflag[i] = 1;
             else
                 this->rateflag[i] = 0;
         }  // end for(i<ni
-        Display::DisplayMsgLn("  ");
+        DisplayMsgLn("  ");
 
         help = (int*)Malloc(ni * sizeof(int));
         for (i = 0; i < ni; i++)
@@ -4672,30 +4673,30 @@ void REACT::CalculateReactionRateFlag(void)
                 // get sourrounding elements and nodes
                 /* Aussuchen der Nachbarknoten */
                 SetNeighborNodesActive(i, level, help);
-        //		  Display::DisplayMsgLn(" ");
+        //		  DisplayMsgLn(" ");
 
         // set nodes active finally
         j = 0;
         for (i = 0; i < ni; i++)
         {
-            Display::DisplayMsg(" i: ");
-            Display::DisplayLong(i);
-            Display::DisplayMsg(",   this->rf[i]: ");
-            Display::DisplayLong(this->rateflag[i]);
-            Display::DisplayMsg(",   this->rate[i]: ");
-            Display::DisplayDouble(this->rate[0][i], 0, 0);
-            Display::DisplayMsg(",   help[i]: ");
-            Display::DisplayLong(help[i]);
-            Display::DisplayMsgLn(" ");
+            DisplayMsg(" i: ");
+            DisplayLong(i);
+            DisplayMsg(",   this->rf[i]: ");
+            DisplayLong(this->rateflag[i]);
+            DisplayMsg(",   this->rate[i]: ");
+            DisplayDouble(this->rate[0][i], 0, 0);
+            DisplayMsg(",   help[i]: ");
+            DisplayLong(help[i]);
+            DisplayMsgLn(" ");
             if (help[i] > 0)
             {
                 this->rateflag[i] = 1;
                 j++;
             }
         }
-        Display::DisplayMsg("Total number of nodes, at which chemistry is calculated: ");
-        Display::DisplayLong(j);
-        Display::DisplayMsgLn(" ");
+        DisplayMsg("Total number of nodes, at which chemistry is calculated: ");
+        DisplayLong(j);
+        DisplayMsgLn(" ");
 
         // give back storage
         help = (int*)Free(help);
@@ -4740,13 +4741,13 @@ void REACT::GetTransportResults(void)
                 {
                     if (abs(val_in[comp][i]) > MKleinsteZahl)
                     {
-                        Display::DisplayMsg(" Neg. conc for component ");
-                        Display::DisplayLong((long)comp);
-                        Display::DisplayMsg(" at node ");
-                        Display::DisplayLong((long)i);
-                        Display::DisplayMsg("; conc = ");
-                        Display::DisplayDouble(val_in[comp][i], 0, 0);
-                        Display::DisplayMsgLn(" ");
+                        DisplayMsg(" Neg. conc for component ");
+                        DisplayLong((long)comp);
+                        DisplayMsg(" at node ");
+                        DisplayLong((long)i);
+                        DisplayMsg("; conc = ");
+                        DisplayDouble(val_in[comp][i], 0, 0);
+                        DisplayMsgLn(" ");
                     }
                     val_in[comp][i] = 0.0 * val_in[comp][i];
                 }
@@ -4782,13 +4783,13 @@ void REACT::SetNeighborNodesActive(long startnode, long level, int* help)
        long *elems1d,*elems2d,*elems3d;
        int num_elems1d,num_elems2d,num_elems3d,num_elems;
 
-       // Display::DisplayMsg(" RSNNA: startnode: "); Display::DisplayLong(startnode);
-       Display::DisplayMsg(", level: "); Display::DisplayLong(level); Display::DisplayMsgLn("");
+       // DisplayMsg(" RSNNA: startnode: "); DisplayLong(startnode);
+       DisplayMsg(", level: "); DisplayLong(level); DisplayMsgLn("");
        // Ende rekursiv
        if(level == 0) {
        help[startnode] = 1;
-       //	  Display::DisplayMsg(" Knoten, Level 0 "); Display::DisplayLong(startnode);
-       Display::DisplayMsgLn(" ");
+       //	  DisplayMsg(" Knoten, Level 0 "); DisplayLong(startnode);
+       DisplayMsgLn(" ");
        }
        else {
 
@@ -4806,7 +4807,7 @@ void REACT::SetNeighborNodesActive(long startnode, long level, int* help)
        anz_n = ElGetElementNodesNumber(elems1d[j]);
        for(k=0;k<anz_n;k++){
        if(knoten[k]<0) {
-       Display::DisplayMsgLn(" Error");
+       DisplayMsgLn(" Error");
        }
        SetNeighborNodesActive(knoten[k],level-1,help);
        }
@@ -4914,8 +4915,8 @@ void REACT::ExecuteReactionsPHREEQC0(void)
     char fsout[80];
 
     // MDL:
-    Display::DisplayMsgLn("ExecuteReactionsPHREEQC0:");
-    // Display::DisplayMsgLn("ExecuteReactionsPHREEQC:");
+    DisplayMsgLn("ExecuteReactionsPHREEQC0:");
+    // DisplayMsgLn("ExecuteReactionsPHREEQC:");
 
     if (aktuelle_zeit > 0)
         GetTransportResults2Element();
@@ -4952,7 +4953,7 @@ void REACT::ExecuteReactionsPHREEQC0(void)
         }
         else
         {
-            Display::DisplayMsgLn("The file phinput.dat could not be opened !");
+            DisplayMsgLn("The file phinput.dat could not be opened !");
             exit(1);
         }
 
@@ -4966,14 +4967,14 @@ void REACT::ExecuteReactionsPHREEQC0(void)
         fsel_out = fopen(fsout, "r");
         if ((ok) && !fsel_out)
         {
-            Display::DisplayMsgLn("The selected output file doesn't exist!!!");
+            DisplayMsgLn("The selected output file doesn't exist!!!");
             exit(1);
         }
         else if (ok)
         {
             ok = ReadOutputPhreeqc(fsout);
             if (!ok)
-                Display::DisplayMsgLn(" Error in call to PHREEQC !!!");
+                DisplayMsgLn(" Error in call to PHREEQC !!!");
             fclose(fsel_out);
         }
     } /* if flag */
@@ -5026,13 +5027,13 @@ void REACT::GetTransportResults2Element()
                 {
                     if (abs(val_in[comp][i]) > MKleinsteZahl)
                     {
-                        Display::DisplayMsg(" Neg. conc for component ");
-                        Display::DisplayLong((long)comp);
-                        Display::DisplayMsg(" at node ");
-                        Display::DisplayLong((long)i);
-                        Display::DisplayMsg("; conc = ");
-                        Display::DisplayDouble(val_in[comp][i], 0, 0);
-                        Display::DisplayMsgLn(" ");
+                        DisplayMsg(" Neg. conc for component ");
+                        DisplayLong((long)comp);
+                        DisplayMsg(" at node ");
+                        DisplayLong((long)i);
+                        DisplayMsg("; conc = ");
+                        DisplayDouble(val_in[comp][i], 0, 0);
+                        DisplayMsgLn(" ");
                     }
                     val_in[comp][i] = 0.0 * val_in[comp][i];
                 }
@@ -5979,7 +5980,7 @@ int REACT::Call_PhreeqcLib(
         return 1;  // ok == 1 for Geosys conventions
     else
     {
-        Display::DisplayMsgLn("Warning: libphreeqc doesn't run properly!!! ");
+        DisplayMsgLn("Warning: libphreeqc doesn't run properly!!! ");
         exit(1);
     }
 }

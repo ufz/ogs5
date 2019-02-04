@@ -50,6 +50,7 @@ double gravity_constant = 9.81;  // TEST for FEBEX OK 9.81;
 
 using namespace PhysicalConstant;
 using namespace std;
+using namespace Display;
 
 //==========================================================================
 std::vector<CFluidProperties*> mfp_vector;
@@ -207,7 +208,7 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
                     break;  // OXYGEN
                 default:
                 {
-                    Display::ScreenMessage(
+                    ScreenMessage(
                         "Fluid type of %s "
                         " is not valid. Take the default type of WATER",
                         name.data());
@@ -870,7 +871,7 @@ bool MFPRead(std::string file_base_name)
     mfp_file.seekg(0L, std::ios::beg);
     //========================================================================
     // Keyword loop
-    Display::ScreenMessage("MFPRead\n");
+    ScreenMessage("MFPRead\n");
     while (!mfp_file.eof())
     {
         mfp_file.getline(line, MAX_ZEILE);
@@ -910,7 +911,7 @@ bool MFPRead(std::string file_base_name)
     // Test
     if (mfp_vector.size() == 0)
     {
-        Display::ScreenMessage("Error in MFPRead: no MFP data\n");
+        ScreenMessage("Error in MFPRead: no MFP data\n");
         abort();
     }
     //----------------------------------------------------------------------

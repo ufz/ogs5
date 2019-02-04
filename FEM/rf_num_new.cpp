@@ -59,6 +59,7 @@
 // GeoSys-MSHLib
 
 using namespace std;
+using namespace Display;
 
 extern std::ios::pos_type GetNextSubKeyword(ifstream* file, string* line,
                                             bool* keyword);
@@ -206,7 +207,7 @@ bool NUMRead(string file_base_name)
     num_file.seekg(0L, ios::beg);
     //========================================================================
     // Keyword loop
-    Display::ScreenMessage("NUMRead ...\n");
+    ScreenMessage("NUMRead ...\n");
 
     int max_num_integration_pnts = 0;
     while (!num_file.eof())
@@ -223,7 +224,7 @@ bool NUMRead(string file_base_name)
                 num_vector[i]->ele_gauss_points = max_num_integration_pnts;
             }
 
-            Display::ScreenMessage("done, read %d numerical properties\n",
+            ScreenMessage("done, read %d numerical properties\n",
                                    num_vector.size());
             return true;
         }
@@ -455,7 +456,7 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
                     break;
                 //
                 default:
-                    Display::ScreenMessage(
+                    ScreenMessage(
                         "ERROR in NUMRead. Invalid non-linear iteration error "
                         "method selected.\n");
                     exit(1);
@@ -474,13 +475,13 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
         }
         else if (line_string.find("$NON_LINEAR_SOLVER") != string::npos)
         {
-            Display::ScreenMessage(" --\n Using old $NON_LINEAR_SOLVER keyword.\n");
-            Display::ScreenMessage(
+            ScreenMessage(" --\n Using old $NON_LINEAR_SOLVER keyword.\n");
+            ScreenMessage(
                 " Eventually this will be obsolete. Consider switching to\n");
-            Display::ScreenMessage(
+            ScreenMessage(
                 " $NON_LINEAR_ITERATIONS for better results and greater "
                 "flexibility.\n");
-            Display::ScreenMessage(" --\n");
+            ScreenMessage(" --\n");
             //
             // JT:	in >> method_name
             //		in >> tolerance
@@ -553,8 +554,8 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
         // JT subkeyword found
         if (line_string.find("$COUPLING_ITERATIONS") != string::npos)
         {
-            Display::ScreenMessage("$COUPLING_ITERATIONS keyword obsolete.\n");
-            Display::ScreenMessage(
+            ScreenMessage("$COUPLING_ITERATIONS keyword obsolete.\n");
+            ScreenMessage(
                 "Use $COUPLING_CONTROL and $COUPLED_PROCESS for process "
                 "couplings.\n");
             exit(1);
@@ -601,17 +602,17 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
                     break;
                 //
                 case FiniteElement::BNORM:
-                    Display::ScreenMessage(
+                    ScreenMessage(
                         "ERROR in NUMRead. BNORM not configured for process "
                         "couplings.\n");
-                    Display::ScreenMessage(
+                    ScreenMessage(
                         "We suggest ENORM as a valid companion for NEWTON "
                         "couplings.\n");
                     exit(1);
                     break;
                 //
                 default:
-                    Display::ScreenMessage(
+                    ScreenMessage(
                         "ERROR in NUMRead. Invalid coupling error method "
                         "selected.\n");
                     exit(1);
@@ -649,7 +650,7 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
             }
             else
             {
-                Display::ScreenMessage(
+                ScreenMessage(
                     "WARNING. $COUPLED_PROCESS keyword encountered, but a "
                     "valid process OR primary variable was not "
                     "found.\n");
@@ -768,7 +769,7 @@ ios::pos_type CNumerics::Read(ifstream* num_file)
                                                // step will be dampened
             line >> newton_damping_factor;     // dampened by this factor
             line.clear();
-            Display::ScreenMessage(
+            ScreenMessage(
                 "NR step will be damped by %g"
                 " if relative residual or relative unknown increment "
                 " decrease by less than %g"

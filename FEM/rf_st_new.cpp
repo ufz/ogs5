@@ -88,6 +88,7 @@ using Math_Group::vec;
 using MeshLib::CEdge;
 using MeshLib::CElem;
 using MeshLib::CNode;
+using namespace Display;
 
 #ifndef GRAVITY_CONSTANT
 #define GRAVITY_CONSTANT 9.81
@@ -295,7 +296,7 @@ std::ios::pos_type CSourceTerm::Read(std::ifstream* st_file,
                 }
                 else
                 {
-                    Display::DisplayErrorMsg(
+                    DisplayErrorMsg(
                         "Error: In reading ST file, the input component names "
                         "are not found in MCP file!!!");
                     exit(1);
@@ -326,7 +327,7 @@ std::ios::pos_type CSourceTerm::Read(std::ifstream* st_file,
             }
             else
             {
-                Display::DisplayErrorMsg(
+                DisplayErrorMsg(
                     "Error: In reading ST file, the input component names are "
                     "not found in MCP file!!!");
                 exit(1);
@@ -798,13 +799,13 @@ bool STRead(const std::string& file_base_name,
 
     if (!st_file.good())
     {
-        Display::ScreenMessage(
+        ScreenMessage(
             "! Warning in STRead: No source terms !\n");
         return false;
     }
 
     // Keyword loop
-    Display::ScreenMessage("STRead ... ");
+    ScreenMessage("STRead ... ");
     while (!st_file.eof())
     {
         st_file.getline(line, MAX_ZEILE);
@@ -833,7 +834,7 @@ bool STRead(const std::string& file_base_name,
                 }
             }
 
-            Display::ScreenMessage("done, read %d source terms.\n",
+            ScreenMessage("done, read %d source terms.\n",
                                     st_vector.size());
 
             return true;
@@ -871,7 +872,7 @@ bool STRead(const std::string& file_base_name,
         }  // keyword found
     }      // eof
 
-    Display::ScreenMessage("done, read %d source terms\n",  st_vector.size());
+    ScreenMessage("done, read %d source terms\n",  st_vector.size());
 
     return true;
 }

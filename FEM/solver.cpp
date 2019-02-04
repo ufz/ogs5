@@ -56,6 +56,9 @@ using namespace std;
 #ifdef UMFPACK
 #include <umfpack.h>
 #endif
+
+using namespace Display;
+
 /**** Definitionen fuer Preconditioner (Ra, 3/2000) */
 #define VK_Skalierung 1
 #define VK_Extraktion 10
@@ -285,7 +288,7 @@ int SpRichardson(double* b, double* x, long n)
         // OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES1
-    Display::DisplayMsgLn("SpRichard");
+    DisplayMsgLn("SpRichard");
 #endif
 
     r = (double*)Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
@@ -356,11 +359,11 @@ int SpRichardson(double* b, double* x, long n)
 #ifdef SOLVER_SHOW_ERROR
         if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
         {
-            Display::DisplayMsg("      Iteration-Nr.: ");
-            Display::DisplayLong((long)k);
-            Display::DisplayMsg(", Fehler = ");
-            Display::DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
-            Display::DisplayMsgLn(" ");
+            DisplayMsg("      Iteration-Nr.: ");
+            DisplayLong((long)k);
+            DisplayMsg(", Fehler = ");
+            DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
+            DisplayMsgLn(" ");
         }
 #endif
     }
@@ -418,7 +421,7 @@ int SpJOR(double* b, double* x, long n)
         // OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES1
-    Display::DisplayMsgLn("SpJacobi");
+    DisplayMsgLn("SpJacobi");
 #endif
 
     r = (double*)Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
@@ -478,8 +481,8 @@ int SpJOR(double* b, double* x, long n)
             {
 /* Eventuell Zeilenvertauschen */
 #ifdef TESTLOES1
-                Display::DisplayMsg("Fehler im Jacobi-Loser: Diagonalelement = 0.0 !!");
-                Display::DisplayMsgLn("");
+                DisplayMsg("Fehler im Jacobi-Loser: Diagonalelement = 0.0 !!");
+                DisplayMsgLn("");
 #endif
                 k = -1;
                 break;
@@ -510,11 +513,11 @@ int SpJOR(double* b, double* x, long n)
 #ifdef SOLVER_SHOW_ERROR
         if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
         {
-            Display::DisplayMsg("      Iteration-Nr.: ");
-            Display::DisplayLong((long)k);
-            Display::DisplayMsg(", Fehler = ");
-            Display::DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
-            Display::DisplayMsgLn(" ");
+            DisplayMsg("      Iteration-Nr.: ");
+            DisplayLong((long)k);
+            DisplayMsg(", Fehler = ");
+            DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
+            DisplayMsgLn(" ");
         }
 #endif
     }
@@ -576,7 +579,7 @@ int SpSOR(double* b, double* x, long n)
         // OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES1
-    Display::DisplayMsgLn("SpGaussSeidel");
+    DisplayMsgLn("SpGaussSeidel");
 #endif
 
     r = (double*)Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
@@ -641,9 +644,9 @@ int SpSOR(double* b, double* x, long n)
             {
 /* Eventuell Zeilenvertauschen */
 #ifdef TESTLOES1
-                Display::DisplayMsg(
+                DisplayMsg(
                     "Fehler im Gauss-Seidel-Loeser: Diagonalelement = 0.0 !!");
-                Display::DisplayMsgLn("");
+                DisplayMsgLn("");
 #endif
                 k = -1;
                 break;
@@ -670,11 +673,11 @@ int SpSOR(double* b, double* x, long n)
 #ifdef SOLVER_SHOW_ERROR
         if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
         {
-            Display::DisplayMsg("      Iteration-Nr.: ");
-            Display::DisplayLong((long)k);
-            Display::DisplayMsg(", Fehler = ");
-            Display::DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
-            Display::DisplayMsgLn(" ");
+            DisplayMsg("      Iteration-Nr.: ");
+            DisplayLong((long)k);
+            DisplayMsg(", Fehler = ");
+            DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
+            DisplayMsgLn(" ");
         }
 #endif
     }
@@ -1006,8 +1009,8 @@ restart:
     n = n;
     *x = *x;
     *b = *b;
-    Display::DisplayMsg("!!!! Error: AMG1R5-Solver not included in this version!");
-    Display::DisplayMsgLn(" ");
+    DisplayMsg("!!!! Error: AMG1R5-Solver not included in this version!");
+    DisplayMsgLn(" ");
     exit(1);
 #endif
 }
@@ -1096,9 +1099,9 @@ int SpUMF(double* b, double* x, long n)
     }
 
     /* Fehler ausgeben */
-    Display::DisplayMsg("   Relativer UMF-Anfangsfehler = ");
-    Display::DisplayDouble(VEKNORM_BICGSTAB(r, n) / EPS, 8, 3);
-    Display::DisplayMsgLn("");
+    DisplayMsg("   Relativer UMF-Anfangsfehler = ");
+    DisplayDouble(VEKNORM_BICGSTAB(r, n) / EPS, 8, 3);
+    DisplayMsgLn("");
 
     if (VEKNORM_BICGSTAB(r, n) <= EPS)
     {
@@ -1158,10 +1161,10 @@ restart:
 #ifdef UMFPACK31
     umfpack_i_symbolic(n, Ap, Ai, &Symbolic, Control, Info);
     if (Symbolic == NULL)
-        Display::DisplayMsgLn("UMFPACK: Symbolic ist NULL!");
+        DisplayMsgLn("UMFPACK: Symbolic ist NULL!");
     umfpack_i_numeric(Ap, Ai, Ax, Symbolic, &Numeric, Control, Info);
     if (Numeric == NULL)
-        Display::DisplayMsgLn("UMFPACK: Numeric ist NULL!");
+        DisplayMsgLn("UMFPACK: Numeric ist NULL!");
     status = umfpack_i_solve("Ax=b", Ap, Ai, Ax, x, b, Numeric, Control, Info);
     umfpack_i_report_info(Control, Info);
     umfpack_i_report_status(Control, status);
@@ -1179,25 +1182,25 @@ restart:
     }
     if (status != UMFPACK_OK)
     {
-        Display::DisplayMsgLn("UMFPACK wird abgebrochen!");
-        Display::DisplayMsgLn("GLS wird in ERROR.GLS gespeichert.");
+        DisplayMsgLn("UMFPACK wird abgebrochen!");
+        DisplayMsgLn("GLS wird in ERROR.GLS gespeichert.");
         MXDumpGLS("ERROR.GLS", 1, b, NULL);
         exit(1);
     }
     if (Symbolic == NULL)
-        Display::DisplayMsgLn("UMFPACK: Symbolic ist NULL!");
+        DisplayMsgLn("UMFPACK: Symbolic ist NULL!");
 
     status = umfpack_di_numeric(Ap, Ai, Ax, Symbolic, &Numeric, Control, Info);
     umfpack_di_report_status(Control, status);
     if (status != UMFPACK_OK)
     {
-        Display::DisplayMsgLn("UMFPACK wird abgebrochen!");
-        Display::DisplayMsgLn("GLS wird in ERROR.GLS gespeichert.");
+        DisplayMsgLn("UMFPACK wird abgebrochen!");
+        DisplayMsgLn("GLS wird in ERROR.GLS gespeichert.");
         MXDumpGLS("ERROR.GLS", 1, b, NULL);
         exit(1);
     }
     if (Numeric == NULL)
-        Display::DisplayMsgLn("UMFPACK: Numeric ist NULL!");
+        DisplayMsgLn("UMFPACK: Numeric ist NULL!");
 
     status =
         umfpack_di_solve(UMFPACK_A, Ap, Ai, Ax, x, b, Numeric, Control, Info);
@@ -1205,8 +1208,8 @@ restart:
     umfpack_di_report_status(Control, status);
     if (status != UMFPACK_OK)
     {
-        Display::DisplayMsgLn("UMFPACK wird abgebrochen!");
-        Display::DisplayMsgLn("GLS wird in ERROR.GLS gespeichert.");
+        DisplayMsgLn("UMFPACK wird abgebrochen!");
+        DisplayMsgLn("GLS wird in ERROR.GLS gespeichert.");
         MXDumpGLS("ERROR.GLS", 1, b, NULL);
         exit(1);
     }
@@ -1222,9 +1225,9 @@ restart:
 #endif
 
     MXResiduum(x, b, r);
-    Display::DisplayMsg("   Relativer UMF-Endfehler = ");
-    Display::DisplayDouble(VEKNORM_BICGSTAB(r, n) / EPS, 8, 3);
-    Display::DisplayMsgLn("");
+    DisplayMsg("   Relativer UMF-Endfehler = ");
+    DisplayDouble(VEKNORM_BICGSTAB(r, n) / EPS, 8, 3);
+    DisplayMsgLn("");
 
     /* Ggf. abschliessen der Vorkonditionierung */
     if (vorkond)
@@ -1242,8 +1245,8 @@ restart:
     n = n;
     *x = *x;
     *b = *b;
-    Display::DisplayMsg("!!!! Error: UMF-Solver not included in this version!");
-    Display::DisplayMsgLn(" ");
+    DisplayMsg("!!!! Error: UMF-Solver not included in this version!");
+    DisplayMsgLn(" ");
     exit(1);
 #endif
 }
@@ -1298,7 +1301,7 @@ int SpBICG(double* b, double* x, long n)
         // OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES4
-    Display::DisplayMsgLn("SpBICG");
+    DisplayMsgLn("SpBICG");
 #endif
 
     r = (double*)Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
@@ -1338,9 +1341,9 @@ int SpBICG(double* b, double* x, long n)
     }
 
 #ifdef TESTLOES4
-    Display::DisplayMsg("eps = ");
-    Display::DisplayDouble(eps, 22, 20);
-    Display::DisplayMsgLn("");
+    DisplayMsg("eps = ");
+    DisplayDouble(eps, 22, 20);
+    DisplayMsgLn("");
 #endif
 
     if (VEKNORM_BICG(r, n) <= eps)
@@ -1415,11 +1418,11 @@ int SpBICG(double* b, double* x, long n)
 #ifdef SOLVER_SHOW_ERROR
         if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
         {
-            Display::DisplayMsg("      Iteration-Nr.: ");
-            Display::DisplayLong((long)k);
-            Display::DisplayMsg(", Fehler = ");
-            Display::DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
-            Display::DisplayMsgLn(" ");
+            DisplayMsg("      Iteration-Nr.: ");
+            DisplayLong((long)k);
+            DisplayMsg(", Fehler = ");
+            DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
+            DisplayMsgLn(" ");
         }
 #endif
 
@@ -1519,7 +1522,7 @@ restart:
     alpha = omega = rho1 = rho = 1.0;
 
 #ifdef TESTLOES4
-    Display::DisplayMsgLn("SpBICGSTAB");
+    DisplayMsgLn("SpBICGSTAB");
 #endif
 
     MXResiduum(x, b, r);
@@ -1560,9 +1563,9 @@ restart:
 // WW    cout << "\n  SpBICGSTAB iteration: 0/" << max_iter << " Error: " <<
 // error_rel << "\n";
 #ifdef TESTLOES4
-    Display::DisplayMsg("eps = ");
-    Display::DisplayDouble(eps, 22, 20);
-    Display::DisplayMsgLn("");
+    DisplayMsg("eps = ");
+    DisplayDouble(eps, 22, 20);
+    DisplayMsgLn("");
 #endif
     /* Fehlerkriterium oder max_iter erreicht?  */
     if ((k >= max_iter) || (VEKNORM_BICGSTAB(r, n) <= eps))
@@ -1676,11 +1679,11 @@ restart:
 #ifdef SOLVER_SHOW_ERROR
         if (k % (int)MMax((max_iter / 10), 1.) == 1)
         {
-            Display::DisplayMsg("      Iteration-Nr.: ");
-            Display::DisplayLong((long)k);
-            Display::DisplayMsg(", Fehler = ");
-            Display::DisplayDouble(VEKNORM_BICGSTAB(r2, n) / eps, 4, 1);
-            Display::DisplayMsgLn(" ");
+            DisplayMsg("      Iteration-Nr.: ");
+            DisplayLong((long)k);
+            DisplayMsg(", Fehler = ");
+            DisplayDouble(VEKNORM_BICGSTAB(r2, n) / eps, 4, 1);
+            DisplayMsgLn(" ");
         }
 #endif
 
@@ -1766,7 +1769,7 @@ int SpQMRCGSTAB(double* b, double* x, long n)
         // OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES4
-    Display::DisplayMsgLn("SpQMRCGSTAB");
+    DisplayMsgLn("SpQMRCGSTAB");
 #endif
 
     r = (double*)Malloc(n * sizeof(double)); /* MNulleVec(r,n); */
@@ -1800,9 +1803,9 @@ int SpQMRCGSTAB(double* b, double* x, long n)
     }
 
 #ifdef TESTLOES4
-    Display::DisplayMsg("eps = ");
-    Display::DisplayDouble(eps, 22, 20);
-    Display::DisplayMsgLn("");
+    DisplayMsg("eps = ");
+    DisplayDouble(eps, 22, 20);
+    DisplayMsgLn("");
 #endif
 
     if (VEKNORM_QMRCGSTAB(r, n) <= eps)
@@ -1891,11 +1894,11 @@ int SpQMRCGSTAB(double* b, double* x, long n)
 #ifdef SOLVER_SHOW_ERROR
         if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
         {
-            Display::DisplayMsg("      Iteration-Nr.: ");
-            Display::DisplayLong((long)k);
-            Display::DisplayMsg(", Fehler = ");
-            Display::DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
-            Display::DisplayMsgLn(" ");
+            DisplayMsg("      Iteration-Nr.: ");
+            DisplayLong((long)k);
+            DisplayMsg(", Fehler = ");
+            DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
+            DisplayMsgLn(" ");
         }
 #endif
         rho1 = rho;
@@ -2071,8 +2074,8 @@ end:
     n = n;
     *x = *x;
     *b = *b;
-    Display::DisplayMsg("!!!! Error: GMRES-Solver not yet finished!");
-    Display::DisplayMsgLn(" ");
+    DisplayMsg("!!!! Error: GMRES-Solver not yet finished!");
+    DisplayMsgLn(" ");
     exit(1);
 #endif
 }
@@ -2151,7 +2154,7 @@ int SpCG(double* b, double* x, long n)
         // OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES4
-    Display::DisplayMsgLn("SpCG");
+    DisplayMsgLn("SpCG");
 #endif
 
     r = (double*)Malloc(n * sizeof(double));
@@ -2187,9 +2190,9 @@ int SpCG(double* b, double* x, long n)
     s = (double*)Free(s);
 
 #ifdef TESTLOES4
-    Display::DisplayMsg("eps = ");
-    Display::DisplayDouble(eps, 22, 20);
-    Display::DisplayMsgLn("");
+    DisplayMsg("eps = ");
+    DisplayDouble(eps, 22, 20);
+    DisplayMsgLn("");
 #endif
 
     if (VEKNORM_CG(r, n) <= eps)
@@ -2238,11 +2241,11 @@ int SpCG(double* b, double* x, long n)
 #ifdef SOLVER_SHOW_ERROR
         if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
         {
-            Display::DisplayMsg("      Iteration-Nr.: ");
-            Display::DisplayLong((long)k);
-            Display::DisplayMsg(", Fehler = ");
-            Display::DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
-            Display::DisplayMsgLn(" ");
+            DisplayMsg("      Iteration-Nr.: ");
+            DisplayLong((long)k);
+            DisplayMsg(", Fehler = ");
+            DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
+            DisplayMsgLn(" ");
         }
 #endif
 
@@ -2313,7 +2316,7 @@ int SpCGNR(double* b, double* x, long n)
         // OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES4
-    Display::DisplayMsgLn("SpCGNE");
+    DisplayMsgLn("SpCGNE");
 #endif
 
     r = (double*)Malloc(n * sizeof(double));
@@ -2404,11 +2407,11 @@ int SpCGNR(double* b, double* x, long n)
 #ifdef SOLVER_SHOW_ERROR
         if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
         {
-            Display::DisplayMsg("      Iteration-Nr.: ");
-            Display::DisplayLong((long)k);
-            Display::DisplayMsg(", Fehler = ");
-            Display::DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
-            Display::DisplayMsgLn(" ");
+            DisplayMsg("      Iteration-Nr.: ");
+            DisplayLong((long)k);
+            DisplayMsg(", Fehler = ");
+            DisplayDouble(VEKNORM_BICGSTAB(r, n) / eps, 4, 1);
+            DisplayMsgLn(" ");
         }
 #endif
 
@@ -2486,7 +2489,7 @@ int SpCGS(double* b, double* x, long n)
         // OK411        max_iter = NodeListLength;
 
 #ifdef TESTLOES4
-    Display::DisplayMsgLn("SpCGS");
+    DisplayMsgLn("SpCGS");
 #endif
 
     r = (double*)Malloc(n * sizeof(double));
@@ -2583,11 +2586,11 @@ int SpCGS(double* b, double* x, long n)
 #ifdef SOLVER_SHOW_ERROR
         if (k % (int)MMax((cg_maxiter / 10), 1.) == 1)
         {
-            Display::DisplayMsg("      Iteration-Nr.: ");
-            Display::DisplayLong((long)k);
-            Display::DisplayMsg(", Fehler = ");
-            Display::DisplayDouble(VEKNORM_QMRCGSTAB(r, n) / eps, 4, 1);
-            Display::DisplayMsgLn(" ");
+            DisplayMsg("      Iteration-Nr.: ");
+            DisplayLong((long)k);
+            DisplayMsg(", Fehler = ");
+            DisplayDouble(VEKNORM_QMRCGSTAB(r, n) / eps, 4, 1);
+            DisplayMsgLn(" ");
         }
 #endif
 
@@ -2659,7 +2662,7 @@ int SpGauss(double* vecb, double* vecx, long g)
     static double z, hilf;
     register int k, i, j, sk;
 #ifdef TESTLOES
-    Display::DisplayMsgLn("SpGAUSS");
+    DisplayMsgLn("SpGAUSS");
 #endif
     s = (int*)Malloc(sizeof(int) * (g - 1));
     /* LR-Faktorisierung */
@@ -2844,7 +2847,7 @@ int NonLinearSolve(long cas, double* b, double* x, long n,
                 strcpy(text, "SpNEWTON");
                 break;
         }
-        Display::DisplayMsgLn(text);
+        DisplayMsgLn(text);
 #endif
     }
     else if (cas == 2)
@@ -2902,14 +2905,14 @@ int NonLinearSolve(long cas, double* b, double* x, long n,
                 strcpy(text, "SpNEWTON");
                 break;
         }
-        Display::DisplayMsgLn(text);
+        DisplayMsgLn(text);
 #endif
     }
     iter = NonlinearSolver(b, x, n, f, ind);
 
     if (iter == nonlinear_maxiter)
     {
-        Display::DisplayErrorMsg("Abbruch! Maximale Anzahl an Iterationen erreicht.");
+        DisplayErrorMsg("Abbruch! Maximale Anzahl an Iterationen erreicht.");
         return 0;
     }
     return iter;
@@ -2970,7 +2973,7 @@ int SpPICARD(double* b, double* x, long n,
 #define GERMAN
 
 #ifdef TESTLOES6
-    Display::DisplayMsgLn("SpPICARD");
+    DisplayMsgLn("SpPICARD");
 #endif
 
     cg_eps_original = cg_eps;
@@ -3019,7 +3022,7 @@ int SpPICARD(double* b, double* x, long n,
         if ((rebuild_matrix) || (!(k % nonlinear_assemble_flow)))
         {
 #ifdef TESTLOES6
-            Display::DisplayMsgLn("Neuaufbau der Systemmatrix");
+            DisplayMsgLn("Neuaufbau der Systemmatrix");
 #endif
             f(b, x, aktuelle_zeit);
             rebuild_matrix = 0;
@@ -3054,22 +3057,22 @@ int SpPICARD(double* b, double* x, long n,
         }
 
 #ifdef GERMAN
-        Display::DisplayMsg("      Iteration-Nr.: ");
-        Display::DisplayLong((long)k);
-        Display::DisplayMsg(", GLS-Iter. = ");
-        Display::DisplayLong((long)iter);
-        Display::DisplayMsg(", Fehler/Abbruchf. = ");
-        Display::DisplayDouble(error / nonlinear_eps, 4, 1);
-        Display::DisplayMsgLn(" ");
+        DisplayMsg("      Iteration-Nr.: ");
+        DisplayLong((long)k);
+        DisplayMsg(", GLS-Iter. = ");
+        DisplayLong((long)iter);
+        DisplayMsg(", Fehler/Abbruchf. = ");
+        DisplayDouble(error / nonlinear_eps, 4, 1);
+        DisplayMsgLn(" ");
 #endif
 #ifdef ENGLISH
-        Display::DisplayMsg("      Iteration-Nr.: ");
-        Display::DisplayLong((long)k);
-        Display::DisplayMsg(", Linear solver iterations = ");
-        Display::DisplayLong((long)iter);
-        Display::DisplayMsg(", error/errorcrit. = ");
-        Display::DisplayDouble(error / nonlinear_eps, 4, 1);
-        Display::DisplayMsgLn("");
+        DisplayMsg("      Iteration-Nr.: ");
+        DisplayLong((long)k);
+        DisplayMsg(", Linear solver iterations = ");
+        DisplayLong((long)iter);
+        DisplayMsg(", error/errorcrit. = ");
+        DisplayDouble(error / nonlinear_eps, 4, 1);
+        DisplayMsgLn("");
 #endif
 
         if (nonlinear_rel_cg_eps > 0)
@@ -3170,7 +3173,7 @@ int SpNEWTON(double*, double*, long, void (*)(double*, double*, double), long)
     // WW long ldummy;
     // WW void (*g) (double *b, double *x, double dummy);
 
-    Display::DisplayMsgLn("Newton noch nicht implementiert !!! ");
+    DisplayMsgLn("Newton noch nicht implementiert !!! ");
 
     // WW ddummy = b[0];
     // WW ddummy = x[0];
@@ -3189,7 +3192,7 @@ int SpNEWTON(double*, double*, long, void (*)(double*, double*, double), long)
     static double error;
 
 #ifdef TESTLOES6
-    Display::DisplayMsgLn("SpNEWTON");
+    DisplayMsgLn("SpNEWTON");
 #endif
 
     k = 0;
@@ -3205,9 +3208,9 @@ int SpNEWTON(double*, double*, long, void (*)(double*, double*, double), long)
 #endif
 
 #ifdef TESTLOES6
-    Display::DisplayMsg("eps = ");
-    Display::DisplayDouble(eps, 22, 20);
-    Display::DisplayMsgLn("");
+    DisplayMsg("eps = ");
+    DisplayDouble(eps, 22, 20);
+    DisplayMsgLn("");
 #endif
 
     MXResiduum(x, b, r);

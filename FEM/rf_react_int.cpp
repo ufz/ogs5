@@ -42,6 +42,8 @@
 
 #include <vector>
 using namespace std;
+using namespace Display;
+
 extern double gravity_constant;
 
 vector<REACTINT*> REACTINT_vec;
@@ -133,7 +135,7 @@ bool REACINTRead(string file_base_name)
     rei_file.seekg(0L, ios::beg);  // rewind?
     //========================================================================
     // Keyword loop
-    Display::ScreenMessage("REIRead ... \n");
+    ScreenMessage("REIRead ... \n");
 
     while (!rei_file.eof())
     {
@@ -154,7 +156,7 @@ bool REACINTRead(string file_base_name)
 
     if (!m_rei)
     {
-        Display::ScreenMessage(
+        ScreenMessage(
             " No keyword #REACTION_INTERFACE specified - setting defaults\n");
         m_rei = new REACTINT();
         REACTINT_vec.push_back(m_rei);
@@ -255,7 +257,7 @@ bool REACTINT::Read(ifstream* rfd_file)
                         speciesname = "NIX";
                     }
                     else
-                        Display::DisplayMsgLn(
+                        DisplayMsgLn(
                             " ERROR reading Water concentration relevant "
                             "Species  - skipping");
                     in.clear();

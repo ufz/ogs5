@@ -137,6 +137,7 @@ REACT_BRNS* m_vec_BRNS;
 using namespace std;
 using namespace MeshLib;
 using namespace Math_Group;
+using namespace Display;
 
 /*-------------------- ITPACKV    ---------------------------*/
 extern void transM2toM6(void);
@@ -573,10 +574,10 @@ CRFProcess::~CRFProcess(void)
 #endif
     if (_init_domain_data_type == FiniteElement::READ)
     {
-        Display::ScreenMessage(
+        ScreenMessage(
             "!!!Waning: Reading and writing solutions (reload=3)\
                                   are selected in this computation.\n");
-        Display::ScreenMessage(
+        ScreenMessage(
             "\t Please make sure that the original initial\
                                 data files are used.\n");
     }
@@ -618,11 +619,11 @@ void CRFProcess::Create()
     std::string pcs_type_name(
         convertProcessTypeToString(this->getProcessType()));
 
-    Display::ScreenMessage("Create: %s \n", pcs_type_name.data());
+    ScreenMessage("Create: %s \n", pcs_type_name.data());
 
     if (getProcessType() == FiniteElement::MASS_TRANSPORT)  // SB
     {
-        Display::ScreenMessage(" for %s process with component number %d\n",
+        ScreenMessage(" for %s process with component number %d\n",
                                pcs_primary_function_name[0],
                                pcs_component_number);
     }
@@ -633,7 +634,7 @@ void CRFProcess::Create()
     // Element matrix output. WW
     if (Write_Matrix)
     {
-        Display::ScreenMessage("->Write Matrix'\n");
+        ScreenMessage("->Write Matrix'\n");
 
 #if defined(USE_MPI) || defined(USE_PETSC)
         char stro[32];
@@ -661,7 +662,7 @@ void CRFProcess::Create()
     //----------------------------------------------------------------------------
     // MMP - create mmp groups for each process //YD
 
-    Display::ScreenMessage("->Create MMP\n");
+    ScreenMessage("->Create MMP\n");
     CMediumPropertiesGroup* m_mmp_group = NULL;
     int continua = 1;  // WW
     if (RD_Process)
@@ -678,7 +679,7 @@ void CRFProcess::Create()
     m_mmp_group = NULL;
     //----------------------------------------------------------------------------
     // NUM_NEW
-    Display::ScreenMessage("->Create NUM\n");
+    ScreenMessage("->Create NUM\n");
 
     //	if (pcs_type_name.compare("RANDOM_WALK")) { // PCH RWPT does not need
     // this.
@@ -702,7 +703,7 @@ void CRFProcess::Create()
     }
     if (!m_num)
     {
-        Display::ScreenMessage(
+        ScreenMessage(
             "Warning in CRFProcess::Create() - no NUM data\n");
         m_num = new CNumerics(pcs_type_name);  // OK
                                                //		m_num = m_num_tmp;
@@ -730,7 +731,7 @@ void CRFProcess::Create()
     //----------------------------------------------------------------------------
     // EQS - create equation system
     // WW CreateEQS();
-    Display::ScreenMessage("->Create EQS\n");
+    ScreenMessage("->Create EQS\n");
 
 #if !defined(USE_PETSC)  // && !defined(other parallel solver lib). 04.2012 WW
 #if defined(NEW_EQS)
@@ -834,7 +835,7 @@ void CRFProcess::Create()
 
     //----------------------------------------------------------------------------
     // Time unit factor //WW
-    Display::ScreenMessage("->Create TIM\n");
+    ScreenMessage("->Create TIM\n");
     // CTimeDiscretization* Tim = TIMGet(_pcs_type_name);
     Tim = TIMGet(pcs_type_name);
     if (!Tim)
@@ -875,12 +876,12 @@ void CRFProcess::Create()
         m_msh->SwitchOnQuadraticNodes(false);
 
     // ELE - config and create element values
-    Display::ScreenMessage("->Config ELE values\n");
+    ScreenMessage("->Config ELE values\n");
     AllocateMemGPoint();
 
     // ELE - config element matrices
     // NOD - config and create node values
-    Display::ScreenMessage("->Config NOD values\n");
+    ScreenMessage("->Config NOD values\n");
     double* nod_values = NULL;
     double* ele_values = NULL;  // PCH
 
@@ -942,7 +943,7 @@ void CRFProcess::Create()
         type != 4 && type / 10 != 4)  // Modified at 03.08.2010. WW
     {
         // PCH
-        Display::ScreenMessage("Reloading the primary variables...\n");
+        ScreenMessage("Reloading the primary variables...\n");
         ReadSolution();  // WW
     }
 
@@ -951,12 +952,12 @@ void CRFProcess::Create()
             FiniteElement::WRITE)  // PCH: If reload is set, no need to have ICs
     {
         // IC
-        Display::ScreenMessage("->Assign IC\n");
+        ScreenMessage("->Assign IC\n");
         SetIC();
     }
     else
         // Bypassing IC
-        Display::ScreenMessage("RELOAD is set to be %d. So, bypassing IC's\n",
+        ScreenMessage("RELOAD is set to be %d. So, bypassing IC's\n",
                                _init_domain_data_type);
 
     if (pcs_type_name_vector.size() &&
@@ -1095,7 +1096,7 @@ void CRFProcess::SetBoundaryConditionAndSourceTerm()
     {
         const int DOF = GetPrimaryVNumber();
         // BC - create BC groups for each process
-        Display::ScreenMessage("-> Create BC\n");
+        ScreenMessage("-> Create BC\n");
         CBoundaryConditionsGroup* m_bc_group = NULL;
 
         // 25.08.2011. WW
@@ -1139,7 +1140,7 @@ void CRFProcess::SetBoundaryConditionAndSourceTerm()
                 Write_Processed_BC();
         }
         // ST - create ST groups for each process
-        Display::ScreenMessage("-> Create ST\n");
+        ScreenMessage("-> Create ST\n");
         CSourceTermGroup* m_st_group = NULL;
 
         if (WriteSourceNBC_RHS == 2)  // Read from file
@@ -1775,7 +1776,7 @@ bool PCSRead(std::string file_base_name)
     pcs_file.seekg(0, std::ios::beg);
     //========================================================================
     // Keyword loop
-    Display::ScreenMessage("PCSRead ... ");
+    ScreenMessage("PCSRead ... ");
     while (!pcs_file.eof())
     {
         pcs_file.getline(line, MAX_ZEILE);
@@ -1815,7 +1816,7 @@ bool PCSRead(std::string file_base_name)
         }  // keyword found
     }      // eof
 
-    Display::ScreenMessage("done, read  %d processes\n",
+    ScreenMessage("done, read  %d processes\n",
                            pcs_vector.size());
 
     return true;
@@ -2555,7 +2556,7 @@ void CRFProcess::Config(void)
     if (this->getProcessType() == FiniteElement::LIQUID_FLOW ||
         this->getProcessType() == FiniteElement::FLUID_FLOW)
     {
-        Display::ScreenMessage("CRFProcess::Config LIQUID_FLOW\n");
+        ScreenMessage("CRFProcess::Config LIQUID_FLOW\n");
 
         type = 1;
         ConfigLiquidFlow();
@@ -4708,7 +4709,7 @@ double CRFProcess::Execute()
             const_val =
                 GetCurveValue(_pcs_constant_curve, 0, aktuelle_zeit, &valid);
         }
-        Display::ScreenMessage(
+        ScreenMessage(
             "-> set given constant value. no need to solve a linear system.\n");
 
         for (int ii = 0; ii < pcs_number_of_primary_nvals; ii++)
@@ -4812,7 +4813,7 @@ double CRFProcess::Execute()
     cpu_time = -clock();
 #endif
 
-    Display::ScreenMessage("      Assembling equation system...\n");
+    ScreenMessage("      Assembling equation system...\n");
 
     GlobalAssembly();
 #if defined(USE_MPI) || defined(USE_PETSC)  // WW
@@ -4820,7 +4821,7 @@ double CRFProcess::Execute()
     cpu_time_assembly += cpu_time;
 #endif
 
-    Display::ScreenMessage("      Calling linear solver...\n");
+    ScreenMessage("      Calling linear solver...\n");
 
 #ifdef CHECK_EQS
     std::string eqs_name =
@@ -4862,8 +4863,8 @@ double CRFProcess::Execute()
                                           true, false);  // JT
 #endif
 
-        Display::ScreenMessage("    Relative PCS error: %0.3e\n", pcs_error);
-        Display::ScreenMessage("    Start FCT calculation\n");
+        ScreenMessage("    Relative PCS error: %0.3e\n", pcs_error);
+        ScreenMessage("    Start FCT calculation\n");
 
         // Set u^H: use the solution as the higher-order solution
         for (int ii = 0; ii < pcs_number_of_primary_nvals; ii++)
@@ -5220,7 +5221,7 @@ void CRFProcess::CalculateElementMatrices(void)
         case 66:  // OF
             break;
         default:
-            Display::DisplayMsgLn(
+            DisplayMsgLn(
                 "CalculateElementMatrices: no CalculateElementMatrices "
                 "specified");
             abort();
@@ -5673,7 +5674,7 @@ void CRFProcess::GlobalAssembly()
     // DDC
     if (dom_vector.size() > 0)
     {
-        Display::ScreenMessage("      Domain Decomposition\n");
+        ScreenMessage("      Domain Decomposition\n");
         CPARDomain* m_dom = NULL;
         size_t j = 0;
 #if defined(USE_MPI)  // WW
@@ -5946,7 +5947,7 @@ void CRFProcess::CalIntegrationPointValue()
             return;
     }
 
-    Display::ScreenMessage("->Calculate velocity\n");
+    ScreenMessage("->Calculate velocity\n");
 
     // check linear flow or not
     bool isLinearFlow = true;
@@ -6377,7 +6378,7 @@ void CRFProcess::AssembleSystemMatrixNew(void)
             // SMAssembleMatrix(eqs->b,eqs->x,ddummy,this);
             break;
         default:
-            Display::DisplayMsgLn(
+            DisplayMsgLn(
                 "CalculateElementMatrices: no CalculateElementMatrices "
                 "specified");
             abort();
@@ -8627,7 +8628,7 @@ int CRFProcess::ExecuteLinearSolver(LINEAR_SOLVER* eqs)
     eqs->master_iter = iter_count;
     if (iter_count >= cg_maxiter)
     {
-        Display::ScreenMessage(
+        ScreenMessage(
             "Warning in CRFProcess::ExecuteLinearSolver() - Maximum "
             "iteration number reached\n");
         return -1;
@@ -8693,7 +8694,7 @@ void CRFProcess::PCSMoveNOD(void)
             MSHMoveNODUcFlow(this);
             break;
         default:
-            Display::DisplayMsgLn("PCSMoveNOD: no valid process");
+            DisplayMsgLn("PCSMoveNOD: no valid process");
             abort();
     }
 }
@@ -8867,14 +8868,14 @@ string GetPFNamebyCPName(string inname)
 
 int GetRFProcessNumPhases(void)
 {
-    // Display::DisplayMsgLn("GetRFProcessNumPhases - to be removed");
+    // DisplayMsgLn("GetRFProcessNumPhases - to be removed");
     int no_phases = (int)mfp_vector.size();
     return no_phases;
 }
 
 long GetRFProcessNumComponents(void)
 {
-    // Display::DisplayMsgLn("GetRFProcessNumComponents - to be removed");
+    // DisplayMsgLn("GetRFProcessNumComponents - to be removed");
     int no_components = (int)cp_vec.size();
     return no_components;
 }
@@ -9470,7 +9471,7 @@ double CRFProcess::CalcIterationNODError(FiniteElement::ErrorMethod method,
             break;
         //
         default:
-            Display::ScreenMessage(
+            ScreenMessage(
                 "ERROR: Invalid error method for Iteration or Coupling Node "
                 "error.\n");
             return 0.0;
@@ -9730,7 +9731,7 @@ double CRFProcess::ExecuteNonLinear(int loop_process_number, bool print_pcs)
     last_error = 1.0;
     for (iter_nlin = 0; iter_nlin < m_num->nls_max_iterations; iter_nlin++)
     {
-        Display::ScreenMessage("    PCS non-linear iteration: %d/%d\n",
+        ScreenMessage("    PCS non-linear iteration: %d/%d\n",
                                iter_nlin, m_num->nls_max_iterations);
         nonlinear_iteration_error = Execute();
         //
@@ -9837,7 +9838,7 @@ double CRFProcess::ExecuteNonLinear(int loop_process_number, bool print_pcs)
                             }
                             else
                             {
-                                Display::ScreenMessage(
+                                ScreenMessage(
                                     "Attention: Newton-Raphson step is "
                                     "diverged. Program halt! \n");
 #if defined(USE_PETSC)  // || defined(other parallel libs)//08.3012. WW
@@ -9872,12 +9873,12 @@ double CRFProcess::ExecuteNonLinear(int loop_process_number, bool print_pcs)
                         }
                     }
 
-                    Display::ScreenMessage(
+                    ScreenMessage(
                         "         NR-Error  |"
                         "    RHS Norm|"
                         "  Unknowns Norm|"
                         " Damping\n");
-                    Display::ScreenMessage(
+                    ScreenMessage(
                         "         %0.3e |"
                         " %0.3e|"
                         "     %0.3e|"
@@ -9975,7 +9976,7 @@ double CRFProcess::ExecuteNonLinear(int loop_process_number, bool print_pcs)
         {
             if (accepted)  // only increment if not fixed by a failed time step.
                 num_diverged++;
-            Display::ScreenMessage("\nNon-linear iteration stabilized.\n");
+            ScreenMessage("\nNon-linear iteration stabilized.\n");
         }
         else if (!converged)
         {
@@ -9984,7 +9985,7 @@ double CRFProcess::ExecuteNonLinear(int loop_process_number, bool print_pcs)
             if (Tim->GetPITimeStepCrtlType() <
                 1)  // PI has the intrinsic property of doing this. So don't
                     // print it.
-                Display::ScreenMessage(
+                ScreenMessage(
                     "\nMax number of non-linear iterations reached.\n");
         }
     }
@@ -10021,13 +10022,13 @@ void CRFProcess::PrintStandardIterationInformation(bool write_std_errors)
     // LINEAR SOLUTION
     if (m_num->nls_method < 0)
     {
-        Display::ScreenMessage("      -->LINEAR solution complete.\n");
+        ScreenMessage("      -->LINEAR solution complete.\n");
 
         if (write_std_errors)
         {
             for (ii = 0; ii < pcs_number_of_primary_nvals; ii++)
             {
-                Display::ScreenMessage(
+                ScreenMessage(
                     "         PCS error DOF[%d] %0.3e\n",
                     ii, pcs_absolute_error[ii]);
             }
@@ -10037,10 +10038,10 @@ void CRFProcess::PrintStandardIterationInformation(bool write_std_errors)
     //
     // NON-LINEAR METHODS
     if (m_num->nls_method == 0)
-        Display::ScreenMessage("      -->End of PICARD iteration: %d/%d\n",
+        ScreenMessage("      -->End of PICARD iteration: %d/%d\n",
                                iter_nlin, m_num->nls_max_iterations);
     else
-        Display::ScreenMessage(
+        ScreenMessage(
             "      -->End of NEWTON-RAPHSON iteration: %d/%d\n",
             iter_nlin, m_num->nls_max_iterations);
     //
@@ -10050,19 +10051,19 @@ void CRFProcess::PrintStandardIterationInformation(bool write_std_errors)
     {
         if (pcs_num_dof_errors == 1)
         {
-            Display::ScreenMessage(
+            ScreenMessage(
                 "         PCS error: %0.3e\n", pcs_absolute_error[0]);
         }
         else
         {
             for (ii = 0; ii < pcs_number_of_primary_nvals; ii++)
             {
-                Display::ScreenMessage(
+                ScreenMessage(
                     "         PCS error DOF[%d]: %0.3e\n",
                     ii, pcs_absolute_error[ii]);
             }
         }
-        Display::ScreenMessage(
+        ScreenMessage(
             "         ->Euclidian norm of unknowns: %0.3e\n",
             pcs_unknowns_norm);
     }
@@ -13699,7 +13700,7 @@ void CRFProcess::PI_TimeStepSize()
     // DDC
     if (dom_vector.size() > 0)
     {
-        Display::ScreenMessage("      Domain Decomposition\n");
+        ScreenMessage("      Domain Decomposition\n");
         CPARDomain* m_dom = NULL;
         int j = 0;
 //

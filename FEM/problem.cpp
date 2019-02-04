@@ -100,6 +100,9 @@ extern int ReadData(const char*,
 #if defined(USE_PETSC)  // || defined(other parallel libs)//03.3012. WW
 #include "PETSC/PETScLinearSolver.h"
 #endif
+
+using namespace Display;
+
 namespace process
 {
 class CRFProcessDeformation;
@@ -966,7 +969,7 @@ void Problem::SetActiveProcesses()
  ***************************************************************************/
 void Problem::PCSCreate()
 {
-    Display::ScreenMessage("Create PCS processes\n");
+    ScreenMessage("Create PCS processes\n");
 
     size_t no_processes = pcs_vector.size();
     // OK_MOD if(pcs_deformation>0) Init_Linear_Elements();
@@ -1037,7 +1040,7 @@ void Problem::PCSRestart()
 
     if (ok == 0)
     {
-        Display::ScreenMessage("RFR: no restart data\n");
+        ScreenMessage("RFR: no restart data\n");
         return;
     }
 
@@ -1139,7 +1142,7 @@ void Problem::Euler_TimeDiscretize()
     //
     CTimeDiscretization* m_tim = NULL;
     aktueller_zeitschritt = 0;
-    Display::ScreenMessage("\n\n***Start time steps\n");
+    ScreenMessage("\n\n***Start time steps\n");
 //
 // Output zero time initial values
 #if defined(USE_MPI) || defined(USE_MPI_KRC)
@@ -1186,7 +1189,7 @@ void Problem::Euler_TimeDiscretize()
 
         if (!last_dt_accepted && dt == previous_rejected_dt)
         {
-            Display::ScreenMessage(
+            ScreenMessage(
                 "Stop this simulation. New time step size is same as the "
                 "rejected one.\n");
             break;
@@ -1209,17 +1212,17 @@ void Problem::Euler_TimeDiscretize()
         current_time += dt;
         aktuelle_zeit = current_time;
 
-        Display::ScreenMessage(
+        ScreenMessage(
             "\n\n#################################################"
             "############\n");
 
-        Display::ScreenMessage("Time step: %g"
+        ScreenMessage("Time step: %g"
                                "|  Time: %g"
                                "|  Time step size: %g\n",
                                aktueller_zeitschritt, current_time, dt);
         if (dt_rec > dt)
         {
-            Display::ScreenMessage(
+            ScreenMessage(
                 "This time step size was modified to match a "
                          "critical time!\n");
         }
@@ -1231,7 +1234,7 @@ void Problem::Euler_TimeDiscretize()
             // ---------------------------------
             last_dt_accepted = true;
 
-            Display::ScreenMessage("This step is accepted.\n");
+            ScreenMessage("This step is accepted.\n");
 
             PostCouplingLoop();
             if (print_result)
@@ -1260,7 +1263,7 @@ void Problem::Euler_TimeDiscretize()
         }
         else if (isSteadySimulation)
         {
-            Display::ScreenMessage(
+            ScreenMessage(
                 "This time step is rejected. We stop the simulation because "
                 "this is steady state simulation.\n");
             break;
@@ -1271,7 +1274,7 @@ void Problem::Euler_TimeDiscretize()
             // TIME STEP FAILED
             // ---------------------------------
             last_dt_accepted = false;
-            Display::ScreenMessage(
+            ScreenMessage(
                 "This step is rejected: Redo, with a new time step.\n");
             rejected_times++;
             current_time -= dt;
@@ -1312,7 +1315,7 @@ void Problem::Euler_TimeDiscretize()
                 }
             }
         }
-        Display::ScreenMessage(
+        ScreenMessage(
             "\n#############################################################"
             "\n");
         if (aktueller_zeitschritt >= max_time_steps)
@@ -1322,41 +1325,41 @@ void Problem::Euler_TimeDiscretize()
         //		current_time = end_time;
     }
 
-    Display::ScreenMessage(
+    ScreenMessage(
             "\n----------------------------------------------------\n");
     for (i = 0; i < (int)active_process_index.size(); i++)  // JT2012
     {
         m_tim = total_processes[active_process_index[i]]->Tim;
 
-        Display::ScreenMessage(
+        ScreenMessage(
             "\nFor process: %s\n",
             convertProcessTypeToString(
                 total_processes[active_process_index[i]]
                     ->getProcessType()).data());
         if (m_tim->time_control_type == TimeControlType::FIXED_STEPS)
         {
-             Display::ScreenMessage("No time control for this process.\n");
+             ScreenMessage("No time control for this process.\n");
         }
         else
         {
-            Display::ScreenMessage("Accepted time steps: %d\n",
+            ScreenMessage("Accepted time steps: %d\n",
                                    m_tim->accepted_step_count);
-            Display::ScreenMessage("Rejected time steps: %d\n",
+            ScreenMessage("Rejected time steps: %d\n",
                                    m_tim->rejected_step_count);
         }
         if (total_processes[active_process_index[i]]
                 ->m_num->nls_max_iterations > 1)
         {
-            Display::ScreenMessage(
+            ScreenMessage(
                 "Number of non-converged iterations: %d\n",
                 total_processes[active_process_index[i]]
                              ->num_notsatisfied);
-            Display::ScreenMessage(
+            ScreenMessage(
                 "Number of stagnated iterations: %d\n",
                 total_processes[active_process_index[i]]->num_diverged);
         }
     }
-    Display::ScreenMessage(
+    ScreenMessage(
         "----------------------------------------------------\n");
 
 #if defined(USE_PETSC)  // 05.2014. WW
@@ -1541,16 +1544,16 @@ bool Problem::CouplingLoop()
                         max_outer_error =
                             MMax(max_outer_error, max_inner_error);
                     //
-                    Display::ScreenMessage(
+                    ScreenMessage(
                     "\n==========================================="
                      "===========\n");
-                    Display::ScreenMessage(
+                    ScreenMessage(
                         "Inner coupling loop %d/%d complete.\n",
                         inner_index + 1, inner_max);
-                    Display::ScreenMessage(
+                    ScreenMessage(
                         "Max coupling error (relative to tolerance): %0.3e\n",
                         max_inner_error);
-                    Display::ScreenMessage(
+                    ScreenMessage(
                         "============================================="
                         "=========\n");
                     //
@@ -1622,7 +1625,7 @@ if(has_constrained_bc > 0)
 #else
                     const int rank = -1;
 #endif
-                    Display::ScreenMessage(
+                    ScreenMessage(
                         "this process has constrained BCs. reapply BCs.\n");
 
                     a_pcs->IncorporateBoundaryConditions(rank);
@@ -1638,15 +1641,15 @@ if(has_constrained_bc > 0)
         //
         if (cpl_overall_max_iterations > 1)
         {
-            Display::ScreenMessage(
+            ScreenMessage(
                 "\n======================================================\n");
-            Display::ScreenMessage("Outer coupling loop %d/%d complete.\n",
+            ScreenMessage("Outer coupling loop %d/%d complete.\n",
                                    outer_index + 1,
                                    cpl_overall_max_iterations);
-             Display::ScreenMessage(
+             ScreenMessage(
                  "Max coupling error (relative to tolerance): %0.3e\n",
                  max_outer_error);
-            Display::ScreenMessage(
+            ScreenMessage(
                 "======================================================\n");
 
             // update max cpl error variable in all processes

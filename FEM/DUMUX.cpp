@@ -40,7 +40,8 @@ CReadTextfiles_DuMux::~CReadTextfiles_DuMux(void) {}
 using std::cout;
 using std::string;
 using std::vector;
-// using std:"\n";
+
+using namespace Display;
 
 /*-------------------------------------------------------------------------
    GeoSys - Function: SplitStrings
@@ -395,7 +396,7 @@ int CDUMUXData::WriteInputForDuMux(CRFProcess* m_pcs,
         DOScommand = "rm " + Folder + "/dataForDumux.dat";
 
     if (system(DOScommand.c_str()))
-        Display::DisplayMsgLn("Could not delete input file! ");
+        DisplayMsgLn("Could not delete input file! ");
 
     // Read length of current timestep and recalculate it to days
     if (m_pcs->Tim->time_unit == "DAY")
@@ -1467,7 +1468,7 @@ void CDUMUXData::ExecuteDuMux(CRFProcess* m_pcs, string folder)
             cout << tempstring << "\n";
             if (system(tempstring.c_str()))
             {
-                Display::DisplayMsgLn("Warnung: DuMux doesn't run properly!!! ");
+                DisplayMsgLn("Warnung: DuMux doesn't run properly!!! ");
                 exit(0);
             }
         }
@@ -1550,7 +1551,7 @@ int CDUMUXData::RunDuMux(long Timestep, CRFProcess* m_pcs)
             DOScommand = "rm " + folder + "dataForGeoSys*.dat";
 
         if (system(DOScommand.c_str()))
-            Display::DisplayMsgLn("Could not delete input file! ");
+            DisplayMsgLn("Could not delete input file! ");
     }
 
     // check if dumux folder is subfolder of the geosys folder

@@ -49,6 +49,8 @@ using namespace std;
 #include "rf_REACT_GEM.h"
 #endif
 using SolidProp::CSolidProperties;
+using namespace Display;
+
 /* Vector auf CompProperties , globale Zugriffe */
 // vector <CompProperties*> cp_vec;
 // do not need this anymore, use global map structure instead.
@@ -142,14 +144,14 @@ bool CPRead(std::string file_base_name)
     {
         if (pcs_vector[0]->getProcessType() == FiniteElement::TNEQ)
         {
-            Display::DisplayMsgLn(
+            DisplayMsgLn(
                 "ERROR. TNEQ requires specification of inert and reactive "
                 "components in mcp file.");
             exit(1);
         }
         if (pcs_vector[0]->getProcessType() == FiniteElement::TES)
         {
-            Display::DisplayMsgLn(
+            DisplayMsgLn(
                 "ERROR. TES requires specification of inert and reactive "
                 "components in mcp file.");
             exit(1);
@@ -160,7 +162,7 @@ bool CPRead(std::string file_base_name)
 
     //========================================================================
     cp_vec.clear();
-    Display::ScreenMessage("CPRead\n");
+    ScreenMessage("CPRead\n");
     // Schleife ueber alle Phasen bzw. Komponenten
     while (!cp_file.eof())
     {
@@ -202,7 +204,7 @@ bool CPRead(std::string file_base_name)
             pcs_vector[0]->getProcessType() != FiniteElement::TNEQ &&
             pcs_vector[0]->getProcessType() != FiniteElement::TES)
         {
-            Display::DisplayMsgLn(
+            DisplayMsgLn(
                 "Mass transport components and Mass transport processes do not "
                 "fit!");
             exit(1);
@@ -211,7 +213,7 @@ bool CPRead(std::string file_base_name)
                  (pcs_vector[0]->getProcessType() == FiniteElement::TNEQ ||
                   pcs_vector[0]->getProcessType() == FiniteElement::TES))
         {
-            Display::DisplayMsgLn(
+            DisplayMsgLn(
                 "ERROR. TNEQ/TES requires specification of inert and reactive "
                 "components in mcp file.");
             exit(1);
@@ -451,7 +453,7 @@ ios::pos_type CompProperties::Read(ifstream* rfd_file)
                 // unknown parameter model
                 if (count_of_diffusion_model_values < 0)
                 {
-                    Display::DisplayMsgLn(" Unknown Diffusion model - program stops !");
+                    DisplayMsgLn(" Unknown Diffusion model - program stops !");
                     exit(1);
                 }
 
@@ -490,7 +492,7 @@ ios::pos_type CompProperties::Read(ifstream* rfd_file)
                 //		diffusion_model_values = read_help;
 
                 if (diffusion_model < 0)
-                    Display::DisplayMsgLn(
+                    DisplayMsgLn(
                         "Error: Diffusion model must be larger than or 0");
             }
             in.clear();
@@ -510,7 +512,7 @@ ios::pos_type CompProperties::Read(ifstream* rfd_file)
 
                 if (count_of_decay_model_values < 0)  // unknown parameter model
                 {
-                    Display::DisplayMsgLn(
+                    DisplayMsgLn(
                         " Unknown Aqueous Decay model - program stops !");
                     exit(1);
                 }
@@ -538,7 +540,7 @@ ios::pos_type CompProperties::Read(ifstream* rfd_file)
                 //		decay_model_values = read_help;
 
                 if (decay_model < -1)
-                    Display::DisplayMsgLn(
+                    DisplayMsgLn(
                         "Error: Aqueous decay model must be larger than or 0");
             }
             in.clear();
@@ -558,7 +560,7 @@ ios::pos_type CompProperties::Read(ifstream* rfd_file)
                 if (count_of_isotherm_model_values <
                     0)  // unknown parameter model
                 {
-                    Display::DisplayMsgLn(" Unknown Isotherm model - program stops !");
+                    DisplayMsgLn(" Unknown Isotherm model - program stops !");
                     exit(1);
                 }
 
@@ -584,7 +586,7 @@ ios::pos_type CompProperties::Read(ifstream* rfd_file)
 
                 //		isotherm_model_values = read_help;
                 if (isotherm_model < 0)
-                    Display::DisplayMsgLn(
+                    DisplayMsgLn(
                         "Error: Isotherm model must be larger than or 0");
             }
             in.clear();
@@ -612,7 +614,7 @@ ios::pos_type CompProperties::Read(ifstream* rfd_file)
             in.clear();
             if (molar_density <= 0)  // unphysical entry
             {
-                Display::DisplayMsgLn(
+                DisplayMsgLn(
                     "Error in MOLAR_DENSITY - setting molar_density to 1.0!");
                 molar_density = 1.0;
             }
@@ -625,7 +627,7 @@ ios::pos_type CompProperties::Read(ifstream* rfd_file)
             in.clear();
             if (molar_weight <= 0)  // unphysical entry
             {
-                Display::DisplayMsgLn(
+                DisplayMsgLn(
                     "Error in MOLAR_WEIGHT - setting molar_weight to 1.0!");
                 molar_weight = 1.0;
             }
@@ -639,7 +641,7 @@ ios::pos_type CompProperties::Read(ifstream* rfd_file)
             in.clear();
             if (max_solubility <= 0)  // unphysical entry
             {
-                Display::DisplayMsgLn(
+                DisplayMsgLn(
                     ": Error in MAXIMUM_AQUEOUS_SOLUBILITY - setting "
                     "max_solubility to 1.0!");
                 max_solubility = 1.0;
@@ -663,7 +665,7 @@ ios::pos_type CompProperties::Read(ifstream* rfd_file)
             in.clear();
             if (fabs(double(valence)) >= 7)
             {  // unphysical entry
-                Display::DisplayMsgLn("Error in VALENCE - setting valence to 0!");
+                DisplayMsgLn("Error in VALENCE - setting valence to 0!");
                 valence = 0;
             }
         }
@@ -674,7 +676,7 @@ ios::pos_type CompProperties::Read(ifstream* rfd_file)
             in.clear();
             if (a_zero >= 10)
             {  // unphysical entry
-               // Display::DisplayMsgLn("Error in A_ZERO - setting valence to 0!");
+               // DisplayMsgLn("Error in A_ZERO - setting valence to 0!");
                // a_zero = 0.0;
             }
         }
@@ -908,7 +910,7 @@ double CompProperties::CalcDiffusionCoefficientCP(long index,
             return 0.0;  // no diffusion specified
         case 0:          /* curve value */
         {
-            // Display::DisplayMsgLn("Not implemented");
+            // DisplayMsgLn("Not implemented");
             return 0.0;
         }
         case 1: /* Konstanter Diffusionswert */
@@ -1155,7 +1157,7 @@ double CompProperties::CalcDiffusionCoefficientCP(long index,
             else
             {
                 Dm = 0;
-                Display::DisplayMsgLn("Something wrong in diffusion model 10! T = 0.");
+                DisplayMsgLn("Something wrong in diffusion model 10! T = 0.");
             }
             // A = -1.4943; //Daq(T) PCE
             // B = -1059.0; //Daq(T) PCE
@@ -1163,7 +1165,7 @@ double CompProperties::CalcDiffusionCoefficientCP(long index,
         }
 
         default:
-            Display::DisplayMsgLn("Unknown diffusion model!");
+            DisplayMsgLn("Unknown diffusion model!");
             break;
     }
     /* switch */
@@ -1303,7 +1305,7 @@ double CompProperties::CalcDiffusionCoefficientCP_Method1(long index,
                    1.e-4;  // WW
         }
     }
-    Display::DisplayMsgLn("Unknown diffusion model specified!");
+    DisplayMsgLn("Unknown diffusion model specified!");
     return 0.;
 }
 
@@ -1423,7 +1425,7 @@ int CompProperties::GetNumberDecayValuesCompProperties(int decay_model)
             break; /* Monod or Michaelis-Menten kinetics with constant rate
                       coefficients */
         default:
-            Display::DisplayMsgLn(" Error: Unknown model for decay  ");
+            DisplayMsgLn(" Error: Unknown model for decay  ");
             break;
     } /* switch */
 
@@ -1501,7 +1503,7 @@ int CompProperties::GetNumberIsothermValuesCompProperties(int isotherm)
               n=1;    break;
          */
         default:
-            Display::DisplayMsgLn(" Error - this ISOTHERM model found ");
+            DisplayMsgLn(" Error - this ISOTHERM model found ");
             break;
     } /* switch */
 
@@ -1556,7 +1558,7 @@ double CompProperties::CalcElementRetardationFactorNew(long index,
 
     /* Get mean element concentration from last time step */
     conc = CalcElementMeanConcNew(index, m_pcs);
-    /* Display::DisplayMsg(" Mean conc: "); Display::DisplayDouble(conc,0,0); Display::DisplayMsgLn(" ");
+    /* DisplayMsg(" Mean conc: "); DisplayDouble(conc,0,0); DisplayMsgLn(" ");
      */
 
     switch (isotherm_model)
@@ -1614,20 +1616,20 @@ double CompProperties::CalcElementRetardationFactorNew(long index,
         //	 isotherm = GetCurveDerivative((int) isotherm_model_values[0], 0,
         // fabs(conc), &gueltig); 	 break;
         default:
-            Display::DisplayMsgLn(
+            DisplayMsgLn(
                 "Unknown sorption isotherm type. Assuming no sorption");
             isotherm = 0.0;
             // CMCD moved here
             retard = 1. + (1. - porosity) * density_rock * isotherm / porosity;
             break;
     }
-    // Display::DisplayMsg(" conc: "); Display::DisplayDouble(conc,0,0);Display::DisplayMsg(" isotherm: ");
-    // Display::DisplayDouble(isotherm,0,0); Display::DisplayMsgLn(" "); if(conc < 0.0) isotherm =
+    // DisplayMsg(" conc: "); DisplayDouble(conc,0,0);DisplayMsg(" isotherm: ");
+    // DisplayDouble(isotherm,0,0); DisplayMsgLn(" "); if(conc < 0.0) isotherm =
     // 0.0;
 
     //  retard = 1. + (1.-porosity)*density_rock*isotherm/porosity; Case 4
-    //  doesn't use this function. if(index < 1) {Display::DisplayMsg(" Retardation
-    //  factor: "); Display::DisplayDouble(retard,0,0); Display::DisplayMsgLn(" ");}
+    //  doesn't use this function. if(index < 1) {DisplayMsg(" Retardation
+    //  factor: "); DisplayDouble(retard,0,0); DisplayMsgLn(" ");}
 
     return retard;
 }
@@ -1699,9 +1701,9 @@ double CompProperties::CalcElementMeanConcNew(long index, CRFProcess* m_pcs)
     val2 /= (double)nn;
     /* calculate mean value */
 
-    //	 Display::DisplayMsgLn(" "); Display::DisplayMsg(" val1: ");
-    // Display::DisplayDouble(val1,0,0);Display::DisplayMsg(", val2: ");
-    // Display::DisplayDouble(val2,0,0); Display::DisplayMsgLn("");
+    //	 DisplayMsgLn(" "); DisplayMsg(" val1: ");
+    // DisplayDouble(val1,0,0);DisplayMsg(", val2: ");
+    // DisplayDouble(val2,0,0); DisplayMsgLn("");
     val = theta * val1 + (1.0 - theta) * val2;
 
     return val;
@@ -1730,7 +1732,7 @@ double CompProperties::CalcElementDecayRateNew(long index, CRFProcess* m_pcs)
     static double conc, lambda = 0.0;
     int gueltig;
 
-    // if(index >= anz_active_elements){Display::DisplayMsgLn(" Too many elements ");
+    // if(index >= anz_active_elements){DisplayMsgLn(" Too many elements ");
     // return 0.0; }
     /* Get mean element concentration from last time step */
     conc = CalcElementMeanConcNew(index, m_pcs);
@@ -1777,8 +1779,8 @@ double CompProperties::CalcElementDecayRateNew(long index, CRFProcess* m_pcs)
             lambda = 0.0;
             break;
     }
-    // if(index < 0){Display::DisplayMsg(" Decay Rate lambda: ");
-    // Display::DisplayDouble(lambda,0,0); Display::DisplayMsgLn(" ");}
+    // if(index < 0){DisplayMsg(" Decay Rate lambda: ");
+    // DisplayDouble(lambda,0,0); DisplayMsgLn(" ");}
     return lambda;
 }
 
@@ -1792,12 +1794,12 @@ int CPGetMobil(long comp)
     cp_single = cp_vec[comp];
     if (cp_single == NULL)
     {
-        Display::DisplayMsgLn("The requested component properties are not defined!");
+        DisplayMsgLn("The requested component properties are not defined!");
         return 0;
     }
     mobil = cp_single->mobil;
     if (mobil < 0)
-        Display::DisplayMsgLn("Error getting component property");
+        DisplayMsgLn("Error getting component property");
 
     return mobil;
 }
