@@ -179,6 +179,8 @@
 
 #include "prototyp.h"
 
+using namespace Display;
+
 double pai = 4.0 * atan(1.0);
 VoidFuncDXCDX ShapeFunction;
 VoidFuncDXCDX ShapeFunctionHQ;

@@ -25,6 +25,8 @@
 
 #include "Eigen/Dense"
 
+#include "display.h"
+
 // FEM-Makros
 #include "makros.h"
 #include "rf_pcs.h"
@@ -50,6 +52,8 @@
 
 std::vector<SolidProp::CSolidProperties*> msp_vector;
 std::vector<std::string> msp_key_word_vector;  // OK
+
+using namespace Display;
 
 namespace SolidProp
 {
@@ -8815,14 +8819,19 @@ bool MSPRead(const std::string& given_file_base_name)
     msp_file.seekg(0L, std::ios::beg);
     //========================================================================
     // Keyword loop
-    std::cout << "MSPRead"
-              << "\n";
+    ScreenMessage("MSPRead ... \n");
+
     while (!msp_file.eof())
     {
         msp_file.getline(line, MAX_ZEILE);
         line_string = line;
         if (line_string.find("#STOP") != string::npos)
+        {
+            ScreenMessage(
+                "done, read %d sets of solid properties terms\n",
+                msp_vector.size());
             return true;
+        }
         //----------------------------------------------------------------------
         // keyword found
         if (line_string.find("#SOLID_PROPERTIES") != std::string::npos)

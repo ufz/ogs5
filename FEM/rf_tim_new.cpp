@@ -35,7 +35,9 @@
 #include "rfmat_cp.h"
 #include "tools.h"
 #include <cctype>
-// WW #include "elements.h" //set functions for stability criteria
+
+using namespace Display;
+
 // ToDo
 double aktuelle_zeit;
 size_t aktueller_zeitschritt = 0;
@@ -759,14 +761,19 @@ bool TIMRead(std::string file_base_name)
     tim_file.seekg(0L, std::ios::beg);
     //========================================================================
     // Keyword loop
-    std::cout << "TIMRead"
-              << "\n";
+    ScreenMessage("TIMRead ... ");
+
     while (!tim_file.eof())
     {
         tim_file.getline(line, MAX_ZEILE);
         line_string = line;
         if (line_string.find("#STOP") != std::string::npos)
+        {
+            ScreenMessage("done, read %d time stepping definitions\n",
+                                   time_vector.size());
             return true;
+        }
+
         //----------------------------------------------------------------------
         // keyword found
         if (line_string.find("#TIME_STEPPING") != std::string::npos)
@@ -785,8 +792,10 @@ bool TIMRead(std::string file_base_name)
                 *tim_dis << " No. Time  Tim-Disc  Iter"
                          << "\n";
                 if (!m_tim->tim_discrete->good())
-                    std::cout << "Warning : Time-Discrete files are not found"
-                              << "\n";
+                {
+                    ScreenMessage(
+                        "Warning : Time-Discrete files are not found\n");
+                }
             }
             //----------------------------------------------------------------------
             time_vector.push_back(m_tim);

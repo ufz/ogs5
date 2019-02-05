@@ -48,6 +48,7 @@
 #include "msh_elem.h"
 #include "msh_lib.h"
 using namespace std;
+using namespace Display;
 
 Kurven* kurven = NULL;
 int anz_kurven = 0;

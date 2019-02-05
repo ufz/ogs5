@@ -43,6 +43,7 @@
 
 #include <vector>
 using namespace std;
+using namespace Display;
 
 void destroy_react(void* item);
 

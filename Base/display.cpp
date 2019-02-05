@@ -28,6 +28,8 @@
 extern FILE* OpenMsgFile(void);
 extern void CloseMsgFile(FILE*);
 
+namespace Display
+{
 /**************************************************************************/
 /* ROCKFLOW - Funktion: DisplayMsg
  */
@@ -60,10 +62,19 @@ void DisplayMsg(const char* s)
 **************************************************************************/
 void ScreenMessage(const char *format , ... )
 {
-#ifdef USE_MPI
+#if defined(USE_PETSC) || defined(USE_MPI) || defined(USE_MPI_PARPROC) || \
+    defined(USE_MPI_REGSOIL) || defined(USE_MPI_GEMS)
     if (myrank > 0)
         return;
 #endif
+   va_list arglist;
+   va_start( arglist, format );
+   vprintf( format, arglist );
+   va_end( arglist );
+}
+
+void ScreenMessageNoMPIRank(const char *format , ... )
+{
    va_list arglist;
    va_start( arglist, format );
    vprintf( format, arglist );
@@ -94,32 +105,6 @@ void DisplayMsgLn(const char* s)
     f = OpenMsgFile();
     fprintf(f, "%s\n            ", s);
     fflush(stdout);
-    CloseMsgFile(f);
-}
-
-/**************************************************************************/
-/* ROCKFLOW - Funktion: DisplayMsgCR
- */
-/* Aufgabe:
-   Schreibt Zeichenkette mit Zeilenruecklauf auf Standardausgabe,
-   beginnt immer erst nach 12 Zeichen Einrueckung.
- */
-/* Formalparameter: (E: Eingabe; R: Rueckgabe; X: Beides)
-   E char *s: Zeichenkette
- */
-/* Ergebnis:
-   - void -
- */
-/* Programmaenderungen:
-   08/1994     MSR        Erste Version
-   01/2002     MK         Umleitung in MSG-Datei
- */
-/**************************************************************************/
-void DisplayMsgCR(const char* s)
-{
-    FILE* f;
-    f = OpenMsgFile();
-    fprintf(f, "%s\r            ", s);
     CloseMsgFile(f);
 }
 
@@ -184,43 +169,6 @@ void DisplayLong(long x)
 }
 
 /**************************************************************************/
-/* ROCKFLOW - Funktion: DisplayDoubleVector
- */
-/* Aufgabe:
-   Schreibt Vektor auf Standardausgabe
- */
-/* Formalparameter: (E: Eingabe; R: Rueckgabe; X: Beides)
-   E double *vec: Zeiger auf Vektor
-   E long grad: Laenge des Vektors
-   E char *text: Ueberschrift ueber Ausgabe
- */
-/* Ergebnis:
-   - void -
- */
-/* Programmaenderungen:
-   08/1994     Hans Herrmann    Erste Version
-   12/1994     MSR              Von mathlib nach display portiert
-   01/2002     MK               Umleitung in MSG-Datei
- */
-/**************************************************************************/
-void DisplayDoubleVector(double* vec, long grad, char* text)
-{
-    FILE* f;
-    long i;
-    DisplayMsgLn("");
-    DisplayMsgLn(text);
-    f = OpenMsgFile();
-    for (i = 0; i < grad; i++)
-    {
-        fprintf(f, "| %+e |", vec[i]);
-        fprintf(f, "%s\n            ", "");
-        fflush(stdout);
-    }
-    CloseMsgFile(f);
-    DisplayMsgLn("");
-}
-
-/**************************************************************************/
 /* ROCKFLOW - Funktion: DisplayErrorMsg
  */
 /* Aufgabe:
@@ -244,29 +192,4 @@ void DisplayErrorMsg(const char* s)
     fprintf(f, "\n!!!!!!!!  %s\n\n            ", s);
     CloseMsgFile(f);
 }
-
-/**************************************************************************/
-/* ROCKFLOW - Funktion: DisplayTimeMsg
- */
-/* Aufgabe:
-   Schreibt Laufzeitmeldung auf Standardausgabe.
- */
-/* Formalparameter: (E: Eingabe; R: Rueckgabe; X: Beides)
-   E char *s: Zeichenkette (Fehlermeldung)
-   E double d: Zeitwert
- */
-/* Ergebnis:
-   - void -
- */
-/* Programmaenderungen:
-   07/1994     MSR        Erste Version
-   01/2002     MK         Umleitung in MSG-Datei
- */
-/**************************************************************************/
-void DisplayTimeMsg(const char* s, double d)
-{
-    FILE* f;
-    f = OpenMsgFile();
-    fprintf(f, "\n            %s%20ld s\n\n            ", s, ((long)d));
-    CloseMsgFile(f);
-}
+} // End of name space.

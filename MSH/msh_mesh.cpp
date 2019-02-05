@@ -24,6 +24,7 @@
 #include <vector>
 
 // BaseLib
+#include "display.h"
 #include "memory.h"
 #include "Histogram.h"
 
@@ -535,7 +536,7 @@ void CFEMesh::ConnectedElements2Node(bool quadratic)
 **************************************************************************/
 void CFEMesh::ConstructGrid()
 {
-    std::cout << "Executing ConstructGrid() ... " << std::flush;
+    Display::ScreenMessage("Executing ConstructGrid() ... \n");
 
     bool done;
 
@@ -939,8 +940,6 @@ void CFEMesh::ConstructGrid()
     Neighbors0.resize(0);
     e_edgeNodes0.resize(0);
     e_edgeNodes.resize(0);
-    std::cout << " done."
-              << "\n";
 
     // computeSearchLength();
     computeMinEdgeLength();

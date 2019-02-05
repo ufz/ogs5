@@ -8,9 +8,14 @@
  */
 
 #include "rf_REACT_BRNS.h"
+
+#include <iostream>
+
+#include "display.h"
 #include "rf_pcs.h"
 #include "rfmat_cp.h"
-#include <iostream>
+
+using namespace Display;
 
 #ifdef BRNS
 

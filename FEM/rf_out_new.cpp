@@ -27,6 +27,8 @@ using namespace std;
 
 // Base
 #include "BuildInfo.h"
+#include "display.h"
+
 #include "StringTools.h"
 // Math
 #include "matrix_class.h"  //JOD 2014-11-10
@@ -87,6 +89,8 @@ extern size_t max_dim;  // OK411 todo
 #include "rf_REACT_GEM.h"
 #endif
 using MeshLib::CFEMesh;
+using namespace Display;
+
 //==========================================================================
 vector<COutput*> out_vector;
 
@@ -141,14 +145,18 @@ bool OUTRead(const std::string& file_base_name,
     out_file.seekg(0L, ios::beg);
 
     // Keyword loop
-    cout << "OUTRead"
-         << "\n";
+    ScreenMessage("OUTRead ... ");
+
     while (!out_file.eof())
     {
         out_file.getline(line, MAX_ZEILE);
         line_string = line;
         if (line_string.find("#STOP") != string::npos)
+        {
+            ScreenMessage("done, read %d output definitions\n",
+                                   out_vector.size());
             return true;
+        }
 
         COutput* out(new COutput(out_vector.size()));
 
@@ -770,8 +778,8 @@ COutput* OUTGetRWPT(const std::string& out_name)
  *****************************************************************************************/
 void OUTCheck()
 {
-    std::cout << "Checking output data "
-              << "\n";
+    ScreenMessage("Checking output data\n");
+
     // Go through all out objects (#OUTPUT-section in input file)
     for (size_t i = 0; i < out_vector.size(); i++)
         out_vector[i]->checkConsistency();

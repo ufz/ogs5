@@ -88,6 +88,7 @@ using Math_Group::vec;
 using MeshLib::CEdge;
 using MeshLib::CElem;
 using MeshLib::CNode;
+using namespace Display;
 
 #ifndef GRAVITY_CONSTANT
 #define GRAVITY_CONSTANT 9.81
@@ -798,13 +799,13 @@ bool STRead(const std::string& file_base_name,
 
     if (!st_file.good())
     {
-        std::cout << "! Warning in STRead: No source terms !"
-                  << "\n";
+        ScreenMessage(
+            "! Warning in STRead: No source terms !\n");
         return false;
     }
 
     // Keyword loop
-    std::cout << "STRead ... " << std::flush;
+    ScreenMessage("STRead ... ");
     while (!st_file.eof())
     {
         st_file.getline(line, MAX_ZEILE);
@@ -833,8 +834,8 @@ bool STRead(const std::string& file_base_name,
                 }
             }
 
-            std::cout << "done, read " << st_vector.size() << " source terms"
-                      << "\n";
+            ScreenMessage("done, read %d source terms.\n",
+                                    st_vector.size());
 
             return true;
         }
@@ -871,8 +872,7 @@ bool STRead(const std::string& file_base_name,
         }  // keyword found
     }      // eof
 
-    std::cout << "done, read " << st_vector.size() << " source terms"
-              << "\n";
+    ScreenMessage("done, read %d source terms\n",  st_vector.size());
 
     return true;
 }

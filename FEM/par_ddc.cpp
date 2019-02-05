@@ -46,6 +46,9 @@ double time_ele_paral;
 
 // FEM-Makros
 #include "makros.h"
+
+#include "display.h"
+
 #ifndef NEW_EQS  // WW. 11.2008
 #include "matrix_routines.h"
 #endif
@@ -63,6 +66,7 @@ vector<int> node_connected_doms;  // This will be removed after sparse class is
 using namespace std;
 using FiniteElement::CFiniteElementVec;
 using process::CRFProcessDeformation;
+using namespace Display;
 
 #ifdef NEW_EQS
 using Math_Group::Linear_EQS;
@@ -114,7 +118,7 @@ bool SubKeywordFound(string line)
 void DOMRead(string file_base_name)
 {
     //----------------------------------------------------------------------
-    cout << "DOMRead: ";
+    ScreenMessage("DOMRead: ");
     //----------------------------------------------------------------------
     CPARDomain* m_dom = NULL;
     char line[MAX_ZEILE];
@@ -128,8 +132,7 @@ void DOMRead(string file_base_name)
     ifstream ddc_file(ddc_file_name.data(), ios::in);
     if (!ddc_file.good())
     {
-        cout << "no DDC file"
-             << "\n";
+        ScreenMessage("no DDC file\n");
         return;
     }
     ddc_file.seekg(0L, ios::beg);
@@ -150,8 +153,7 @@ void DOMRead(string file_base_name)
         }  // keyword found
     }      // eof
     //----------------------------------------------------------------------
-    cout << dom_vector.size() << " domains"
-         << "\n";
+    ScreenMessage("%d domains\n", dom_vector.size());
     //----------------------------------------------------------------------
 }
 
@@ -250,8 +252,8 @@ void DOMCreate()
 
     //----------------------------------------------------------------------
     // Create domain nodes
-    cout << "->Create DOM"
-         << "\n";
+    ScreenMessage("->Create Sub-Domains\n");
+
     /* // Comment by WW
        for(i=0;i<no_domains;i++){
        m_dom = dom_vector[i];
@@ -261,23 +263,21 @@ void DOMCreate()
 
     //----------------------------------------------------------------------
     // Create domain nodes
-    cout << "  Create domain nodes"
-         << "\n";
+    ScreenMessage("  Create domain nodes\n");
     for (i = 0; i < no_domains; i++)
     {
         m_dom = dom_vector[i];
         m_dom->m_msh = m_pcs->m_msh;
-        cout << "    Domain:" << m_dom->ID << "\n";
+        //ScreenMessageNoMPIRank("    Domain: %d\n", m_dom->ID);
         m_dom->CreateNodes();
     }
     //----------------------------------------------------------------------
     // Create domain elements
-    cout << "  Create domain elements"
-         << "\n";
+    ScreenMessage("  Create domain elements\n");
     for (i = 0; i < no_domains; i++)
     {
         m_dom = dom_vector[i];
-        cout << "    Domain:" << m_dom->ID << "\n";
+        //ScreenMessageNoMPIRank("    Domain: %d\n", m_dom->ID);
         m_dom->CreateElements(quadr);
     }
     // For find nodes connected to node WW
@@ -295,11 +295,10 @@ void DOMCreate()
     //
     // Find nodes of all neighbors of each node. // WW
     // Local topology. WW
-    cout << "  Find nodes on borders"
-         << "\n";
+    ScreenMessage("    Find nodes on borders\n");
     FindNodesOnInterface(m_pcs->m_msh, quadr);
-    cout << "  Find the connected nodes for each node"
-         << "\n";
+
+    ScreenMessage("  Find the connected nodes for each node\n");
 #ifndef USE_MPI  // WW
     for (i = 0; i < no_domains; i++)
     {
@@ -313,16 +312,18 @@ void DOMCreate()
 #endif
     //----------------------------------------------------------------------
     // Create domain EQS
-    cout << "  Create domain EQS"
-         << "\n";
+    ScreenMessage("  Create domain EQS\n");
+
 #ifdef USE_MPI
     i = myrank;
 #else
     for (i = 0; i < no_domains; i++)
     {
 #endif
-    m_dom = dom_vector[i];
-    cout << "    Domain:" << m_dom->ID << "\n";
+        m_dom = dom_vector[i];
+
+        //ScreenMessage("    Domain: %d\n", m_dom->ID);
+
 #ifdef NEW_EQS
     m_dom->CreateEQS();
 #else

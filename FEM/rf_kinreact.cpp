@@ -60,6 +60,7 @@
 using namespace std;
 using SolidProp::CSolidProperties;
 using namespace Math_Group;
+using namespace Display;
 
 const double residual = 1.e-20;
 

@@ -42,6 +42,7 @@
 #include <sys/stat.h>    //for check if files exist
 
 using namespace std;
+using namespace Display;
 
 CECLIPSEBlock::CECLIPSEBlock(long Nodelength, long Facelength)
 {

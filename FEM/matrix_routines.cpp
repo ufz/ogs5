@@ -102,6 +102,7 @@
 extern MeshLib::CFEMesh* FEMGet(const std::string&);
 
 using MeshLib::CNode;
+using namespace Display;
 
 #ifdef _OPENMP
 #include <omp.h>

@@ -40,7 +40,8 @@ CReadTextfiles_DuMux::~CReadTextfiles_DuMux(void) {}
 using std::cout;
 using std::string;
 using std::vector;
-// using std:"\n";
+
+using namespace Display;
 
 /*-------------------------------------------------------------------------
    GeoSys - Function: SplitStrings

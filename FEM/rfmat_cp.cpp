@@ -49,6 +49,8 @@ using namespace std;
 #include "rf_REACT_GEM.h"
 #endif
 using SolidProp::CSolidProperties;
+using namespace Display;
+
 /* Vector auf CompProperties , globale Zugriffe */
 // vector <CompProperties*> cp_vec;
 // do not need this anymore, use global map structure instead.
@@ -160,8 +162,7 @@ bool CPRead(std::string file_base_name)
 
     //========================================================================
     cp_vec.clear();
-    cout << "CPRead"
-         << "\n";
+    ScreenMessage("CPRead\n");
     // Schleife ueber alle Phasen bzw. Komponenten
     while (!cp_file.eof())
     {

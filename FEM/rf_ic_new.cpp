@@ -41,6 +41,8 @@ using namespace std;
 
 #include "InitialCondition.h"
 
+using namespace Display;
+
 //==========================================================================
 vector<CInitialConditionGroup*> ic_group_vector;
 vector<CInitialCondition*> ic_vector;
@@ -134,8 +136,7 @@ bool ICRead(const std::string& file_base_name,
     std::ifstream ic_file(ic_file_name.data(), std::ios::in);
     if (!ic_file.good())
     {
-        std::cout << "WARNING: ICRead: No initial conditions !"
-                  << "\n";
+        ScreenMessage("WARNING: ICRead: No initial conditions !\n");
         return false;
     }
 
@@ -144,8 +145,7 @@ bool ICRead(const std::string& file_base_name,
     std::ios::pos_type position;
 
     // Keyword loop
-    std::cout << "ICRead"
-              << "\n";
+    ScreenMessage("ICRead\n");
     while (!ic_file.eof())
     {
         ic_file.getline(line, MAX_ZEILE);

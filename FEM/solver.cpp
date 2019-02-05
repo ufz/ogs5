@@ -56,6 +56,9 @@ using namespace std;
 #ifdef UMFPACK
 #include <umfpack.h>
 #endif
+
+using namespace Display;
+
 /**** Definitionen fuer Preconditioner (Ra, 3/2000) */
 #define VK_Skalierung 1
 #define VK_Extraktion 10
