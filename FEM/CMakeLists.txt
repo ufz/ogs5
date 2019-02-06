@@ -56,7 +56,6 @@ set( HEADERS
 	Material/Fluid/GibbsFreeEnergy/DimensionLessGibbsFreeEnergyRegion1.h
 	Material/Fluid/Density/WaterDensityIAPWSIF97Region1.h
 	Material/Fluid/Viscosity/WaterViscosityIAPWS.h
-	Material/Solid/BGRaCreep.h
 )
 
 set( SOURCES
@@ -116,14 +115,21 @@ set( SOURCES
 	ShapeFunctionPool.cpp
 	Material/Fluid/GibbsFreeEnergy/DimensionLessGibbsFreeEnergyRegion1.cpp
 	Material/Fluid/Viscosity/WaterViscosityIAPWS.cpp
-	Material/Solid/BGRaCreep.cpp
 )
+
+# Get all files in the sub-directory
+FILE(GLOB MAT_SOLID_H RELATIVE  ${CMAKE_CURRENT_SOURCE_DIR} Material/Solid/*.h)
+FILE(GLOB MAT_SOLID_CPP RELATIVE  ${CMAKE_CURRENT_SOURCE_DIR} Material/Solid/*.cpp)
+
+FILE(GLOB MAT_PORO_H RELATIVE  ${CMAKE_CURRENT_SOURCE_DIR} Material/PorousMedium/*.h)
+FILE(GLOB MAT_PORO_CPP RELATIVE  ${CMAKE_CURRENT_SOURCE_DIR} Material/PorousMedium/*.cpp)
+
+set( HEADERS ${HEADERS} ${MAT_SOLID_H} ${MAT_PORO_H})
+set( SOURCES ${SOURCES} ${MAT_SOLID_CPP} ${MAT_PORO_CPP})
 
 if(NOT OGS_LSOLVER STREQUAL PETSC)
 	set( SOURCES ${SOURCES} par_ddc.h par_ddc.cpp)
 endif()
-
-
 
 if(OGS_LSOLVER STREQUAL RF)
 	set( HEADERS ${HEADERS} solver.h matrix_routines.h)
