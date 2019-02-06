@@ -16,34 +16,17 @@
 #include <cmath>
 #include <limits>
 
-#include "PhysicalConstant.h"
-#include "LinAlg/GaussAlgorithm.h"
-#include "rf_msp_new.h"
+
 #include "display.h"
+
+#include "LinAlg/GaussAlgorithm.h"
+#include "PhysicalConstant.h"
+#include "rf_msp_new.h"
+
+#include "StressAuxiliaryFunctions.h"
 
 namespace SolidProp
 {
-void getDeviatoricStess(double const* const stress,
-                        const int nstress_components, double* s)
-{
-    for (int i = 0; i < nstress_components; i++)
-        s[i] = stress[i];
-
-    const double mean_stress = (stress[0] + stress[1] + stress[2]) / 3.0;
-    for (int i = 0; i < 3; i++)
-        s[i] -= mean_stress;
-}
-
-double getStressNorm(double const* const s, const int nstress_components)
-{
-    double ns = 0.0;
-    for (int i = 0; i < 3; i++)
-        ns += s[i] * s[i];
-    for (int i = 3; i < nstress_components; i++)
-        ns += 2.0 * s[i] * s[i];
-    return std::sqrt(ns);
-}
-
 double getCreepConstantCoefficient(const double A, const double n,
                                    const double sigma0)
 {
