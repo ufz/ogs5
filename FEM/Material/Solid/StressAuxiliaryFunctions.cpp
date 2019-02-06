@@ -13,6 +13,7 @@
 
 #include "StressAuxiliaryFunctions.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace SolidProp
@@ -38,28 +39,31 @@ double getStressNorm(double const* const s, const int nstress_components)
     return std::sqrt(ns);
 }
 
-double* getPrincipleStresses(double const* const s, const int nstress_components)
+double* getPrincipleStresses(double const* const s,
+                             const int nstress_components)
 {
     static double principle_stress[3];
     const double s11 = s[0];
     const double s22 = s[1];
     const double s33 = s[2];
     const double s12 = s[3];
+    const double s13 = (nstress_components == 6) ? s[4] : 0.0;
+    const double s23 = (nstress_components == 6) ? s[5] : 0.0;
 
     const double I1 = s11 + s22 + s33;
-    double I2 = s11 * s22 + s22 * s33 + s33 * s11 - s12 * s12;
-    double I3 = s11 * s22 * s33 - s12 * s12 * s33;
-    if (nstress_components == 6)
-    {
-        const double s13 = s[4];
-        const double s23 = s[5];
-        I2 += -s13 * s13 - s23 * s23;
-        I3 += 2 * s12 * s23 * s13 - s23 * s23 * s11 - s13 * s13 * s22;
-    }
+    const double I2 = s11 * s22 + s22 * s33 + s33 * s11 - s12 * s12
+         - s13 * s13 - s23 * s23;
+    const double I3 = s11 * s22 * s33 + 2 * s12 * s23 * s13
+                     - s23 * s23 * s11 - s13 * s13 * s22
+                     - s12 * s12 * s33;
 
-    double alpha =
-        std::acos(0.5 * (2 * I1 * I1 * I1 - 9. * I1 * I2 + 27.0 * I3) /
-                  std::pow(I1 * I1 - 3.0 * I2, 1.5));
+    const double cos_a =
+        std::min(std::max(0.5 * (2 * I1 * I1 * I1 - 9. * I1 * I2 + 27.0 * I3) /
+                              std::pow(I1 * I1 - 3.0 * I2, 1.5),
+                          -1.0),
+                 1.0);
+
+    const double alpha = std::acos(cos_a) / 3.0;
     const double I1_d3 = I1 / 3.0;
     const double fac = 2. * std::sqrt(I1 * I1 - 3 * I2) / 3.0;
 
@@ -70,4 +74,4 @@ double* getPrincipleStresses(double const* const s, const int nstress_components
     return principle_stress;
 }
 
-}  // end of namespace
+}  // namespace SolidProp

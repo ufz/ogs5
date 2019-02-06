@@ -32,10 +32,16 @@
 
 // PCSLib
 #include "rf_pcs.h"
+#include "Material/PorousMedium/DamageZonePermeability.h"
 
 namespace FiniteElement
 {
 class CFiniteElementStd;
+}
+
+namespace PorousMediumProperty
+{
+class DamageZonePermeability;
 }
 
 class CMediumProperties
@@ -349,6 +355,8 @@ private:
      */
     GEOLIB::GEOTYPE _geo_type;
     FiniteElement::FrictionPhase _fric_phase;
+
+    PorousMediumProperty::DamageZonePermeability* _damage_zone_permeability;
 };
 
 class CMediumPropertiesGroup  // YD
