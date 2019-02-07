@@ -61,7 +61,7 @@ public:
     void Write(std::fstream*);
     void WriteTecplot(std::string);
 
-    double* PermeabilityTensor(const long index);
+    double* PermeabilityTensor(const long index, const int gp = 0);
 
     // CMCD 9/2004 GeoSys 4
     double Porosity(FiniteElement::CElement* assem = NULL);

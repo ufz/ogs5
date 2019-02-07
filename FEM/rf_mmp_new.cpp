@@ -4543,7 +4543,7 @@ CMediumProperties::PorosityEffectiveConstrainedSwellingConstantIonicStrength(
    last modification:
    10/2010 TF changed access to process type
 **************************************************************************/
-double* CMediumProperties::PermeabilityTensor(const long index)
+double* CMediumProperties::PermeabilityTensor(const long index, const int gp)
 {
     static double tensor[9];
     int perm_index = 0;
@@ -4948,7 +4948,6 @@ double* CMediumProperties::PermeabilityTensor(const long index)
     static double s[6];
     Math_Group::Matrix const& element_stresses = (*element_data_DM->Stress);
     const int ns = static_cast<int>(element_stresses.Rows());
-    const int gp = Fem_Ele_Std->GetGPindex();  // Thread unsafe.
     for (int i = 0; i < ns; i++)
         s[i] = element_stresses(i, gp);
 

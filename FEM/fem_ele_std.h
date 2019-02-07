@@ -211,8 +211,8 @@ public:
                                     double* swval,
                                     double* swold);
     void CalcOverlandCKWR(double* head, double* ckwr, int* iups);
-    void CalcOverlandCKWRatNodes(
-        int i, int j, double* head, double* ckwr, int* iups);
+    void CalcOverlandCKWRatNodes(int i, int j, double* head, double* ckwr,
+                                 int* iups);
     void CalcOverlandResidual(double* head,
                               double* swval,
                               double* swold,
@@ -355,17 +355,18 @@ protected:
     //
     double CalCoefMass();
     // 25.2.2007 WW
-    double CalCoefMass2(int dof_index);
+    double CalCoefMass2(const int dof_index, const int gp);
     double CalCoefMasstneq(int dof_index);
     // 03.3.2009 PCH
     double CalCoefMassPSGLOBAL(int dof_index);
     void CalCoefLaplace(bool Gravity, int ip = 0);
     // 10 2008 PCH
     void CalCoefLaplaceMultiphase(int phase, int ip = 0);
-    void CalCoefLaplace2(bool Gravity, int dof_index);
+    void CalCoefLaplace2(const bool Gravity, const int dof_index, const int ip);
     void CalCoefLaplaceTNEQ(const int dof_index);
     void CalCoefLaplaceTES(const int dof_index);
-    void CalCoefLaplacePSGLOBAL(bool Gravity, int dof_index);
+    void CalCoefLaplacePSGLOBAL(const bool Gravity, const int dof_index,
+                                const int ip);
     double CalCoefAdvection();  // SB4200 OK/CMCD
     // AKS/NB
     double CalCoefAdvectionTNEQ(const int dof_index);
@@ -385,7 +386,7 @@ protected:
     double CalCoefContentTES(const int dof_index);
     double CalCoefStrainCouping(const int phase = 0);
 
-    double CalcCoefDualTransfer();
+    double CalcCoefDualTransfer(const int ip);
     // 27.2.2007 WW
     double CalCoef_RHS_T_MPhase(int dof_index);
     double CalCoef_RHS_TNEQ(const int dof_index);
@@ -396,13 +397,13 @@ protected:
     //  NB
     double CalCoef_RHS_T_PSGlobal(int dof_index);
     // 03.2007 PCH
-    void CalCoef_RHS_Pc(int dof_index);
+    void CalCoef_RHS_Pc(const int dof_index, const int ip);
     // AKS
     double CalCoef_RHS_AIR_FLOW(int dof_index);
     // AKS
     double CalCoef_RHS_HEAT_TRANSPORT(int dof_index);
     // AKS
-    double CalCoef_RHS_HEAT_TRANSPORT2(int dof_index);
+    double CalCoef_RHS_HEAT_TRANSPORT2(const int dof_index, const int ip);
     void CalNodalEnthalpy();
 
     void ComputeAdditionalJacobi_H2();        // WW
