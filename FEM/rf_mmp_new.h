@@ -60,7 +60,9 @@ public:
     std::ios::pos_type Read(std::ifstream*);
     void Write(std::fstream*);
     void WriteTecplot(std::string);
-    double* PermeabilityTensor(long index);
+
+    double* PermeabilityTensor(const long index);
+
     // CMCD 9/2004 GeoSys 4
     double Porosity(FiniteElement::CElement* assem = NULL);
     // CMCD 9/2004 GeoSys 4

@@ -947,6 +947,17 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
         }
         if (line_string.find("$DAMAGE_ZONE_PERMEABILITY") != std::string::npos)
         {
+            if ((mmp_vector.size() > msp_vector.size() - 1) ||
+                msp_vector[mmp_vector.size()]
+                        ->getMohrCoulombFailureCriterion() == NULL)
+
+            {
+                ScreenMessage(
+                    "MOHR_COULOMB_FAILURE_CRITERION is not defined in msp "
+                    "file "
+                    "for $DAMAGE_ZONE_PERMEABILITY in mmp file. Stop now!");
+                abort();
+            }
             in.str(GetLineFromFile1(mmp_file));
             double a, b;
             in >> a >> b;
@@ -4532,7 +4543,7 @@ CMediumProperties::PorosityEffectiveConstrainedSwellingConstantIonicStrength(
    last modification:
    10/2010 TF changed access to process type
 **************************************************************************/
-double* CMediumProperties::PermeabilityTensor(long index)
+double* CMediumProperties::PermeabilityTensor(const long index)
 {
     static double tensor[9];
     int perm_index = 0;
@@ -4929,6 +4940,23 @@ double* CMediumProperties::PermeabilityTensor(long index)
             }
             break;
     }
+
+    if (_damage_zone_permeability == NULL)
+        return tensor;
+
+    FiniteElement::ElementValue_DM* element_data_DM = ele_value_dm[index];
+    static double s[6];
+    Math_Group::Matrix const& element_stresses = (*element_data_DM->Stress);
+    const int ns = static_cast<int>(element_stresses.Rows());
+    const int gp = Fem_Ele_Std->GetGPindex();  // Thread unsafe.
+    for (int i = 0; i < ns; i++)
+        s[i] = element_stresses(i, gp);
+
+    const int dim = Fem_Ele_Std->Dim();
+    _damage_zone_permeability->computeDamageZonePermeability(
+        tensor, *(Fem_Ele_Std->SolidProp->getMohrCoulombFailureCriterion()), s,
+        dim);
+
     return tensor;
 }
 
