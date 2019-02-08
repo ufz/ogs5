@@ -1216,7 +1216,7 @@ void Problem::Euler_TimeDiscretize()
             "\n\n#################################################"
             "############\n");
 
-        ScreenMessage("Time step: %g"
+        ScreenMessage("Time step: %d"
                                "|  Time: %g"
                                "|  Time step size: %g\n",
                                aktueller_zeitschritt, current_time, dt);
