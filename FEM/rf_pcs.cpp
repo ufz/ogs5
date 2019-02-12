@@ -9874,15 +9874,15 @@ double CRFProcess::ExecuteNonLinear(int loop_process_number, bool print_pcs)
                     }
 
                     ScreenMessage(
-                        "         NR-Error  |"
-                        "    RHS Norm|"
+                        "         NR-Error   |"
+                        "   RHS Norm|"
                         "  Unknowns Norm|"
                         " Damping\n");
                     ScreenMessage(
                         "         %0.3e |"
                         " %0.3e|"
                         "     %0.3e|"
-                        " %0.3e|", error, norm_b, norm_x, damping);
+                        " %0.3e|\n", error, norm_b, norm_x, damping);
                     break;
             }
         }
