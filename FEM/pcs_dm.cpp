@@ -811,10 +811,10 @@ double CRFProcessDeformation::Execute(int loop_process_number)
                     "      Damping\n");
                 ScreenMessage(
                     "      %0.3e    "
-                    "   %0.3e"
                     "  %0.3e"
-                    "       %0.3e"
-                    "   %0.3e\n",
+                    " %0.3e"
+                    "      %0.3e"
+                    "  %0.3e\n",
                     ErrorU, NormU, Error, Norm, damping);
                 ScreenMessage(
                     "     "
