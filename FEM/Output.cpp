@@ -21,6 +21,8 @@
 #include <algorithm>  // remove-if
 
 #include "BuildInfo.h"
+#include "display.h"
+
 #include "FEMIO/GeoIO.h"
 #include "GEOObjects.h"
 #include "StringTools.h"
@@ -73,6 +75,7 @@ using MeshLib::CFEMesh;
 using MeshLib::CNode;
 
 using namespace std;
+using namespace Display;
 
 COutput::COutput()
     : GeoInfo(GEOLIB::GEODOMAIN),
@@ -146,13 +149,12 @@ void COutput::init()
 {
     if (getProcessType() == FiniteElement::INVALID_PROCESS)
     {
-        std::cerr << "COutput::init(): could not initialize process pointer "
-                     "(process type INVALID_PROCESS) and "
-                     "appropriate mesh"
-                  << "\n";
-        std::cerr << "COutput::init(): trying to fetch process pointer using "
-                     "msh_type_name ... "
-                  << "\n";
+        ScreenMessage("COutput::init(): could not initialize process "
+                      " pointer (process type INVALID_PROCESS) and "
+                      "appropriate mesh\n");
+        ScreenMessage("COutput::init(): trying to fetch process pointer"
+                      " using msh_type_name ... \n");
+
         if (msh_type_name.size() > 0)
         {
             _pcs = PCSGet(msh_type_name);
@@ -1875,8 +1877,8 @@ double COutput::NODWritePLYDataTEC(int number)
 
             if (!m_pcs)
             {
-                cout << "Warning in COutput::NODWritePLYDataTEC - no PCS data"
-                     << "\n";
+                ScreenMessage("Warning in COutput::NODWritePLYDataTEC -"
+                              "no PCS data\n");
                 tec_file
                     << "Warning in COutput::NODWritePLYDataTEC - no PCS data"
                     << "\n";
@@ -2188,8 +2190,8 @@ void COutput::NODWritePNTDataTEC(double time_current, int time_step_number)
                 m_pcs = GetPCS();
             if (!m_pcs)
             {
-                cout << "Warning in COutput::NODWritePLYDataTEC - no PCS data"
-                     << "\n";
+                ScreenMessage("Warning in COutput::NODWritePLYDataTEC -"
+                              " no PCS data");
                 tec_file
                     << "Warning in COutput::NODWritePLYDataTEC - no PCS data"
                     << "\n";
@@ -2507,16 +2509,16 @@ void COutput::NODWriteSFCAverageDataTEC(double time_current,
     m_sfc = GEOGetSFCByName(geo_name);
     if (!m_sfc)
     {
-        cout << "Warning in COutput::NODWriteSFCAverageDataTEC - no GEO data"
-             << "\n";
+        ScreenMessage("Warning in COutput::NODWriteSFCAverageDataTEC - "
+                      "no GEO data\n");
         return;
     }
     //	CFEMesh* m_msh = NULL;
     m_msh = FEMGet(convertProcessTypeToString(getProcessType()));
     if (!m_msh)
     {
-        cout << "Warning in COutput::NODWriteSFCAverageDataTEC - no MSH data"
-             << "\n";
+        ScreenMessage("Warning in COutput::NODWriteSFCAverageDataTEC -"
+                      " no MSH data.\n");
         return;
     }
     CRFProcess* m_pcs(PCSGet(getProcessType()));
@@ -2646,8 +2648,9 @@ void COutput::GetNodeIndexVector(vector<int>& NodeIndex)
                 pcs = PCSGet(getProcessType(), _nod_value_vector[k]);
             if (!pcs)
             {
-                cout << "Warning in COutput::GetNodeIndexVector - no PCS data: "
-                     << _nod_value_vector[k] << "\n";
+                ScreenMessage("Warning in COutput::GetNodeIndexVector "
+                              "- no PCS data: %s\n",
+                               _nod_value_vector[k].data());
                 return;
             }
             NodeIndex[k] = pcs->GetNodeValueIndex(_nod_value_vector[k],
@@ -2659,8 +2662,8 @@ void COutput::GetNodeIndexVector(vector<int>& NodeIndex)
         pcs = PCSGet(msh_type_name);
         if (!pcs)
         {
-            cout << "Warning in COutput::GetNodeIndexVector - no PCS data"
-                 << "\n";
+            ScreenMessage("Warning in COutput::GetNodeIndexVector - no "
+                          "PCS data\n");
             return;
         }
         for (size_t k = 0; k < nName; k++)
@@ -2677,8 +2680,9 @@ void COutput::GetNodeIndexVector(vector<int>& NodeIndex)
             pcs = PCSGet(_nod_value_vector[k], bdummy);
             if (!pcs)
             {
-                cout << "Warning in COutput::GetNodeIndexVector - no PCS data: "
-                     << _nod_value_vector[k] << "\n";
+                ScreenMessage("Warning in COutput::GetNodeIndexVector -"
+                              " no PCS data: %s\n",
+                              _nod_value_vector[k].data());
                 return;
             }
             NodeIndex[k] = pcs->GetNodeValueIndex(_nod_value_vector[k],
@@ -2784,16 +2788,16 @@ void COutput::SetNODFluxAtPLY()
     //	CFEMesh* msh = GetMSH();
     if (!m_msh)
     {
-        cout << "Warning in COutput::SetNODFluxAtPLY() - no MSH data"
-             << "\n";
+        ScreenMessage("Warning in COutput::SetNODFluxAtPLY() - no MSH "
+                      "data\n");
         return;
     }
 
     CRFProcess* pcs = GetPCS("FLUX");
     if (!pcs)
     {
-        cout << "Warning in COutput::SetNODFluxAtPLY() - no PCS data"
-             << "\n";
+        ScreenMessage("Warning in COutput::SetNODFluxAtPLY() - no PCS "
+                      "data\n");
         return;
     }
 
@@ -3788,30 +3792,17 @@ void COutput::checkConsistency()
             }  // end for(l...)
             if (!found)
             {
-                std::cout << "Warning - no PCS data for output variable "
-                          << _nod_value_vector[j] << " in ";
-                switch (getGeoType())
+                if (getGeoType() == GEOLIB::INVALID)
                 {
-                    case GEOLIB::POINT:
-                        std::cout << "POINT " << getGeoName() << "\n";
-                        break;
-                    case GEOLIB::POLYLINE:
-                        std::cout << "POLYLINE " << getGeoName() << "\n";
-                        break;
-                    case GEOLIB::SURFACE:
-                        std::cout << "SURFACE " << getGeoName() << "\n";
-                        break;
-                    case GEOLIB::VOLUME:
-                        std::cout << "VOLUME " << getGeoName() << "\n";
-                        break;
-                    case GEOLIB::GEODOMAIN:
-                        std::cout << "DOMAIN " << getGeoName() << "\n";
-                        break;
-                    case GEOLIB::INVALID:
-                        std::cout << "WARNING: COutput::checkConsistency - "
-                                     "invalid geo type"
-                                  << "\n";
-                        break;
+                    ScreenMessage("WARNING: COutput::checkConsistency -"
+                                  " invalid geo type\n");
+                }
+                else
+                {
+                    ScreenMessage("Warning - no PCS data for output "
+                                  "variable %s in %s\n",
+                                   _nod_value_vector[j].data(),
+                                   getGeoName().data());
                 }
             }
         }  // end for(j...)
@@ -3819,8 +3810,8 @@ void COutput::checkConsistency()
         // Reduce vector out->_nod_value_vector by elements which have no PCS
         if (del_index.size() < _nod_value_vector.size())
         {
-            std::cout << " Reducing output to variables with existing PCS-data "
-                      << "\n";
+            ScreenMessage(" Reducing output to variables with existing "
+                          "PCS-data.\n");
             _nod_value_vector.clear();
             for (size_t j = 0; j < del_index.size(); j++)
                 _nod_value_vector.push_back(del_index[j]);
@@ -3831,8 +3822,9 @@ void COutput::checkConsistency()
         if (!pcs)
             pcs = this->GetPCS();
         if (!pcs)
-            cout << "Warning in OUTData - no PCS data"
-                 << "\n";
+        {
+            ScreenMessage("Warning in OUTData - no PCS data.\n");
+        }
     }  // end if(_nod_value_vector.size()>0)
 }
 

@@ -10183,7 +10183,7 @@ void CFiniteElementStd::CalcNodeMatParatemer(MeshLib::CElem& elem)
         if ((pcs->additioanl2ndvar_print > 0) &&
             (pcs->additioanl2ndvar_print < 3))
         {
-            double* tensor = MediaProp->PermeabilityTensor(Index);
+            double* tensor = MediaProp->PermeabilityTensor(MeshElement->index);
             // Modified LBNL model
             if (MediaProp->permeability_stress_mode == 2 ||
                 MediaProp->permeability_stress_mode == 3)

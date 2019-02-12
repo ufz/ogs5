@@ -1675,8 +1675,6 @@ void CSparseMatrix::Diagonize(const long idiag, const double b_given, double* b)
         /// Diagonal entry and the row where the diagonal entry exists
         j = diag_entry[id];
         vdiag = entry[(ii * DOF + ii) * size_entry_column + j];
-        if (fabs(vdiag) < DBL_EPSILON)
-            entry[(ii * DOF + ii) * size_entry_column + j] = DBL_EPSILON;
 
         /// Row where the diagonal entry exists
         for (jj = 0; jj < DOF; jj++)
@@ -1730,8 +1728,6 @@ void CSparseMatrix::Diagonize(const long idiag, const double b_given, double* b)
                     if (id == j0 && jj == ii)
                     {
                         vdiag = entry[(kk + jj) * size_entry_column + counter];
-                        if (fabs(vdiag) < DBL_EPSILON)
-                            entry[(kk + jj) * size_entry_column + counter] = DBL_EPSILON;
                     }
                     else
                     {
@@ -1773,9 +1769,6 @@ void CSparseMatrix::Diagonize(const long idiag, const double b_given, double* b)
             }
 #endif
     }
-
-    if (fabs(vdiag) < DBL_EPSILON)
-        vdiag = DBL_EPSILON;
 
     b[idiag] = vdiag * b_given;
 }

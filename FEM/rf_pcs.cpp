@@ -572,7 +572,7 @@ CRFProcess::~CRFProcess(void)
     delete eqs_new;
     eqs_new = NULL;
 #endif
-    if (_init_domain_data_type == FiniteElement::READ)
+    if (_init_domain_data_type == FiniteElement::READ_WRITE)
     {
         ScreenMessage(
             "!!!Waning: Reading and writing solutions (reload=3)\
