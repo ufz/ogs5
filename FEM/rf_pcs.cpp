@@ -21,7 +21,9 @@ matrix solver
 **************************************************************************/
 #include "rf_pcs.h"
 
+#include <algorithm>
 #include <limits>  // std::numeric_limits
+#include <cmath>
 
 /*--------------------- MPI Parallel  -------------------*/
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL)
@@ -13866,7 +13868,13 @@ void CRFProcess::PI_TimeStepSize()
             hnew = hmax;
         if (!accepted)
             hnew = min(fabs(hnew), Tim->time_step_length);
+
+        hnew = Tim->LimitStepSizeByIncrementRatio(fabs(hnew));
+        hnew = std::min(std::max(hnew, Tim->GetMinStepSize()),
+                        Tim->GetMaxStepSize());
+
         Tim->SetTimeStep(fabs(hnew));
+        Tim->SetOldStepSize(fabs(hnew));
         // store the used time steps for post-processing BG
         if (Tim->step_current == 1)  // BG
             Tim->time_step_vector.push_back(Tim->time_step_length);
@@ -13890,7 +13898,16 @@ void CRFProcess::PI_TimeStepSize()
         reject_steps++;
         accepted = false;
         // WW hnew = hnew / Tim->reject_factor;           //BG
+
+        hnew = Tim->LimitStepSizeByIncrementRatio(hnew);
+        hnew = Tim->AvoidRepeatedStepSize(hnew);
+
+        hnew = std::min(std::max(hnew, Tim->GetMinStepSize()),
+                        Tim->GetMaxStepSize()) *
+               Tim->GetRejectedFactor();
+
         Tim->SetTimeStep(hnew);
+        Tim->SetOldStepSize(hnew);
         Tim->time_step_vector.push_back(hnew);  // BG
         if (reject_steps > 100 && accept_steps == 0)
         {

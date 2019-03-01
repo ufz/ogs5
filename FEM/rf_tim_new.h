@@ -46,7 +46,7 @@ public:  // OK
     double this_stepsize;
     double relative_error;
     double absolute_error;
-    double reject_factor;  // for automatic timestep control: BG
+
 private:
     double h_min;
     double h_max;
@@ -57,7 +57,14 @@ private:
     int dynamic_time_buffer;                               // JT2012
     double dynamic_minimum_suggestion;                     // JT2012
     double dynamic_failure_threshold;                      // JT2012
-public:                                                    // OK
+
+    double _step_size_increase_ratio;
+    double _old_step_size;
+    double _reject_factor;
+    double _min_step_size;
+    double _max_step_size;
+
+public:  // OK
     int PI_tsize_ctrl_type;
 
 private:
@@ -143,6 +150,14 @@ public:
     double GetATol() const { return absolute_error; }
     double GetMaximumTSizeRestric() const { return h_max; }
     double GetMinimumTSizeRestric() const { return h_min; }
+
+    double GetRejectedFactor() const { return _reject_factor; }
+    void SetOldStepSize(const double step_size) { _old_step_size = step_size; }
+    double GetMinStepSize() const { return _min_step_size; }
+    double GetMaxStepSize() const { return _max_step_size; }
+    double LimitStepSizeByIncrementRatio(const double h) const;
+    double AvoidRepeatedStepSize(const double h) const;
+
     double GetHacc() const { return hacc; }
     double GetErracc() const { return erracc; }
     void SetHacc(const double hacc_val) { hacc = hacc_val; }
