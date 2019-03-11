@@ -6624,6 +6624,10 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
 #endif
         m_bc_node = bc_node_value[gindex];
         m_bc = bc_node[gindex];
+
+        if (!m_bc->isInPeriod(aktuelle_zeit))
+            continue;
+
         //
         // WX: check if bc is aktive, when Time_Controlled_Aktive for this bc is
         // defined

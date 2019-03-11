@@ -146,7 +146,11 @@ std::vector<CBoundaryCondition*> bc_db_vector;
    01/2004 OK Implementation
 **************************************************************************/
 CBoundaryCondition::CBoundaryCondition()
-    : GeoInfo(), geo_name(""), _curve_index(-1), dis_linear_f(NULL)
+    : GeoInfo(),
+      geo_name(""),
+      _curve_index(-1),
+      dis_linear_f(NULL),
+      _time_period(NULL)
 {
     this->setProcessDistributionType(FiniteElement::INVALID_DIS_TYPE);
     // FCT
@@ -171,7 +175,8 @@ CBoundaryCondition::CBoundaryCondition()
 CBoundaryCondition::CBoundaryCondition(const BoundaryCondition* bc)
     : ProcessInfo(bc->getProcessType(), bc->getProcessPrimaryVariable(), NULL),
       GeoInfo(bc->getGeoType(), bc->getGeoObj()),
-      DistributionInfo(bc->getProcessDistributionType())
+      DistributionInfo(bc->getProcessDistributionType()),
+      _time_period(NULL)
 {
     setProcess(PCSGet(this->getProcessType()));
     this->geo_name = bc->getGeoName();
@@ -216,6 +221,9 @@ CBoundaryCondition::~CBoundaryCondition()
     if (dis_linear_f)
         delete dis_linear_f;
     dis_linear_f = NULL;
+
+    if (_time_period)
+        delete _time_period;
 }
 
 const std::string& CBoundaryCondition::getGeoName() const
@@ -459,6 +467,15 @@ std::ios::pos_type CBoundaryCondition::Read(std::ifstream* bc_file,
                 //        sub_string = get_sub_string(buffer,"  ",pos1,&pos2);
                 //		_curve_index = atoi(sub_string.c_str());
             }
+            continue;
+        }
+
+        if (line_string.find("$TIME_PERIOD") != std::string::npos)
+        {
+            in.str(readNonBlankLineFromInputStream(*bc_file));
+            double t1, t2;
+            in >> t1 >> t2;
+            _time_period = new TimePeriod(t1, t2);
             continue;
         }
 
@@ -853,8 +870,7 @@ bool BCRead(std::string const& file_base_name,
     std::ifstream bc_file(bc_file_name.data(), std::ios::in);
     if (!bc_file.good())
     {
-        ScreenMessage(
-            "! Error in BCRead: No boundary conditions !\n");
+        ScreenMessage("! Error in BCRead: No boundary conditions !\n");
         return false;
     }
 
@@ -867,7 +883,7 @@ bool BCRead(std::string const& file_base_name,
         if (line_string.find("#STOP") != std::string::npos)
         {
             ScreenMessage("done, read %d boundary conditions.\n",
-                                   bc_list.size());
+                          bc_list.size());
             return true;
         }
         if (line_string.find("#BOUNDARY_CONDITION") != std::string::npos)
@@ -1766,9 +1782,8 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs,
 
     clock_t end_time(clock());
 
-    ScreenMessage(
-        "\t[BC] set BC took %0.3e\n",
-        (end_time - start_time) / (double)(CLOCKS_PER_SEC));
+    ScreenMessage("\t[BC] set BC took %0.3e\n",
+                  (end_time - start_time) / (double)(CLOCKS_PER_SEC));
 
     start_time = clock();
     // SetTransientBCtoNodes  10/2008 WW/CB Implementation
@@ -1853,9 +1868,8 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs,
     }
 
     end_time = clock();
-    ScreenMessage(
-        "\t[BC] set transient BC took %0.3e\n",
-        (end_time - start_time) / (double)(CLOCKS_PER_SEC));
+    ScreenMessage("\t[BC] set transient BC took %0.3e\n",
+                  (end_time - start_time) / (double)(CLOCKS_PER_SEC));
 }
 
 /**************************************************************************

@@ -47,6 +47,27 @@ namespace MeshLib
 class CFEMesh;
 }
 
+struct TimePeriod
+{
+    TimePeriod(const double start_time_, const double end_time_)
+        : start_time(start_time_), end_time(end_time_)
+    {
+    }
+
+    bool isInPeriod(const double time) const
+    {
+        if (time < start_time)
+            return false;
+        if (time > end_time)
+            return false;
+
+        return true;
+    }
+
+    const double start_time;
+    const double end_time;
+};
+
 class BoundaryCondition;
 
 class CBoundaryCondition : public ProcessInfo,
@@ -109,6 +130,11 @@ public:
         return _periode_phase_shift;
     }
 
+    bool isInPeriod(const double time) const
+    {
+        return _time_period ? _time_period->isInPeriod(time) : false;
+    }
+
     const std::vector<int>& getPointsWithDistribedBC() const
     {
         return _PointsHaveDistribedBC;
@@ -154,7 +180,6 @@ public:
     bool isSeepageBC() const { return _isSeepageBC; }
     bool isSwitchBC() const { return _isSwitchBC; }
     SwitchBC const& getSwitchBC() const { return _switchBC; }
-
 private:
     std::vector<std::string> _PointsFCTNames;
     std::vector<int> _PointsHaveDistribedBC;
@@ -229,6 +254,8 @@ private:
 
     bool _isSwitchBC;
     SwitchBC _switchBC;
+
+    TimePeriod* _time_period;
 };
 
 class CBoundaryConditionNode  // OK raus
