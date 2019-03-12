@@ -132,7 +132,11 @@ public:
 
     bool isInPeriod(const double time) const
     {
-        return _time_period ? _time_period->isInPeriod(time) : false;
+        // No period defined. That means the time is always in period.
+        if (_time_period == NULL)
+            return true;
+
+        return _time_period->isInPeriod(time);
     }
 
     const std::vector<int>& getPointsWithDistribedBC() const
