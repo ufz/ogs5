@@ -882,6 +882,9 @@ void GEOGetNodesInMaterialDomain(CFEMesh const* const msh, int MatIndex,
 {
     Nodes.resize(0);
     std::set<long> set_nodes;
+
+    std::vector<bool> node_status(msh->nod_vector.size());
+
     const size_t n_ele(msh->ele_vector.size());
     for (size_t e = 0; e < n_ele; e++)
     {
@@ -893,7 +896,12 @@ void GEOGetNodesInMaterialDomain(CFEMesh const* const msh, int MatIndex,
             {
                 for (int i = 0; i < nn; i++)
                 {
-                    set_nodes.insert(elem->GetNodeIndex(i));
+                    const long node_id = elem->GetNodeIndex(i);
+                    if(node_status[node_id])
+                        continue;
+
+                    set_nodes.insert(node_id);
+                    node_status[node_id] = true;
                 }
             }
         }  // if
