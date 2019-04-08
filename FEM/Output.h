@@ -125,15 +125,21 @@ public:
     //    int GetPointClose(CGLPoint);
     void WriteTimeCurveData(std::fstream&);
     void WriteTimeCurveHeader(std::fstream&);
-    void NODWriteDOMDataTEC();
+protected:
+    void NODWriteDOMDataTEC(std::string, int, std::string);
+public:
     void WriteTECHeader(std::fstream&, int, std::string);
     void WriteTECNodeData(std::fstream&);
     void WriteTECElementData(std::fstream&, int);
     double NODWritePLYDataTEC(int);
     void NODWritePNTDataTEC(double, int);
-    void ELEWriteDOMDataTEC();
-    void WriteELEValuesTECHeader(std::fstream&);
-    void WriteELEValuesTECData(std::fstream&);
+public:
+    void WriteDOMDataTEC();
+protected:
+    void ELEWriteDOMDataTEC(std::string, int, std::string);
+public:
+    void WriteELEValuesTECHeader(std::fstream&, int, std::string);
+    void WriteELEValuesTECData(std::fstream&, int);
     void NODWriteSFCDataTEC(int);
     void NODWriteSFCAverageDataTEC(double, int);  // OK
     void WriteRFO();                              // OK
