@@ -651,7 +651,8 @@ void COutput::WriteDOMDataTEC()
 {
     int te = 0;
     string eleType;
-    string tec_file_name;
+    string tec_file_name1;
+    string tec_file_name2;
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL)
     char tf_name[10];
     std::cout << "Process " << myrank << " in WriteDOMDataTEC"
@@ -698,40 +699,41 @@ void COutput::WriteDOMDataTEC()
         te = mesh_type_list[i];
         //----------------------------------------------------------------------
         // File name handling
-        tec_file_name = file_base_name + "_" + "domain";
+        tec_file_name1 = file_base_name + "_" + "domain";
+        tec_file_name2 = "";
         if (msh_type_name.size() > 0)  // MultiMSH
-            tec_file_name += "_" + msh_type_name;
+            tec_file_name2 += "_" + msh_type_name;
         if (getProcessType() != FiniteElement::INVALID_PROCESS)  // PCS
-            tec_file_name += "_" + convertProcessTypeToString(getProcessType());
+            tec_file_name2 += "_" + convertProcessTypeToString(getProcessType());
         //======================================================================
         switch (te)  // NW
         {
             case 1:
-                tec_file_name += "_line";
+                tec_file_name2 += "_line";
                 eleType = "QUADRILATERAL";
                 break;
             case 2:
-                tec_file_name += "_quad";
+                tec_file_name2 += "_quad";
                 eleType = "QUADRILATERAL";
                 break;
             case 3:
-                tec_file_name += "_hex";
+                tec_file_name2 += "_hex";
                 eleType = "BRICK";
                 break;
             case 4:
-                tec_file_name += "_tri";
+                tec_file_name2 += "_tri";
                 eleType = "QUADRILATERAL";
                 break;
             case 5:
-                tec_file_name += "_tet";
+                tec_file_name2 += "_tet";
                 eleType = "TETRAHEDRON";
                 break;
             case 6:
-                tec_file_name += "_pris";
+                tec_file_name2 += "_pris";
                 eleType = "BRICK";
                 break;
             case 7:
-                tec_file_name += "_pyra";
+                tec_file_name2 += "_pyra";
                 eleType = "BRICK";
                 break;
         }
@@ -785,9 +787,9 @@ void COutput::WriteDOMDataTEC()
 #endif
 
         // output of nodel values
-        NODWriteDOMDataTEC(tec_file_name+TEC_FILE_EXTENSION, te, eleType);
+        NODWriteDOMDataTEC(tec_file_name1+tec_file_name2+TEC_FILE_EXTENSION, te, eleType);
         if (!_ele_value_vector.empty())
-            ELEWriteDOMDataTEC(tec_file_name+"_ele"+TEC_FILE_EXTENSION, te, eleType);
+            ELEWriteDOMDataTEC(tec_file_name1+"_ele"+tec_file_name2+TEC_FILE_EXTENSION, te, eleType);
     }
 }
 
