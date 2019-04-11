@@ -787,7 +787,7 @@ void COutput::WriteDOMDataTEC()
 #endif
 
         // output of nodel values
-        if (!_nod_value_vector.empty())
+        if (!_nod_value_vector.empty() || !mfp_value_vector.empty() )
             NODWriteDOMDataTEC(tec_file_name1+tec_file_name2+TEC_FILE_EXTENSION, te, eleType);
         if (!_ele_value_vector.empty())
             ELEWriteDOMDataTEC(tec_file_name1+"_ele"+tec_file_name2+TEC_FILE_EXTENSION, te, eleType);
