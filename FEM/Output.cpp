@@ -778,16 +778,17 @@ void COutput::WriteDOMDataTEC()
  */
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL)
         sprintf(tf_name, "%d", myrank);
-        tec_file_name += "_" + string(tf_name);
-        std::cout << "Tecplot filename: " << tec_file_name << "\n";
+        tec_file_name2 += "_" + string(tf_name);
+        std::cout << "Tecplot filename: " << tec_file_name1+tec_file_name2 << "\n";
 #endif
 #if defined(USE_PETSC)  //|| defined(other parallel libs)//03.3012. WW
-        tec_file_name += "_" + mrank_str;
-        std::cout << "Tecplot filename: " << tec_file_name << "\n";
+        tec_file_name2 += "_" + mrank_str;
+        std::cout << "Tecplot filename: " << tec_file_name1+tec_file_name2  << "\n";
 #endif
 
         // output of nodel values
-        NODWriteDOMDataTEC(tec_file_name1+tec_file_name2+TEC_FILE_EXTENSION, te, eleType);
+        if (!_nod_value_vector.empty())
+            NODWriteDOMDataTEC(tec_file_name1+tec_file_name2+TEC_FILE_EXTENSION, te, eleType);
         if (!_ele_value_vector.empty())
             ELEWriteDOMDataTEC(tec_file_name1+"_ele"+tec_file_name2+TEC_FILE_EXTENSION, te, eleType);
     }
@@ -1550,6 +1551,10 @@ void COutput::WriteELEValuesTECData(fstream& tec_file, int e_type)
     {
     // streams for buffering since block output is mandatory
         std::stringstream y_vals, z_vals;
+        y_vals.setf(tec_file.flags());
+        y_vals.precision(tec_file.precision());
+        z_vals.setf(tec_file.flags());
+        z_vals.precision(tec_file.precision());
         tec_file << "#x Coordinates:\n";
         y_vals << "#y Coordinates:\n";
         z_vals << "#z Coordinates:\n";
@@ -1611,7 +1616,11 @@ void COutput::WriteELEValuesTECData(fstream& tec_file, int e_type)
     std::vector<std::stringstream> streams(2+n_additional_streams);
     tec_file << "# Var Block No. 0 \n";
     for (size_t idx=0;idx != streams.size(); ++idx )
-        streams[idx]<< "# Var Block No. " << idx+1 << " \n";
+    {
+        streams[idx].setf(tec_file.flags());
+        streams[idx].precision(tec_file.precision());
+        streams[idx]<< "# Var Block No. " << idx+1 << "\n";
+    }
     MeshLib::CElem* m_ele = NULL;
     FiniteElement::ElementValue* gp_ele = NULL;
     for (size_t i = 0; i < m_msh->ele_vector.size(); i++)
