@@ -23,6 +23,10 @@
 #include "Output.h"
 #include "MathTools.h"
 
+
+#include <algorithm>
+#include <cmath>
+
 /*--------------------- MPI Parallel  -------------------*/
 #if defined(USE_MPI) || defined(USE_MPI_PARPROC) || defined(USE_MPI_REGSOIL)
 #include <mpi.h>
@@ -13293,269 +13297,298 @@ void CRFProcess::WriteBC()
  **************************************************************************/
 void CRFProcess::PI_TimeStepSize()
 {
-	//----------------------------------------------------------------------
-	//----------------------------------------------------------------------
-	// Time step control
-	double hmin;
-	double hmax;
-	double factor1; // 1/hmin
-	double factor2; // 1/hmax
-	double sfactor = 0.9;
-	// WW double reject_factor;                          // BG
+    //----------------------------------------------------------------------
+    //----------------------------------------------------------------------
+    // Time step control
+    double hmin;
+    double hmax;
+    double factor1;  // 1/hmin
+    double factor2;  // 1/hmax
+    double sfactor = 0.9;
+    // WW double reject_factor;                          // BG
 
-	double* u_n = _problem->GetBufferArray();
+    double* u_n = _problem->GetBufferArray();
 
-	double* eqs_x = NULL;
-	if (m_num->nls_method == 1) // Newton-Raphson
-	{
-#if defined(USE_PETSC) // || defined(other parallel libs)//03.3012. WW
-		eqs_x = eqs_new->GetGlobalSolution();
+    double* eqs_x = NULL;
+    if (m_num->nls_method == 1)  // Newton-Raphson
+    {
+#if defined(USE_PETSC)  // || defined(other parallel libs)//03.3012. WW
+        eqs_x = eqs_new->GetGlobalSolution();
 #else
 #ifdef NEW_EQS
-		eqs_x = eqs_new->x;
+        eqs_x = eqs_new->x;
 #else
-		eqs_x = eqs->x;
+        eqs_x = eqs->x;
 #endif
 #endif
-	}
+    }
 
-	//
-	//
-	hmax = Tim->GetMaximumTSizeRestric();
-	hmin = Tim->GetMinimumTSizeRestric();
-	//
-	if (hmin < DBL_MIN)
-		factor1 = 5.0;
-	else
-		factor1 = 1.0 / hmin;
-	if (hmax < DBL_MIN)
-		factor2 = 0.166666666666666666667e+00;
-	else
-		factor2 = 1.0 / hmax;
-	if (factor1 < 1.0e0)
-		factor1 = 5.0;
-	if (factor2 > 1.0e0)
-		factor2 = 0.166666666666666666667e+00;
-	//
-	hmax = Tim->max_time_step;
-	if (hmax < DBL_MIN)
-		hmax = fabs(Tim->time_end - aktuelle_zeit);
-	//
-	// esitmate the error
-	double hnew;
-	double err, fac;
-	double factorGus;
-	double hacc = Tim->GetHacc();
-	double erracc = Tim->GetErracc();
+    //
+    //
+    hmax = Tim->GetMaximumTSizeRestric();
+    hmin = Tim->GetMinimumTSizeRestric();
+    //
+    if (hmin < DBL_MIN)
+        factor1 = 5.0;
+    else
+        factor1 = 1.0 / hmin;
+    if (hmax < DBL_MIN)
+        factor2 = 0.166666666666666666667e+00;
+    else
+        factor2 = 1.0 / hmax;
+    if (factor1 < 1.0e0)
+        factor1 = 5.0;
+    if (factor2 > 1.0e0)
+        factor2 = 0.166666666666666666667e+00;
+    //
+    hmax = Tim->max_time_step;
+    if (hmax < DBL_MIN)
+        hmax = fabs(Tim->time_end - aktuelle_zeit);
+    //
+    // esitmate the error
+    double hnew;
+    double err, fac;
+    double factorGus;
+    double hacc = Tim->GetHacc();
+    double erracc = Tim->GetErracc();
 //
 #define aE_NORM
 #ifdef E_NORM
-	//
-	long i;
-	CElem* elem = NULL;
-	bool Check2D3D;
-	double norm_e, norm_en;
-	double norm_e_rank, norm_en_rank;
-	norm_e = norm_en = norm_e_rank = norm_en_rank = 0.;
+    //
+    long i;
+    CElem* elem = NULL;
+    bool Check2D3D;
+    double norm_e, norm_en;
+    double norm_e_rank, norm_en_rank;
+    norm_e = norm_en = norm_e_rank = norm_en_rank = 0.;
 
-	Check2D3D = false;
-	if (type == 66) // Overland flow
-		Check2D3D = true;
-	//----------------------------------------------------------------------
-	// DDC
-	if (dom_vector.size() > 0)
-	{
-		cout << "      Domain Decomposition" << '\n';
-		CPARDomain* m_dom = NULL;
-		int j = 0;
+    Check2D3D = false;
+    if (type == 66)  // Overland flow
+        Check2D3D = true;
+    //----------------------------------------------------------------------
+    // DDC
+    if (dom_vector.size() > 0)
+    {
+        ScreenMessage("      Domain Decomposition\n");
+        CPARDomain* m_dom = NULL;
+        int j = 0;
 //
 #if defined(USE_MPI)
-		j = myrank;
+        j = myrank;
 #else
-			for (j = 0; j < (int)dom_vector.size(); j++)
-			{
+            for (j = 0; j < (int)dom_vector.size(); j++)
+            {
 #endif
-		m_dom = dom_vector[j];
-		for (int ii = 0; ii < (int)continuum_vector.size(); ii++)
-		{
-			continuum = ii;
-			//
-			for (i = 0; i < (long)m_dom->elements.size(); i++)
-			{
-				elem = m_msh->ele_vector[m_dom->elements[i]];
-				if (elem->GetMark())
-				{
-					elem->SetOrder(false);
-					fem->SetElementNodesDomain(m_dom->element_nodes_dom[i]);
-					fem->ConfigElement(elem, Check2D3D);
-					fem->m_dom = m_dom;
-					fem->CalcEnergyNorm(norm_e_rank, norm_en_rank);
-					// _new
-					if (ii == 1)
-						fem->CalcEnergyNorm_Dual(norm_e_rank, norm_en_rank);
-				}
-			}
-		}
+        m_dom = dom_vector[j];
+        for (int ii = 0; ii < (int)continuum_vector.size(); ii++)
+        {
+            continuum = ii;
+            //
+            for (i = 0; i < (long)m_dom->elements.size(); i++)
+            {
+                elem = m_msh->ele_vector[m_dom->elements[i]];
+                if (elem->GetMark())
+                {
+                    elem->SetOrder(false);
+                    fem->SetElementNodesDomain(m_dom->element_nodes_dom[i]);
+                    fem->ConfigElement(elem, Check2D3D);
+                    fem->m_dom = m_dom;
+                    fem->CalcEnergyNorm(norm_e_rank, norm_en_rank);
+                    // _new
+                    if (ii == 1)
+                        fem->CalcEnergyNorm_Dual(norm_e_rank, norm_en_rank);
+                }
+            }
+        }
 #if defined(USE_MPI)
-		MPI_Allreduce(&norm_e_rank, &norm_e, 1, MPI_DOUBLE, MPI_SUM, comm_DDC);
-		MPI_Allreduce(&norm_en_rank, &norm_en, 1, MPI_DOUBLE, MPI_SUM, comm_DDC);
-#else // USE_MPI
-				norm_e += norm_e_rank;
-				norm_en += norm_en_rank;
-			}
+        MPI_Allreduce(&norm_e_rank, &norm_e, 1, MPI_DOUBLE, MPI_SUM, comm_DDC);
+        MPI_Allreduce(&norm_en_rank, &norm_en, 1, MPI_DOUBLE, MPI_SUM,
+                      comm_DDC);
+#else  // USE_MPI
+                norm_e += norm_e_rank;
+                norm_en += norm_en_rank;
+            }
 //....................................................................
 #endif
-	}
-	//----------------------------------------------------------------------
-	// STD
-	else
-		for (int ii = 0; ii < (int)continuum_vector.size(); ii++)
-		{
-			continuum = ii;
-			for (i = 0; i < (long)m_msh->ele_vector.size(); i++)
-			{
-				elem = m_msh->ele_vector[i];
-				if (elem->GetMark()) // Marked for use
-				{
-					elem->SetOrder(false);
-					fem->ConfigElement(elem, Check2D3D);
-					fem->CalcEnergyNorm(u_n, norm_e, norm_en);
-					// _new
-					if (ii == 1)
-						fem->CalcEnergyNorm_Dual(u_n, norm_e, norm_en);
-				}
-			}
-		}
-	// compute energy norm as the error
-	err = sqrt(fabs(norm_e / norm_en));
-#else // ifdef E_NORM
-	err = 0.0;
-	//
-	int ii, nidx1;
-	long g_nnodes, j, k, l, size_x;
-	double x0, x1;
-	double Rtol = Tim->GetRTol();
-	double Atol = Tim->GetATol();
-	double* u_k = _problem->GetBufferArray(true);
+    }
+    //----------------------------------------------------------------------
+    // STD
+    else
+        for (int ii = 0; ii < (int)continuum_vector.size(); ii++)
+        {
+            continuum = ii;
+            for (i = 0; i < (long)m_msh->ele_vector.size(); i++)
+            {
+                elem = m_msh->ele_vector[i];
+                if (elem->GetMark())  // Marked for use
+                {
+                    elem->SetOrder(false);
+                    fem->ConfigElement(elem, Check2D3D);
+                    fem->CalcEnergyNorm(u_n, norm_e, norm_en);
+                    // _new
+                    if (ii == 1)
+                        fem->CalcEnergyNorm_Dual(u_n, norm_e, norm_en);
+                }
+            }
+        }
+    // compute energy norm as the error
+    err = sqrt(fabs(norm_e / norm_en));
+#else                   // ifdef E_NORM
+    err = 0.0;
+    //
+    int ii, nidx1;
+    long g_nnodes, j, k, l, size_x;
+    double x0, x1;
+    double Rtol = Tim->GetRTol();
+    double Atol = Tim->GetATol();
+    double* u_k = _problem->GetBufferArray(true);
 
-	size_x = 0;
-	for (ii = 0; ii < pcs_number_of_primary_nvals; ii++)
-	{
-		nidx1 = GetNodeValueIndex(pcs_primary_function_name[ii]) + 1;
-#if defined(USE_PETSC) // || defined(other parallel libs)//03.3012. WW
-		g_nnodes = m_msh->getNumNodesLocal();
+    size_x = 0;
+    for (ii = 0; ii < pcs_number_of_primary_nvals; ii++)
+    {
+        nidx1 = GetNodeValueIndex(pcs_primary_function_name[ii]) + 1;
+#if defined(USE_PETSC)  // || defined(other parallel libs)//03.3012. WW
+        g_nnodes = m_msh->getNumNodesLocal();
 #else
-		g_nnodes = m_msh->GetNodesNumber(false);
+        g_nnodes = m_msh->GetNodesNumber(false);
 #endif
-		size_x += g_nnodes;
+        size_x += g_nnodes;
 
-		if (m_num->nls_method == 1) // Newton-Raphson
-		{
-			for (j = 0; j < g_nnodes; j++)
-			{
-#if defined(USE_PETSC) // || defined(other parallel libs)//03.3012. WW
-				k = j;
-				l = pcs_number_of_primary_nvals * j + ii;
+        if (m_num->nls_method == 1)  // Newton-Raphson
+        {
+            for (j = 0; j < g_nnodes; j++)
+            {
+#if defined(USE_PETSC)  // || defined(other parallel libs)//03.3012. WW
+                k = j;
+                l = pcs_number_of_primary_nvals * j + ii;
 #else
-				k = m_msh->Eqs2Global_NodeIndex[j];
-				l = j + ii * g_nnodes;
+                k = m_msh->Eqs2Global_NodeIndex[j];
+                l = j + ii * g_nnodes;
 #endif
-				x0 = u_n[l];
-				x1 = GetNodeValue(k, nidx1);
-				err += pow((eqs_x[l]) / (Atol + Rtol * max(fabs(x0), fabs(x1))), 2);
-			}
-		}
-		else
-		{
-			for (j = 0; j < g_nnodes; j++)
-			{
-#if defined(USE_PETSC) // || defined(other parallel libs)//03.3012. WW
-				k = j;
-				l = pcs_number_of_primary_nvals * j + ii;
+                x0 = u_n[l];
+                x1 = GetNodeValue(k, nidx1);
+                err += pow((eqs_x[l]) / (Atol + Rtol * max(fabs(x0), fabs(x1))),
+                           2);
+            }
+        }
+        else
+        {
+            for (j = 0; j < g_nnodes; j++)
+            {
+#if defined(USE_PETSC)  // || defined(other parallel libs)//03.3012. WW
+                k = j;
+                l = pcs_number_of_primary_nvals * j + ii;
 #else
-				k = m_msh->Eqs2Global_NodeIndex[j];
-				l = j + ii * g_nnodes;
+                k = m_msh->Eqs2Global_NodeIndex[j];
+                l = j + ii * g_nnodes;
 #endif
-				x0 = u_n[l];
-				x1 = GetNodeValue(k, nidx1);
-				err += pow((x1 - u_k[l]) / (Atol + Rtol * max(fabs(x0), fabs(x1))), 2);
-			}
-		}
-	}
+                x0 = u_n[l];
+                x1 = GetNodeValue(k, nidx1);
+                err += pow(
+                    (x1 - u_k[l]) / (Atol + Rtol * max(fabs(x0), fabs(x1))), 2);
+            }
+        }
+    }
 
-#if defined(USE_PETSC) // || defined(other parallel libs)//04.3012. WW
-	double err_l = err;
-	MPI_Allreduce(&err_l, &err, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-	long size_xloc = size_x;
-	MPI_Allreduce(&size_xloc, &size_x, 1, MPI_LONG, MPI_SUM, MPI_COMM_WORLD);
+#if defined(USE_PETSC)  // || defined(other parallel libs)//04.3012. WW
+    double err_l = err;
+    MPI_Allreduce(&err_l, &err, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    long size_xloc = size_x;
+    MPI_Allreduce(&size_xloc, &size_x, 1, MPI_LONG, MPI_SUM, MPI_COMM_WORLD);
 #endif
-	err = sqrt(err / (double)size_x);
+    err = sqrt(err / (double)size_x);
 #endif
 
-	//----------------------------------------------------------------------
-	//
-	// Set the reject factor for the first timestep BG
-	// if (Tim->step_current == 1)
-	//   Tim->reject_factor = 1;
+    //----------------------------------------------------------------------
+    //
+    // Set the reject factor for the first timestep BG
+    // if (Tim->step_current == 1)
+    //   Tim->reject_factor = 1;
 
-	// compute hnew with the resriction: 0.2<=hnew/h<=6.0;
-	fac = max(factor2, min(factor1, pow(err, 0.25) / sfactor));
-	hnew = Tim->time_step_length
-	       / fac; //*Tim->reject_factor;              // BG, use the reject factor to lower timestep after rejection BG
+    // compute hnew with the resriction: 0.2<=hnew/h<=6.0;
+    fac = max(factor2, min(factor1, pow(err, 0.25) / sfactor));
+    hnew = Tim->time_step_length /
+           fac;  //*Tim->reject_factor;              // BG, use the reject
+                 // factor to lower timestep after rejection BG
 
-	// determine if the error is small enough
-	if (err <= 1.0e0 && accepted) // step is accept (unless Newton diverged!)
-	{
-		accept_steps++;
-		if (Tim->GetPITimeStepCrtlType() == 2) // Mod. predictive step size controller (Gustafsson)
-		{
-			if (accept_steps > 1)
-			{
-				factorGus = (hacc / Tim->time_step_length) * pow(err * err / erracc, 0.25) / sfactor;
-				factorGus = max(factor2, min(factor1, factorGus));
-				fac = max(fac, factorGus);
-				hnew = Tim->time_step_length / fac;
-			}
-			hacc = Tim->time_step_length;
-			erracc = max(1.0e-2, err);
-			Tim->SetHacc(hacc);
-			Tim->setErracc(erracc);
-		}
-		if (fabs(hnew) > hmax)
-			hnew = hmax;
-		if (!accepted)
-			hnew = min(fabs(hnew), Tim->time_step_length);
-		Tim->SetTimeStep(fabs(hnew));
-		// store the used time steps for post-processing BG
-		if (Tim->step_current == 1) // BG
-			Tim->time_step_vector.push_back(Tim->time_step_length);
-		Tim->time_step_vector.push_back(hnew);
-		// WW reject_factor = 1;
-		// end of time storage BG
-	} // end if(err<=1.0e0)
-	else
-	{
-		if (!accepted && err <= 1.0e0)
-		{ // JT: Then error suggests success, but the iteration diverged.
-			if (hnew / Tim->time_step_length > 0.99) // Shock the system to escape the stagnation.
-				hnew = Tim->time_step_length * 0.8;
-		}
-		//
-		// WW Tim->reject_factor = 1;                     //BG; if the time step is rejected the next timestep increase
-		// is reduced by the reject factor (choose reject factor between 0.1 and 0.9); 1.0 means no change
-		reject_steps++;
-		accepted = false;
-		// WW hnew = hnew / Tim->reject_factor;           //BG
-		Tim->SetTimeStep(hnew);
-		Tim->time_step_vector.push_back(hnew); // BG
-		if (reject_steps > 100 && accept_steps == 0)
-		{
-			cout << "!!! More than 100 steps rejected and none of steps accepted. Quit the simulation now"
-			     << "\n";
-			exit(1);
-		}
-		// Recover solutions
-	}
+    // determine if the error is small enough
+    if (err <= 1.0e0 && accepted)  // step is accept (unless Newton diverged!)
+    {
+        accept_steps++;
+        if (Tim->GetPITimeStepCrtlType() ==
+            2)  // Mod. predictive step size controller (Gustafsson)
+        {
+            if (accept_steps > 1)
+            {
+                factorGus = (hacc / Tim->time_step_length) *
+                            pow(err * err / erracc, 0.25) / sfactor;
+                factorGus = max(factor2, min(factor1, factorGus));
+                fac = max(fac, factorGus);
+                hnew = Tim->time_step_length / fac;
+            }
+            hacc = Tim->time_step_length;
+            erracc = max(1.0e-2, err);
+            Tim->SetHacc(hacc);
+            Tim->setErracc(erracc);
+        }
+        if (fabs(hnew) > hmax)
+            hnew = hmax;
+        if (!accepted)
+            hnew = min(fabs(hnew), Tim->time_step_length);
+
+        hnew = Tim->LimitStepSizeByIncrementRatio(fabs(hnew));
+        hnew = std::min(std::max(hnew, Tim->GetMinStepSize()),
+                        Tim->GetMaxStepSize());
+
+        Tim->SetTimeStep(fabs(hnew));
+
+        Tim->SetOldStepSize(fabs(hnew));
+
+
+
+        // store the used time steps for post-processing BG
+        if (Tim->step_current == 1)  // BG
+            Tim->time_step_vector.push_back(Tim->time_step_length);
+        Tim->time_step_vector.push_back(hnew);
+        // WW reject_factor = 1;
+        // end of time storage BG
+    }  // end if(err<=1.0e0)
+    else
+    {
+        if (!accepted && err <= 1.0e0)
+        {  // JT: Then error suggests success, but the iteration diverged.
+            if (hnew / Tim->time_step_length >
+                0.99)  // Shock the system to escape the stagnation.
+                hnew = Tim->time_step_length * 0.8;
+        }
+        //
+        // WW Tim->reject_factor = 1;                     //BG; if the time step
+        // is rejected the next timestep increase is reduced by the reject
+        // factor (choose reject factor between 0.1 and 0.9); 1.0 means no
+        // change
+        reject_steps++;
+        accepted = false;
+        // WW hnew = hnew / Tim->reject_factor;           //BG
+
+        hnew = Tim->LimitStepSizeByIncrementRatio(hnew);
+        hnew = Tim->AvoidRepeatedStepSize(hnew);
+
+        hnew = std::min(std::max(hnew, Tim->GetMinStepSize()),
+                        Tim->GetMaxStepSize()) *
+               Tim->GetRejectedFactor();
+
+        Tim->SetTimeStep(hnew);
+        Tim->SetOldStepSize(hnew);
+        Tim->time_step_vector.push_back(hnew);  // BG
+        if (reject_steps > 100 && accept_steps == 0)
+        {
+            cout << "!!! More than 100 steps rejected and none of steps "
+                    "accepted. Quit the simulation now"
+                 << "\n";
+            exit(1);
+        }
+        // Recover solutions
+    }
 }
 
 #ifdef NEW_EQS // WW

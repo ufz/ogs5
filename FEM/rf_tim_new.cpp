@@ -19,6 +19,8 @@
 //#include <iostream>
 #include <cfloat>
 #include <cctype>
+#include <limits>
+
 // FEM-Makros
 #include "makros.h"
 #include "display.h"
@@ -92,6 +94,12 @@ CTimeDiscretization::CTimeDiscretization(void) : Write_tim_discrete(false), tim_
 	min_increase = 0.25;
 	last_time_step_length = 0;
 	dampening = 0;
+
+    _step_size_increase_ratio = 1.0;
+    _old_step_size = 0.0;
+    _reject_factor = 1.0;
+    _min_step_size = std::numeric_limits<double>::epsilon();
+    _max_step_size = std::numeric_limits<double>::max();
 }
 
 /**************************************************************************
@@ -341,13 +349,19 @@ std::ios::pos_type CTimeDiscretization::Read(std::ifstream* tim_file)
 				{
 					line.str(GetLineFromFile1(tim_file));
 					line >> PI_tsize_ctrl_type >> relative_error >> absolute_error >> this_stepsize;
-					// 13.03.2008. WW
-					int real_type = (int)(PI_tsize_ctrl_type / 10);
-					if (real_type < 10 && real_type > 0) //
-					{
-						PI_tsize_ctrl_type = real_type;
-						line >> h_min >> h_max >> max_time_step;
-					}
+                    if (PI_tsize_ctrl_type == 11 || PI_tsize_ctrl_type == 21)
+                    {
+                        PI_tsize_ctrl_type = (int)(PI_tsize_ctrl_type / 10);
+                        line >> _min_step_size >> _max_step_size >>
+                            _reject_factor >> _step_size_increase_ratio;
+                    }
+                    // 13.03.2008. WW
+                    else if (PI_tsize_ctrl_type == 12 ||
+                             PI_tsize_ctrl_type == 22)
+                    {
+                        PI_tsize_ctrl_type = (int)(PI_tsize_ctrl_type / 10);
+                        line >> h_min >> h_max >> max_time_step;
+                    }
 					else
 						max_time_step = 0.0;
 					line.clear();
@@ -2112,6 +2126,25 @@ void CTimeDiscretization::FillCriticalTime()
 				//				critical_time[i] = critical_time[j];
 				//				critical_time[j] = val;
 				std::swap(critical_time[i], critical_time[j]);
+}
+
+double CTimeDiscretization::LimitStepSizeByIncrementRatio(const double h) const
+{
+    if (_old_step_size == 0.0 || _step_size_increase_ratio == 1.0)
+        return h;
+
+    if (h < _old_step_size * _step_size_increase_ratio)
+        return h;
+
+    return _old_step_size * _step_size_increase_ratio;
+}
+
+double CTimeDiscretization::AvoidRepeatedStepSize(const double h) const
+{
+    if (std::fabs(h - _old_step_size) > std::numeric_limits<double>::epsilon())
+        return h;
+
+    return 0.1 * h * _step_size_increase_ratio;
 }
 
 /**************************************************************************
