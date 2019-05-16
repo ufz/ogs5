@@ -27,8 +27,9 @@ class TheoreticalPorosity
 {
 public:
 	TheoreticalPorosity(const CRFProcess& process_T, const CRFProcess& process_H,
-	                    const CRFProcess& process_M, const double n0, const double K,
-	                    const double alpha_B, double alpha_T);
+                     const CRFProcess& process_M, const double n0,
+                     const double n_min, const double n_max,
+                     const double K, const double alpha_B, double alpha_T);
 
 	double getPorosity(const FiniteElement::CElement& fem_assembler, const double t, const double dt);
 

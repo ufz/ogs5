@@ -536,12 +536,16 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
 
 					double n0;
 					in >> n0; // Initial porosity
+					double n_min;
+					in >> n_min; // Minimum porosity
+					double n_max;
+					in >> n_max; // Maximum porosity
 					const std::size_t material_id = mmp_vector.size();
 					SolidProp::CSolidProperties* const mat_s = msp_vector[material_id];
 					mat_s->Calculate_Lame_Constant();
 					_theoretical_porosity = new MaterialLib::TheoreticalPorosity(
-					    *process_T, *process_H, *process_M, n0, mat_s->getBulkModulus(), mat_s->getBiotsConstant(),
-					    mat_s->Thermal_Expansion());
+					    *process_T, *process_H, *process_M, n0, n_min, n_max, mat_s->getBulkModulus(),
+					    mat_s->getBiotsConstant(), mat_s->Thermal_Expansion());
 				}
 				break;
 				default:
