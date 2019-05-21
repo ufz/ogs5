@@ -369,6 +369,7 @@ void OUTData(double time_current, int time_step_number, bool force_output)
                             else
                             {
                                 m_out->WriteDOMDataTEC();
+                                m_out->ELEWriteDOMDataTEC();
                             }
 #if defined(USE_PETSC)  // || defined (other parallel solver lib). 12.2012 WW
                         }

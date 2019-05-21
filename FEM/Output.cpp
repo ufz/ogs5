@@ -92,6 +92,7 @@ COutput::COutput()
     m_pcs = NULL;
     vtk = NULL;                  // NW
     tecplot_zone_share = false;  // 10.2012. WW
+    _tecplot_cell_centered_element_output = false;  // 10.2012. WW
     VARIABLESHARING = false;     // BG
 #if defined(USE_PETSC) || \
     defined(USE_MPI)  //|| defined(other parallel libs)//01.3014. WW
@@ -115,6 +116,7 @@ COutput::COutput(size_t id)
     m_pcs = NULL;
     vtk = NULL;                  // NW
     tecplot_zone_share = false;  // 10.2012. WW
+    _tecplot_cell_centered_element_output = false;  // 10.2012. WW
     VARIABLESHARING = false;     // BG
 #if defined(USE_PETSC) || \
     defined(USE_MPI)  //|| defined(other parallel libs)//01.3014. WW
@@ -544,6 +546,12 @@ ios::pos_type COutput::Read(std::ifstream& in_str,
             tecplot_zone_share = true;
             continue;
         }
+        // Tecplot: for cell centered element output
+        if (line_string.find("$TECPLOT_ELEMENT_OUTPUT_CELL_CENTERED") != string::npos)
+        {
+            _tecplot_cell_centered_element_output = true;
+            continue;
+        }
     }
     return position;
 }
@@ -633,6 +641,14 @@ void COutput::Write(fstream* out_file)
               << "\n";
     *out_file << "  ";
     *out_file << dat_type_name << "\n";
+    //--------------------------------------------------------------------
+    // For teplot zone share. 10.2012. WW
+    if (tecplot_zone_share)
+        *out_file << " $TECPLOT_ZONE_SHARE\n";
+    //--------------------------------------------------------------------
+    // Tecplot: for cell centered element output
+    if (_tecplot_cell_centered_element_output)
+        *out_file << " $TECPLOT_ELEMENT_OUTPUT_CELL_CENTERED\n";
     //--------------------------------------------------------------------
 }
 
@@ -789,8 +805,19 @@ void COutput::WriteDOMDataTEC()
         // output of nodel values
         if (!_nod_value_vector.empty() || !mfp_value_vector.empty() )
             NODWriteDOMDataTEC(tec_file_name1+tec_file_name2+TEC_FILE_EXTENSION, te, eleType);
-        if (!_ele_value_vector.empty())
-            ELEWriteDOMDataTEC(tec_file_name1+"_ele"+tec_file_name2+TEC_FILE_EXTENSION, te, eleType);
+        if (!_ele_value_vector.empty() && _tecplot_cell_centered_element_output)
+        {
+            fstream tec_file = open_tec_file(tec_file_name1+"_ele"+tec_file_name2+TEC_FILE_EXTENSION);
+            if (! tec_file.good())
+                continue;
+            //--------------------------------------------------------------------
+            WriteELECellCenteredValuesTECHeader(tec_file, te,eleType);
+            WriteELECellCenteredValuesTECData(tec_file, te);
+            //--------------------------------------------------------------------
+            if (!tecplot_zone_share || ! _new_file_opened)
+                WriteTECElementData(tec_file,te);
+            tec_file.close();  // kg44 close file
+        }
     }
 }
 
@@ -804,20 +831,10 @@ void COutput::NODWriteDOMDataTEC(string tec_file_name,
                                  const int te,
                                  string ele_type)
 {
-// WW
-        if (!_new_file_opened)
-            remove(tec_file_name.c_str());
-        fstream tec_file(tec_file_name.data(), ios::app | ios::out);
-        tec_file.setf(ios::scientific, ios::floatfield);
-        tec_file.precision(12);
-        if (!tec_file.good())
+        fstream tec_file = open_tec_file(tec_file_name);
+        if (! tec_file.good())
             return;
-#ifdef SUPERCOMPUTER
-        // kg44 buffer the output
-        char mybuf1[MY_IO_BUFSIZE * MY_IO_BUFSIZE];
-        tec_file.rdbuf()->pubsetbuf(mybuf1, MY_IO_BUFSIZE * MY_IO_BUFSIZE);
-#endif
-        //
+
         WriteTECHeader(tec_file, te, ele_type);
         WriteTECNodeData(tec_file);
 
@@ -1444,25 +1461,51 @@ void COutput::WriteTECHeader(fstream& tec_file, int e_type, string e_type_name)
     }
 }
 
+std::fstream COutput::open_tec_file(std::string tec_file_name) const
+{
+    //----------------------------------------------------------------------
+    // File handling
+    //......................................................................
+
+    // WW
+    if (!_new_file_opened)
+        remove(tec_file_name.c_str());
+    //......................................................................
+    fstream tec_file(tec_file_name.data(), ios::app | ios::out);
+    tec_file.setf(ios::scientific, ios::floatfield);
+    tec_file.precision(12);
+    tec_file.seekg(0L, ios::beg);
+#ifdef SUPERCOMPUTER
+    // kg44 buffer the output
+    char mybuffer[MY_IO_BUFSIZE * MY_IO_BUFSIZE];
+    tec_file.rdbuf()->pubsetbuf(mybuffer, MY_IO_BUFSIZE * MY_IO_BUFSIZE);
+//
+#endif
+    return tec_file;
+}
+
 /**************************************************************************
    FEMLib-Method:
    Task:
    Programing:
    09/2004 OK Implementation
    01/2006 OK VAR,PCS,MSH concept
- * 04/2019 JT Cell centered element output
 **************************************************************************/
-void COutput::ELEWriteDOMDataTEC(string tec_file_name,
-                                 const int te,
-                                 string ele_type_name)
+void COutput::ELEWriteDOMDataTEC()
 {
     //----------------------------------------------------------------------
-    if (_ele_value_vector.empty())
+    if (_ele_value_vector.empty() || _tecplot_cell_centered_element_output)
         return;
     //----------------------------------------------------------------------
     // File handling
     //......................................................................
-
+    string tec_file_name = file_base_name + "_domain" + "_ele";
+    if (getProcessType() != FiniteElement::INVALID_PROCESS)  // PCS
+        // 09/2010 TF msh_type_name;
+        tec_file_name += "_" + convertProcessTypeToString(getProcessType());
+    if (msh_type_name.size() > 1)  // MSH
+        tec_file_name += "_" + msh_type_name;
+    tec_file_name += TEC_FILE_EXTENSION;
     // WW
     if (!_new_file_opened)
         remove(tec_file_name.c_str());
@@ -1481,19 +1524,18 @@ void COutput::ELEWriteDOMDataTEC(string tec_file_name,
 #endif
 
     //--------------------------------------------------------------------
-    WriteELEValuesTECHeader(tec_file, te,ele_type_name);
-    WriteELEValuesTECData(tec_file, te);
+    WriteELEValuesTECHeader(tec_file);
+    WriteELEValuesTECData(tec_file);
     //--------------------------------------------------------------------
-    if (!tecplot_zone_share || ! _new_file_opened)
-        WriteTECElementData(tec_file,te);
     tec_file.close();  // kg44 close file
 }
 
-void COutput::WriteELEValuesTECHeader(fstream& tec_file,
+void COutput::WriteELECellCenteredValuesTECHeader(fstream& tec_file,
                                       int e_type, string ele_type_name)
 {
-    // OK411
+        // OK411
     size_t no_elements = 0;
+
     const size_t mesh_ele_vector_size(m_msh->ele_vector.size());
     for (size_t i = 0; i < mesh_ele_vector_size; i++)
         if (m_msh->ele_vector[i]->GetMark())
@@ -1532,15 +1574,34 @@ void COutput::WriteELEValuesTECHeader(fstream& tec_file,
     }
 }
 
+
+void COutput::WriteELEValuesTECHeader(fstream& tec_file)
+{
+    // Write Header I: variables
+    tec_file << "VARIABLES = \"X\",\"Y\",\"Z\",\"VX\",\"VY\",\"VZ\"";
+    for (size_t i = 0; i < _ele_value_vector.size(); i++)
+        // WW
+        if (_ele_value_vector[i].find("VELOCITY") == string::npos)
+            tec_file << "," << _ele_value_vector[i];
+    tec_file << "\n";
+
+    // Write Header II: zone
+    tec_file << "ZONE T=\"";
+    tec_file << _time << "s\", ";
+    tec_file << "I=" << (long)m_msh->ele_vector.size() << ", ";
+    tec_file << "F=POINT"
+             << ", ";
+    tec_file << "C=BLACK";
+    tec_file << "\n";
+}
+
 /**************************************************************************
    FEMLib-Method:
    Task:
    Programing:
-   09/2004 OK Implementation
-   11/2005 OK MSH
-   01/2006 OK
+   09/2019 JT
 **************************************************************************/
-void COutput::WriteELEValuesTECData(fstream& tec_file, int e_type)
+void COutput::WriteELECellCenteredValuesTECData(fstream& tec_file, int e_type)
 {
     CRFProcess* m_pcs_2 = NULL;
     if (_ele_value_vector.empty())
@@ -1690,6 +1751,109 @@ void COutput::WriteELEValuesTECData(fstream& tec_file, int e_type)
     for (size_t idx=0;idx != streams.size(); ++idx )
     {
         tec_file << streams[idx].rdbuf();
+    }
+
+    ele_value_index_vector.clear();
+    skip.clear();
+}
+
+/**************************************************************************
+   FEMLib-Method:
+   Task:
+   Programing:
+   09/2004 OK Implementation
+   11/2005 OK MSH
+   01/2006 OK
+**************************************************************************/
+void COutput::WriteELEValuesTECData(fstream& tec_file)
+{
+    CRFProcess* m_pcs_2 = NULL;
+    if (_ele_value_vector.empty())
+        return;
+
+    vector<bool> skip;  // CB
+    size_t no_ele_values = _ele_value_vector.size();
+    bool out_element_vel = false;
+    bool out_element_transport_flux = false;    // JOD 2014-11-10
+    for (size_t j = 0; j < no_ele_values; j++)  // WW
+    {
+        if (_ele_value_vector[j].find("VELOCITY") != string::npos)
+        {
+            out_element_vel = true;
+            // break;  // CB: allow output of velocity AND other ele values
+            skip.push_back(false);
+        }
+        else if (_ele_value_vector[j].find("TRANSPORT_FLUX") !=
+                 string::npos)  // JOD 2014-11-10
+        {
+            out_element_transport_flux = true;
+            skip.push_back(false);
+        }
+        else
+        {
+            m_pcs_2 = GetPCS_ELE(_ele_value_vector[j]);
+            skip.push_back(true);
+        }
+    }
+    vector<int> ele_value_index_vector(no_ele_values);
+    GetELEValuesIndexVector(ele_value_index_vector);
+
+    MeshLib::CElem* m_ele = NULL;
+    FiniteElement::ElementValue* gp_ele = NULL;
+    for (size_t i = 0; i < m_msh->ele_vector.size(); i++)
+    {
+        m_ele = m_msh->ele_vector[i];
+        double const* xyz(m_ele->GetGravityCenter());
+        tec_file << xyz[0] << " " << xyz[1] << " " << xyz[2] << " ";
+        if (out_element_vel)  // WW
+        {
+            if (PCSGet(FiniteElement::FLUID_MOMENTUM))  // PCH 16.11 2009
+            {
+                CRFProcess* pch_pcs = PCSGet(FiniteElement::FLUID_MOMENTUM);
+
+                tec_file << pch_pcs->GetElementValue(
+                                i,
+                                pch_pcs->GetElementValueIndex("VELOCITY1_X") +
+                                    1)
+                         << " ";
+                tec_file << pch_pcs->GetElementValue(
+                                i,
+                                pch_pcs->GetElementValueIndex("VELOCITY1_Y") +
+                                    1)
+                         << " ";
+                tec_file << pch_pcs->GetElementValue(
+                                i,
+                                pch_pcs->GetElementValueIndex("VELOCITY1_Z") +
+                                    1)
+                         << " ";
+            }
+            else
+            {
+                gp_ele = ele_gp_value[i];
+                tec_file << gp_ele->Velocity(0, 0) << " ";
+                tec_file << gp_ele->Velocity(1, 0) << " ";
+                tec_file << gp_ele->Velocity(2, 0) << " ";
+            }
+        }
+        else if (out_element_transport_flux)  // JOD 2014-11-10
+        {
+#ifdef USE_TRANSPORT_FLUX
+            gp_ele = ele_gp_value[i];
+            tec_file << gp_ele->TransportFlux(0, 0) << " ";
+            tec_file << gp_ele->TransportFlux(1, 0) << " ";
+            tec_file << gp_ele->TransportFlux(2, 0) << " ";
+#endif
+        }
+        for (size_t j = 0; j < ele_value_index_vector.size(); j++)
+        {
+            if (skip[j])  // CB: allow output of velocity AND other ele values
+            {
+                tec_file << m_pcs_2->GetElementValue(i,
+                                                     ele_value_index_vector[j])
+                         << " ";
+            }
+        }
+        tec_file << "\n";
     }
 
     ele_value_index_vector.clear();

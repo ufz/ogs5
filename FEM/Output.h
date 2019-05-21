@@ -125,21 +125,22 @@ public:
     //    int GetPointClose(CGLPoint);
     void WriteTimeCurveData(std::fstream&);
     void WriteTimeCurveHeader(std::fstream&);
-protected:
-    void NODWriteDOMDataTEC(std::string, int, std::string);
 public:
-    void WriteTECHeader(std::fstream&, int, std::string);
-    void WriteTECNodeData(std::fstream&);
-    void WriteTECElementData(std::fstream&, int);
     double NODWritePLYDataTEC(int);
     void NODWritePNTDataTEC(double, int);
-public:
     void WriteDOMDataTEC();
+    void ELEWriteDOMDataTEC();
 protected:
-    void ELEWriteDOMDataTEC(std::string, int, std::string);
+    void NODWriteDOMDataTEC(std::string, int, std::string);
+    void WriteTECHeader(std::fstream&, int, std::string);
+    std::fstream open_tec_file(std::string) const;
+    void WriteTECNodeData(std::fstream&);
+    void WriteTECElementData(std::fstream&, int);
+    void WriteELEValuesTECHeader(std::fstream&);
+    void WriteELECellCenteredValuesTECHeader(std::fstream&, int, std::string);
+    void WriteELEValuesTECData(std::fstream&);
+    void WriteELECellCenteredValuesTECData(std::fstream&, int);
 public:
-    void WriteELEValuesTECHeader(std::fstream&, int, std::string);
-    void WriteELEValuesTECData(std::fstream&, int);
     void NODWriteSFCDataTEC(int);
     void NODWriteSFCAverageDataTEC(double, int);  // OK
     void WriteRFO();                              // OK
@@ -283,6 +284,8 @@ private:
 
     /// Tecplot share zone
     bool tecplot_zone_share;  // 10.2012. WW
+
+    bool _tecplot_cell_centered_element_output;
 
 #if defined(USE_PETSC) || \
     defined(USE_MPI)  //|| defined(other parallel libs)//03.3012. WW
