@@ -305,7 +305,9 @@ private:
     friend CFluidProperties* MFPGet(const std::string&);
     friend CFluidProperties* MFPGet(int);
     friend void KNaplCalcDensity();
-    friend double MFPGetNodeValue(long, const std::string&, int);
+    friend double MFPGetNodeValue(long node, const std::string& mfp_name,
+                                  int phase_number,
+                                  const bool for_output);
     friend void MMPCalcSecondaryVariablesNew(CRFProcess*, bool);
 };
 
@@ -326,5 +328,6 @@ extern void MFPDelete();
 extern CFluidProperties* MFPGet(const std::string&);
 extern CFluidProperties* MFPGet(int);  // NB JUN 09
 // NB AUG 09
-double MFPGetNodeValue(long, const std::string&, int);
+double MFPGetNodeValue(long node, const std::string& mfp_name, int phase_number,
+                       const bool for_output = true);
 #endif

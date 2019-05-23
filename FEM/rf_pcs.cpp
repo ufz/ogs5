@@ -7886,11 +7886,13 @@ double CRFProcess::calcPressureFromHead(CBoundaryCondition const& bc,
                                         double const& fac)
 {
     double local_density;
+    const bool for_ouput = false;
     switch (bc.getPressureAsHeadModel())
     {
         case 0:
             // use current density at node
-            local_density = MFPGetNodeValue(node_number, "DENSITY", 0);
+            local_density = MFPGetNodeValue(node_number, "DENSITY", 0,
+                                            for_ouput);
             break;
         case 1:
             // use given density
@@ -7900,7 +7902,8 @@ double CRFProcess::calcPressureFromHead(CBoundaryCondition const& bc,
             std::cout << "Warning! No PressureAsHeadDensity specified. "
                          "Calculating density (i.e. PressureAsHeadModel 0)!"
                       << std::endl;
-            local_density = MFPGetNodeValue(node_number, "DENSITY", 0);
+            local_density = MFPGetNodeValue(node_number, "DENSITY", 0,
+                                            for_ouput);
             break;
     }
 
@@ -7921,11 +7924,13 @@ double CRFProcess::calcHeadFromPressure(CBoundaryCondition const& bc,
                                         double const& fac)
 {
     double local_density;
+    const bool for_ouput = false;
     switch (bc.getPressureAsHeadModel())
     {
         case 0:
             // use current density at node
-            local_density = MFPGetNodeValue(node_number, "DENSITY", 0);
+            local_density = MFPGetNodeValue(node_number, "DENSITY", 0,
+                                            for_ouput);
             break;
         case 1:
             // use given density
@@ -7935,7 +7940,8 @@ double CRFProcess::calcHeadFromPressure(CBoundaryCondition const& bc,
             std::cout << "Warning! No PressureAsHeadDensity specified. "
                          "Calculating density (i.e. PressureAsHeadModel 0)!"
                       << std::endl;
-            local_density = MFPGetNodeValue(node_number, "DENSITY", 0);
+            local_density = MFPGetNodeValue(node_number, "DENSITY", 0,
+                                            for_ouput);
             break;
     }
 
