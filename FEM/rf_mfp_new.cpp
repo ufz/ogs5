@@ -3475,8 +3475,8 @@ double MFPGetNodeValue(long node, const std::string& mfp_name,
                 arguments[0] = pcs->GetNodeValue(node, var_idx);
             else if ((*vec_var_names)[i] == "TEMPERATURE1")
             {
-                arguments[1] = pcs->getTemperatureUnit() ==
-                                       (FiniteElement::CELSIUS && for_output)
+                arguments[1] = ((pcs->getTemperatureUnit() ==
+                                       FiniteElement::CELSIUS) && for_output)
                                    ? pcs->GetNodeValue(node, var_idx) +
                                          PhysicalConstant::CelsiusZeroInKelvin
                                    : pcs->GetNodeValue(node, var_idx);
