@@ -3,6 +3,12 @@
 
 pipeline {
     agent none
+    options {
+      ansiColor('xterm')
+      timestamps()
+      buildDiscarder(logRotator(numToKeepStr: '30', artifactNumToKeepStr: '10'))
+      timeout(time: 3, unit: 'HOURS')
+    }
     stages {
         stage('Parallel Stage') {
             parallel {
@@ -32,7 +38,7 @@ pipeline {
                     }
                 }
                 stage('Linux-FEM') {
-                    agent { label 'envinf1' }
+                    agent { label 'frontend2' }
                     steps {
                         script {
                             ogs5BuildLinux {
@@ -48,7 +54,7 @@ pipeline {
                     }
                 }
                 stage('Linux-SP') {
-                    agent { label 'envinf1' }
+                    agent { label 'frontend2' }
                     steps {
                         script { ogs5BuildLinux { config="SP" } }
                     }
@@ -58,7 +64,7 @@ pipeline {
                     }
                 }
                 stage('Linux-GEMS') {
-                    agent { label 'envinf1' }
+                    agent { label 'frontend2' }
                     steps {
                         script { ogs5BuildLinux { config="GEMS" } }
                     }
@@ -70,7 +76,7 @@ pipeline {
                     }
                 }
                 stage('Linux-PQC') {
-                    agent { label 'envinf1' }
+                    agent { label 'frontend2' }
                     steps {
                         script { ogs5BuildLinux { config="PQC" } }
                     }
@@ -80,7 +86,7 @@ pipeline {
                     }
                 }
                 stage('Linux-IPQC') {
-                    agent { label 'envinf1' }
+                    agent { label 'frontend2' }
                     steps {
                         script { ogs5BuildLinux { config="IPQC" } }
                     }
@@ -90,7 +96,7 @@ pipeline {
                     }
                 }
                 stage('Linux-BRNS') {
-                    agent { label 'envinf1' }
+                    agent { label 'frontend2' }
                     steps {
                         script { ogs5BuildLinux { config="BRNS" } }
                     }
@@ -102,7 +108,7 @@ pipeline {
                     }
                 }
                 stage('Linux-MKL') {
-                    agent { label 'envinf1' }
+                    agent { label 'frontend2' }
                     steps {
                         script { ogs5BuildLinux {
                             config="MKL"
@@ -115,7 +121,7 @@ pipeline {
                     }
                 }
                 stage('Linux-LIS') {
-                    agent { label 'envinf1' }
+                    agent { label 'frontend2' }
                     steps {
                         script { ogs5BuildLinux { config="LIS" } }
                     }
@@ -127,7 +133,7 @@ pipeline {
                     }
                 }
                 stage('Linux-MPI') {
-                    agent { label 'envinf1' }
+                    agent { label 'frontend2' }
                     steps {
                         script { ogs5BuildLinux { config="MPI" } }
                     }
@@ -137,7 +143,7 @@ pipeline {
                     }
                 }
                 stage('Linux-PETSC') {
-                    agent { label 'envinf1' }
+                    agent { label 'frontend2' }
                     steps {
                         script { ogs5BuildLinux { config="PETSC" } }
                     }
@@ -149,7 +155,7 @@ pipeline {
                     }
                 }
                 stage('Linux-PETSC_GEMS') {
-                    agent { label 'envinf1' }
+                    agent { label 'frontend2' }
                     steps {
                         script { ogs5BuildLinux { config="PETSC_GEMS" } }
                     }
