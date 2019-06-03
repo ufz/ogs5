@@ -807,8 +807,8 @@ void COutput::WriteDOMDataTEC()
             NODWriteDOMDataTEC(tec_file_name1+tec_file_name2+TEC_FILE_EXTENSION, te, eleType);
         if (!_ele_value_vector.empty() && _tecplot_cell_centered_element_output)
         {
-            fstream tec_file = open_tec_file(tec_file_name1+"_ele"+tec_file_name2+TEC_FILE_EXTENSION);
-            if (! tec_file.good())
+            fstream tec_file;
+            if (!open_tec_file(tec_file_name1+"_ele"+tec_file_name2+TEC_FILE_EXTENSION,tec_file))
                 continue;
             //--------------------------------------------------------------------
             WriteELECellCenteredValuesTECHeader(tec_file, te,eleType);
@@ -831,8 +831,8 @@ void COutput::NODWriteDOMDataTEC(string tec_file_name,
                                  const int te,
                                  string ele_type)
 {
-        fstream tec_file = open_tec_file(tec_file_name);
-        if (! tec_file.good())
+        fstream tec_file;
+        if (! open_tec_file(tec_file_name,tec_file))
             return;
 
         WriteTECHeader(tec_file, te, ele_type);
@@ -1461,7 +1461,7 @@ void COutput::WriteTECHeader(fstream& tec_file, int e_type, string e_type_name)
     }
 }
 
-std::fstream COutput::open_tec_file(std::string tec_file_name) const
+bool COutput::open_tec_file(std::string tec_file_name,fstream& tec_file) const
 {
     //----------------------------------------------------------------------
     // File handling
@@ -1471,7 +1471,7 @@ std::fstream COutput::open_tec_file(std::string tec_file_name) const
     if (!_new_file_opened)
         remove(tec_file_name.c_str());
     //......................................................................
-    fstream tec_file(tec_file_name.data(), ios::app | ios::out);
+    tec_file.open(tec_file_name.data(), ios::app | ios::out);
     tec_file.setf(ios::scientific, ios::floatfield);
     tec_file.precision(12);
     tec_file.seekg(0L, ios::beg);
@@ -1481,7 +1481,7 @@ std::fstream COutput::open_tec_file(std::string tec_file_name) const
     tec_file.rdbuf()->pubsetbuf(mybuffer, MY_IO_BUFSIZE * MY_IO_BUFSIZE);
 //
 #endif
-    return tec_file;
+    return tec_file.good();
 }
 
 /**************************************************************************
@@ -1674,13 +1674,14 @@ void COutput::WriteELECellCenteredValuesTECData(fstream& tec_file, int e_type)
         if (skip[i])
             ++n_additional_streams;
 
-    std::vector<std::stringstream> streams(2+n_additional_streams);
+    std::vector<std::stringstream*> streams(2+n_additional_streams);
     tec_file << "# Var Block No. 0 \n";
     for (size_t idx=0;idx != streams.size(); ++idx )
     {
-        streams[idx].setf(tec_file.flags());
-        streams[idx].precision(tec_file.precision());
-        streams[idx]<< "# Var Block No. " << idx+1 << "\n";
+        streams[idx]=new std::stringstream();
+        streams[idx]->setf(tec_file.flags());
+        streams[idx]->precision(tec_file.precision());
+        *(streams[idx])<< "# Var Block No. " << idx+1 << "\n";
     }
     MeshLib::CElem* m_ele = NULL;
     FiniteElement::ElementValue* gp_ele = NULL;
@@ -1701,12 +1702,12 @@ void COutput::WriteELECellCenteredValuesTECData(fstream& tec_file, int e_type)
                                 pch_pcs->GetElementValueIndex("VELOCITY1_X") +
                                     1)
                          << " ";
-                streams[0] << pch_pcs->GetElementValue(
+                *(streams[0]) << pch_pcs->GetElementValue(
                                 i,
                                 pch_pcs->GetElementValueIndex("VELOCITY1_Y") +
                                     1)
                          << " ";
-                streams[1] << pch_pcs->GetElementValue(
+                *(streams[1]) << pch_pcs->GetElementValue(
                                 i,
                                 pch_pcs->GetElementValueIndex("VELOCITY1_Z") +
                                     1)
@@ -1716,8 +1717,8 @@ void COutput::WriteELECellCenteredValuesTECData(fstream& tec_file, int e_type)
             {
                 gp_ele = ele_gp_value[i];
                 tec_file << gp_ele->Velocity(0, 0) << " ";
-                streams[0] << gp_ele->Velocity(1, 0) << " ";
-                streams[1] << gp_ele->Velocity(2, 0) << " ";
+                *(streams[0]) << gp_ele->Velocity(1, 0) << " ";
+                *(streams[1]) << gp_ele->Velocity(2, 0) << " ";
             }
         }
         else if (out_element_transport_flux)  // JOD 2014-11-10
@@ -1733,7 +1734,7 @@ void COutput::WriteELECellCenteredValuesTECData(fstream& tec_file, int e_type)
         {
             if (skip[j])  // CB: allow output of velocity AND other ele values
             {
-                streams[2+j] << m_pcs_2->GetElementValue(i,
+                *(streams[2+j]) << m_pcs_2->GetElementValue(i,
                                                      ele_value_index_vector[j])
                              << " ";
             }
@@ -1742,15 +1743,16 @@ void COutput::WriteELECellCenteredValuesTECData(fstream& tec_file, int e_type)
         {
             tec_file << "\n";
             for (size_t idx=0;idx != streams.size(); ++idx )
-                streams[idx]<< "\n";
+                *(streams[idx])<< "\n";
         }
     }
     tec_file << "\n";
     for (size_t idx=0;idx != streams.size(); ++idx )
-        streams[idx]<< "\n";
+        *(streams[idx])<< "\n";
     for (size_t idx=0;idx != streams.size(); ++idx )
     {
-        tec_file << streams[idx].rdbuf();
+        tec_file << streams[idx]->rdbuf();
+        delete streams[idx];
     }
 
     ele_value_index_vector.clear();

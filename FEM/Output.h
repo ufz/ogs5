@@ -133,7 +133,7 @@ public:
 protected:
     void NODWriteDOMDataTEC(std::string, int, std::string);
     void WriteTECHeader(std::fstream&, int, std::string);
-    std::fstream open_tec_file(std::string) const;
+    bool open_tec_file(std::string,std::fstream&) const;
     void WriteTECNodeData(std::fstream&);
     void WriteTECElementData(std::fstream&, int);
     void WriteELEValuesTECHeader(std::fstream&);
