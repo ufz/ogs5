@@ -131,13 +131,13 @@ public:
     void WriteDOMDataTEC();
     void ELEWriteDOMDataTEC();
 protected:
-    void NODWriteDOMDataTEC(std::string, int, std::string);
-    void WriteTECHeader(std::fstream&, int, std::string);
-    bool open_tec_file(std::string,std::fstream&) const;
+    void NODWriteDOMDataTEC(std::string, int, std::string  const &);
+    void WriteTECHeader(std::fstream&, int, std::string const &);
+    bool open_tec_file(std::string const&,std::fstream&) const;
     void WriteTECNodeData(std::fstream&);
     void WriteTECElementData(std::fstream&, int);
     void WriteELEValuesTECHeader(std::fstream&);
-    void WriteELECellCenteredValuesTECHeader(std::fstream&, int, std::string);
+    void WriteELECellCenteredValuesTECHeader(std::fstream&, int, std::string const &);
     void WriteELEValuesTECData(std::fstream&);
     void WriteELECellCenteredValuesTECData(std::fstream&, int);
 public:

@@ -829,7 +829,7 @@ void COutput::WriteDOMDataTEC()
 **************************************************************************/
 void COutput::NODWriteDOMDataTEC(string tec_file_name,
                                  const int te,
-                                 string ele_type)
+                                 string const & ele_type)
 {
         fstream tec_file;
         if (! open_tec_file(tec_file_name,tec_file))
@@ -1385,7 +1385,7 @@ void COutput::WriteTECElementData(fstream& tec_file, int e_type)
    08/2005 WW Output by MSH
    12/2005 OK GetMSH
 **************************************************************************/
-void COutput::WriteTECHeader(fstream& tec_file, int e_type, string e_type_name)
+void COutput::WriteTECHeader(fstream& tec_file, int e_type, string const & e_type_name)
 {
     // MSH
     //	m_msh = GetMSH();
@@ -1461,7 +1461,7 @@ void COutput::WriteTECHeader(fstream& tec_file, int e_type, string e_type_name)
     }
 }
 
-bool COutput::open_tec_file(std::string tec_file_name,fstream& tec_file) const
+bool COutput::open_tec_file(std::string const& tec_file_name,fstream& tec_file) const
 {
     //----------------------------------------------------------------------
     // File handling
@@ -1531,7 +1531,8 @@ void COutput::ELEWriteDOMDataTEC()
 }
 
 void COutput::WriteELECellCenteredValuesTECHeader(fstream& tec_file,
-                                      int e_type, string ele_type_name)
+                                                  int e_type,
+                                                  string const & ele_type_name)
 {
         // OK411
     size_t no_elements = 0;
