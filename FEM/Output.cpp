@@ -92,7 +92,7 @@ COutput::COutput()
     m_pcs = NULL;
     vtk = NULL;                  // NW
     tecplot_zone_share = false;  // 10.2012. WW
-    _tecplot_cell_centered_element_output = false;  // 10.2012. WW
+    _tecplot_cell_centered_element_output = false;
     VARIABLESHARING = false;     // BG
 #if defined(USE_PETSC) || \
     defined(USE_MPI)  //|| defined(other parallel libs)//01.3014. WW
@@ -116,7 +116,7 @@ COutput::COutput(size_t id)
     m_pcs = NULL;
     vtk = NULL;                  // NW
     tecplot_zone_share = false;  // 10.2012. WW
-    _tecplot_cell_centered_element_output = false;  // 10.2012. WW
+    _tecplot_cell_centered_element_output = false;
     VARIABLESHARING = false;     // BG
 #if defined(USE_PETSC) || \
     defined(USE_MPI)  //|| defined(other parallel libs)//01.3014. WW
