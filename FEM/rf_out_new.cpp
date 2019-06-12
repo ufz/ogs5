@@ -368,7 +368,7 @@ void OUTData(double time_current, int time_step_number, bool force_output)
                                 m_out->PCONWriteDOMDataTEC();  // MX
                             else
                             {
-                                m_out->NODWriteDOMDataTEC();
+                                m_out->WriteDOMDataTEC();
                                 m_out->ELEWriteDOMDataTEC();
                             }
 #if defined(USE_PETSC)  // || defined (other parallel solver lib). 12.2012 WW
@@ -399,8 +399,7 @@ void OUTData(double time_current, int time_step_number, bool force_output)
                                         m_out->PCONWriteDOMDataTEC();
                                     else
                                     {
-                                        m_out->NODWriteDOMDataTEC();
-                                        m_out->ELEWriteDOMDataTEC();
+                                        m_out->WriteDOMDataTEC();
                                     }
 #if defined(USE_PETSC)  // || defined (other parallel solver lib). 01.2014 WW
                                 }
