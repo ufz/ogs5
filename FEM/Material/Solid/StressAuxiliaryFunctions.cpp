@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 namespace SolidProp
 {
@@ -56,6 +57,16 @@ double* getPrincipleStresses(double const* const s,
     const double I3 = s11 * s22 * s33 + 2 * s12 * s23 * s13
                      - s23 * s23 * s11 - s13 * s13 * s22
                      - s12 * s12 * s33;
+
+    if ((std::fabs(I1) < std::numeric_limits<double>::epsilon() &&
+        std::fabs(I2) < std::numeric_limits<double>::epsilon()) ||
+        std::fabs(I1 * I1 - 3.0 * I2) < std::numeric_limits<double>::epsilon()
+    )
+    {
+        for (int k=0; k<3; k++)
+            principle_stress[k] = s[k];
+        return principle_stress;
+    }
 
     const double cos_a =
         std::min(std::max(0.5 * (2 * I1 * I1 * I1 - 9. * I1 * I2 + 27.0 * I3) /

@@ -964,6 +964,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
             _damage_zone_permeability =
                 new PorousMediumProperty::DamageZonePermeability(a, b);
             in.clear();
+            ScreenMessage("DAMAGE_ZONE_PERMEABILITY is used.\n");
             continue;
         }
         //------------------------------------------------------------------------
