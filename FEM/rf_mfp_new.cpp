@@ -38,8 +38,8 @@ extern double GetCurveValue(int, int, double, int*);
 #include "rf_REACT_GEM.h"
 #endif
 
-#include "PhysicalConstant.h"
 #include "Material/Fluid/Density/WaterDensityIAPWSIF97Region1.h"
+#include "PhysicalConstant.h"
 
 /* Umrechnungen SI - Amerikanisches System */
 // WW #include "steam67.h"
@@ -1053,7 +1053,19 @@ void CFluidProperties::CalPrimaryVariable(
         // MX  m_pcs = PCSGet("HEAT_TRANSPORT");
         m_pcs = PCSGet(pcs_name_vector[i], true);
         if (!m_pcs)
-            return;  // MX
+        {
+            if (pcs_name_vector[i].find("TEMPERATURE1") != std::string::npos)
+            {
+                const double T_ref =
+                    PhysicalConstant::CelsiusZeroInKelvin + 20.0;
+                primary_variable_t0[i] = T_ref;
+                primary_variable_t1[i] = T_ref;
+                primary_variable[i] = T_ref;
+                continue;
+            }
+            else
+                return;
+        }
         nidx0 = m_pcs->GetNodeValueIndex(pcs_name_vector[i]);
         nidx1 = nidx0 + 1;
 
