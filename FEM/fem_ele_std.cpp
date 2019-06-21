@@ -6486,9 +6486,8 @@ void CFiniteElementStd::CalcSolidDensityRate()
                 const double rhoTil = 0.1;
                 const double omega = 2.0 * 3.1416;
                 gp_ele->rho_s_curr[gp] =
-                    rhoSR0 +
-                    rhoTil * sin(omega * aktuelle_zeit) /
-                        (1.0 - poro);  // TN Test mass transfer
+                    rhoSR0 + rhoTil * sin(omega * aktuelle_zeit) /
+                                 (1.0 - poro);  // TN Test mass transfer
                 gp_ele->q_R[gp] = rhoTil * omega * cos(omega * aktuelle_zeit) /
                                   (1.0 - poro);  // TN Test mass transfer
             }
@@ -9021,9 +9020,7 @@ void CFiniteElementStd::Assemble_strainCPL(const int phase)
  */
 //**************************************************************************
 #if defined(USE_PETSC)  // && !defined(other parallel libs)//03~04.3012. WW
-void CFiniteElementStd::Assemble_strainCPL_Matrix(const double, const int)
-{
-}
+void CFiniteElementStd::Assemble_strainCPL_Matrix(const double, const int) {}
 #else
 void CFiniteElementStd::Assemble_strainCPL_Matrix(const double fac,
                                                   const int phase)
@@ -11962,9 +11959,8 @@ void CFiniteElementStd::CalcEnergyNorm(double& err_norm0, double& err_normn)
     for (i = 0; i < nnodes; i++)
     {
 #if defined(USE_PETSC)  // || defined(other parallel libs)//07.3012. WW
-        NodalVal0[i] = atol +
-                       rtol * max(fabs(pcs->GetNodeValue(nodes[i], idx)),
-                                  fabs(x_n[nodes[i] * dof_n]));
+        NodalVal0[i] = atol + rtol * max(fabs(pcs->GetNodeValue(nodes[i], idx)),
+                                         fabs(x_n[nodes[i] * dof_n]));
 #else
         NodalVal0[i] =
             atol + rtol * max(fabs(pcs->GetNodeValue(nodes[i], idx)),
