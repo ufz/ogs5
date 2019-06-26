@@ -112,7 +112,6 @@ pipeline {
                     steps {
                         script { ogs5BuildLinux {
                             config="MKL"
-                            cmakeOptions="-DMKL_DIR=/opt/intel/mkl"
                         } }
                     }
                     post {
