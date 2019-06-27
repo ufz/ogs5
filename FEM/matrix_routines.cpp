@@ -1,6 +1,6 @@
 /**
  * \copyright
- * Copyright (c) 2018, OpenGeoSys Community (http://www.opengeosys.org)
+ * Copyright (c) 2019, OpenGeoSys Community (http://www.opengeosys.org)
  *            Distributed under a Modified BSD License.
  *              See accompanying file LICENSE.txt or
  *              http://www.opengeosys.org/project/license
@@ -3162,6 +3162,7 @@ void M1Vorkond(int aufgabe, double* x, double* b)
                         diag -= dim + 1;
                     } /* i */
                 }     /* Modus iLDU, (zerlegen und) aufloesen */
+            // fall through
         case 3:       /* Linkstransformation des Gesamtsystems x <= L(t)*b */
             if
                 VK_Modus(VK_iLDU)
@@ -3347,7 +3348,7 @@ void M34Vorkond(int aufgabe, double* x, double* b)
             u = 0;
             o = w->usym;
             /* kein break! "Fall through" nach Aufgabe 2 */
-
+            // fall through
         case 2:                    /* Linkstransformation  x <= L*b */
             if (VK_Modus(VK_iLDU)) /* incomplete L(D)U-Zerlegung */
             {
