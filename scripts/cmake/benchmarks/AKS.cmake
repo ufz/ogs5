@@ -88,12 +88,12 @@ Benchmark(AUTHOR AKS
 	RUNTIME 70
 )
 
-Benchmark(AUTHOR AKS
-	PATH GAS_FLOW/Gravity/Gravity
-	CONFIG FEM
-	OUTPUT_FILES Gravity_ply_OUT_t0_MULTI_COMPONENTIAL_FLOW.tec
-	RUNTIME 2
-)
+#Benchmark(AUTHOR AKS
+#	PATH GAS_FLOW/Gravity/Gravity
+#	CONFIG FEM
+#	OUTPUT_FILES Gravity_ply_OUT_t0_MULTI_COMPONENTIAL_FLOW.tec
+#	RUNTIME 2
+#)
 
 Benchmark(AUTHOR AKS
 	PATH GAS_FLOW/gas_flow/h_gas_line
