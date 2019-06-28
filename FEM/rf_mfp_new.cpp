@@ -1181,7 +1181,7 @@ double CFluidProperties::Density(double* variables)
                 break;
             case 14:  // #Exponential law#
                 density = rho_0 * exp(drho_dp * (max(variables[0], 0.0) - p_0) +
-                                      drho_dT * (max(variables[2], 0.0)) +
+                                      drho_dT * (max(variables[1], 0.0)) +
                                       drho_dC * max(variables[2], 0.0));
                 break;
 
@@ -1378,7 +1378,7 @@ double CFluidProperties::Density(double* variables)
 
             case 14:  // #Exponential law#
                 density = rho_0 * exp(drho_dp * (max(variables[0], 0.0) - p_0) +
-                                      drho_dT * (max(variables[2], 0.0)) +
+                                      drho_dT * (max(variables[1], 0.0)) +
                                       drho_dC * max(variables[2], 0.0));
                 break;
             case 15:  // mixture 1/rho= sum_i x_i/rho_i #p, T, x:-> Amagat's
