@@ -6694,8 +6694,11 @@ void DATWriteParticleVTPFile(int current_time_step)
 
     for (int i = 0; i <= current_time_step; ++i)
     {
-        sprintf(c_dummy, "%i", i);
-        istr = c_dummy;
+        //sprintf(c_dummy, "%i", i);
+        std::ostringstream ss;
+        ss << i;
+        istr = ss.str();
+
         for (std::size_t t = 0; t < time_vector.size(); ++t)
         {
             m_tim = time_vector[t];

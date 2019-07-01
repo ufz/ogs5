@@ -242,11 +242,11 @@ Benchmark(AUTHOR WW
 )
 
 Benchmark(AUTHOR WW
-	PATH MPI/hm_tri/hm_tri
+	PATH MPI/HM/hm
 	CONFIG MPI
 	NUM_PROCESSORS 2
 	RUNTIME 190
-	OUTPUT_FILES hm_tri_domain_tri_0.tec
+	OUTPUT_FILES hm_domain_quad_0.tec
 )
 
 Benchmark(AUTHOR WW

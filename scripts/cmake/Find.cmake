@@ -56,7 +56,7 @@ endif()
 
 find_path(OGS_LIBS_DIR_FOUND .dummy PATHS
     ${CMAKE_SOURCE_DIR}/../Libs
-    /opt/ogs/ogs5-libs
+    /data/ogs/ogs5-libs
     NO_DEFAULT_PATH)
 if(OGS_LIBS_DIR_FOUND)
 	# Find precompiled libraries (for BRNS GEMS LIS)

@@ -592,7 +592,7 @@ parse_couple (char *token)
   paren_count = 1;
   paren1[0] = '(';
   p1 = 1;
-  while (ptr != '\0')
+  while (*ptr != '\0')
   {
     ptr++;
     if (*ptr == '/' || *ptr == '\0')
