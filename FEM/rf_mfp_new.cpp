@@ -3422,7 +3422,8 @@ double CFluidProperties::CalcEnthalpy(double temperature)
    08/2008 OK
    last change: 11/2008 NB
 **************************************************************************/
-double MFPGetNodeValue(long node, const string& mfp_name, int phase_number)
+double MFPGetNodeValue(long node, const std::string& mfp_name,
+                       int phase_number, const bool for_output)
 {
     CFluidProperties* m_mfp = mfp_vector[max(phase_number, 0)];
     const int restore_mode = m_mfp->mode;
@@ -3473,7 +3474,13 @@ double MFPGetNodeValue(long node, const string& mfp_name, int phase_number)
             if ((*vec_var_names)[i] == "PRESSURE1")
                 arguments[0] = pcs->GetNodeValue(node, var_idx);
             else if ((*vec_var_names)[i] == "TEMPERATURE1")
-                arguments[1] = pcs->GetNodeValue(node, var_idx);
+            {
+                arguments[1] = ((pcs->getTemperatureUnit() ==
+                                       FiniteElement::CELSIUS) && for_output)
+                                   ? pcs->GetNodeValue(node, var_idx) +
+                                         PhysicalConstant::CelsiusZeroInKelvin
+                                   : pcs->GetNodeValue(node, var_idx);
+            }
             else if ((*vec_var_names)[i] == "CONCENTRATION1")
                 arguments[2] = pcs->GetNodeValue(node, var_idx);
             else
