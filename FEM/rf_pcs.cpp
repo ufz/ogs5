@@ -6625,7 +6625,7 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
         m_bc_node = bc_node_value[gindex];
         m_bc = bc_node[gindex];
 
-        if (!m_bc->isInPeriod(aktuelle_zeit))
+        if (!m_bc->isInTimeInterval(aktuelle_zeit))
             continue;
 
         //

@@ -150,7 +150,7 @@ CBoundaryCondition::CBoundaryCondition()
       geo_name(""),
       _curve_index(-1),
       dis_linear_f(NULL),
-      _time_period(NULL)
+      _time_interval(NULL)
 {
     this->setProcessDistributionType(FiniteElement::INVALID_DIS_TYPE);
     // FCT
@@ -176,7 +176,7 @@ CBoundaryCondition::CBoundaryCondition(const BoundaryCondition* bc)
     : ProcessInfo(bc->getProcessType(), bc->getProcessPrimaryVariable(), NULL),
       GeoInfo(bc->getGeoType(), bc->getGeoObj()),
       DistributionInfo(bc->getProcessDistributionType()),
-      _time_period(NULL)
+      _time_interval(NULL)
 {
     setProcess(PCSGet(this->getProcessType()));
     this->geo_name = bc->getGeoName();
@@ -222,8 +222,8 @@ CBoundaryCondition::~CBoundaryCondition()
         delete dis_linear_f;
     dis_linear_f = NULL;
 
-    if (_time_period)
-        delete _time_period;
+    if (_time_interval)
+        delete _time_interval;
 }
 
 const std::string& CBoundaryCondition::getGeoName() const
@@ -470,12 +470,12 @@ std::ios::pos_type CBoundaryCondition::Read(std::ifstream* bc_file,
             continue;
         }
 
-        if (line_string.find("$TIME_PERIOD") != std::string::npos)
+        if (line_string.find("$TIME_INTERVAL") != std::string::npos)
         {
             in.str(readNonBlankLineFromInputStream(*bc_file));
             double t1, t2;
             in >> t1 >> t2;
-            _time_period = new TimePeriod(t1, t2);
+            _time_interval = new TimeInterval(t1, t2);
             continue;
         }
 

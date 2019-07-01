@@ -47,14 +47,14 @@ namespace MeshLib
 class CFEMesh;
 }
 
-struct TimePeriod
+struct TimeInterval
 {
-    TimePeriod(const double start_time_, const double end_time_)
+    TimeInterval(const double start_time_, const double end_time_)
         : start_time(start_time_), end_time(end_time_)
     {
     }
 
-    bool isInPeriod(const double time) const
+    bool isInTimeInterval(const double time) const
     {
         if (time < start_time)
             return false;
@@ -130,13 +130,13 @@ public:
         return _periode_phase_shift;
     }
 
-    bool isInPeriod(const double time) const
+    bool isInTimeInterval(const double time) const
     {
         // No period defined. That means the time is always in period.
-        if (_time_period == NULL)
+        if (_time_interval == NULL)
             return true;
 
-        return _time_period->isInPeriod(time);
+        return _time_interval->isInTimeInterval(time);
     }
 
     const std::vector<int>& getPointsWithDistribedBC() const
@@ -259,7 +259,7 @@ private:
     bool _isSwitchBC;
     SwitchBC _switchBC;
 
-    TimePeriod* _time_period;
+    TimeInterval* _time_interval;
 };
 
 class CBoundaryConditionNode  // OK raus
