@@ -1578,9 +1578,9 @@ double CFiniteElementStd::CalCoefMass()
             val = MediaProp->StorageFunction(Index, unit, pcs->m_num->ls_theta);
             double drho_dp_rho = 0.0;
             // get drho/dp/rho from material model or direct input
+            const double rho_val = FluidProp->Density();
             if (FluidProp->compressibility_model_pressure > 0)
             {
-                const double rho_val = FluidProp->Density();
                 double arg[2];
                 arg[0] = interpolate(NodalVal1);   //   p
                 arg[1] = interpolate(NodalValC1);  //   T
@@ -1588,7 +1588,10 @@ double CFiniteElementStd::CalCoefMass()
             }
             else
             {
-                drho_dp_rho = FluidProp->drho_dp;
+                drho_dp_rho =
+                    rho_val > DBL_EPSILON
+                        ? FluidProp->drho_dp * FluidProp->rho_0 / rho_val
+                        : 0.0;
             }
 
             const double poro_val =
@@ -1603,7 +1606,7 @@ double CFiniteElementStd::CalCoefMass()
                 h_fem = this;
                 storage_effstress =
                     MediaProp->StorageFunctionEffStress(Index, nnodes, h_fem);
-                val *= storage_effstress;
+                val += storage_effstress;
             }
 
             // val /= time_unit_factor;

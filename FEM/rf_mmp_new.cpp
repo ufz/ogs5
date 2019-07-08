@@ -8001,7 +8001,7 @@ double CMediumProperties::StorageFunction(long index, double* gp, double theta)
     return storage;
 }
 
-// AS:08.2012 storgae function eff stress
+// AS:08.2012 storage function of effective stress
 double CMediumProperties::StorageFunctionEffStress(long index, int nnodes,
                                                    CFiniteElementStd* h_fem)
 {
