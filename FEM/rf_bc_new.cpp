@@ -157,7 +157,6 @@ CBoundaryCondition::CBoundaryCondition()
     conditional = false;
     time_dep_interpol = false;
     epsilon = -1;                     // NW
-    time_contr_curve = -1;            // WX
     bcExcav = -1;                     // WX
     MatGr = -1;                       // WX
     NoDispIncre = -1;                 // WX:12.2012
@@ -527,14 +526,6 @@ std::ios::pos_type CBoundaryCondition::Read(std::ifstream* bc_file,
         {
             in.str(readNonBlankLineFromInputStream(*bc_file));
             in >> epsilon;
-            in.clear();
-        }
-        //....................................................................
-        // aktive state of the bc is time controlled  WX
-        if (line_string.find("$TIME_CONTROLLED_ACTIVE") != std::string::npos)
-        {
-            in.str(readNonBlankLineFromInputStream(*bc_file));
-            in >> time_contr_curve;
             in.clear();
         }
         //....................................................................

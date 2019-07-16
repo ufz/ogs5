@@ -6628,15 +6628,6 @@ void CRFProcess::IncorporateBoundaryConditions(const int rank)
         if (!m_bc->isInTimeInterval(aktuelle_zeit))
             continue;
 
-        //
-        // WX: check if bc is aktive, when Time_Controlled_Aktive for this bc is
-        // defined
-        if (m_bc->getTimeContrCurve() > 0)
-            if (GetCurveValue(m_bc->getTimeContrCurve(), 0, aktuelle_zeit,
-                              &valid) < MKleinsteZahl)
-                continue;
-
-
         // WX: 01.2011. for excavation bc, check if excavated and if on boundary
         if (m_bc->getExcav() > 0)
         {

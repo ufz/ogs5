@@ -159,10 +159,6 @@ public:
     {
         return MatGr;
     }  // WX:12.2010 get excav material group
-    int getTimeContrCurve()
-    {
-        return time_contr_curve;
-    }  // WX:12.2010 get bc ativity controlled curve
     int getNoDispIncre() { return NoDispIncre; };  // WX:12.2012
     // give head bc for PRESSURE1 primary variable	//MW
     int getPressureAsHeadModel() const { return _pressure_as_head_model; }
@@ -243,8 +239,6 @@ private:
     // Excavation WX:12.2010
     int bcExcav;
     int MatGr;
-    // aktive state is controlled by time curve WX:01.2011
-    int time_contr_curve;
     // no displacement increment 12.2012
     int NoDispIncre;
     // give head bc for PRESSURE1 primary variable	//MW
