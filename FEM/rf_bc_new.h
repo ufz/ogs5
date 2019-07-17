@@ -36,37 +36,17 @@ class BoundaryConditionIO;
 #include "Constrained.h"
 #include "SwitchBC.h"
 
-// GEOLib
-//#include "geo_ply.h"
-// MSHLib
-//#include "msh_lib.h"
-// PCSLib
-//#include "rf_pcs.h"
+
+
+namespace BaseLib
+{
+class TimeInterval;
+}
+
 namespace MeshLib
 {
 class CFEMesh;
 }
-
-struct TimeInterval
-{
-    TimeInterval(const double start_time_, const double end_time_)
-        : start_time(start_time_), end_time(end_time_)
-    {
-    }
-
-    bool isInTimeInterval(const double time) const
-    {
-        if (time < start_time)
-            return false;
-        if (time > end_time)
-            return false;
-
-        return true;
-    }
-
-    const double start_time;
-    const double end_time;
-};
 
 class BoundaryCondition;
 
@@ -130,14 +110,7 @@ public:
         return _periode_phase_shift;
     }
 
-    bool isInTimeInterval(const double time) const
-    {
-        // No period defined. That means the time is always in period.
-        if (_time_interval == NULL)
-            return true;
-
-        return _time_interval->isInTimeInterval(time);
-    }
+    bool isInTimeInterval(const double time) const;
 
     const std::vector<int>& getPointsWithDistribedBC() const
     {
@@ -253,7 +226,7 @@ private:
     bool _isSwitchBC;
     SwitchBC _switchBC;
 
-    TimeInterval* _time_interval;
+    std::vector<BaseLib::TimeInterval*> _time_intervals;
 };
 
 class CBoundaryConditionNode  // OK raus

@@ -57,6 +57,8 @@ extern void remove_white_space(std::string*);
 
 #include "BoundaryCondition.h"
 
+#include "TimeInterval.h"
+
 #ifndef _WIN32
 #include <cstdio>
 #include <cstdlib>
@@ -149,8 +151,7 @@ CBoundaryCondition::CBoundaryCondition()
     : GeoInfo(),
       geo_name(""),
       _curve_index(-1),
-      dis_linear_f(NULL),
-      _time_interval(NULL)
+      dis_linear_f(NULL)
 {
     this->setProcessDistributionType(FiniteElement::INVALID_DIS_TYPE);
     // FCT
@@ -174,8 +175,7 @@ CBoundaryCondition::CBoundaryCondition()
 CBoundaryCondition::CBoundaryCondition(const BoundaryCondition* bc)
     : ProcessInfo(bc->getProcessType(), bc->getProcessPrimaryVariable(), NULL),
       GeoInfo(bc->getGeoType(), bc->getGeoObj()),
-      DistributionInfo(bc->getProcessDistributionType()),
-      _time_interval(NULL)
+      DistributionInfo(bc->getProcessDistributionType())
 {
     setProcess(PCSGet(this->getProcessType()));
     this->geo_name = bc->getGeoName();
@@ -221,8 +221,11 @@ CBoundaryCondition::~CBoundaryCondition()
         delete dis_linear_f;
     dis_linear_f = NULL;
 
-    if (_time_interval)
-        delete _time_interval;
+    for (std::size_t i = 0; i < _time_intervals.size(); i++)
+    {
+        if (_time_intervals[i])
+            delete _time_intervals[i];
+    }
 }
 
 const std::string& CBoundaryCondition::getGeoName() const
@@ -474,7 +477,26 @@ std::ios::pos_type CBoundaryCondition::Read(std::ifstream* bc_file,
             in.str(readNonBlankLineFromInputStream(*bc_file));
             double t1, t2;
             in >> t1 >> t2;
-            _time_interval = new TimeInterval(t1, t2);
+            in.clear();
+            _time_intervals.push_back(new BaseLib::TimeInterval(t1, t2));
+            for (;;)
+            {
+                std::ios::pos_type old_position = bc_file->tellg();
+                line_string = readNonBlankLineFromInputStream(*bc_file);
+                if (line_string.find("$TIME_INTERVAL") != std::string::npos)
+                {
+                    in.str(readNonBlankLineFromInputStream(*bc_file));
+                    double t1, t2;
+                    in >> t1 >> t2;
+                    in.clear();
+                    _time_intervals.push_back(new BaseLib::TimeInterval(t1, t2));
+                }
+                else
+                {
+                    bc_file->seekg(old_position);
+                    break;
+                }
+            }
             continue;
         }
 
@@ -1059,6 +1081,11 @@ inline void CBoundaryCondition::PatchAssign(long ShiftInNodeVector)
         pcs->bc_node.push_back(this);
         pcs->bc_node_value.push_back(m_node_value);
     }  // eof
+}
+
+bool CBoundaryCondition::isInTimeInterval(const double time) const
+{
+    return BaseLib::isInTimeInterval(time, _time_intervals);
 }
 
 CBoundaryConditionsGroup::CBoundaryConditionsGroup(void)
