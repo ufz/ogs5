@@ -11,7 +11,10 @@
  *
  */
 
-#pragma once
+#ifndef TIME_INTERVAL_H
+#define TIME_INTERVAL_H
+
+#include <vector>
 
 namespace BaseLib
 {
@@ -56,3 +59,5 @@ bool isInTimeInterval(const double time,
     return false;
 }
 }  // end of namespace BaseLib
+
+#endif
