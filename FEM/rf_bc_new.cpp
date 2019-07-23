@@ -472,6 +472,15 @@ std::ios::pos_type CBoundaryCondition::Read(std::ifstream* bc_file,
             continue;
         }
 
+        if (line_string.find("$TIME_CONTROLLED_ACTIVE") != std::string::npos)
+        {
+            Display::ScreenMessage(
+                "This keyword has already been replaced with $TIME_INTERVAL, "
+                "which has a syntax of\n\t $TIME_INTERVAL\n\t [start time][end "
+                "time]\n\t $TIME_INTERVAL\n\t [start time][end time]\n ... ");
+            exit(EXIT_FAILURE);
+        }
+
         if (line_string.find("$TIME_INTERVAL") != std::string::npos)
         {
             in.str(readNonBlankLineFromInputStream(*bc_file));
