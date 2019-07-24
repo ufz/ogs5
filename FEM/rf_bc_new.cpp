@@ -57,6 +57,8 @@ extern void remove_white_space(std::string*);
 
 #include "BoundaryCondition.h"
 
+#include "TimeInterval.h"
+
 #ifndef _WIN32
 #include <cstdio>
 #include <cstdlib>
@@ -146,14 +148,16 @@ std::vector<CBoundaryCondition*> bc_db_vector;
    01/2004 OK Implementation
 **************************************************************************/
 CBoundaryCondition::CBoundaryCondition()
-    : GeoInfo(), geo_name(""), _curve_index(-1), dis_linear_f(NULL)
+    : GeoInfo(),
+      geo_name(""),
+      _curve_index(-1),
+      dis_linear_f(NULL)
 {
     this->setProcessDistributionType(FiniteElement::INVALID_DIS_TYPE);
     // FCT
     conditional = false;
     time_dep_interpol = false;
     epsilon = -1;                     // NW
-    time_contr_curve = -1;            // WX
     bcExcav = -1;                     // WX
     MatGr = -1;                       // WX
     NoDispIncre = -1;                 // WX:12.2012
@@ -216,6 +220,12 @@ CBoundaryCondition::~CBoundaryCondition()
     if (dis_linear_f)
         delete dis_linear_f;
     dis_linear_f = NULL;
+
+    for (std::size_t i = 0; i < _time_intervals.size(); i++)
+    {
+        if (_time_intervals[i])
+            delete _time_intervals[i];
+    }
 }
 
 const std::string& CBoundaryCondition::getGeoName() const
@@ -462,6 +472,43 @@ std::ios::pos_type CBoundaryCondition::Read(std::ifstream* bc_file,
             continue;
         }
 
+        if (line_string.find("$TIME_CONTROLLED_ACTIVE") != std::string::npos)
+        {
+            Display::ScreenMessage(
+                "This keyword has already been replaced with $TIME_INTERVAL, "
+                "which has a syntax of\n\t $TIME_INTERVAL\n\t [start time][end "
+                "time]\n\t $TIME_INTERVAL\n\t [start time][end time]\n ... ");
+            exit(EXIT_FAILURE);
+        }
+
+        if (line_string.find("$TIME_INTERVAL") != std::string::npos)
+        {
+            in.str(readNonBlankLineFromInputStream(*bc_file));
+            double t1, t2;
+            in >> t1 >> t2;
+            in.clear();
+            _time_intervals.push_back(new BaseLib::TimeInterval(t1, t2));
+            for (;;)
+            {
+                std::ios::pos_type old_position = bc_file->tellg();
+                line_string = readNonBlankLineFromInputStream(*bc_file);
+                if (line_string.find("$TIME_INTERVAL") != std::string::npos)
+                {
+                    in.str(readNonBlankLineFromInputStream(*bc_file));
+                    double t1, t2;
+                    in >> t1 >> t2;
+                    in.clear();
+                    _time_intervals.push_back(new BaseLib::TimeInterval(t1, t2));
+                }
+                else
+                {
+                    bc_file->seekg(old_position);
+                    break;
+                }
+            }
+            continue;
+        }
+
         if (line_string.find("$FCT_TYPE") != std::string::npos)
         {
             in.str(readNonBlankLineFromInputStream(*bc_file));
@@ -510,14 +557,6 @@ std::ios::pos_type CBoundaryCondition::Read(std::ifstream* bc_file,
         {
             in.str(readNonBlankLineFromInputStream(*bc_file));
             in >> epsilon;
-            in.clear();
-        }
-        //....................................................................
-        // aktive state of the bc is time controlled  WX
-        if (line_string.find("$TIME_CONTROLLED_ACTIVE") != std::string::npos)
-        {
-            in.str(readNonBlankLineFromInputStream(*bc_file));
-            in >> time_contr_curve;
             in.clear();
         }
         //....................................................................
@@ -853,8 +892,7 @@ bool BCRead(std::string const& file_base_name,
     std::ifstream bc_file(bc_file_name.data(), std::ios::in);
     if (!bc_file.good())
     {
-        ScreenMessage(
-            "! Error in BCRead: No boundary conditions !\n");
+        ScreenMessage("! Error in BCRead: No boundary conditions !\n");
         return false;
     }
 
@@ -867,7 +905,7 @@ bool BCRead(std::string const& file_base_name,
         if (line_string.find("#STOP") != std::string::npos)
         {
             ScreenMessage("done, read %d boundary conditions.\n",
-                                   bc_list.size());
+                          bc_list.size());
             return true;
         }
         if (line_string.find("#BOUNDARY_CONDITION") != std::string::npos)
@@ -1052,6 +1090,11 @@ inline void CBoundaryCondition::PatchAssign(long ShiftInNodeVector)
         pcs->bc_node.push_back(this);
         pcs->bc_node_value.push_back(m_node_value);
     }  // eof
+}
+
+bool CBoundaryCondition::isInTimeInterval(const double time) const
+{
+    return BaseLib::isInTimeInterval(time, _time_intervals);
 }
 
 CBoundaryConditionsGroup::CBoundaryConditionsGroup(void)
@@ -1766,9 +1809,8 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs,
 
     clock_t end_time(clock());
 
-    ScreenMessage(
-        "\t[BC] set BC took %0.3e\n",
-        (end_time - start_time) / (double)(CLOCKS_PER_SEC));
+    ScreenMessage("\t[BC] set BC took %0.3e\n",
+                  (end_time - start_time) / (double)(CLOCKS_PER_SEC));
 
     start_time = clock();
     // SetTransientBCtoNodes  10/2008 WW/CB Implementation
@@ -1853,9 +1895,8 @@ void CBoundaryConditionsGroup::Set(CRFProcess* pcs,
     }
 
     end_time = clock();
-    ScreenMessage(
-        "\t[BC] set transient BC took %0.3e\n",
-        (end_time - start_time) / (double)(CLOCKS_PER_SEC));
+    ScreenMessage("\t[BC] set transient BC took %0.3e\n",
+                  (end_time - start_time) / (double)(CLOCKS_PER_SEC));
 }
 
 /**************************************************************************

@@ -36,12 +36,13 @@ class BoundaryConditionIO;
 #include "Constrained.h"
 #include "SwitchBC.h"
 
-// GEOLib
-//#include "geo_ply.h"
-// MSHLib
-//#include "msh_lib.h"
-// PCSLib
-//#include "rf_pcs.h"
+
+
+namespace BaseLib
+{
+class TimeInterval;
+}
+
 namespace MeshLib
 {
 class CFEMesh;
@@ -109,6 +110,8 @@ public:
         return _periode_phase_shift;
     }
 
+    bool isInTimeInterval(const double time) const;
+
     const std::vector<int>& getPointsWithDistribedBC() const
     {
         return _PointsHaveDistribedBC;
@@ -129,10 +132,6 @@ public:
     {
         return MatGr;
     }  // WX:12.2010 get excav material group
-    int getTimeContrCurve()
-    {
-        return time_contr_curve;
-    }  // WX:12.2010 get bc ativity controlled curve
     int getNoDispIncre() { return NoDispIncre; };  // WX:12.2012
     // give head bc for PRESSURE1 primary variable	//MW
     int getPressureAsHeadModel() const { return _pressure_as_head_model; }
@@ -154,7 +153,6 @@ public:
     bool isSeepageBC() const { return _isSeepageBC; }
     bool isSwitchBC() const { return _isSwitchBC; }
     SwitchBC const& getSwitchBC() const { return _switchBC; }
-
 private:
     std::vector<std::string> _PointsFCTNames;
     std::vector<int> _PointsHaveDistribedBC;
@@ -214,8 +212,6 @@ private:
     // Excavation WX:12.2010
     int bcExcav;
     int MatGr;
-    // aktive state is controlled by time curve WX:01.2011
-    int time_contr_curve;
     // no displacement increment 12.2012
     int NoDispIncre;
     // give head bc for PRESSURE1 primary variable	//MW
@@ -229,6 +225,8 @@ private:
 
     bool _isSwitchBC;
     SwitchBC _switchBC;
+
+    std::vector<BaseLib::TimeInterval*> _time_intervals;
 };
 
 class CBoundaryConditionNode  // OK raus
