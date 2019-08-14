@@ -82,6 +82,7 @@ CFluidProperties::CFluidProperties()
     drho_dC = 0.;
     // Viscosity
     viscosity_model = 1;
+    viscosity_T_shift = 0.0;
     my_0 = 1e-3;
     dmy_dp = 0.;
     dmy_dT = 0.;
@@ -596,6 +597,16 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
                 if (T_Process || fluid_id == 1)
                     viscosity_pcs_name_vector.push_back(arg2);
             }
+            // JM_visco
+            if (viscosity_model == 10)  // my(C,T),
+            {
+                in >> C_0;
+                in >> viscosity_T_shift;
+
+                viscosity_pcs_name_vector.push_back("PRESSURE1");
+                viscosity_pcs_name_vector.push_back("TEMPERATURE1");
+            }
+            // JM_visco end
             // AKS
             if (density_model == 15)  // components constant viscosity
             {
@@ -1877,7 +1888,24 @@ double CFluidProperties::Viscosity(double* variables)
                                         mfp_arguments[0], fluid_id);
             break;
         }
-        case 15:  // mixture 1/�= sum_i y_i/�_i:: VTPR-EoS
+        // JM_visco
+        case 10:
+        {
+            if (!T_Process)
+                primary_variable[1] = T_0 + viscosity_T_shift;
+            else
+                primary_variable[1] +=
+                    viscosity_T_shift;  // JM if viscosity_T_shift==273 (user
+                                        // defined), Celsius can be used within
+                                        // this model
+            viscosity =
+                (1 + 2.765e-3 * C_0) *
+                exp(11.897 - 5.943e-2 * primary_variable[1] +
+                    6.422e-5 * primary_variable[1] * primary_variable[1]) *
+                1e-3;  // AnSichT 2013, Chierici 1994
+            break;
+        }         // JM_visco end
+        case 15:  // mixture 1/ï¿½= sum_i y_i/ï¿½_i:: VTPR-EoS
         {
             CRFProcess* m_pcs = PCSGet("MULTI_COMPONENTIAL_FLOW");
             double my = 0.0;
@@ -3436,8 +3464,8 @@ double CFluidProperties::CalcEnthalpy(double temperature)
    08/2008 OK
    last change: 11/2008 NB
 **************************************************************************/
-double MFPGetNodeValue(long node, const std::string& mfp_name,
-                       int phase_number, const bool for_output)
+double MFPGetNodeValue(long node, const std::string& mfp_name, int phase_number,
+                       const bool for_output)
 {
     CFluidProperties* m_mfp = mfp_vector[max(phase_number, 0)];
     const int restore_mode = m_mfp->mode;
@@ -3489,11 +3517,12 @@ double MFPGetNodeValue(long node, const std::string& mfp_name,
                 arguments[0] = pcs->GetNodeValue(node, var_idx);
             else if ((*vec_var_names)[i] == "TEMPERATURE1")
             {
-                arguments[1] = ((pcs->getTemperatureUnit() ==
-                                       FiniteElement::CELSIUS) && for_output)
-                                   ? pcs->GetNodeValue(node, var_idx) +
-                                         PhysicalConstant::CelsiusZeroInKelvin
-                                   : pcs->GetNodeValue(node, var_idx);
+                arguments[1] =
+                    ((pcs->getTemperatureUnit() == FiniteElement::CELSIUS) &&
+                     for_output)
+                        ? pcs->GetNodeValue(node, var_idx) +
+                              PhysicalConstant::CelsiusZeroInKelvin
+                        : pcs->GetNodeValue(node, var_idx);
             }
             else if ((*vec_var_names)[i] == "CONCENTRATION1")
                 arguments[2] = pcs->GetNodeValue(node, var_idx);
