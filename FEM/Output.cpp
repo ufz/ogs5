@@ -816,7 +816,9 @@ void COutput::WriteDOMDataTEC()
             NODWriteDOMDataTEC(tec_file_name1+tec_file_name2+TEC_FILE_EXTENSION,
                                te, ele_type_name);
         if (!_ele_value_vector.empty() && _tecplot_cell_centered_element_output)
-            ELECCWriteDOMDataTec(tec_file_name1+"_ele"+tec_file_name2+TEC_FILE_EXTENSION,);
+            ELECCWriteDOMDataTec(
+                tec_file_name1 + "_ele" + tec_file_name2 + TEC_FILE_EXTENSION,
+                te, ele_type_name);
     }
 }
 
@@ -1362,9 +1364,25 @@ void COutput::WriteTECNodeData(fstream& tec_file)
    12/2005 OK GetMSH
    07/2007 NW Multi Mesh Type
 **************************************************************************/
+void COutput::WriteTECElementData(fstream& tec_file, int e_type)
+{
+    for (size_t i = 0; i < m_msh->ele_vector.size(); i++)
+    {
+        if (!m_msh->ele_vector[i]->GetMark())
+            continue;
+        // NW
+        if (m_msh->ele_vector[i]->GetElementType() == e_type)
+            m_msh->ele_vector[i]->WriteIndex_TEC(tec_file);
+    }
+}
+
+/**************************************************************************
+   FEMLib-Method:
+   Task:
+**************************************************************************/
 void COutput::WriteTECElementData(fstream& tec_file,
                                   int e_type,
-                                  int mat_group_idx)
+                                  unsigned mat_group_idx)
 {
     for (size_t i = 0; i < m_msh->ele_vector.size(); i++)
     {
@@ -1372,9 +1390,7 @@ void COutput::WriteTECElementData(fstream& tec_file,
             continue;
         // NW
         if (m_msh->ele_vector[i]->GetElementType() == e_type &&
-            // ignore MG filter if mat_group_idx<0
-            (mat_group_idx<0 ||
-               m_msh->ele_vector[i]->GetPatchIndex()==unsigned (mat_group_idx)))
+            m_msh->ele_vector[i]->GetPatchIndex() == mat_group_idx)
             m_msh->ele_vector[i]->WriteIndex_TEC(tec_file);
     }
 }
@@ -1540,15 +1556,17 @@ void COutput::ELECCWriteDOMDataTec(std::string const & tec_file_name,
 {
     fstream tec_file;
     if (!open_tec_file(tec_file_name,tec_file))
-        continue;
+        return;
     if (_tecplot_zones_for_mg)
     {
         unsigned written_zones =1;//some MG may be skipped if empty for this element type
         for(unsigned int mg_idx=0; mg_idx<m_msh->max_mmp_groups;++mg_idx)
         {
-            if(WriteELEValuesTECHeader(tec_file, te,ele_type_name,mg_idx,written_zones))
+            if (WriteELECellCenteredValuesTECHeader(tec_file, te, ele_type_name,
+                                                    mg_idx, written_zones))
             {
-                WriteELEValuesTECData(tec_file, te,mg_idx,written_zones);
+                WriteELECellCenteredValuesTECData(tec_file, te, mg_idx,
+                                                  written_zones);
                 ++written_zones;
                 if (!tecplot_zone_share || ! _new_file_opened)
                     WriteTECElementData(tec_file,te,mg_idx);
@@ -1558,8 +1576,8 @@ void COutput::ELECCWriteDOMDataTec(std::string const & tec_file_name,
     else
     {
         //--------------------------------------------------------------------
-        WriteELEValuesTECHeader(tec_file, te,ele_type_name);
-        WriteELEValuesTECData(tec_file, te);
+        WriteELECellCenteredValuesTECHeader(tec_file, te, ele_type_name);
+        WriteELECellCenteredValuesTECData(tec_file, te);
         //--------------------------------------------------------------------
         if (!tecplot_zone_share || ! _new_file_opened)
             WriteTECElementData(tec_file,te);
@@ -1567,18 +1585,25 @@ void COutput::ELECCWriteDOMDataTec(std::string const & tec_file_name,
     }
 }
 
-void COutput::WriteELECellCenteredValuesTECHeader(fstream& tec_file,
+bool COutput::WriteELECellCenteredValuesTECHeader(fstream& tec_file,
                                                   int e_type,
-                                                  string const & ele_type_name)
+                                                  const string& ele_type_name,
+                                                  unsigned mg_idx,
+                                                  unsigned written_zones)
 {
-        // OK411
+    // OK411
     size_t no_elements = 0;
-
     const size_t mesh_ele_vector_size(m_msh->ele_vector.size());
     for (size_t i = 0; i < mesh_ele_vector_size; i++)
-        if (m_msh->ele_vector[i]->GetMark())
-            if (m_msh->ele_vector[i]->GetElementType() == e_type)
-                no_elements++;
+        if (m_msh->ele_vector[i]->GetMark() &&
+            m_msh->ele_vector[i]->GetElementType() == e_type &&
+            (!_tecplot_zones_for_mg ||
+             m_msh->ele_vector[i]->GetPatchIndex() == mg_idx))
+            no_elements++;
+    // if zone would be empty, skip
+    if (no_elements == 0)
+        return false;
+    // else write header
     //--------------------------------------------------------------------
     // Write Header I: variables
     tec_file << "VARIABLES = \"X\",\"Y\",\"Z\",\"VX\",\"VY\",\"VZ\"";
@@ -1594,22 +1619,28 @@ void COutput::WriteELECellCenteredValuesTECHeader(fstream& tec_file,
 
     // Write Header II: zone
     tec_file << "ZONE T=\"";
-    tec_file << _time << "s\" \n";
+    ;
+    if (_tecplot_zones_for_mg)
+        tec_file << "MG" << mg_idx << " ";
+    tec_file << _time << "s\"\n";
     tec_file << "Nodes= " << m_msh->GetNodesNumber(false) << ", ";
     tec_file << "Elements=" << no_elements << ", ";
     tec_file << "ET ="<< ele_type_name <<" \n";
     //--------------------------------------------------------------------
     // Write Header III: solution time			; BG 05/2011
-    tec_file << "STRANDID=1, SOLUTIONTIME=";
-    tec_file << _time;  // << "s\"";
-    tec_file << "\n";
+    tec_file << "STRANDID=" << (!_tecplot_zones_for_mg ? 1 : written_zones);
+    tec_file << ", SOLUTIONTIME=" << _time << "\n";  // << "s\"";
     tec_file << "F = FEBLOCK, VARLOCATION=([4-" << n_out_vars << "] = CELLCENTERED)";
     tec_file << "\n";
-    if (_new_file_opened && tecplot_zone_share)  // 08.2012. WW
+    if (tecplot_zone_share)
     {
-        tec_file << "VARSHARELIST=([1-3]=1), ";
-        tec_file << "CONNECTIVITYSHAREZONE=1\n";
+        if (_new_file_opened)
+            tec_file << "CONNECTIVITYSHAREZONE="
+                     << (!_tecplot_zones_for_mg ? 1 : written_zones) << ", ";
+        if (_new_file_opened || (_tecplot_zones_for_mg && written_zones > 1))
+            tec_file << "VARSHARELIST=([1-3]=1)\n";
     }
+    return true;
 }
 
 
@@ -1639,14 +1670,18 @@ void COutput::WriteELEValuesTECHeader(fstream& tec_file)
    Programing:
    09/2019 JT
 **************************************************************************/
-void COutput::WriteELECellCenteredValuesTECData(fstream& tec_file, int e_type)
+void COutput::WriteELECellCenteredValuesTECData(fstream& tec_file, int e_type,
+                                                unsigned mg_idx,
+                                                unsigned written_zones)
 {
     CRFProcess* m_pcs_2 = NULL;
     if (_ele_value_vector.empty())
         return;
 
     // output of node coordinates (not necesary to output all, but simpler here)
-    if (!tecplot_zone_share || !_new_file_opened)
+    // if zone share is requested only for first zone in each file
+    if (!tecplot_zone_share ||
+        (!_new_file_opened && (!_tecplot_zones_for_mg || written_zones == 1)))
     {
     // streams for buffering since block output is mandatory
         std::stringstream y_vals, z_vals;
@@ -1726,7 +1761,8 @@ void COutput::WriteELECellCenteredValuesTECData(fstream& tec_file, int e_type)
     for (size_t i = 0; i < m_msh->ele_vector.size(); i++)
     {
         m_ele = m_msh->ele_vector[i];
-        if (!m_ele->GetMark() || m_ele->GetElementType()!= e_type)
+        if (!m_ele->GetMark() || m_ele->GetElementType() != e_type ||
+            (_tecplot_zones_for_mg && m_ele->GetPatchIndex() != mg_idx))
             continue;
 
         if (out_element_vel)  // WW

@@ -139,18 +139,18 @@ protected:
     void WriteTECHeader(std::fstream&, int, std::string const &);
     // cell centered element values domain output
     void ELECCWriteDOMDataTec(std::string const &, int, std::string  const &);
-    void WriteELECellCenteredValuesTECHeader(std::fstream&, int, std::string const &);
-    void WriteELECellCenteredValuesTECData(std::fstream&, int);
-    // helper fucntions for domain output
-    bool open_tec_file(std::string const&,std::fstream&) const;
-    /**
-     * Write Element connectivity,
-     * @param out outstream for output
-     * @param elem_type Enum of elem_type to print
-     * @param mg_idx Index of Material group to print, Default -1
-     *               if mg_idx<0 elements of all MG are printed
-     */
-    void WriteTECElementData(std::fstream&, int, int mg_idx=-1);
+    bool WriteELECellCenteredValuesTECHeader(std::fstream&, int,
+                                             std::string const&,
+                                             unsigned mg_idx = 0,
+                                             unsigned written = 0);
+    void WriteELECellCenteredValuesTECData(std::fstream&, int,
+                                           unsigned mg_idx = 0,
+                                           unsigned written = 0);
+    // helper functions for domain output
+    bool open_tec_file(std::string const&, std::fstream&) const;
+    void WriteTECElementData(std::fstream&, int);
+    void WriteTECElementData(std::fstream&, int, unsigned MG_idx);
+
 public:
     void NODWriteSFCDataTEC(int);
     void NODWriteSFCAverageDataTEC(double, int);  // OK
