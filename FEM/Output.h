@@ -131,15 +131,26 @@ public:
     void WriteDOMDataTEC();
     void ELEWriteDOMDataTEC();
 protected:
-    void NODWriteDOMDataTEC(std::string, int, std::string  const &);
-    void WriteTECHeader(std::fstream&, int, std::string const &);
-    bool open_tec_file(std::string const&,std::fstream&) const;
-    void WriteTECNodeData(std::fstream&);
-    void WriteTECElementData(std::fstream&, int);
     void WriteELEValuesTECHeader(std::fstream&);
-    void WriteELECellCenteredValuesTECHeader(std::fstream&, int, std::string const &);
     void WriteELEValuesTECData(std::fstream&);
-    void WriteELECellCenteredValuesTECData(std::fstream&, int);
+    //nodal values domain output
+    void NODWriteDOMDataTEC(std::string, int, std::string  const &);
+    void WriteTECNodeData(std::fstream&);
+    void WriteTECHeader(std::fstream&, int, std::string const &);
+    // cell centered element values domain output
+    void ELECCWriteDOMDataTec(std::string const &, int, std::string  const &);
+    bool WriteELECellCenteredValuesTECHeader(std::fstream&, int,
+                                             std::string const&,
+                                             unsigned mg_idx = 0,
+                                             unsigned written = 0);
+    void WriteELECellCenteredValuesTECData(std::fstream&, int,
+                                           unsigned mg_idx = 0,
+                                           unsigned written = 0);
+    // helper functions for domain output
+    bool open_tec_file(std::string const&, std::fstream&) const;
+    void WriteTECElementData(std::fstream&, int);
+    void WriteTECElementData(std::fstream&, int, unsigned MG_idx);
+
 public:
     void NODWriteSFCDataTEC(int);
     void NODWriteSFCAverageDataTEC(double, int);  // OK
@@ -286,6 +297,10 @@ private:
     bool tecplot_zone_share;  // 10.2012. WW
 
     bool _tecplot_cell_centered_element_output;
+
+    /// Split Tecplot *element* output in zones for each MG
+    /// defaults to false if not tag not present in *.out file
+    bool _tecplot_zones_for_mg;
 
 #if defined(USE_PETSC) || \
     defined(USE_MPI)  //|| defined(other parallel libs)//03.3012. WW
