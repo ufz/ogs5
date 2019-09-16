@@ -1119,35 +1119,18 @@ void CFiniteElementVec::LocalAssembly(const int update)
             _nodal_p2[i] = h_pcs->GetNodeValue(nodes[i], idx_P2);
         }
     }
-
     if (_nodal_S0)
     {
-        if (_flow_type == FiniteElement::PS_GLOBAL)
-        {
-            for (int i = 0; i < nnodes; i++)
-            {
-                _nodal_S0[i] = h_pcs->GetNodeValue(nodes[i], idx_S0);
-            }
-        }
-        else
-        {
-            const double fac =
-                (_flow_type == FiniteElement::RICHARDS_FLOW) ? -1.0 : 1.0;
-            for (int i = 0; i < nnodes; i++)
-            {
-                _nodal_S0[i] = m_mmp->SaturationCapillaryPressureFunction(
-                    fac * h_pcs->GetNodeValue(nodes[i], idx_P1 - 1));
-            }
-        }
-    }
-    if (_nodal_S && (_flow_type != FiniteElement::PS_GLOBAL))
-    {
-        const double fac =
-            (_flow_type == FiniteElement::RICHARDS_FLOW) ? -1.0 : 1.0;
         for (int i = 0; i < nnodes; i++)
         {
-            _nodal_S[i] =
-                m_mmp->SaturationCapillaryPressureFunction(fac * _nodal_p1[0]);
+            _nodal_S0[i] = h_pcs->GetNodeValue(nodes[i], idx_S0);
+        }
+    }
+    if (_nodal_S)
+    {
+        for (int i = 0; i < nnodes; i++)
+        {
+            _nodal_S[i] = h_pcs->GetNodeValue(nodes[i], idx_S);
         }
     }
 
