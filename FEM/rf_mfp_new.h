@@ -90,7 +90,8 @@ public:
     double getReferenceTemperature() const { return T_0; }
     std::ios::pos_type Read(std::ifstream*);
     void Write(std::ofstream*) const;
-    void CalPrimaryVariable(std::vector<std::string>& pcs_name_vector);
+    void CalPrimaryVariable(
+        std::vector<std::string> const& pcs_variable_name_vector);
     // Add an argument: double* variables = NULL. 28.05.2008 WW
     double Density(double* variables = NULL);
     double GetElementValueFromNodes(long ElementIndex,

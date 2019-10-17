@@ -8481,7 +8481,8 @@ void CSolidProperties::AddStain_by_HL_ODS(const ElementValue_DM* ele_val,
    11/2005 CMCD From fluid properties
    last modified:
 **************************************************************************/
-void CSolidProperties::CalPrimaryVariable(vector<string>& pcs_name_vector)
+void CSolidProperties::CalPrimaryVariable(
+    vector<string> const& pcs_variable_name_vector)
 {
     CRFProcess* m_pcs = NULL;
 
@@ -8489,12 +8490,12 @@ void CSolidProperties::CalPrimaryVariable(vector<string>& pcs_name_vector)
     if (!Fem_Ele_Std)  // OK
         return;
 
-    for (size_t i = 0; i < pcs_name_vector.size(); i++)
+    for (size_t i = 0; i < pcs_variable_name_vector.size(); i++)
     {
-        m_pcs = PCSGet(pcs_name_vector[i], true);
+        m_pcs = PCSGet(pcs_variable_name_vector[i], true);
         if (!m_pcs)
             return;  // MX
-        nidx0 = m_pcs->GetNodeValueIndex(pcs_name_vector[i]);
+        nidx0 = m_pcs->GetNodeValueIndex(pcs_variable_name_vector[i]);
         nidx1 = nidx0 + 1;
 
         if (mode == 0)  // Gauss point values

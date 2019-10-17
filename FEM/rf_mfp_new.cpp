@@ -1036,7 +1036,7 @@ void MFPWrite(std::string base_file_name)
    last modification:
 **************************************************************************/
 void CFluidProperties::CalPrimaryVariable(
-    std::vector<std::string>& pcs_name_vector)
+    std::vector<std::string> const& pcs_variable_name_vector)
 {
     CRFProcess* m_pcs = NULL;
 
@@ -1048,13 +1048,14 @@ void CFluidProperties::CalPrimaryVariable(
     primary_variable[1] = 0.;
     primary_variable[2] = 0;
 
-    for (int i = 0; i < (int)pcs_name_vector.size(); i++)
+    for (int i = 0; i < (int)pcs_variable_name_vector.size(); i++)
     {
         // MX  m_pcs = PCSGet("HEAT_TRANSPORT");
-        m_pcs = PCSGet(pcs_name_vector[i], true);
+        m_pcs = PCSGet(pcs_variable_name_vector[i], true);
         if (!m_pcs)
         {
-            if (pcs_name_vector[i].find("TEMPERATURE1") != std::string::npos)
+            if (pcs_variable_name_vector[i].find("TEMPERATURE1") !=
+                std::string::npos)
             {
                 const double T_ref =
                     PhysicalConstant::CelsiusZeroInKelvin + 20.0;
@@ -1066,7 +1067,7 @@ void CFluidProperties::CalPrimaryVariable(
             else
                 return;
         }
-        nidx0 = m_pcs->GetNodeValueIndex(pcs_name_vector[i]);
+        nidx0 = m_pcs->GetNodeValueIndex(pcs_variable_name_vector[i]);
         nidx1 = nidx0 + 1;
 
         if (mode == 0)  // Gauss point values
@@ -1094,7 +1095,7 @@ void CFluidProperties::CalPrimaryVariable(
         }
         else
         {
-            if (pcs_name_vector[i].compare("TEMPERATURE1") == 0)
+            if (pcs_variable_name_vector[i].compare("TEMPERATURE1") == 0)
             {
                 primary_variable[i] = _reference_temperature;
             }
