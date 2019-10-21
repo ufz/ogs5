@@ -371,7 +371,8 @@ private:
     double specific_heat_source;
 
     // CMCD
-    void CalPrimaryVariable(std::vector<std::string>& pcs_name_vector);
+    void CalPrimaryVariable(
+        std::vector<std::string> const& pcs_variable_name_vector);
 
     bool CheckTemperature_in_PhaseChange(const double T0, const double T1);
     double Enthalpy(double temperature, const double latent_factor);
