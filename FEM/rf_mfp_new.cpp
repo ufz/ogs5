@@ -561,6 +561,8 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
                         break;
                     case 'W':  // WATER
                         fluid_id = 1;
+                        arg1 = "PRESSURE1";
+                        arg2 = "TEMPERATURE1";
                         break;
                     case 'M':  // METHANE
                         fluid_id = 2;
@@ -591,7 +593,7 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
                     arg2 = "TEMPERATURE1";
 
                 viscosity_pcs_name_vector.push_back(arg1);
-                if (T_Process)
+                if (T_Process || fluid_id == 1)
                     viscosity_pcs_name_vector.push_back(arg2);
             }
             // AKS
@@ -1057,8 +1059,7 @@ void CFluidProperties::CalPrimaryVariable(
             if (pcs_variable_name_vector[i].find("TEMPERATURE1") !=
                 std::string::npos)
             {
-                const double T_ref =
-                    PhysicalConstant::CelsiusZeroInKelvin + 20.0;
+                const double T_ref = _reference_temperature;
                 primary_variable_t0[i] = T_ref;
                 primary_variable_t1[i] = T_ref;
                 primary_variable[i] = T_ref;
