@@ -985,108 +985,104 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
             in_sd.clear();
         }
 
-        if (line_string.find("$MICRO_STRUCTURE_PLAS") !=
-            string::npos)  // WX:09.2011 for anisotropic plasticity
-        {
-            if (line_string.find("NORETURNMAPPING") != string::npos)
-                Plasticity_type =
-                    44;  // direct stress intergration anisotropic plas.
-            Plasticity_Bedding = true;
-            MicroStruTensor = new double[3];
-            Bedding_Norm = new double[3];
-            TransMicroStru = new Matrix(6, 6);
-            TransMicroStru_T = new Matrix(6, 6);
-            TransMicroStru_TInv = new Matrix(6, 6);
-            for (i = 0; i < 4; i++)
-            {
-                in_sd.str(GetLineFromFile1(msp_file));
-                in_sd >> line_string;
-                if (line_string.find("MICRO_STRUCTURE_TENSOR") != string::npos)
-                {
-                    in_sd >> MicroStruTensor[0] >> MicroStruTensor[1] >>
-                        MicroStruTensor[2];
-                }
-                else if (line_string.find("BEDDING_NORM") != string::npos)
-                {
-                    in_sd >> Bedding_Norm[0] >> Bedding_Norm[1] >>
-                        Bedding_Norm[2];
-                }
-                /*else if(line_string.find("FRICTION_CURVE")!=string::npos)
-                {
-                in_sd>>bedding_fric_curve;
-                }*/
-                else if (line_string.find("UNIAXI_COMP_CURVE") != string::npos)
-                {
-                    in_sd >> bedding_uc_curve_order;
-                    comp_para = new double[bedding_uc_curve_order + 1];
-                    for (int ii = 0; ii < bedding_uc_curve_order + 1; ii++)
-                        in_sd >> comp_para[ii];
-                }
-                else if (line_string.find("TENSION_CURVE") != string::npos)
-                {
-                    in_sd >> bedding_tens_curve_order;
-                    tens_para = new double[bedding_tens_curve_order + 1];
-                    for (int ii = 0; ii < bedding_tens_curve_order + 1; ii++)
-                        in_sd >> tens_para[ii];
-                }
-                in_sd.clear();
-            }
-            CalTransMatrixMicroStru(TransMicroStru, Bedding_Norm);
-            TransMicroStru->GetTranspose(*TransMicroStru_T);
-                        Cal_Inv_Matrix(6, TransMicroStru_T, TransMicroStru_TInv);
-            // TransMicroStru_T->Write();
-            // TransMicroStru_TInv->Write();
-            // TransMicroStru->Write();
-        }
-        in_sd.clear();
-        if (line_string.find("$WEAKNESS_PLANE") != string::npos) // LU:04.2019 for slip on prescribed plane (only shear failure, general failure on the elemen dictate by MohrCoulomb)
-        {
-            Plasticity_type = 45; // direct stress intergration anisotropic plas.
-            Plasticity_Bedding = true;
-            MicroStruTensor = new double[3];
-            Bedding_Norm = new double[3];
-            TransMicroStru = new Matrix(6, 6);
-            TransMicroStru_T = new Matrix(6, 6);
-            TransMicroStru_TInv = new Matrix(6, 6);
-            for (i = 0; i < 4; i++) // get orientation of the joint
-            {
-                in_sd.str(GetLineFromFile1(msp_file));
-                in_sd >> line_string;
-                if (line_string.find("MICRO_STRUCTURE_TENSOR") != string::npos)
-                {
-                    in_sd >> MicroStruTensor[0] >> MicroStruTensor[1] >> MicroStruTensor[2]; //LU 11.2019 not yet used
-                }
-                else if (line_string.find("WEAKPLANE_NORM") != string::npos) //same role as BEDDING_NORM previously defined
-                {
-                    in_sd >> Bedding_Norm[0] >> Bedding_Norm[1] >> Bedding_Norm[2];
-                }
-                in_sd.clear();
-            }
-            // get properties of the joint
-            Size = 6;
-            /*
-            i	parameter
-            0	cohesion of joint
-            1	friction angle of joint
-            2	dilatance angle of joint
-            3	tension strength of joint
-            4   hardening curve for friction angle of joint
-            5   hardening curve for cohesion of joint
-            */
-            data_Plasticity_joint = new Matrix(Size);
-            for (i = 0; i < Size; i++)
-            {
-                in_sd.str(GetLineFromFile1(msp_file));
-                in_sd >> (*data_Plasticity_joint)(i);
-                in_sd.clear();
-            }
-            CalTransMatrixMicroStru(TransMicroStru, Bedding_Norm);
-            TransMicroStru->GetTranspose(*TransMicroStru_T);
-            Cal_Inv_Matrix(6, TransMicroStru_T, TransMicroStru_TInv);
-        }
-        in_sd.clear();
-    }
-    return position;
+        if (line_string.find("$MICRO_STRUCTURE_PLAS") != string::npos) // WX:09.2011 for anisotropic plasticity
+			{
+				if (line_string.find("NORETURNMAPPING") != string::npos)
+					Plasticity_type = 44; // direct stress intergration anisotropic plas.
+				Plasticity_Bedding = true;
+				MicroStruTensor = new double[3];
+				Bedding_Norm = new double[3];
+				TransMicroStru = new Matrix(6, 6);
+				TransMicroStru_T = new Matrix(6, 6);
+				TransMicroStru_TInv = new Matrix(6, 6);
+				for (i = 0; i < 4; i++)
+				{
+					in_sd.str(GetLineFromFile1(msp_file));
+					in_sd >> line_string;
+					if (line_string.find("MICRO_STRUCTURE_TENSOR") != string::npos)
+					{
+						in_sd >> MicroStruTensor[0] >> MicroStruTensor[1] >> MicroStruTensor[2];
+					}
+					else if (line_string.find("BEDDING_NORM") != string::npos)
+					{
+						in_sd >> Bedding_Norm[0] >> Bedding_Norm[1] >> Bedding_Norm[2];
+					}
+					/*else if(line_string.find("FRICTION_CURVE")!=string::npos)
+					{
+					in_sd>>bedding_fric_curve;
+					}*/
+					else if (line_string.find("UNIAXI_COMP_CURVE") != string::npos)
+					{
+						in_sd >> bedding_uc_curve_order;
+						comp_para = new double[bedding_uc_curve_order + 1];
+						for (int ii = 0; ii < bedding_uc_curve_order + 1; ii++)
+							in_sd >> comp_para[ii];
+					}
+					else if (line_string.find("TENSION_CURVE") != string::npos)
+					{
+						in_sd >> bedding_tens_curve_order;
+						tens_para = new double[bedding_tens_curve_order + 1];
+						for (int ii = 0; ii < bedding_tens_curve_order + 1; ii++)
+							in_sd >> tens_para[ii];
+					}
+					in_sd.clear();
+				}
+				CalTransMatrixMicroStru(TransMicroStru, Bedding_Norm);
+				TransMicroStru->GetTranspose(*TransMicroStru_T);
+				Cal_Inv_Matrix(6, TransMicroStru_T, TransMicroStru_TInv);
+				// TransMicroStru_T->Write();
+				// TransMicroStru_TInv->Write();
+				// TransMicroStru->Write();
+			}
+			in_sd.clear();
+			if (line_string.find("$WEAKNESS_PLANE") != string::npos) // LU:04.2019 for slip on prescribed plane (only failure, not checked for general failure on the element)
+			{
+				Plasticity_type = 45; // direct stress intergration anisotropic plas.
+				Plasticity_Bedding = true;
+				MicroStruTensor = new double[3];
+				Bedding_Norm = new double[3];
+				TransMicroStru = new Matrix(6, 6);
+				TransMicroStru_T = new Matrix(6, 6);
+				TransMicroStru_TInv = new Matrix(6, 6);
+				for (i = 0; i < 4; i++) // get orientation of the joint
+				{
+					in_sd.str(GetLineFromFile1(msp_file));
+					in_sd >> line_string;
+					if (line_string.find("MICRO_STRUCTURE_TENSOR") != string::npos)
+					{
+						in_sd >> MicroStruTensor[0] >> MicroStruTensor[1] >> MicroStruTensor[2];
+					}
+					else if (line_string.find("WEAKPLANE_NORM") != string::npos) //same role as BEDDING_NORM previously defined
+					{
+						in_sd >> Bedding_Norm[0] >> Bedding_Norm[1] >> Bedding_Norm[2];
+					}
+					in_sd.clear();
+				}
+				// get properties of the joint
+				Size = 6;
+				/*
+				i	parameter
+				0	cohesion of joint
+				1	friction angle of joint
+				2	dilatance angle of joint
+				3	tension strength of joint
+				4   hardening curve for friction angle of joint
+				5   hardening curve for cohesion of joint
+				*/
+				data_Plasticity_joint = new Matrix(Size_j);
+				for (i = 0; i < Size; i++)
+				{
+					in_sd.str(GetLineFromFile1(msp_file));
+					in_sd >> (*data_Plasticity_joint)(i);
+					in_sd.clear();
+				}
+				CalTransMatrixMicroStru(TransMicroStru, Bedding_Norm);
+				TransMicroStru->GetTranspose(*TransMicroStru_T);
+				Cal_Inv_Matrix(6, TransMicroStru_T, TransMicroStru_TInv);
+			}
+			in_sd.clear();
+		}
+		return position;
 }
 
 //==========================================================================
@@ -1269,6 +1265,8 @@ CSolidProperties::~CSolidProperties()
         delete data_Youngs;
     if (data_Plasticity)
         delete data_Plasticity;
+    if (data_Plasticity_joint)
+        delete data_Plasticity_joint;
     if (data_Capacity)
         delete data_Capacity;
     if (data_Conductivity)
@@ -1285,6 +1283,7 @@ CSolidProperties::~CSolidProperties()
     data_Density = NULL;
     data_Youngs = NULL;
     data_Plasticity = NULL;
+    data_Plasticity_joint = NULL;
     data_Capacity = NULL;
     data_Conductivity = NULL;
     data_Creep = NULL;
@@ -2809,27 +2808,24 @@ void CSolidProperties::CalculateCoefficent_MOHR(
             tension = Y0 / tan(theta);
     }
 }
-void CSolidProperties::CalculateCoefficent_MOHRjoint(double ep, double scalar_comp, double scalar_tens) // LU:11.2019,
-                                                                                                        // 
+
+void CSolidProperties::CalculateCoefficent_MOHRjoint(
+    double ep, double scalar_comp, double scalar_tens)  // WX:11.2010,
+// 09.2011
 {
     int valid = 1;
-    thetaj = (*data_Plasticity_joint)(1) * PI / 180;
-    phij = (*data_Plasticity_joint)(2) * PI / 180;
+    double thetaj = (*data_Plasticity_joint)(1) * PI / 180;
+    double phij = (*data_Plasticity_joint)(2) * PI / 180;
     Y0j = (*data_Plasticity_joint)(0);
     tensionj = (*data_Plasticity_joint)(3);
 
     if ((*data_Plasticity_joint)(5) > 0 && (*data_Plasticity_joint)(5) < 100)
-        thetaj = GetCurveValue((int)(*data_Plasticity_joint)(5), 0, ep, &valid) * PI / 180;
+        thetaj =
+            GetCurveValue((int)(*data_Plasticity_joint)(5), 0, ep, &valid) * PI / 180;
     if ((*data_Plasticity_joint)(4) > 0 && (*data_Plasticity_joint)(4) < 100)
-        Y0j = GetCurveValue((int)(*data_Plasticity_joint)(4), 0, ep, &valid);
+        Y0j = GetCurveValue((int)(*data_Plasticity)(4), 0, ep, &valid);
 
-    //Nthetaj = (1 + sin(thetaj)) / (1 - sin(thetaj));
-    //Nphij = (1 + sin(phij)) / (1 - sin(phij));
-    //csnj = 2 * Y0j * sqrt(Nthetaj);
-    //if (tension < 0 || tension > Y0j / tan(thetaj))
-    //		tensionj = Y0j / tan(thetaj);
-    tensionj = (*data_Plasticity_joint)(3);  // 
-
+    
 }
 void CSolidProperties::CalculateCoefficent_HOEKBROWN()  // WX: 02.2011
 {
@@ -3765,12 +3761,16 @@ int CSolidProperties::StressIntegrationMOHR_Joint(const int GPiGPj, const Elemen
     int Dim = 2;
     int Size = std::min(std::size_t(6ul), ele_val->Stress->Rows());
     double  TmpValue1, TmpValue2, dstrNorm = 0;
+    ;
+    //double LodeAngle, I1, J2, J3, sqrtJ2;
     double shearsurf, tensionsurf, ep, dlamda = 0.0 /*, dlamda_0, dlamda_1*/; //, ddlamda, Jacob;
 
-    // initialize all vectors
+                                                                              // initialize all vectors
     double dstrs[6] = { 0. }, TryStress_0[6] = { 0. }, TryStr_buff[6] = { 0. }, TmpStress0_m[6],  TmpStress[6] = { 0. }, tmp_prin_str[6] = { 0. }, tmp_prin_dir[9] = { 0. };
-    double dstrainP[6] = { 0. }, dstressP[6] = { 0. };
+    double  dstrainP[6] = { 0. }, dstressP[6] = { 0. }; // TmpStress_m[6] = { 0. }, TmpStress0[6] = { 0. }, devStr[6] = { 0. },
     double prin_str[6] = { 0. }, prin_str0[6] = { 0. }, prin_dir[9] = { 0. };
+    //double sqrt3 = sqrt(3.0);
+    //bool lode_out_range = false;
     double TryStress_local[6] = { 0, }, dstrs_local[6] = { 0. };
 
     *TmpDe = (0.);
@@ -3781,11 +3781,14 @@ int CSolidProperties::StressIntegrationMOHR_Joint(const int GPiGPj, const Elemen
 
     *TmpDe = *Dep;
 
+    // ConstitutiveMatrix->resize(Size,Size);		//in head already defined, and is used for later as global variable
+
     *ConstitutiveMatrix = (0.);
 
     ep = (*ele_val->pStrain)(GPiGPj); // get eff plas strain
-    double id_fs_n[6] = { 0, 0, 1, 0, 0, 0 }; 
+    double id_fs_n[6] = { 0, 0, 1, 0, 0, 0 }; // to remove dilation effect on stress {0, 0, 0, 0, 0, 0}; 
     double id_fs_s[6] = { 0, 0, 0, 0, 1, 1 };
+    //double Kronecker[6] = { 1, 1, 1, 0, 0, 0 };
 
     if (Size > 4)
         Dim = 3;
@@ -3800,13 +3803,18 @@ int CSolidProperties::StressIntegrationMOHR_Joint(const int GPiGPj, const Elemen
         //TmpStress_m[i] = TryStr_buff[i];
         dstrNorm += dstrs[i] * dstrs[i];
     }
+    //if (Size == 4)
+    //	TryStr_buff[4] = TryStr_buff[5] = 0.;
+    //if (dstrNorm < MKleinsteZahl)
+    //	return 0;
+
+    CalPrinStrDir(TryStr_buff, prin_str, prin_dir, Dim);
     // evaluate Mohr_Coulomb on the matrix ;
-    
-    CalPrinStrDir(TryStr_buff, prin_str, prin_dir, Dim);    
     CalTransMatrixA(prin_dir, TransMatrixA, Size);
     TransMatrixA->GetTranspose(*TransMatrixA_T);
     Cal_Inv_Matrix(Size, TransMatrixA, Inv_TransA);
     Inv_TransA->GetTranspose(*Inv_TransA_T);
+    // Inv_TransA_T->multi(*Dep, *Inv_TransA, *PrinDe);  //De in prin. (A^-T De A^-1)
     *TmpDe = (0.);
     Inv_TransA_T->multi(*Dep, *Inv_TransA, *TmpDe); // De in prin. coord.
     for (i = 0; i < Size; i++)
@@ -3816,17 +3824,20 @@ int CSolidProperties::StressIntegrationMOHR_Joint(const int GPiGPj, const Elemen
     if (Size == 4)
         TmpStress0_m[4] = TmpStress0_m[5] = 0.;
     CalPrinStrDir(TmpStress0_m, tmp_prin_str, tmp_prin_dir, Dim); // prin. stresses t0
+
     CalculateCoefficent_MOHR(ep, 0, 0);
     
     shearsurf = Ntheta * prin_str[0] - prin_str[2] - csn;
     tensionsurf = prin_str[0] - tension;
 
+    /*		*/
     //beginning of tension or shear rupture in the matrix
     if (dstrNorm == 0)
     {
         shearsurf = -1;
         tensionsurf = -1;
     }
+    //std::cout << "Shearsurf " << shearsurf << " tensionsurf " << tensionsurf <<endl;
     if ((shearsurf > 0) || (tensionsurf > 0))
     {
         std::cout << " Stating plastic matrix calculation for element with GPiGPj " << GPiGPj << endl;
@@ -4222,6 +4233,7 @@ int CSolidProperties::StressIntegrationMOHR_Joint(const int GPiGPj, const Elemen
             //dstrs[i] = TryStress[i]; // d_stress
             TryStress[i] = (*ele_val->Stress)(i, GPiGPj); // stress_0
             TryStr_buff[i] = TryStress[i] + dstrs[i];
+            //TryStress_0[i] = TryStr_buff[i];
             normdstr += fabs(dstrs[i]);
         }
         /*if (normdstr < MKleinsteZahl)
@@ -4239,7 +4251,14 @@ int CSolidProperties::StressIntegrationMOHR_Joint(const int GPiGPj, const Elemen
         *TmpMatrix = (0.);
         *TmpMatrix2 = (0.);
         CalculateCoefficent_MOHRjoint(ep, 0, 0);
-        tensionsurf = -1; //TryStr_buff[2]; // tensile behavior not yet included
+        if (GPiGPj == 5)
+            {
+            std::cout << "Princ, 1 (vert) -5.50e+06 , 2 (along strike) -3.70e+06 ,  stress 3 (perp to strike) -2.80e+06  for elem " << (*ele_val->GetIndex(), ele_value_id) << endl;
+            std::cout << "OGS , stress_xx " << (*ele_val->Stress)(0, GPiGPj) << " , stress_yy " << (*ele_val->Stress)(1, GPiGPj) << " , stress_zz " << (*ele_val->Stress)(2, GPiGPj) << " , stress_xy " << (*ele_val->Stress)(3, GPiGPj) << " , stress_xz " << (*ele_val->Stress)(4, GPiGPj) << " , stress_yz " << (*ele_val->Stress)(5, GPiGPj) << endl;
+            std::cout << "stress local_11 " << TryStr_buff[0] << " , stress local_22 " << TryStr_buff[1] << " , stress local_33 " << TryStr_buff[2] << " SHEAR local_12 " << TryStr_buff[3] << " , local_13 " << TryStr_buff[4] << " , local_23  " << TryStr_buff[5] << endl;
+            shearsurf = sqrt((TryStr_buff[5] * TryStr_buff[5]) + (TryStr_buff[4] * TryStr_buff[4])) + TryStr_buff[2] * tan(thetaj) - Y0j;
+            }
+        tensionsurf = -1; //TryStr_buff[2];
         if (tensionsurf > 1e-5)
             {
             //std::cout << "Shearsurf on joint" << shearsurf << endl;     
@@ -4250,10 +4269,28 @@ int CSolidProperties::StressIntegrationMOHR_Joint(const int GPiGPj, const Elemen
             //id_fs_s[4] =-1 ;
             }
         double shearstress = sqrt((TryStr_buff[5] * TryStr_buff[5]) + (TryStr_buff[4] * TryStr_buff[4]));
-        
+        if (fabs(shearstress < 150000 ) || ep > 0.0035) 
+            {
+            shearsurf = -1;
+            }
+        //std::cout << "Shear stress 3,4,5 " << shearstress << " Normal Stress " << tensionsurf <<endl;
         if (tensionsurf < 1e-5 && shearsurf > 1e-5 ) // || tensionsurf > 1e-5) // start check of Mohr-Copulomb rupture in the joint
         {
             yield = 1;
+            //std::cout << " Stating plastic joint calculation for element with GPiGPj " << GPiGPj << endl;
+            //if (tensionsurf > 1e-5)
+            //{
+            //double Ei_new = (*data_Youngs)(0);
+            //Ei_new = Ei*1e3;
+            //(*data_Youngs)(0) = Ei_new;
+            //return 0;
+            //}
+            //else
+            //{
+            //std::cout << "Shearsurf on joint" << shearsurf << endl;
+            
+
+            //std::cout << "First shearsurf, shear stresses " << TryStr_buff[4] << " , " << TryStr_buff[5] << " shear strength " << TryStr_buff[2] * tan((*data_Plasticity_joint)(1) * PI / 180) - Y0j << " normal comp " << TryStr_buff[2] << endl;
             double shear_stress_module = 0.0;
             double dsig_dlamda[6] = { 0. }, /*dsig_dlamda_k1[6]={0.}, dft_dsig[6] = {0.},*/ dfs_dsig[6] = { 0. },
                 dgs_dsig[6] = { 0. }, shear_cos_direction[6] = { 0. };
@@ -4274,11 +4311,14 @@ int CSolidProperties::StressIntegrationMOHR_Joint(const int GPiGPj, const Elemen
                     TryStr_buff[i] = TmpStress[i];
                 }
 
+
                 while (1)
                 {
                     shear_stress_module = sqrt((TmpStress[5] * TmpStress[5]) + (TmpStress[4] * TmpStress[4]));//+(TmpStress[3]*TmpStress[3]));
+
                     for (i = 0; i < Size; i++)
                         shear_cos_direction[i] = id_fs_s[i] * TmpStress[i] / shear_stress_module;
+
 
                     if (first_step)
                     {
@@ -4288,6 +4328,7 @@ int CSolidProperties::StressIntegrationMOHR_Joint(const int GPiGPj, const Elemen
                             dgs_dsig[i] = id_fs_n[i] * tan(phij) + shear_cos_direction[i];;
                         }
                     }
+                    //
                     if (counter == 0)
                     {
                         //std::cout << " Counter is still 0, first_step " << first_step << " shearsurf_k1 is "<< shearsurf_k1 <<endl;
@@ -4343,10 +4384,12 @@ int CSolidProperties::StressIntegrationMOHR_Joint(const int GPiGPj, const Elemen
                             lamda_neg = dlamda;
                             counter++;
                         }
+                    //std::cout << "Iteration " << counter << " Ssurf_k1 on joint " << shearsurf_k1 << " Lambda pos " << lamda_pos << " ssurf pos " << shearsurf_pos << " Lambda neg " << lamda_neg << " ssurf neg " << shearsurf_neg << endl;  
                     }
                     else
                     {
                         counter++;
+                        //std::cout << "Loop counter " << counter << ". Shearsurf = shearsurf_k1 is minor than 1e-3 ? " << shearsurf_k1 << endl;
                         if (fabs(shearsurf_k1) < 1e-3)
                         {
                             // for(i=0;i<Size;i++)
@@ -4397,14 +4440,24 @@ int CSolidProperties::StressIntegrationMOHR_Joint(const int GPiGPj, const Elemen
 
                     }
                     CalculateCoefficent_MOHRjoint(ep, 0, 0); // LU update coefficeint during calculations
-                    
+                    /*if (!Plasticity_Bedding)
+                    {
+                    }
+                    else
+                    {
+                    *TmpMatrix = (0.);*TmpMatrix2 = (0.);CalPrinStrDir(TmpStress, tmp_prin_str, tmp_prin_dir, Dim);CalTransMatrixA(tmp_prin_dir, TmpMatrix, Size);					TmpMatrix->GetTranspose(*TmpMatrix2);					for (i = 0; i < Size; i++)					{						TmpStrComp[i] = 0.;						TmpStrTens[i] = 0.;						if (tmp_prin_str[i] < MKleinsteZahl)							TmpPrinStrComp[i] = tmp_prin_str[i];						else							TmpPrinStrTens[i] = tmp_prin_str[i];					}					TmpMatrix2->multi(TmpPrinStrComp, TmpStrComp);					TmpMatrix2->multi(TmpPrinStrTens, TmpStrTens);					AnisoParaComp = CalAnisoPara(TmpStrComp, MicroStruTensor);					AnisoParaTens = CalAnisoPara(TmpStrTens, MicroStruTensor);					//CalculateCoefficent_MOHR(ep, AnisoParaComp, AnisoParaTens);				    CalculateCoefficent_MOHR(ep, 0, 0); //ignore anisotropy LU 06.2019
+                    }
+
+                    */
                     shear_stress_module = sqrt((TmpStress[5] * TmpStress[5]) + (TmpStress[4] * TmpStress[4]));//+(TmpStress[3]*TmpStress[3]));
                     for (i = 0; i < Size; i++)
                         shear_cos_direction[i] = id_fs_s[i] * TmpStress[i] / shear_stress_module;
 
                     shearsurf_k1 = sqrt((TmpStress[5] * TmpStress[5]) + (TmpStress[4] * TmpStress[4])) + TmpStress[2] * tan(thetaj) - Y0j;
                     std::cout << "Iteration " << counter << " Ssurf_k1 on joint " << shearsurf_k1 << " Lambda pos " << lamda_pos << " ssurf pos " << shearsurf_pos << " Lambda neg " << lamda_neg << " ssurf neg " << shearsurf_neg << endl;  
-
+            
+                    // std::cout << "Lambda pos" << lamda_pos << "ssurf pos" << shearsurf_pos << endl;    
+                    // std::cout << "Lambda neg" << lamda_neg << "ssurf neg" << shearsurf_neg << endl;  
                     if (tensionsurf > 1e-5)
                     {
                             shearsurf_k1 = -1;//sqrt((TmpStress[5] * TmpStress[5]) + (TmpStress[4] * TmpStress[4]));
@@ -4413,7 +4466,9 @@ int CSolidProperties::StressIntegrationMOHR_Joint(const int GPiGPj, const Elemen
                             if (fabs(shearsurf_k1) < 1e-6)
                                 break;
                     }
-                    
+                    //tensionsurf = -1.e5;
+                    //std::cout << i	<<"Freshly baked shearsurf_k1, shear stresses "	<< TmpStress[4] << " , " << TmpStress[5] <<" shear strength " <<  TmpStress[2] * tan((*data_Plasticity)(1) * PI / 180) - Y0 <<" normal comp"	<<TmpStress[2] <<endl;
+
                 } // end while for dlamda
                   // calculate Dep
                   // dsig_dlamda = -De dG/dstr
@@ -4455,12 +4510,14 @@ int CSolidProperties::StressIntegrationMOHR_Joint(const int GPiGPj, const Elemen
             for (i = 0; i < Size; i++)
                 TryStress[i] = 0;
             TransMicroStru_T->multi(TmpStress, TryStress);
-            /* for (i = 0; i < Size; i++) //LU output to check stress values 06.19
+            //std::cout << "Final shearsurf, shear stresses " << TmpStress[4] << " , " << TmpStress[5] << " shear strength " << TmpStress[2] * tan((*data_Plasticity_joint)(1) * PI / 180) - Y0j << " normal comp " << TmpStress[2] << endl;
+            for (i = 0; i < Size; i++) //LU output to check stress values 06.19
             {
 
                 //std::cout << i	<<"-component old stress "	<<(*ele_val->Stress)(i, GPiGPj) << ",new stress " << TryStress[i] <<endl;
 
-            } */
+            }
+            //std::cout << "Final OGS_stresses, shear_stress_yz " << TryStress[5] << " , stress_yy " << TryStress[1] << " stress_zz " << TryStress[2] << endl;
 
             *ConstitutiveMatrix = (0.);
             TransMicroStru_T->multi(*TmpDe, *TransMicroStru, *ConstitutiveMatrix);
@@ -4475,7 +4532,7 @@ int CSolidProperties::StressIntegrationMOHR_Joint(const int GPiGPj, const Elemen
             
             }
         //}
-        else // no rupture in the joint or in the matrix => update stress elastic
+        else // no rupture in the joint or in the matrix => update stress simply
         {
             for (i = 0; i < Size; i++)
                 TryStress[i] += dstrs[i];
