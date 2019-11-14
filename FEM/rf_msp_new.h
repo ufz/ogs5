@@ -289,7 +289,6 @@ private:
     double phij;
     double csnj;
     double tensionj;
-
     // Plasticity
     double dl2;
     //  Single yield surface
