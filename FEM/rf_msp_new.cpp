@@ -24,6 +24,7 @@
 #include <cfloat>
 
 #include "Eigen/Dense"
+
 #include "display.h"
 
 // FEM-Makros
@@ -36,15 +37,18 @@
 #include "rf_msp_new.h"
 #include "rf_tim_new.h"
 //#include "rf_mmp_new.h"
-#include "LinAlg/GaussAlgorithm.h"
-#include "Material/Solid/BGRaCreep.h"
-#include "PhysicalConstant.h"
-#include "StringTools.h"
-#include "burgers.h"
-#include "files0.h"  // GetLineFromFile1
-#include "minkley.h"
 #include "pcs_dm.h"
-#include "tools.h"  // GetLineFromFile
+
+#include "StringTools.h"
+#include "files0.h"  // GetLineFromFile1
+#include "tools.h"   // GetLineFromFile
+#include "PhysicalConstant.h"
+
+#include "Material/Solid/BGRaCreep.h"
+#include "minkley.h"
+#include "burgers.h"
+
+#include "LinAlg/GaussAlgorithm.h"
 
 std::vector<SolidProp::CSolidProperties*> msp_vector;
 std::vector<std::string> msp_key_word_vector;  // OK
@@ -579,8 +583,8 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
                 Creep_mode = 21;
                 in_sd.str(GetLineFromFile1(msp_file));
                 double A, n, sigma_f, Q, refT, tolerance, max_iterations;
-                in_sd >> A >> n >> sigma_f >> Q >> refT >> tolerance >>
-                    max_iterations;
+                in_sd >> A >> n >> sigma_f >> Q >> refT >> tolerance
+                      >> max_iterations;
                 in_sd.clear();
                 _bgra_creep = new BGRaCreep(A, n, sigma_f, Q, refT, tolerance,
                                             max_iterations);
@@ -1404,7 +1408,7 @@ CSolidProperties::~CSolidProperties()
     material_burgers = NULL;
     smath = NULL;
 
-    if (_bgra_creep)
+    if(_bgra_creep)
         delete _bgra_creep;
 }
 //----------------------------------------------------------------------------
@@ -3800,8 +3804,8 @@ int CSolidProperties::StressIntegrationMOHR_Joint(
 
     *TmpDe = *Dep;
 
-    // ConstitutiveMatrix->resize(Size,Size);		//in head already defined, and
-    // is used for later as global variable
+    // ConstitutiveMatrix->resize(Size,Size);		//in head already defined,
+    // and is used for later as global variable
 
     *ConstitutiveMatrix = (0.);
 
@@ -7509,7 +7513,7 @@ int CSolidProperties::CalStress_and_TangentialMatrix_SYS(
                     //----- Update the Newton-Raphson step
                     for (i = 0; i < LocDim; i++)
                     {
-                        x_l[i] = rhs_l[i] * damping;
+                        x_l[i] =  rhs_l[i] * damping;
                     }
 
                     for (i = 0; i < LengthStrs; i++)
@@ -9697,8 +9701,9 @@ bool MSPRead(const std::string& given_file_base_name)
         line_string = line;
         if (line_string.find("#STOP") != string::npos)
         {
-            ScreenMessage("done, read %d sets of solid properties terms\n",
-                          msp_vector.size());
+            ScreenMessage(
+                "done, read %d sets of solid properties terms\n",
+                msp_vector.size());
             return true;
         }
         //----------------------------------------------------------------------
