@@ -43,7 +43,7 @@ double MohrCoulombFailureCriterion::getFailureIndex(
     }
 
     const double tau_max = 0.5 * std::abs(s_max - s_min);
-    const double s_n = -0.5 * (s_max + s_min);
+    const double s_n = -0.5 * (s_max + s_min) / std::cos(_angle);
 
     return tau_max / (_c + s_n * std::tan(_angle));
 }
