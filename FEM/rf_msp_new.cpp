@@ -1167,6 +1167,7 @@ CSolidProperties::CSolidProperties()
       data_Capacity(NULL),
       data_Conductivity(NULL),
       data_Plasticity(NULL),
+      data_Plasticity_joint(NULL),
       data_Creep(NULL),
       _bgra_creep(NULL)
 {
