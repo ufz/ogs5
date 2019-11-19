@@ -4299,8 +4299,6 @@ int CSolidProperties::StressIntegrationMOHR_Joint(
         {
             shearsurf = -1;
         }
-        double shearstress = sqrt((TryStr_buff[5] * TryStr_buff[5]) +
-                                  (TryStr_buff[4] * TryStr_buff[4]));
         if (tensionsurf < 1e-5 &&
             shearsurf > 1e-5)  // start Mohr-Coulomb rupture in the joint
         {
