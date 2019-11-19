@@ -2823,8 +2823,7 @@ void CSolidProperties::CalculateCoefficent_MOHR(
 }
 
 void CSolidProperties::CalculateCoefficent_MOHRjoint(
-    double ep, double scalar_comp, double scalar_tens)  // WX:11.2010,
-// 09.2011
+    double ep)  // LU:11.2019
 {
     int valid = 1;
     double thetaj = (*data_Plasticity_joint)(1) * PI / 180;
@@ -4288,7 +4287,7 @@ int CSolidProperties::StressIntegrationMOHR_Joint(
         }
         *TmpMatrix = (0.);
         *TmpMatrix2 = (0.);
-        CalculateCoefficent_MOHRjoint(ep, 0, 0);
+        CalculateCoefficent_MOHRjoint(ep);
         shearsurf = sqrt((TryStr_buff[5] * TryStr_buff[5]) +
                          (TryStr_buff[4] * TryStr_buff[4])) +
                     TryStr_buff[2] * tan(thetaj) - Y0j;
@@ -4460,7 +4459,7 @@ int CSolidProperties::StressIntegrationMOHR_Joint(
                         TmpStress[i] = TryStr_buff[i] + dlamda * dsig_dlamda[i];
                     }
                     CalculateCoefficent_MOHRjoint(
-                        ep, 0, 0);  // LU update coefficeint during calculations
+                        ep);  // LU update coefficeint during calculations
 
                     shear_stress_module = sqrt((TmpStress[5] * TmpStress[5]) +
                                                (TmpStress[4] * TmpStress[4]));
