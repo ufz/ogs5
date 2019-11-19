@@ -2826,8 +2826,8 @@ void CSolidProperties::CalculateCoefficent_MOHRjoint(
     double ep)  // LU:11.2019
 {
     int valid = 1;
-    double thetaj = (*data_Plasticity_joint)(1) * PI / 180;
-    double phij = (*data_Plasticity_joint)(2) * PI / 180;
+    thetaj = (*data_Plasticity_joint)(1) * PI / 180;
+    phij = (*data_Plasticity_joint)(2) * PI / 180;
     Y0j = (*data_Plasticity_joint)(0);
     tensionj = (*data_Plasticity_joint)(3);
 
