@@ -1167,7 +1167,6 @@ CSolidProperties::CSolidProperties()
       data_Capacity(NULL),
       data_Conductivity(NULL),
       data_Plasticity(NULL),
-      data_Plasticity_joint(NULL),
       data_Creep(NULL),
       _bgra_creep(NULL)
 {
@@ -1237,6 +1236,7 @@ CSolidProperties::CSolidProperties()
     TransMicroStru_TInv = NULL;
     comp_para = NULL;
     tens_para = NULL;
+    data_Plasticity_joint = NULL;
     // Curve variable type
     // 0: Time
     // 1: ...
