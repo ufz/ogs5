@@ -440,8 +440,7 @@ private:
 
     void CalculateCoefficent_MOHR(double ep, double scalar_comp,
                                   double scalar_tens);
-    void CalculateCoefficent_MOHRjoint(double ep, double scalar_comp,
-                                       double scalar_tens);
+    void CalculateCoefficent_MOHRjoint(double ep);
     void CalPrinStrs(double* stresses, double* prin_stresses, int Size);
     void CalPrinDir(double* prin_str, double* stress, double* v, int Size);
     void CalTransMatrixA(double* v, Math_Group::Matrix* A, int Size);
