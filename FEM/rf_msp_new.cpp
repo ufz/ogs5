@@ -1052,7 +1052,7 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
             TransMicroStru = new Matrix(6, 6);
             TransMicroStru_T = new Matrix(6, 6);
             TransMicroStru_TInv = new Matrix(6, 6);
-            for (i = 0; i < 4; i++)  // get orientation of the joint
+            for (i = 0; i < 2; i++)  // get orientation of the joint
             {
                 in_sd.str(GetLineFromFile1(msp_file));
                 in_sd >> line_string;
