@@ -4505,11 +4505,7 @@ int CSolidProperties::StressIntegrationMOHR_Joint(
                     for (j = 0; j < Size; j++)
                         (*TmpMatrix)(i, j) = dgs_dsig[i] * dfs_dsig[j];
                 Dep->multi(*TmpMatrix, *Dep,
-                           *TmpMatrix2);  // De (dG/dstr)T dF/dstr De
-                                          //
-                                          // TmpDe->Write();
-                                          // TmpMatrix2->Write();
-                                          //
+                           *TmpMatrix2);
                 for (i = 0; i < Size; i++)
                 {
                     for (j = 0; j < Size; j++)
@@ -4534,9 +4530,7 @@ int CSolidProperties::StressIntegrationMOHR_Joint(
             *ConstitutiveMatrix = (0.);
             TransMicroStru_T->multi(*TmpDe, *TransMicroStru,
                                     *ConstitutiveMatrix);
-            // TEST
-            // ConstitutiveMatrix->Write();
-            //
+
             Cal_Inv_Matrix(Size, Dep, Inv_De);
             for (i = 0; i < Size; i++)
                 dstressP[i] = TryStress[i] - TryStress_0[i];
