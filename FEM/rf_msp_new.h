@@ -223,6 +223,7 @@ private:
     Math_Group::Matrix* data_Conductivity;
     //
     Math_Group::Matrix* data_Plasticity;
+    Math_Group::Matrix* data_Plasticity_joint;  // 07.2019 LU
     Math_Group::Matrix* data_Creep;
     //
     int Density_mode;
@@ -280,6 +281,14 @@ private:
     double Nphi;
     double csn;
 
+    // Mohr-Coulomb on oriented joint //LU: 07.2019. Mohr-Coulomb model
+    double Y0j;
+    // double Nthetaj;
+    // double Nphij;
+    double thetaj;
+    double phij;
+    double csnj;
+    double tensionj;
     // Plasticity
     double dl2;
     //  Single yield surface
@@ -431,6 +440,7 @@ private:
 
     void CalculateCoefficent_MOHR(double ep, double scalar_comp,
                                   double scalar_tens);
+    void CalculateCoefficent_MOHRjoint(double ep);
     void CalPrinStrs(double* stresses, double* prin_stresses, int Size);
     void CalPrinDir(double* prin_str, double* stress, double* v, int Size);
     void CalTransMatrixA(double* v, Math_Group::Matrix* A, int Size);
@@ -442,6 +452,10 @@ private:
         const int GPiGPj, const FiniteElement::ElementValue_DM* ele_val,
         double* TryStress, const int Update,
         Math_Group::Matrix* Dep);  // WX:12.2011 aniso mohr
+    int StressIntegrationMOHR_Joint(
+        const int GPiGPj, const FiniteElement::ElementValue_DM* ele_val,
+        double* TryStress, const int Update,
+        Math_Group::Matrix* Dep);  // LU:04.2019 shear on weakness plane
     double CalAnisoPara(
         double* Stress,
         double* MicroStruTensor);  // WX:12.2011 cal. aniso parameter

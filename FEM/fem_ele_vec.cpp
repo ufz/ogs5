@@ -2206,6 +2206,17 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
                         dPhi = 1.0;
                     }
                     break;
+                case 45:  // LU:12.2019 Mohr-Coloumb matrix and plane of weakness
+                    if (smat->StressIntegrationMOHR_Joint(gp, eleV_DM, dstress,
+                                                          update, De))
+                    {
+                        *ConsistDep = *De;
+                        smat->TangentialMohrShear(
+                            ConsistDep);  // also for tension
+                        // ConsistDep->Write();
+                        dPhi = 1.0;
+                    }
+                    break;
                     /*case 5:
                        if(smat->StressIntegrationHoekBrown(gp, eleV_DM, dstress,
                        update, De))
