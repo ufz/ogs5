@@ -2836,7 +2836,7 @@ void CSolidProperties::CalculateCoefficent_MOHRjoint(
             GetCurveValue((int)(*data_Plasticity_joint)(5), 0, ep, &valid) *
             PI / 180;
     if ((*data_Plasticity_joint)(4) > 0 && (*data_Plasticity_joint)(4) < 100)
-        Y0j = GetCurveValue((int)(*data_Plasticity)(4), 0, ep, &valid);
+        Y0j = GetCurveValue((int)(*data_Plasticity_joint)(4), 0, ep, &valid);
 }
 void CSolidProperties::CalculateCoefficent_HOEKBROWN()  // WX: 02.2011
 {
