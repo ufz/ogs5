@@ -31,7 +31,7 @@ unsigned MemWatch::updateMemUsage()
     unsigned pages;
 
     std::ifstream in(fname.c_str(), std::ios::in);
-    if (!in)
+    if (in.fail())
     {
         perror("open");
         return 1;

@@ -88,7 +88,10 @@ COutput::COutput()
       nSteps(-1),
       _new_file_opened(false),
       _tecplot_cell_centered_element_output(false),
-      _tecplot_zones_for_mg(false)
+      _tecplot_zones_for_mg(false),
+      _number_outputs(false),
+      _node_output(false),  // JM
+      _quad_node(false)     // JM
 {
     tim_type_name = "TIMES";
     m_pcs = NULL;
@@ -113,7 +116,10 @@ COutput::COutput(size_t id)
       nSteps(-1),
       _new_file_opened(false),
       _tecplot_cell_centered_element_output(false),
-      _tecplot_zones_for_mg(false)
+      _tecplot_zones_for_mg(false),
+      _number_outputs(false),
+      _node_output(false),  // JM
+      _quad_node(false)     // JM
 {
     tim_type_name = "TIMES";
     m_pcs = NULL;
@@ -561,6 +567,24 @@ ios::pos_type COutput::Read(std::ifstream& in_str,
             _tecplot_zones_for_mg = true;
             continue;
         }
+        // for tecplot: Number output files for multiple output on same domain
+        if (line_string.find("$NUMBER_TEC_OUTPUT") != string::npos)
+        {
+            _number_outputs = true;
+            continue;
+        }
+        // For tecplot node-nr output JM
+        if (line_string.find("$NODE_INDEX_OUTPUT") != string::npos)
+        {
+            _node_output = true;
+            continue;  // JM
+        }
+        // For tecplot quadratic node output JM
+        if (line_string.find("$QUAD_NODE") != string::npos)
+        {
+            _quad_node = true;
+            continue;  // JM
+        }
     }
     return position;
 }
@@ -724,7 +748,10 @@ void COutput::WriteDOMDataTEC()
         te = mesh_type_list[i];
         //----------------------------------------------------------------------
         // File name handling
-        tec_file_name1 = file_base_name + "_" + "domain";
+        tec_file_name1 = file_base_name;
+        if (_number_outputs)
+            tec_file_name1 += "_out" + number2str<size_t>(_id);
+        tec_file_name1 += "_domain";
         tec_file_name2 = "";
         if (msh_type_name.size() > 0)  // MultiMSH
             tec_file_name2 += "_" + msh_type_name;
@@ -1243,7 +1270,8 @@ void COutput::WriteTECNodeData(fstream& tec_file)
     bool out_coord = true;
     if (tecplot_zone_share && _new_file_opened)
         out_coord = false;
-    for (size_t j = 0; j < m_msh->GetNodesNumber(false); j++)
+    // JM for (size_t j = 0; j < m_msh->GetNodesNumber(false); j++)
+    for (size_t j = 0; j < m_msh->GetNodesNumber(_quad_node); j++)
     {
         node = m_msh->nod_vector[j];  // 23.01.2013. WW
         const size_t n_id = node->GetIndex();
@@ -1268,6 +1296,9 @@ void COutput::WriteTECNodeData(fstream& tec_file)
                 for (size_t i = 0; i < 3; i++)
                     tec_file << x[i] << " ";
             }
+            // Node nr JM
+            if (_node_output)
+                tec_file << n_id << " ";  // JM node
         }
         // NOD values
         // Mass transport
@@ -1422,6 +1453,9 @@ void COutput::WriteTECHeader(fstream& tec_file, int e_type, string const & e_typ
     CRFProcess* pcs = NULL;  // WW
     const size_t nName(_nod_value_vector.size());
     tec_file << "VARIABLES  = \"X\",\"Y\",\"Z\"";
+    // Node nr JM
+    if (_node_output)
+        tec_file << ", \"NODE\"";  // JM node
     for (size_t k = 0; k < nName; k++)
     {
         tec_file << ", \"" << _nod_value_vector[k] << "\"";
@@ -1451,7 +1485,8 @@ void COutput::WriteTECHeader(fstream& tec_file, int e_type, string const & e_typ
     tec_file << "ZONE T=\"";
     tec_file << _time << "s\", ";
     // OK411
-    tec_file << "N=" << m_msh->GetNodesNumber(false) << ", ";
+    // JM tec_file << "N=" << m_msh->GetNodesNumber(false) << ", ";
+    tec_file << "N=" << m_msh->GetNodesNumber(_quad_node) << ", ";
     tec_file << "E=" << no_elements << ", ";
     tec_file << "F="
              << "FEPOINT"
@@ -1474,8 +1509,12 @@ void COutput::WriteTECHeader(fstream& tec_file, int e_type, string const & e_typ
     //
     if (_new_file_opened && tecplot_zone_share)  // 08.2012. WW
     {
-        tec_file << "VARSHARELIST=([1-3]=1)"
-                 << "\n";
+        if (_node_output)  // Node nr JM
+            tec_file << "VARSHARELIST=([1-4]=1)"
+                     << "\n";
+        else
+            tec_file << "VARSHARELIST=([1-3]=1)"
+                     << "\n";
         tec_file << "CONNECTIVITYSHAREZONE=1"
                  << "\n";
     }
@@ -1519,7 +1558,11 @@ void COutput::ELEWriteDOMDataTEC()
     //----------------------------------------------------------------------
     // File handling
     //......................................................................
-    string tec_file_name = file_base_name + "_domain" + "_ele";
+    // JM string tec_file_name = file_base_name + "_domain" + "_ele";
+    string tec_file_name = file_base_name;
+    if (_number_outputs)
+        tec_file_name += "_out" + number2str<size_t>(_id);
+    tec_file_name += "_domain_ele";
     if (getProcessType() != FiniteElement::INVALID_PROCESS)  // PCS
         // 09/2010 TF msh_type_name;
         tec_file_name += "_" + convertProcessTypeToString(getProcessType());
@@ -2329,7 +2372,10 @@ void COutput::NODWritePNTDataTEC(double time_current, int time_step_number)
     const bool is_CSV = (dat_type_name.compare("CSV") == 0);
 
     // File handling
-    std::string tec_file_name(file_base_name + "_time_");
+    string tec_file_name(file_base_name);
+    if (_number_outputs)
+        tec_file_name += "_out" + number2str<size_t>(_id);
+    tec_file_name += "_time_";
     if (is_TECPLOT || is_GNUPLOT)
         addInfoToFileName(tec_file_name, true, true, true);
     else if (is_CSV)
@@ -2761,8 +2807,14 @@ void COutput::NODWriteSFCDataTEC(int number)
     //   + number_string + TEC_FILE_EXTENSION;
     // AB SB Use Model name for output file name
     // std::string tec_file_name = convertProcessTypeToString (getProcessType())
-    std::string tec_file_name = file_base_name + "_sfc_" + geo_name + "_t" +
-                                number_string + TEC_FILE_EXTENSION;
+    // JM std::string tec_file_name = file_base_name
+    string tec_file_name = file_base_name;
+    if (_number_outputs)
+        tec_file_name += "_out" + number2str<size_t>(_id);
+    tec_file_name += "_sfc_" + geo_name + TEC_FILE_EXTENSION;
+    // JM                        + "_sfc_" + geo_name + "_t"
+    // JM                         + number_string + TEC_FILE_EXTENSION;
+    // JM                                              + TEC_FILE_EXTENSION;
     if (!_new_file_opened)
         remove(tec_file_name.c_str());  // WW
     fstream tec_file(tec_file_name.data(), ios::app | ios::out);
@@ -2783,12 +2835,15 @@ void COutput::NODWriteSFCDataTEC(int number)
     string project_title_string = "Profile at surface";
     tec_file << " TITLE = \"" << project_title_string << "\""
              << "\n";
-    tec_file << " VARIABLES = \"X\",\"Y\",\"Z\",";
+    tec_file << " VARIABLES = \"X\",\"Y\",\"Z\",";  // JM node
+    if (_node_output)
+        tec_file << "\"NODE\", ";  // JM node
     for (size_t k = 0; k < _nod_value_vector.size(); k++)
         tec_file << _nod_value_vector[k] << ",";
     tec_file << "\n";
     // , I=" << NodeListLength << ", J=1, K=1, F=POINT" << "\n";
-    tec_file << " ZONE T=\"TIME=" << _time << "\""
+    // JM	tec_file << " ZONE T=\"TIME=" << _time << "\"" << "\n";
+    tec_file << " ZONE T=\"TIME=" << _time << ", SFC=" << geo_name << "\""
              << "\n";
     //--------------------------------------------------------------------
     // Write data
@@ -2806,6 +2861,13 @@ void COutput::NODWriteSFCDataTEC(int number)
             tec_file << pnt_i[0] << " ";
             tec_file << pnt_i[1] << " ";
             tec_file << pnt_i[2] << " ";
+            // Node nr JM
+            if (_node_output)
+            {
+                const size_t n_id =
+                    m_msh->nod_vector[nodes_vector[i]]->GetIndex();
+                tec_file << n_id << " ";
+            }
             for (size_t k = 0; k < _nod_value_vector.size(); k++)
             {
                 m_pcs = PCSGet(_nod_value_vector[k], true);  // AB SB
@@ -2874,8 +2936,12 @@ void COutput::NODWriteSFCAverageDataTEC(double time_current,
     // "\n"; return;
     //--------------------------------------------------------------------
     // File handling
-    string tec_file_name = file_base_name + "_TBC_" + getGeoTypeAsString() +
-                           "_" + geo_name + TEC_FILE_EXTENSION;
+    // JM string tec_file_name = file_base_name + "_TBC_" + getGeoTypeAsString()
+    string tec_file_name = file_base_name;
+    if (_number_outputs)
+        tec_file_name += "_out" + number2str<size_t>(_id);
+    tec_file_name +=
+        "_TBC_" + getGeoTypeAsString() + "_" + geo_name + TEC_FILE_EXTENSION;
     if (!_new_file_opened)
         remove(tec_file_name.c_str());  // WW
     fstream tec_file(tec_file_name.data(), ios::app | ios::out);
@@ -3168,7 +3234,11 @@ void COutput::ELEWriteSFC_TEC()
     //----------------------------------------------------------------------
     // File handling
     //......................................................................
-    std::string tec_file_name = file_base_name + "_surface" + "_ele";
+    // JM std::string tec_file_name = file_base_name + "_surface" + "_ele";
+    string tec_file_name = file_base_name;
+    if (_number_outputs)
+        tec_file_name += "_out" + number2str<size_t>(_id);
+    tec_file_name += "_surface_ele";
     addInfoToFileName(tec_file_name, false, true, true);
     //  if(pcs_type_name.size()>1) // PCS
     //    tec_file_name += "_" + msh_type_name;
@@ -3400,7 +3470,10 @@ void COutput::ELEWritePLY_TEC()
     //----------------------------------------------------------------------
     // File handling
     //......................................................................
-    string tec_file_name = file_base_name;  // + "_ply" + "_ele";
+    // JM string tec_file_name = file_base_name; // + "_ply" + "_ele";
+    string tec_file_name = file_base_name;
+    if (_number_outputs)
+        tec_file_name += "_out" + number2str<size_t>(_id);
     tec_file_name += "_" + getGeoTypeAsString();
     tec_file_name += "_" + geo_name;
     tec_file_name += "_ELE";
@@ -3540,7 +3613,10 @@ void COutput::TIMValue_TEC(double tim_value)
     // File handling
     //......................................................................
     fstream tec_file;
-    string tec_file_name = file_base_name;  // + "_ply" + "_ele";
+    // JM string tec_file_name = file_base_name; // + "_ply" + "_ele";
+    string tec_file_name = file_base_name;
+    if (_number_outputs)
+        tec_file_name += "_out" + number2str<size_t>(_id);
     tec_file_name += "_" + getGeoTypeAsString();
     tec_file_name += "_" + geo_name;
     tec_file_name += "_TIM";
@@ -3608,7 +3684,10 @@ void COutput::TIMValues_TEC(double tim_value[5], std::string* header,
     // File handling
     //......................................................................
     fstream tec_file;
-    string tec_file_name = file_base_name;  // + "_ply" + "_ele";
+    // JM string tec_file_name = file_base_name;         // + "_ply" + "_ele";
+    string tec_file_name = file_base_name;
+    if (_number_outputs)
+        tec_file_name += "_out" + number2str<size_t>(_id);
     tec_file_name += "_" + getGeoTypeAsString();
     tec_file_name += "_" + geo_name;
     tec_file_name += "_TIM";
@@ -3711,7 +3790,9 @@ void COutput::NODWriteLAYDataTEC(int time_step_number)
     // File name handling
     char char_time_step_number[10];
     sprintf(char_time_step_number, "%i", time_step_number);
-    string tec_file_name(file_base_name);
+    string tec_file_name = file_base_name;
+    if (_number_outputs)
+        tec_file_name += "_out" + number2str<size_t>(_id);
     tec_file_name += "_layer_";
     tec_file_name += char_time_step_number;
     tec_file_name += TEC_FILE_EXTENSION;
@@ -3818,7 +3899,11 @@ void COutput::PCONWriteDOMDataTEC()
         te = mesh_type_list[i];
         //----------------------------------------------------------------------
         // File name handling
-        tec_file_name = file_base_name + "_" + "domain_PCON";
+        // JM tec_file_name = file_base_name + "_" + "domain_PCON";
+        tec_file_name = file_base_name;
+        if (_number_outputs)
+            tec_file_name += "_out" + number2str<size_t>(_id);
+        tec_file_name += "_domain_PCON";
         if (msh_type_name.size() > 0)  // MultiMSH
             tec_file_name += "_" + msh_type_name;
         //  if(pcs_type_name.size()>0) // PCS
