@@ -228,7 +228,6 @@ private:
     double viscosity;
     double viscosity0;
     double viscosity_T_star;
-    double viscosity_T_shift; // for viscosity model =10
     // Richards
     double my_0;
     double dmy_dp;
