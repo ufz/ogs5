@@ -305,7 +305,7 @@ private:
     //// Add output id to file name
     bool _number_outputs;
     /// Output of node number //JM
-    bool _node_output;
+    bool _node_id_output;
     /// Output of quadratic nodes //JM
     bool _quad_node;
 

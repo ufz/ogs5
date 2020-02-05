@@ -90,8 +90,8 @@ COutput::COutput()
       _tecplot_cell_centered_element_output(false),
       _tecplot_zones_for_mg(false),
       _number_outputs(false),
-      _node_output(false),  // JM
-      _quad_node(false)     // JM
+      _node_id_output(false),  // JM
+      _quad_node(false)        // JM
 {
     tim_type_name = "TIMES";
     m_pcs = NULL;
@@ -118,8 +118,8 @@ COutput::COutput(size_t id)
       _tecplot_cell_centered_element_output(false),
       _tecplot_zones_for_mg(false),
       _number_outputs(false),
-      _node_output(false),  // JM
-      _quad_node(false)     // JM
+      _node_id_output(false),  // JM
+      _quad_node(false)        // JM
 {
     tim_type_name = "TIMES";
     m_pcs = NULL;
@@ -576,11 +576,11 @@ ios::pos_type COutput::Read(std::ifstream& in_str,
         // For tecplot node-nr output JM
         if (line_string.find("$NODE_INDEX_OUTPUT") != string::npos)
         {
-            _node_output = true;
+            _node_id_output = true;
             continue;  // JM
         }
         // For tecplot quadratic node output JM
-        if (line_string.find("$QUAD_NODE") != string::npos)
+        if (line_string.find("$OUTPUT_QUAD_NODES") != string::npos)
         {
             _quad_node = true;
             continue;  // JM
@@ -1297,7 +1297,7 @@ void COutput::WriteTECNodeData(fstream& tec_file)
                     tec_file << x[i] << " ";
             }
             // Node nr JM
-            if (_node_output)
+            if (_node_id_output)
                 tec_file << n_id << " ";  // JM node
         }
         // NOD values
@@ -1454,7 +1454,7 @@ void COutput::WriteTECHeader(fstream& tec_file, int e_type, string const & e_typ
     const size_t nName(_nod_value_vector.size());
     tec_file << "VARIABLES  = \"X\",\"Y\",\"Z\"";
     // Node nr JM
-    if (_node_output)
+    if (_node_id_output)
         tec_file << ", \"NODE\"";  // JM node
     for (size_t k = 0; k < nName; k++)
     {
@@ -1509,7 +1509,7 @@ void COutput::WriteTECHeader(fstream& tec_file, int e_type, string const & e_typ
     //
     if (_new_file_opened && tecplot_zone_share)  // 08.2012. WW
     {
-        if (_node_output)  // Node nr JM
+        if (_node_id_output)  // Node nr JM
             tec_file << "VARSHARELIST=([1-4]=1)"
                      << "\n";
         else
@@ -2836,7 +2836,7 @@ void COutput::NODWriteSFCDataTEC(int number)
     tec_file << " TITLE = \"" << project_title_string << "\""
              << "\n";
     tec_file << " VARIABLES = \"X\",\"Y\",\"Z\",";  // JM node
-    if (_node_output)
+    if (_node_id_output)
         tec_file << "\"NODE\", ";  // JM node
     for (size_t k = 0; k < _nod_value_vector.size(); k++)
         tec_file << _nod_value_vector[k] << ",";
@@ -2862,7 +2862,7 @@ void COutput::NODWriteSFCDataTEC(int number)
             tec_file << pnt_i[1] << " ";
             tec_file << pnt_i[2] << " ";
             // Node nr JM
-            if (_node_output)
+            if (_node_id_output)
             {
                 const size_t n_id =
                     m_msh->nod_vector[nodes_vector[i]]->GetIndex();
