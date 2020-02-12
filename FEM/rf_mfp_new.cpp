@@ -596,6 +596,14 @@ std::ios::pos_type CFluidProperties::Read(std::ifstream* mfp_file)
                 if (T_Process || fluid_id == 1)
                     viscosity_pcs_name_vector.push_back(arg2);
             }
+            // AnSichT 2013, Chierici 1994
+            if (viscosity_model == 10)
+            {
+                in >> C_0;
+
+                viscosity_pcs_name_vector.push_back("PRESSURE1");
+                viscosity_pcs_name_vector.push_back("TEMPERATURE1");
+            }
             // AKS
             if (density_model == 15)  // components constant viscosity
             {
@@ -1877,7 +1885,16 @@ double CFluidProperties::Viscosity(double* variables)
                                         mfp_arguments[0], fluid_id);
             break;
         }
-        case 15:  // mixture 1/�= sum_i y_i/�_i:: VTPR-EoS
+        case 10:  // AnSichT 2013, Chierici 1994
+        {
+            viscosity =
+                (1 + 2.765e-3 * C_0) *
+                exp(11.897 - 5.943e-2 * primary_variable[1] +
+                    6.422e-5 * primary_variable[1] * primary_variable[1]) *
+                1e-3;
+            break;
+        }
+        case 15:  // mixture 1/ï¿½= sum_i y_i/ï¿½_i:: VTPR-EoS
         {
             CRFProcess* m_pcs = PCSGet("MULTI_COMPONENTIAL_FLOW");
             double my = 0.0;
@@ -3436,8 +3453,8 @@ double CFluidProperties::CalcEnthalpy(double temperature)
    08/2008 OK
    last change: 11/2008 NB
 **************************************************************************/
-double MFPGetNodeValue(long node, const std::string& mfp_name,
-                       int phase_number, const bool for_output)
+double MFPGetNodeValue(long node, const std::string& mfp_name, int phase_number,
+                       const bool for_output)
 {
     CFluidProperties* m_mfp = mfp_vector[max(phase_number, 0)];
     const int restore_mode = m_mfp->mode;
@@ -3489,11 +3506,12 @@ double MFPGetNodeValue(long node, const std::string& mfp_name,
                 arguments[0] = pcs->GetNodeValue(node, var_idx);
             else if ((*vec_var_names)[i] == "TEMPERATURE1")
             {
-                arguments[1] = ((pcs->getTemperatureUnit() ==
-                                       FiniteElement::CELSIUS) && for_output)
-                                   ? pcs->GetNodeValue(node, var_idx) +
-                                         PhysicalConstant::CelsiusZeroInKelvin
-                                   : pcs->GetNodeValue(node, var_idx);
+                arguments[1] =
+                    ((pcs->getTemperatureUnit() == FiniteElement::CELSIUS) &&
+                     for_output)
+                        ? pcs->GetNodeValue(node, var_idx) +
+                              PhysicalConstant::CelsiusZeroInKelvin
+                        : pcs->GetNodeValue(node, var_idx);
             }
             else if ((*vec_var_names)[i] == "CONCENTRATION1")
                 arguments[2] = pcs->GetNodeValue(node, var_idx);
