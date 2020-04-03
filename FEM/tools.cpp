@@ -1282,8 +1282,8 @@ double GetHetValue(int ele_no, char* inname)
         {
             /* found */
             //  value = ELEGetHetFieldValue(ele_no,i);
-            value = m_msh->ele_vector[ele_no]->mat_vector(
-                material_properties_index);
+            value = m_msh->ele_vector[ele_no]
+                        ->mat_vector[material_properties_index];
             return value;
         }
     }

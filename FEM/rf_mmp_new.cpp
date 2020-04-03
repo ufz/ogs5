@@ -4119,7 +4119,7 @@ double CMediumProperties::Porosity(long number, double theta)
             break;
         case 11:  // n = temp const, but spatially distributed CB
             // porosity = porosity_model_values[0];
-            porosity = _mesh->ele_vector[number]->mat_vector(por_index);
+            porosity = _mesh->ele_vector[number]->mat_vector[por_index];
             break;
         case 12:  // n = n0 + vol_strain, WX: 03.2011
             porosity =
@@ -4555,7 +4555,7 @@ double* CMediumProperties::PermeabilityTensor(long index)
             // end of getting the
             // index---------------------------------------------------------
 
-            tensor[0] = _mesh->ele_vector[index]->mat_vector(perm_index);
+            tensor[0] = _mesh->ele_vector[index]->mat_vector[perm_index];
             // CMCD
             // 01.09.2011 WW.  int edx =
             // m_pcs->GetElementValueIndex("PERMEABILITY"); CMCD 01.09.2011 WW.
@@ -4798,16 +4798,6 @@ double* CMediumProperties::PermeabilityTensor(long index)
                 // tensor[3] = permeability_tensor[0];
                 tensor[3] = tensor[0];  // HS: use the existing value;
 
-                // HS: this is not needed any
-                // more--------------------------------
-                // if(permeability_model==2) {
-                // SB 4218	tensor[0] = GetHetValue(index,"permeability");
-                //      tensor[0] =
-                //      m_msh->ele_vector[index]->mat_vector(perm_index);
-                //	tensor[3] = tensor[0];
-                // }
-                // end of comment out
-                // section-------------------------------------
             }
             else if (permeability_tensor_type == 1)
             {
@@ -4858,7 +4848,7 @@ double* CMediumProperties::PermeabilityTensor(long index)
                                         // if(permeability_model==2) {
                 // SB 4218	tensor[0] = GetHetValue(index,"permeability");
                 //      tensor[0] =
-                //      m_pcs->m_msh->ele_vector[index]->mat_vector(perm_index);
+                //      m_pcs->m_msh->ele_vector[index]->mat_vector[perm_index];
                 //      tensor[4] = tensor[0];
                 //      tensor[8] = tensor[0];
                 // }
@@ -5711,18 +5701,15 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
     string mmp_property_mesh;
     MeshLib::CElem* m_ele_geo = NULL;
     bool element_area = false;
-    long i, j, ihet;
+    long i, ihet;
     double mmp_property_value;
-    int mat_vector_size = 0;                 // Init WW
     double ddummy, conversion_factor = 1.0;  // init WW
     vector<double> xvals, yvals, zvals, mmpvals;
     vector<double> temp_store;
-    int c_vals;
     double x, y, z, mmpv;
     std::stringstream in;
     // CB
     vector<double> garage;
-    int mat_vec_size = 0;
     int por_index = 0;
     int vol_bio_index = 0;
     string outfile;
@@ -5828,17 +5815,6 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
                     for (i = 0; i < (long)_mesh->ele_vector.size(); i++)
                     {
                         m_ele_geo = _mesh->ele_vector[i];
-                        mat_vector_size = m_ele_geo->mat_vector.Size();
-                        // CB Store old values as they are set to zero after
-                        // resizing
-                        for (j = 0; j < mat_vector_size; j++)
-                            garage.push_back(m_ele_geo->mat_vector(j));
-                        m_ele_geo->mat_vector.resize(mat_vector_size + 1);
-                        // CB Refill old values as they were set to zero after
-                        // resizing
-                        for (j = 0; j < mat_vector_size; j++)
-                            m_ele_geo->mat_vector(j) = garage[j];
-                        garage.clear();
                         if (mmp_property_dis_type[0] == 'N')
                         {
                             // Search for all elements of the mesh, which is the
@@ -5847,14 +5823,13 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
                             // mmpval-vector
                             ihet = GetNearestHetVal2(i, _mesh, xvals, yvals,
                                                      zvals, mmpvals);
-                            m_ele_geo->mat_vector(mat_vector_size) =
-                                mmpvals[ihet];
+                            m_ele_geo->mat_vector.push_back(mmpvals[ihet]);
                         }
                         if (mmp_property_dis_type[0] == 'G')
                         {
                             mmpv = GetAverageHetVal2(i, _mesh, xvals, yvals,
                                                      zvals, mmpvals);
-                            m_ele_geo->mat_vector(mat_vector_size) = mmpv;
+                            m_ele_geo->mat_vector.push_back(mmpv);
                         }
                     }
                     break;
@@ -5863,26 +5838,7 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
                     {
                         m_ele_geo = _mesh->ele_vector[i];
                         mmp_property_file >> ddummy >> mmp_property_value;
-                        mat_vector_size = m_ele_geo->mat_vector.Size();
-                        if (mat_vector_size > 0)
-                        {
-                            for (c_vals = 0; c_vals < mat_vector_size; c_vals++)
-                                temp_store.push_back(
-                                    m_ele_geo->mat_vector(c_vals));
-                            m_ele_geo->mat_vector.resize(mat_vector_size + 1);
-                            for (c_vals = 0; c_vals < mat_vector_size; c_vals++)
-                                m_ele_geo->mat_vector(c_vals) =
-                                    temp_store[c_vals];
-                            m_ele_geo->mat_vector(mat_vector_size) =
-                                mmp_property_value;
-                            temp_store.clear();
-                        }
-                        else
-                        {
-                            m_ele_geo->mat_vector.resize(mat_vector_size + 1);
-                            m_ele_geo->mat_vector(mat_vector_size) =
-                                mmp_property_value;
-                        }
+                        m_ele_geo->mat_vector.push_back(mmp_property_value);
                         if (element_area)
                             _mesh->ele_vector[i]->SetFluxArea(
                                 mmp_property_value);
@@ -5914,17 +5870,8 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
         for (i = 0; i < (long)_mesh->ele_vector.size(); i++)
         {
             m_ele_geo = _mesh->ele_vector[i];  // Get the element
-            mat_vec_size = m_ele_geo->mat_vector.Size();
-            // CB Store old values as they are set to zero after resizing
-            for (j = 0; j < mat_vec_size; j++)
-                garage.push_back(m_ele_geo->mat_vector(j));
-            m_ele_geo->mat_vector.resize(mat_vec_size + 1);
-            // CB Refill old values as they were set to zero after resizing
-            for (j = 0; j < mat_vec_size; j++)
-                m_ele_geo->mat_vector(j) = garage[j];
-            garage.clear();
             // Set the VOL_BIO value from mmp file input
-            m_ele_geo->mat_vector(mat_vec_size) = this->vol_bio;
+            m_ele_geo->mat_vector.push_back(this->vol_bio);
         }
     }
     if ((mmp_property_name == "POROSITY") && (this->vol_mat_model == 2))
@@ -5944,19 +5891,9 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
         for (i = 0; i < (long)_mesh->ele_vector.size(); i++)
         {
             m_ele_geo = _mesh->ele_vector[i];  // Get the element
-            mat_vec_size = m_ele_geo->mat_vector.Size();
-            // CB Store old values as they are set to zero after resizing
-            for (j = 0; j < mat_vec_size; j++)
-                garage.push_back(m_ele_geo->mat_vector(j));
-            m_ele_geo->mat_vector.resize(mat_vec_size + 1);
-            // CB Refill old values as they were set to zero after resizing
-            for (j = 0; j < mat_vec_size; j++)
-                m_ele_geo->mat_vector(j) = garage[j];
-            garage.clear();
-            // Set the VOL_MAT value from (1-POROSITY-VOL_BIO)
-            m_ele_geo->mat_vector(mat_vec_size) =
-                1 - m_ele_geo->mat_vector(por_index) -
-                m_ele_geo->mat_vector(vol_bio_index);
+            m_ele_geo->mat_vector.push_back(
+                1 - m_ele_geo->mat_vector[por_index] -
+                m_ele_geo->mat_vector[vol_bio_index]);
         }
     }
     //----------------------------------------------------------------------
@@ -5999,7 +5936,7 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
         for (i = 0; i < (long)_mesh->ele_vector.size(); i++)
         {
             m_ele_geo = _mesh->ele_vector[i];
-            mmp_property_file_out << i << "  " << m_ele_geo->mat_vector(k)
+            mmp_property_file_out << i << "  " << m_ele_geo->mat_vector[k]
                                   << "\n";
         }
         mmp_property_file_out << "#STOP"
@@ -6096,7 +6033,7 @@ void CMediumProperties::WriteTecplotDistributedProperties()
             for (k = 0; k < (int)m_nod->getConnectedElementIDs().size(); k++)
             {
                 m_ele = _mesh->ele_vector[m_nod->getConnectedElementIDs()[k]];
-                m_mat_prop_nod += m_ele->mat_vector(j);
+                m_mat_prop_nod += m_ele->mat_vector[j];
             }
             m_mat_prop_nod /= (int)m_nod->getConnectedElementIDs().size();
             mat_file << " " << m_mat_prop_nod;
