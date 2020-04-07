@@ -4515,7 +4515,7 @@ CMediumProperties::PorosityEffectiveConstrainedSwellingConstantIonicStrength(
 double* CMediumProperties::PermeabilityTensor(long index)
 {
     static double tensor[9];
-    int perm_index = 0;
+    unsigned int perm_index = 0;
 
     int idx_k, idx_n;
     double /*k_old, n_old,*/ k_new, n_new, k_rel, n_rel;
@@ -4538,30 +4538,12 @@ double* CMediumProperties::PermeabilityTensor(long index)
     // gets the values from K-C relationship. this will only influence then case
     // when permeability_tensor_type = 0
     // -------------------------------------------------------------------------------------------------------
+
     if (permeability_tensor_type == 0)
     {  // only when permeability is isotropic
         tensor[0] = permeability_tensor[0];
-        if (permeability_model == 2)
-        {  // here get the initial permeability values from material perperty
-           // class;
-            // get the
-            // index:-------------------------------------------------------------------
-            for (perm_index = 0;
-                 perm_index < (int)m_pcs->m_msh->mat_names_vector.size();
-                 perm_index++)
-                if (m_pcs->m_msh->mat_names_vector[perm_index].compare(
-                        "PERMEABILITY") == 0)
-                    break;
-            // end of getting the
-            // index---------------------------------------------------------
 
-            tensor[0] = _mesh->ele_vector[index]->mat_vector[perm_index];
-            // CMCD
-            // 01.09.2011 WW.  int edx =
-            // m_pcs->GetElementValueIndex("PERMEABILITY"); CMCD 01.09.2011 WW.
-            // m_pcs->SetElementValue(index,edx,tensor[0]);
-        }
-        else if (permeability_model == 3)
+        if (permeability_model == 3)
         {  // HS: 11.2008, for K-C relationship
             k_new = tensor[0];
             CRFProcess* pcs_tmp(NULL);
@@ -4783,6 +4765,23 @@ double* CMediumProperties::PermeabilityTensor(long index)
         // end of K-C
         // relationship-----------------------------------------------------------------------------------
     }
+    // For heterogeneous values
+    if (permeability_model == 2)
+    {
+        for (perm_index = 0; perm_index < m_pcs->m_msh->mat_names_vector.size();
+             perm_index++)
+            if (m_pcs->m_msh->mat_names_vector[perm_index].compare(
+                    "PERMEABILITY") == 0)
+                break;
+        // end of getting the
+        // index---------------------------------------------------------
+
+        tensor[0] = _mesh->ele_vector[index]->mat_vector[perm_index];
+        // CMCD
+        // 01.09.2011 WW.  int edx =
+        // m_pcs->GetElementValueIndex("PERMEABILITY"); CMCD 01.09.2011 WW.
+        // m_pcs->SetElementValue(index,edx,tensor[0]);
+    }
 
     switch (geo_dimension)
     {
@@ -4810,6 +4809,14 @@ double* CMediumProperties::PermeabilityTensor(long index)
                     idx_k = m_pcs_tmp->GetElementValueIndex("PERMEABILITY_YY");
                     tensor[3] = m_pcs_tmp->GetElementValue(index, idx_k + 1);
                 }
+                else if (permeability_model == 2)
+                {
+                    // tensor[0] = already set
+                    tensor[1] = 0.0;
+                    tensor[2] = 0.0;
+                    tensor[3] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 1];
+                }
                 else
                 {
                     tensor[0] = permeability_tensor[0];
@@ -4820,10 +4827,23 @@ double* CMediumProperties::PermeabilityTensor(long index)
             }
             else if (permeability_tensor_type == 2)
             {
-                tensor[0] = permeability_tensor[0];
-                tensor[1] = permeability_tensor[1];
-                tensor[2] = permeability_tensor[2];
-                tensor[3] = permeability_tensor[3];
+                if (permeability_model == 2)
+                {
+                    // tensor[0] = already se
+                    tensor[1] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 1];
+                    tensor[2] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 2];
+                    tensor[3] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 3];
+                }
+                else
+                {
+                    tensor[0] = permeability_tensor[0];
+                    tensor[1] = permeability_tensor[1];
+                    tensor[2] = permeability_tensor[2];
+                    tensor[3] = permeability_tensor[3];
+                }
             }
             break;
         case 3:  // 3-D
@@ -4872,6 +4892,16 @@ double* CMediumProperties::PermeabilityTensor(long index)
                     idx_k = m_pcs_tmp->GetElementValueIndex("PERMEABILITY_ZZ");
                     tensor[8] = m_pcs_tmp->GetElementValue(index, idx_k + 1);
                 }
+                else if (permeability_model == 2)
+                {
+                    // tensor[0] = already set
+                    tensor[1] = tensor[2] = tensor[3] = 0.0;
+                    tensor[4] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 1];
+                    tensor[5] = tensor[6] = tensor[7] = 0.0;
+                    tensor[8] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 2];
+                }
                 else
                 {
                     tensor[0] = permeability_tensor[0];
@@ -4887,15 +4917,38 @@ double* CMediumProperties::PermeabilityTensor(long index)
             }
             else if (permeability_tensor_type == 2)
             {
-                tensor[0] = permeability_tensor[0];
-                tensor[1] = permeability_tensor[1];
-                tensor[2] = permeability_tensor[2];
-                tensor[3] = permeability_tensor[3];
-                tensor[4] = permeability_tensor[4];
-                tensor[5] = permeability_tensor[5];
-                tensor[6] = permeability_tensor[6];
-                tensor[7] = permeability_tensor[7];
-                tensor[8] = permeability_tensor[8];
+                if (permeability_model == 2)
+                {
+                    // tensor[0] = already se
+                    tensor[1] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 1];
+                    tensor[2] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 2];
+                    tensor[3] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 3];
+                    tensor[4] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 4];
+                    tensor[5] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 5];
+                    tensor[6] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 6];
+                    tensor[7] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 7];
+                    tensor[8] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 8];
+                }
+                else
+                {
+                    tensor[0] = permeability_tensor[0];
+                    tensor[1] = permeability_tensor[1];
+                    tensor[2] = permeability_tensor[2];
+                    tensor[3] = permeability_tensor[3];
+                    tensor[4] = permeability_tensor[4];
+                    tensor[5] = permeability_tensor[5];
+                    tensor[6] = permeability_tensor[6];
+                    tensor[7] = permeability_tensor[7];
+                    tensor[8] = permeability_tensor[8];
+                }
             }
             break;
     }
@@ -5715,6 +5768,9 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
     string outfile;
     int k;
 
+    // default: scalar property
+    unsigned int n_components{1};
+
     cout << " SetDistributedELEProperties: ";
     //----------------------------------------------------------------------
     // File handling
@@ -5776,6 +5832,42 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
             continue;
         }
         //....................................................................
+        // optional parameter (default is zero)
+        //
+        if (line_string.find("$COMPONENTS") != string::npos)
+        {
+            mmp_property_file >> n_components;
+            if (!mmp_property_name.empty())
+                std::cerr << "Error in CMediumProperties::"
+                          << "SetDistributedELEProperties:\n"
+                          << "$MMP_TYPE hast to be set before $COMPONENTS"
+                          << "\n";
+            for (unsigned int i = 0; i < n_components - 1; ++i)
+            {
+                _mesh->mat_names_vector.push_back(mmp_property_name +
+                                                  std::to_string(i + 1));
+            }
+
+            // check consistencies
+            if (mmp_property_name.find("PERMEABILITY") != string::npos)
+                switch (this->permeability_tensor_type)
+                {
+                    case 0:  // isotropic
+                        assert(n_components == 1);
+                        break;
+                    case 1:  // orthotropic?
+                        assert(n_components == this->geo_dimension);
+                        break;
+                    case 2:  // anisotropic
+                        assert(
+                            (this->geo_dimension == 2 && n_components == 4) ||
+                            (this->geo_dimension == 3 && n_components == 9));
+                        break;
+                    default:
+                        assert(!"PERMEABILITY_TENSOR_TYPE not recognized!");
+                }
+        }
+        //....................................................................
         if (line_string.find("$DIS_TYPE") != string::npos)
         {
             mmp_property_file >> mmp_property_dis_type;
@@ -5794,6 +5886,15 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
             {
                 case 'N':  // Next neighbour
                 case 'G':  // Geometric mean
+                           // add checks since implementation for 'G' is
+                           // broken&unused
+                    if (n_components > 1)
+                    {
+                        std::cerr << "more than one component of heterogeneous"
+                                  << "fields only available with"
+                                  << "$DIS_TYPE ELEMENT!\n";
+                        assert(n_components == 1);  // must fail!
+                    }
                     // Read in all values given, store in vectors for x, y, z
                     // and value
                     i = 0;
@@ -5837,8 +5938,17 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
                     for (i = 0; i < (long)_mesh->ele_vector.size(); i++)
                     {
                         m_ele_geo = _mesh->ele_vector[i];
-                        mmp_property_file >> ddummy >> mmp_property_value;
-                        m_ele_geo->mat_vector.push_back(mmp_property_value);
+                        mmp_property_file >> ddummy;
+                        if (ddummy != i)
+                        {
+                            std::cout << "SetDistributedELEProperties:"
+                                      << "element indices not contiguous!\n";
+                        }
+                        for (unsigned int c = 0; c < n_components; ++c)
+                        {
+                            mmp_property_file >> mmp_property_value;
+                            m_ele_geo->mat_vector.push_back(mmp_property_value);
+                        }
                         if (element_area)
                             _mesh->ele_vector[i]->SetFluxArea(
                                 mmp_property_value);
