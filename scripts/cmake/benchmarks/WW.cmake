@@ -157,6 +157,16 @@ Benchmark(AUTHOR WW
 )
 
 Benchmark(AUTHOR WW
+	PATH HM_T/point_heat_power
+	CONFIG FEM
+	NUM_PROCESSORS 1
+	RUNTIME 50
+	OUTPUT_FILES
+		point_heat_power_time_p0_5_DEFORMATION_FLOW.tec
+                point_heat_power_time_p0.5_HEAT_TRANSPORT.tec
+)
+
+Benchmark(AUTHOR WW
 	PATH PETSc/h_tri/h_tri
 	CONFIG PETSC
 	NUM_PROCESSORS 3
