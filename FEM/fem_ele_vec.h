@@ -154,7 +154,7 @@ private:
     // Primary value indeces
     // Column index in the node value table
     int idx_P, idx_P0, idx_P1, idx_P1_0, idx_P2;
-    int idx_T0, idx_T1;
+    int idx_T0;
     int idx_S0, idx_S, idx_Snw;
     int idx_pls;
     int idx_p1_ini;
