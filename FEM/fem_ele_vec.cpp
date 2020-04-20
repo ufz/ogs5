@@ -17,6 +17,8 @@
 #include <cfloat>
 #include <algorithm>
 
+#include "display.h"
+
 #include "mathlib.h"
 #include "matrix_class.h"
 #include "matrix_routines.h"
@@ -81,7 +83,6 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
       idx_P1_0(-1),
       idx_P2(-1),
       idx_T0(-1),
-      idx_T1(-1),
       idx_S0(-1),
       idx_S(-1),
       idx_Snw(-1),
@@ -332,6 +333,7 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
     }
 
     for (size_t i = 0; i < pcs_vector.size(); i++)
+    {
         //      if (pcs_vector[i]->pcs_type_name.find("HEAT") != string::npos) {
         // TF
         if (pcs_vector[i]->getProcessType() == HEAT_TRANSPORT)
@@ -339,14 +341,20 @@ CFiniteElementVec::CFiniteElementVec(process::CRFProcessDeformation* dm_pcs,
             t_pcs = pcs_vector[i];
             break;
         }
-    if (T_Flag)
+    }
+    if (t_pcs)
     {
         idx_T0 = t_pcs->GetNodeValueIndex("TEMPERATURE1");
-        idx_T1 = idx_T0 + 1;
-        nodal_dT = new double[max_nnodes_LE];
+        if (idx_T0 < 0)
+        {
+            Display::ScreenMessage(
+                "HEAT_TRANSPORT process should be defined before DEFORMATION "
+                "related process.");
+            exit(1);
+        }
         T1 = new double[max_nnodes_LE];
+        nodal_dT = new double[max_nnodes_LE];
     }
-
     if (enhanced_strain_dm && dim == 2)
     {
         NodesInJumpedA = new bool[max_nnodes_QE_2D];
@@ -397,8 +405,6 @@ CFiniteElementVec::~CFiniteElementVec()
     delete AuxMatrix;
     delete AuxMatrix2;  // NW
     delete[] Disp;
-    delete[] nodal_dT;
-    delete[] T1;
     delete[] Sxx;
     delete[] Syy;
     delete[] Szz;
@@ -466,8 +472,6 @@ CFiniteElementVec::~CFiniteElementVec()
     AuxMatrix = NULL;
     AuxMatrix2 = NULL;  // NW
     Disp = NULL;
-    nodal_dT = NULL;
-    T1 = NULL;
     Sxx = NULL;
     Syy = NULL;
     Szz = NULL;
@@ -501,6 +505,15 @@ CFiniteElementVec::~CFiniteElementVec()
         delete[] _nodal_S;
     if (AuxNodal1)
         delete[] AuxNodal1;
+
+    if (T1)
+    {
+        delete[] T1;
+    }
+    if (nodal_dT)
+    {
+        delete nodal_dT;
+    }
 
     // NW
     for (int i = 0; i < (int)vec_B_matrix.size(); i++)
@@ -1970,13 +1983,14 @@ void CFiniteElementVec::LocalAssembly_continuum(const int update)
         deporo = h_pcs->GetElementValue(
                      Index, h_pcs->GetElementValueIndex("n_sw_rate")) /
                  (double)ele_dim;
-    if (T_Flag)
+    if (t_pcs)
+    {
         for (i = 0; i < nnodes; i++)
         {
-            T1[i] = t_pcs->GetNodeValue(nodes[i], idx_T1);
-            nodal_dT[i] = t_pcs->GetNodeValue(nodes[i], idx_T1) -
-                          t_pcs->GetNodeValue(nodes[i], idx_T0);
+            T1[i] = t_pcs->GetNodeValue(nodes[i], idx_T0 + 1);
+            nodal_dT[i] = T1[i] - t_pcs->GetNodeValue(nodes[i], idx_T0);
         }
+    }
     //
 
     if (PModel == 1 || PModel == 10 ||
@@ -3363,14 +3377,18 @@ void CFiniteElementVec::LocalAssembly_EnhancedStrain(const int update)
     BDG->LimitSize(2, 2 * nnodesHQ);
     PDB->LimitSize(2 * nnodesHQ, 2);
 
-    if (T_Flag)
+    if (t_pcs)
     {
         // Thermal effect
         if (smat->Thermal_Expansion() > 0.0)
+        {
             ThermalExpansion = smat->Thermal_Expansion();
+        }
         for (int i = 0; i < nnodes; i++)
-            nodal_dT[i] = t_pcs->GetNodeValue(nodes[i], idx_T1) -
+        {
+            nodal_dT[i] = t_pcs->GetNodeValue(nodes[i], idx_T0 + 1) -
                       t_pcs->GetNodeValue(nodes[i], idx_T0);
+        }
     }
 
     // Elastic modulus
