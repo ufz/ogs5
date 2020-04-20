@@ -86,7 +86,7 @@ void CFiniteElementStd::ComputeAdditionalJacobi_H2()
         getGradShapefunctValues(gp, 1);  // Linear interpolation function
 
         // poro = MediaProp->Porosity(Index,pcs->m_num->ls_theta);
-        tensor = MediaProp->PermeabilityTensor(Index);
+        tensor = MediaProp->PermeabilityTensor(Index, gp);
         PG = interpolate(NodalVal1);
         PG2 = interpolate(p2);
         Sw = MediaProp->SaturationCapillaryPressureFunction(PG);
@@ -281,7 +281,7 @@ void CFiniteElementStd::ComputeAdditionalJacobi_Richards()
         getShapefunctValues(gp, 1);      // Linear interpolation function
         getGradShapefunctValues(gp, 1);  // Linear interpolation function
 
-        tensor = MediaProp->PermeabilityTensor(Index);
+        tensor = MediaProp->PermeabilityTensor(Index, gp);
         PG = -interpolate(NodalVal1);
         Sw = MediaProp->SaturationCapillaryPressureFunction(PG);
         S1 =

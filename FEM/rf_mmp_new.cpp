@@ -45,6 +45,7 @@ extern double gravity_constant;
 //#include "msh_lib.h"
 #include "pcs_dm.h"  //WX
 
+#include "Material/PorousMedium/DamageZonePermeability.h"
 #include "PhysicalConstant.h"
 
 // MAT-MP data base lists
@@ -72,7 +73,10 @@ using namespace Display;
    last modification:
 **************************************************************************/
 CMediumProperties::CMediumProperties()
-    : geo_dimension(0), _mesh(NULL), _geo_type(GEOLIB::GEODOMAIN)
+    : geo_dimension(0),
+      _mesh(NULL),
+      _geo_type(GEOLIB::GEODOMAIN),
+      _damage_zone_permeability(NULL)
 {
     name = "DEFAULT";
     mode = 0;
@@ -162,6 +166,9 @@ CMediumProperties::~CMediumProperties(void)
 {
     if (c_coefficient)
         delete[] c_coefficient;  // WW
+
+    if (_damage_zone_permeability)
+        delete _damage_zone_permeability;
     geo_name_vector.clear();
 }
 
@@ -181,7 +188,8 @@ bool MMPRead(std::string base_file_name)
     //----------------------------------------------------------------------
     // OK  MMPDelete();
     //----------------------------------------------------------------------
-    ScreenMessage("MMPRead ... ");;
+    ScreenMessage("MMPRead ... ");
+    ;
     CMediumProperties* m_mat_mp = NULL;
     char line[MAX_ZEILE];
     std::string sub_line;
@@ -207,7 +215,7 @@ bool MMPRead(std::string base_file_name)
         if (line_string.find("#STOP") != string::npos)
         {
             ScreenMessage("done, read %d medium properties\n",
-                                   mmp_vector.size());
+                          mmp_vector.size());
 
             return true;
         }
@@ -474,19 +482,20 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
                     break;
                 case 10:  // Chemical swelling model (constrained swelling,
                           // constant I)
-                {
-                    int m;
-                    in >> porosity_model_values[0];  // Initial porosity
-                    in >> m;                         // m
-                    if (m > 15)
-                        std::cout << "Maximal number of solid phases is now "
-                                     "limited to be 15!!!"
-                                  << "\n";
-                    for (int i = 0; i < m + 1; i++)
-                        // molar volume [l/mol]
-                        in >> porosity_model_values[i + 1];
-                    break;
-                }
+                    {
+                        int m;
+                        in >> porosity_model_values[0];  // Initial porosity
+                        in >> m;                         // m
+                        if (m > 15)
+                            std::cout
+                                << "Maximal number of solid phases is now "
+                                   "limited to be 15!!!"
+                                << "\n";
+                        for (int i = 0; i < m + 1; i++)
+                            // molar volume [l/mol]
+                            in >> porosity_model_values[i + 1];
+                        break;
+                    }
                 case 11:  // MB: read from file ToDo
                     // in >> porosity_file; // CB
                     in >> porosity_model_values[0];  // CB some dummy default
@@ -936,7 +945,28 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
             in.clear();
             continue;
         }
+        if (line_string.find("$DAMAGE_ZONE_PERMEABILITY") != std::string::npos)
+        {
+            if ((mmp_vector.size() > msp_vector.size() - 1) ||
+                msp_vector[mmp_vector.size()]
+                        ->getMohrCoulombFailureCriterion() == NULL)
 
+            {
+                ScreenMessage(
+                    "MOHR_COULOMB_FAILURE_CRITERION is not defined in msp "
+                    "file "
+                    "for $DAMAGE_ZONE_PERMEABILITY in mmp file. Stop now!");
+                abort();
+            }
+            in.str(GetLineFromFile1(mmp_file));
+            double a, b;
+            in >> a >> b;
+            _damage_zone_permeability =
+                new PorousMediumProperty::DamageZonePermeability(a, b);
+            in.clear();
+            ScreenMessage("DAMAGE_ZONE_PERMEABILITY is used.\n");
+            continue;
+        }
         //------------------------------------------------------------------------
         // 12. $PERMEABILITY_FUNCTION
         //				(i)		_DEFORMATION
@@ -1008,9 +1038,10 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
                               [2];  // d_fac/d_volStrain
                                     // when vol. strain
                                     // > threshold
-                    in >> permeability_strain_model_value
-                              [3];  // curve numer for dependenc between
-                                    // threshold and plas strain
+                    in >> permeability_strain_model_value[3];  // curve numer
+                                                               // for dependenc
+                                                               // between
+                    // threshold and plas strain
                     // if -1, threshold is constant
                     in >> permeability_strain_model_value[4];  // lower limit
                     in >> permeability_strain_model_value[5];  // uper limit
@@ -1107,8 +1138,9 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
                     pcs_name_vector.push_back("TEMPERATURE1");
                     break;
                 case 10:  // WX:05.2010 directly from curve
-                    in >> permeability_pressure_model_values
-                              [0];  // WX: curve number 05.2010
+                    in >> permeability_pressure_model_values[0];  // WX: curve
+                                                                  // number
+                                                                  // 05.2010
                     break;
                 default:
                     std::cout << "Error in MMPRead: no valid permeability model"
@@ -1544,9 +1576,8 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
                     // initial values
                     in >> permeability_porosity_model_values[0];  // initial
                                                                   // porosity
-                    in >>
-                        permeability_porosity_model_values[1];  // initial
-                                                                // permeability
+                    in >> permeability_porosity_model_values[1];  // initial
+                    // permeability
                     KC_permeability_initial =
                         permeability_porosity_model_values[1];
                     KC_porosity_initial = permeability_porosity_model_values[0];
@@ -1561,9 +1592,8 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
                     // initial values
                     in >> permeability_porosity_model_values[0];  // initial
                                                                   // porosity
-                    in >>
-                        permeability_porosity_model_values[1];  // initial
-                                                                // permeab ility
+                    in >> permeability_porosity_model_values[1];  // initial
+                    // permeab ility
                     KC_permeability_initial =
                         permeability_porosity_model_values[1];
                     KC_porosity_initial = permeability_porosity_model_values[0];
@@ -1684,7 +1714,7 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
                     in >> capillary_pressure_values[2];
                     if (capillary_pressure_values[2] >= 0.0)
                     {  // Then a constant saturation value has been entered.
-                       // This is model #2.
+                        // This is model #2.
                         ScreenMessage(
                             "WARNING in MMPRead. Capillary pressure model 1 "
                             "used for a constant saturation. THIS IS "
@@ -1709,10 +1739,10 @@ std::ios::pos_type CMediumProperties::Read(std::ifstream* mmp_file)
                                                          // [alpha_switch>0])
                     in >> capillary_pressure_values[1];  // Slr
                     in >> capillary_pressure_values[2];  // Slmax
-                    in >> capillary_pressure_values
-                              [3];  // exponent (always <= 1.0) --> (typical is
-                                    // 0.5) i.e. n = 1 / (1
-                                    // - exponent) == 2.0
+                    in >> capillary_pressure_values[3];  // exponent (always <=
+                                                         // 1.0) --> (typical is
+                                                         // 0.5) i.e. n = 1 / (1
+                                                         // - exponent) == 2.0
                     in >> capillary_pressure_values[4];  // maximum Pc
                     in >> i;  // alpha_switch (default = 0)
                     if (i > 0)
@@ -2591,7 +2621,7 @@ double CMediumProperties::PermeabilitySaturationFunction(
             slr = 1.0 - maximum_saturation[phase];   // slr = 1.0 - sgm
             slm = 1.0 - residual_saturation[phase];  // slm = 1.0 - sgr
             m = saturation_exponent[phase];          // always <= 1.0.  Input is
-                                             // exponent = 1 / (1-lambda)
+            // exponent = 1 / (1-lambda)
             sl = MRange(slr, sl, slm);
             se = (sl - slr) / (slm - slr);
             //
@@ -3026,7 +3056,8 @@ double* CMediumProperties::HeatDispersionTensorNew(int ip)
 
     if (abs(vg) > MKleinsteZahl  // For the case of diffusive transport only
                                  // WW
-        && (alpha_l > MKleinsteZahl || alpha_t > MKleinsteZahl))
+        &&
+        (alpha_l > MKleinsteZahl || alpha_t > MKleinsteZahl))
     {
         switch (Dim)
         {
@@ -4334,8 +4365,9 @@ double CMediumProperties::Porosity(CElement* assem)
                      FiniteElement::GROUNDWATER_FLOW) ||
                     (pcs_temp->getProcessType() == FiniteElement::RICHARDS_FLOW)
                     // TF
-                    || (pcs_temp->getProcessType() ==
-                        FiniteElement::MULTI_PHASE_FLOW))
+                    ||
+                    (pcs_temp->getProcessType() ==
+                     FiniteElement::MULTI_PHASE_FLOW))
                 {
                     int idx = pcs_temp->GetElementValueIndex("POROSITY");
                     porosity = pcs_temp->GetElementValue(number, idx);
@@ -4512,7 +4544,7 @@ CMediumProperties::PorosityEffectiveConstrainedSwellingConstantIonicStrength(
    last modification:
    10/2010 TF changed access to process type
 **************************************************************************/
-double* CMediumProperties::PermeabilityTensor(long index)
+double* CMediumProperties::PermeabilityTensor(const long index, const int gp)
 {
     static double tensor[9];
     int perm_index = 0;
@@ -4543,7 +4575,7 @@ double* CMediumProperties::PermeabilityTensor(long index)
         tensor[0] = permeability_tensor[0];
         if (permeability_model == 2)
         {  // here get the initial permeability values from material perperty
-           // class;
+            // class;
             // get the
             // index:-------------------------------------------------------------------
             for (perm_index = 0;
@@ -4909,6 +4941,22 @@ double* CMediumProperties::PermeabilityTensor(long index)
             }
             break;
     }
+
+    if (_damage_zone_permeability == NULL)
+        return tensor;
+
+    FiniteElement::ElementValue_DM* element_data_DM = ele_value_dm[index];
+    static double s[6];
+    Math_Group::Matrix const& element_stresses = (*element_data_DM->Stress);
+    const int ns = static_cast<int>(element_stresses.Rows());
+    for (int i = 0; i < ns; i++)
+        s[i] = element_stresses(i, gp);
+
+    const int dim = Fem_Ele_Std->Dim();
+    _damage_zone_permeability->computeDamageZonePermeability(
+        tensor, *(Fem_Ele_Std->SolidProp->getMohrCoulombFailureCriterion()), s,
+        dim);
+
     return tensor;
 }
 
@@ -5003,20 +5051,21 @@ double CMediumProperties::PermeabilityFunctionStrain(
         }
         case 3:  // if StrainP>0, factor=f(StrainP), else
                  // factor=f(strain_Volume)
-        {
-            if (strainp > 0)
-                fac_perm_strain = GetCurveValue(
-                    permeability_strain_model_value[1], 0, strainp, &gueltig);
-            else
             {
-                fac_perm_strain =
-                    GetCurveValue(permeability_strain_model_value[0], 0,
-                                  vol_strain_temp, &gueltig);
+                if (strainp > 0)
+                    fac_perm_strain =
+                        GetCurveValue(permeability_strain_model_value[1], 0,
+                                      strainp, &gueltig);
+                else
+                {
+                    fac_perm_strain =
+                        GetCurveValue(permeability_strain_model_value[0], 0,
+                                      vol_strain_temp, &gueltig);
+                }
+                if (fac_perm_strain <= 0.)
+                    fac_perm_strain = 1.;
+                break;
             }
-            if (fac_perm_strain <= 0.)
-                fac_perm_strain = 1.;
-            break;
-        }
         case 4:  // factor = f(strainP+strain_Volume)
         {
             double tmpfkt = 1.;
@@ -5044,11 +5093,13 @@ double CMediumProperties::PermeabilityFunctionStrain(
                 threshold = GetCurveValue(permeability_strain_model_value[3], 0,
                                           vol_strain_temp, &gueltig);
             if (vol_strain_temp <= threshold)
-                fac_perm_strain = 1 - permeability_strain_model_value[1] *
-                                          (threshold - vol_strain_temp);
+                fac_perm_strain = 1 -
+                                  permeability_strain_model_value[1] *
+                                      (threshold - vol_strain_temp);
             else
-                fac_perm_strain = 1 + permeability_strain_model_value[2] *
-                                          (vol_strain_temp - threshold);
+                fac_perm_strain = 1 +
+                                  permeability_strain_model_value[2] *
+                                      (vol_strain_temp - threshold);
             fac_perm_strain =
                 MRange(permeability_strain_model_value[4], fac_perm_strain,
                        permeability_strain_model_value[5]);

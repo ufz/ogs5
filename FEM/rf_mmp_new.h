@@ -32,63 +32,20 @@
 
 // PCSLib
 #include "rf_pcs.h"
+#include "Material/PorousMedium/DamageZonePermeability.h"
 
 namespace FiniteElement
 {
 class CFiniteElementStd;
 }
-using FiniteElement::CFiniteElementStd;
+
+namespace PorousMediumProperty
+{
+class DamageZonePermeability;
+}
+
 class CMediumProperties
 {
-public:
-    CFiniteElementStd* Fem_Ele_Std;
-
-private:
-    // WW
-    friend class FiniteElement::CFiniteElementStd;
-    // Data base
-    void SetMediumPropertiesDefaultsClay(void);  // CMCD 9/2004 GeoSys 4
-    void SetMediumPropertiesDefaultsSilt(void);  // CMCD 9/2004 GeoSys 4
-    void SetMediumPropertiesDefaultsSand(void);  // CMCD 9/2004 GeoSys 4
-    // CMCD 9/2004 GeoSys 4
-    void SetMediumPropertiesDefaultsGravel(void);
-    // CMCD 9/2004 GeoSys 4
-    void SetMediumPropertiesDefaultsCrystalline(void);
-    // CMCD 9/2004 GeoSys 4
-    void SetMediumPropertiesDefaultsBordenAquifer(void);
-    // Porosity
-    // CMCD 9/2004 GeoSys 4
-    double PorosityEffectiveStress(long, double);
-    double PorosityVolumetricFreeSwellingConstantIonicstrength(long,
-                                                               double,
-                                                               double);
-    // MX 1/2005
-    double PorosityEffectiveConstrainedSwelling(long, double, double, double*);
-    // MX 1/2005
-    double PorosityVolumetricFreeSwelling(long, double, double);
-    // MX 1/2005
-    double PorosityEffectiveConstrainedSwellingConstantIonicStrength(long,
-                                                                     double,
-                                                                     double,
-                                                                     double*);
-    // Permeability
-    // Permeabilty stress corrector WW
-    double* c_coefficient;
-    unsigned geo_dimension;
-    unsigned geo_inclination;  // inclination of domain/sub domain from
-                               // horizontal anticloclwise: AKS
-    int permeability_stress_mode;
-    //
-    // CMCD 9/2004 GeoSys 4
-    double PermeabilityPressureFunctionMethod1(long, double);
-    // CMCD 9/2004 GeoSys 4
-    double PermeabilityPressureFunctionMethod2(long, double);
-    // CMCD 9/2004 GeoSys 4
-    double PermeabilityPressureFunctionMethod3(long, double);
-    // CMCD 9/2004 GeoSys 4
-    double PermeabilityPressureFunctionMethod4(long, double, double);
-    friend class CMediumPropertiesGroup;
-
 public:
     //-------------------------------------------
     // Methods
@@ -103,7 +60,9 @@ public:
     std::ios::pos_type Read(std::ifstream*);
     void Write(std::fstream*);
     void WriteTecplot(std::string);
-    double* PermeabilityTensor(long index);
+
+    double* PermeabilityTensor(const long index, const int gp = 0);
+
     // CMCD 9/2004 GeoSys 4
     double Porosity(FiniteElement::CElement* assem = NULL);
     // CMCD 9/2004 GeoSys 4
@@ -196,25 +155,12 @@ public:
     GEOLIB::GEOTYPE getGeoType() const { return _geo_type; }
     CFEMesh* getMesh(void) { return _mesh; }
     // Properties
-private:
-    // PCS
-    std::string pcs_type_name;  // YD
-public:
+
+    FiniteElement::CFiniteElementStd* Fem_Ele_Std;
+
     CRFProcess* m_pcs;  // OK
     std::vector<std::string> pcs_name_vector;
 
-private:
-    std::vector<std::string> porosity_pcs_name_vector;
-    CFEMesh* _mesh;  // OK
-
-    /**
-     * attribute describes the type of the geometric entity the
-     * material property is assigned to
-     */
-    GEOLIB::GEOTYPE _geo_type;
-    FiniteElement::FrictionPhase _fric_phase;
-
-public:
     // GEO
     std::string geo_name;
     std::vector<std::string> geo_name_vector;  // OK
@@ -352,6 +298,67 @@ public:
     double graindiameter;
     double hydraulicrad;
     double betaexpo;
+
+private:
+    // WW
+    friend class FiniteElement::CFiniteElementStd;
+    // Data base
+    void SetMediumPropertiesDefaultsClay(void);  // CMCD 9/2004 GeoSys 4
+    void SetMediumPropertiesDefaultsSilt(void);  // CMCD 9/2004 GeoSys 4
+    void SetMediumPropertiesDefaultsSand(void);  // CMCD 9/2004 GeoSys 4
+    // CMCD 9/2004 GeoSys 4
+    void SetMediumPropertiesDefaultsGravel(void);
+    // CMCD 9/2004 GeoSys 4
+    void SetMediumPropertiesDefaultsCrystalline(void);
+    // CMCD 9/2004 GeoSys 4
+    void SetMediumPropertiesDefaultsBordenAquifer(void);
+    // Porosity
+    // CMCD 9/2004 GeoSys 4
+    double PorosityEffectiveStress(long, double);
+    double PorosityVolumetricFreeSwellingConstantIonicstrength(long,
+                                                               double,
+                                                               double);
+    // MX 1/2005
+    double PorosityEffectiveConstrainedSwelling(long, double, double, double*);
+    // MX 1/2005
+    double PorosityVolumetricFreeSwelling(long, double, double);
+    // MX 1/2005
+    double PorosityEffectiveConstrainedSwellingConstantIonicStrength(long,
+                                                                     double,
+                                                                     double,
+                                                                     double*);
+    // Permeability
+    // Permeabilty stress corrector WW
+    double* c_coefficient;
+    unsigned geo_dimension;
+    unsigned geo_inclination;  // inclination of domain/sub domain from
+                               // horizontal anticloclwise: AKS
+    int permeability_stress_mode;
+    //
+    // CMCD 9/2004 GeoSys 4
+    double PermeabilityPressureFunctionMethod1(long, double);
+    // CMCD 9/2004 GeoSys 4
+    double PermeabilityPressureFunctionMethod2(long, double);
+    // CMCD 9/2004 GeoSys 4
+    double PermeabilityPressureFunctionMethod3(long, double);
+    // CMCD 9/2004 GeoSys 4
+    double PermeabilityPressureFunctionMethod4(long, double, double);
+    friend class CMediumPropertiesGroup;
+
+    // PCS
+    std::string pcs_type_name;  // YD
+
+    std::vector<std::string> porosity_pcs_name_vector;
+    CFEMesh* _mesh;  // OK
+
+    /**
+     * attribute describes the type of the geometric entity the
+     * material property is assigned to
+     */
+    GEOLIB::GEOTYPE _geo_type;
+    FiniteElement::FrictionPhase _fric_phase;
+
+    PorousMediumProperty::DamageZonePermeability* _damage_zone_permeability;
 };
 
 class CMediumPropertiesGroup  // YD

@@ -63,6 +63,7 @@ class Invariants;
 namespace SolidProp
 {
 class BGRaCreep;
+class MohrCoulombFailureCriterion;
 
 typedef Eigen::Matrix<double, 6, 1> KVec;
 class CSolidProperties
@@ -192,6 +193,10 @@ public:
     double getYoungsModulus(const double refence = 0.0) const;
     double getBulkModulus() const;
     double getBiotsConstant() const { return biot_const; }
+    MohrCoulombFailureCriterion* getMohrCoulombFailureCriterion() const
+    {
+        return _mohrCoulomb_failure_criterion;
+    }
 
 private:
     // CMCD
@@ -489,6 +494,7 @@ private:
     FiniteElement::SolidReactiveSystem _reactive_system;
 
     BGRaCreep* _bgra_creep;
+    MohrCoulombFailureCriterion* _mohrCoulomb_failure_criterion;
 
     // Friends that can access to this data explicitly
     friend bool ::MSPRead(const std::string& given_file_base_name);

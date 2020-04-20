@@ -45,6 +45,7 @@
 #include "PhysicalConstant.h"
 
 #include "Material/Solid/BGRaCreep.h"
+#include "Material/Solid/MohrCoulombFailureCriterion.h"
 #include "minkley.h"
 #include "burgers.h"
 
@@ -1038,6 +1039,17 @@ std::ios::pos_type CSolidProperties::Read(std::ifstream* msp_file)
             // TransMicroStru_TInv->Write();
             // TransMicroStru->Write();
         }
+
+        if (line_string.find("$MOHR_COULOMB_FAILURE_CRITERION") != string::npos)
+        {
+            in_sd.str(GetLineFromFile1(msp_file));
+            double c, angle;
+            in_sd >> c >> angle;
+            _mohrCoulomb_failure_criterion =
+                new MohrCoulombFailureCriterion(c, angle);
+            in_sd.clear();
+        }
+
         in_sd.clear();
         if (line_string.find("$WEAKNESS_PLANE") !=
             string::npos)  // LU:04.2019 for slip on prescribed plane (only
@@ -1168,7 +1180,7 @@ CSolidProperties::CSolidProperties()
       data_Conductivity(NULL),
       data_Plasticity(NULL),
       data_Creep(NULL),
-      _bgra_creep(NULL)
+      _bgra_creep(NULL), _mohrCoulomb_failure_criterion(NULL)
 {
     PoissonRatio = 0.2;
     ThermalExpansion = 0.0;
@@ -1411,6 +1423,8 @@ CSolidProperties::~CSolidProperties()
 
     if(_bgra_creep)
         delete _bgra_creep;
+    if(_mohrCoulomb_failure_criterion)
+        delete _mohrCoulomb_failure_criterion;
 }
 //----------------------------------------------------------------------------
 
