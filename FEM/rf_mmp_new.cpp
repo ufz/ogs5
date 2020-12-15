@@ -18,6 +18,7 @@
 // C++ STL
 //#include <iostream>
 #include <cfloat>
+
 #include "display.h"
 
 // FEMLib
@@ -43,9 +44,8 @@ extern double gravity_constant;
 #include "fem_ele_vec.h"
 // MSHLib
 //#include "msh_lib.h"
-#include "pcs_dm.h"  //WX
-
 #include "PhysicalConstant.h"
+#include "pcs_dm.h"  //WX
 
 // MAT-MP data base lists
 list<string> keywd_list;
@@ -181,7 +181,7 @@ bool MMPRead(std::string base_file_name)
     //----------------------------------------------------------------------
     // OK  MMPDelete();
     //----------------------------------------------------------------------
-    ScreenMessage("MMPRead ... ");;
+    ScreenMessage("MMPRead ... ");
     CMediumProperties* m_mat_mp = NULL;
     char line[MAX_ZEILE];
     std::string sub_line;
@@ -207,7 +207,7 @@ bool MMPRead(std::string base_file_name)
         if (line_string.find("#STOP") != string::npos)
         {
             ScreenMessage("done, read %d medium properties\n",
-                                   mmp_vector.size());
+                          mmp_vector.size());
 
             return true;
         }
@@ -4515,7 +4515,7 @@ CMediumProperties::PorosityEffectiveConstrainedSwellingConstantIonicStrength(
 double* CMediumProperties::PermeabilityTensor(long index)
 {
     static double tensor[9];
-    unsigned int perm_index = 0;
+    size_t perm_index = 0;
 
     int idx_k, idx_n;
     double /*k_old, n_old,*/ k_new, n_new, k_rel, n_rel;
@@ -4796,7 +4796,6 @@ double* CMediumProperties::PermeabilityTensor(long index)
                 tensor[2] = 0.0;
                 // tensor[3] = permeability_tensor[0];
                 tensor[3] = tensor[0];  // HS: use the existing value;
-
             }
             else if (permeability_tensor_type == 1)
             {
@@ -4829,20 +4828,15 @@ double* CMediumProperties::PermeabilityTensor(long index)
             {
                 if (permeability_model == 2)
                 {
-                    // tensor[0] = already se
-                    tensor[1] =
-                        _mesh->ele_vector[index]->mat_vector[perm_index + 1];
-                    tensor[2] =
-                        _mesh->ele_vector[index]->mat_vector[perm_index + 2];
-                    tensor[3] =
-                        _mesh->ele_vector[index]->mat_vector[perm_index + 3];
+                    // tensor[0] = already set
+                    for (size_t ii = 1; ii < 4; ++ii)
+                        tensor[ii] = _mesh->ele_vector[index]
+                                         ->mat_vector[perm_index + ii];
                 }
                 else
                 {
-                    tensor[0] = permeability_tensor[0];
-                    tensor[1] = permeability_tensor[1];
-                    tensor[2] = permeability_tensor[2];
-                    tensor[3] = permeability_tensor[3];
+                    for (size_t ii = 0; ii < 4; ++ii)
+                        tensor[ii] = permeability_tensor[ii];
                 }
             }
             break;
@@ -4919,35 +4913,15 @@ double* CMediumProperties::PermeabilityTensor(long index)
             {
                 if (permeability_model == 2)
                 {
-                    // tensor[0] = already se
-                    tensor[1] =
-                        _mesh->ele_vector[index]->mat_vector[perm_index + 1];
-                    tensor[2] =
-                        _mesh->ele_vector[index]->mat_vector[perm_index + 2];
-                    tensor[3] =
-                        _mesh->ele_vector[index]->mat_vector[perm_index + 3];
-                    tensor[4] =
-                        _mesh->ele_vector[index]->mat_vector[perm_index + 4];
-                    tensor[5] =
-                        _mesh->ele_vector[index]->mat_vector[perm_index + 5];
-                    tensor[6] =
-                        _mesh->ele_vector[index]->mat_vector[perm_index + 6];
-                    tensor[7] =
-                        _mesh->ele_vector[index]->mat_vector[perm_index + 7];
-                    tensor[8] =
-                        _mesh->ele_vector[index]->mat_vector[perm_index + 8];
+                    // tensor[0] = already set
+                    for (size_t ii = 1; ii < 9; ++ii)
+                        tensor[ii] = _mesh->ele_vector[index]
+                                         ->mat_vector[perm_index + ii];
                 }
                 else
                 {
-                    tensor[0] = permeability_tensor[0];
-                    tensor[1] = permeability_tensor[1];
-                    tensor[2] = permeability_tensor[2];
-                    tensor[3] = permeability_tensor[3];
-                    tensor[4] = permeability_tensor[4];
-                    tensor[5] = permeability_tensor[5];
-                    tensor[6] = permeability_tensor[6];
-                    tensor[7] = permeability_tensor[7];
-                    tensor[8] = permeability_tensor[8];
+                    for (size_t ii = 0; ii < 9; ++ii)
+                        tensor[ii] = permeability_tensor[ii];
                 }
             }
             break;
@@ -5754,7 +5728,7 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
     string mmp_property_mesh;
     MeshLib::CElem* m_ele_geo = NULL;
     bool element_area = false;
-    long i, ihet;
+    long i;
     double mmp_property_value;
     double ddummy, conversion_factor = 1.0;  // init WW
     vector<double> xvals, yvals, zvals, mmpvals;
@@ -5922,8 +5896,8 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
                             // nearest given value in the input file Return
                             // value ihet is the index of the het. val in the
                             // mmpval-vector
-                            ihet = GetNearestHetVal2(i, _mesh, xvals, yvals,
-                                                     zvals, mmpvals);
+                            const long ihet = GetNearestHetVal2(
+                                i, _mesh, xvals, yvals, zvals, mmpvals);
                             m_ele_geo->mat_vector.push_back(mmpvals[ihet]);
                         }
                         if (mmp_property_dis_type[0] == 'G')
