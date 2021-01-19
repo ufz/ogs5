@@ -1103,7 +1103,7 @@ here. MeshLib::CElem* elem = NULL;
         double const* center(elem->GetGravityCenter());
 
         fprintf(tet_file, "%17.12e %17.12e %17.12e %17.12e\n",
-                center[0], center[1], center[2], elem->mat_vector(0) * 1e7);
+                center[0], center[1], center[2], elem->mat_vector[0] * 1e7);
     }
 
     // Let's close it, now

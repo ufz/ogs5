@@ -2309,7 +2309,7 @@ void CFiniteElementStd::CalCoefLaplace(bool Gravity, int ip)
                           break;
                       }
 
-                      mat_fac = MeshElement->mat_vector(i);
+                      mat_fac = MeshElement->mat_vector[i];
                       mat_fac /= FluidProp->Viscosity();
                      for(i=0; i<dim; i++) //WW
                         mat[i*dim+i] = mat_fac;

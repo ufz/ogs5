@@ -18,6 +18,7 @@
 // C++ STL
 //#include <iostream>
 #include <cfloat>
+
 #include "display.h"
 
 // FEMLib
@@ -43,9 +44,8 @@ extern double gravity_constant;
 #include "fem_ele_vec.h"
 // MSHLib
 //#include "msh_lib.h"
-#include "pcs_dm.h"  //WX
-
 #include "PhysicalConstant.h"
+#include "pcs_dm.h"  //WX
 
 // MAT-MP data base lists
 list<string> keywd_list;
@@ -181,7 +181,7 @@ bool MMPRead(std::string base_file_name)
     //----------------------------------------------------------------------
     // OK  MMPDelete();
     //----------------------------------------------------------------------
-    ScreenMessage("MMPRead ... ");;
+    ScreenMessage("MMPRead ... ");
     CMediumProperties* m_mat_mp = NULL;
     char line[MAX_ZEILE];
     std::string sub_line;
@@ -207,7 +207,7 @@ bool MMPRead(std::string base_file_name)
         if (line_string.find("#STOP") != string::npos)
         {
             ScreenMessage("done, read %d medium properties\n",
-                                   mmp_vector.size());
+                          mmp_vector.size());
 
             return true;
         }
@@ -4119,7 +4119,7 @@ double CMediumProperties::Porosity(long number, double theta)
             break;
         case 11:  // n = temp const, but spatially distributed CB
             // porosity = porosity_model_values[0];
-            porosity = _mesh->ele_vector[number]->mat_vector(por_index);
+            porosity = _mesh->ele_vector[number]->mat_vector[por_index];
             break;
         case 12:  // n = n0 + vol_strain, WX: 03.2011
             porosity =
@@ -4515,7 +4515,7 @@ CMediumProperties::PorosityEffectiveConstrainedSwellingConstantIonicStrength(
 double* CMediumProperties::PermeabilityTensor(long index)
 {
     static double tensor[9];
-    int perm_index = 0;
+    size_t perm_index = 0;
 
     int idx_k, idx_n;
     double /*k_old, n_old,*/ k_new, n_new, k_rel, n_rel;
@@ -4538,30 +4538,12 @@ double* CMediumProperties::PermeabilityTensor(long index)
     // gets the values from K-C relationship. this will only influence then case
     // when permeability_tensor_type = 0
     // -------------------------------------------------------------------------------------------------------
+
     if (permeability_tensor_type == 0)
     {  // only when permeability is isotropic
         tensor[0] = permeability_tensor[0];
-        if (permeability_model == 2)
-        {  // here get the initial permeability values from material perperty
-           // class;
-            // get the
-            // index:-------------------------------------------------------------------
-            for (perm_index = 0;
-                 perm_index < (int)m_pcs->m_msh->mat_names_vector.size();
-                 perm_index++)
-                if (m_pcs->m_msh->mat_names_vector[perm_index].compare(
-                        "PERMEABILITY") == 0)
-                    break;
-            // end of getting the
-            // index---------------------------------------------------------
 
-            tensor[0] = _mesh->ele_vector[index]->mat_vector(perm_index);
-            // CMCD
-            // 01.09.2011 WW.  int edx =
-            // m_pcs->GetElementValueIndex("PERMEABILITY"); CMCD 01.09.2011 WW.
-            // m_pcs->SetElementValue(index,edx,tensor[0]);
-        }
-        else if (permeability_model == 3)
+        if (permeability_model == 3)
         {  // HS: 11.2008, for K-C relationship
             k_new = tensor[0];
             CRFProcess* pcs_tmp(NULL);
@@ -4783,6 +4765,23 @@ double* CMediumProperties::PermeabilityTensor(long index)
         // end of K-C
         // relationship-----------------------------------------------------------------------------------
     }
+    // For heterogeneous values
+    if (permeability_model == 2)
+    {
+        for (perm_index = 0; perm_index < m_pcs->m_msh->mat_names_vector.size();
+             perm_index++)
+            if (m_pcs->m_msh->mat_names_vector[perm_index].compare(
+                    "PERMEABILITY") == 0)
+                break;
+        // end of getting the
+        // index---------------------------------------------------------
+
+        tensor[0] = _mesh->ele_vector[index]->mat_vector[perm_index];
+        // CMCD
+        // 01.09.2011 WW.  int edx =
+        // m_pcs->GetElementValueIndex("PERMEABILITY"); CMCD 01.09.2011 WW.
+        // m_pcs->SetElementValue(index,edx,tensor[0]);
+    }
 
     switch (geo_dimension)
     {
@@ -4797,17 +4796,6 @@ double* CMediumProperties::PermeabilityTensor(long index)
                 tensor[2] = 0.0;
                 // tensor[3] = permeability_tensor[0];
                 tensor[3] = tensor[0];  // HS: use the existing value;
-
-                // HS: this is not needed any
-                // more--------------------------------
-                // if(permeability_model==2) {
-                // SB 4218	tensor[0] = GetHetValue(index,"permeability");
-                //      tensor[0] =
-                //      m_msh->ele_vector[index]->mat_vector(perm_index);
-                //	tensor[3] = tensor[0];
-                // }
-                // end of comment out
-                // section-------------------------------------
             }
             else if (permeability_tensor_type == 1)
             {
@@ -4820,6 +4808,14 @@ double* CMediumProperties::PermeabilityTensor(long index)
                     idx_k = m_pcs_tmp->GetElementValueIndex("PERMEABILITY_YY");
                     tensor[3] = m_pcs_tmp->GetElementValue(index, idx_k + 1);
                 }
+                else if (permeability_model == 2)
+                {
+                    // tensor[0] = already set
+                    tensor[1] = 0.0;
+                    tensor[2] = 0.0;
+                    tensor[3] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 1];
+                }
                 else
                 {
                     tensor[0] = permeability_tensor[0];
@@ -4830,10 +4826,18 @@ double* CMediumProperties::PermeabilityTensor(long index)
             }
             else if (permeability_tensor_type == 2)
             {
-                tensor[0] = permeability_tensor[0];
-                tensor[1] = permeability_tensor[1];
-                tensor[2] = permeability_tensor[2];
-                tensor[3] = permeability_tensor[3];
+                if (permeability_model == 2)
+                {
+                    // tensor[0] = already set
+                    for (size_t ii = 1; ii < 4; ++ii)
+                        tensor[ii] = _mesh->ele_vector[index]
+                                         ->mat_vector[perm_index + ii];
+                }
+                else
+                {
+                    for (size_t ii = 0; ii < 4; ++ii)
+                        tensor[ii] = permeability_tensor[ii];
+                }
             }
             break;
         case 3:  // 3-D
@@ -4858,7 +4862,7 @@ double* CMediumProperties::PermeabilityTensor(long index)
                                         // if(permeability_model==2) {
                 // SB 4218	tensor[0] = GetHetValue(index,"permeability");
                 //      tensor[0] =
-                //      m_pcs->m_msh->ele_vector[index]->mat_vector(perm_index);
+                //      m_pcs->m_msh->ele_vector[index]->mat_vector[perm_index];
                 //      tensor[4] = tensor[0];
                 //      tensor[8] = tensor[0];
                 // }
@@ -4882,6 +4886,16 @@ double* CMediumProperties::PermeabilityTensor(long index)
                     idx_k = m_pcs_tmp->GetElementValueIndex("PERMEABILITY_ZZ");
                     tensor[8] = m_pcs_tmp->GetElementValue(index, idx_k + 1);
                 }
+                else if (permeability_model == 2)
+                {
+                    // tensor[0] = already set
+                    tensor[1] = tensor[2] = tensor[3] = 0.0;
+                    tensor[4] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 1];
+                    tensor[5] = tensor[6] = tensor[7] = 0.0;
+                    tensor[8] =
+                        _mesh->ele_vector[index]->mat_vector[perm_index + 2];
+                }
                 else
                 {
                     tensor[0] = permeability_tensor[0];
@@ -4897,15 +4911,18 @@ double* CMediumProperties::PermeabilityTensor(long index)
             }
             else if (permeability_tensor_type == 2)
             {
-                tensor[0] = permeability_tensor[0];
-                tensor[1] = permeability_tensor[1];
-                tensor[2] = permeability_tensor[2];
-                tensor[3] = permeability_tensor[3];
-                tensor[4] = permeability_tensor[4];
-                tensor[5] = permeability_tensor[5];
-                tensor[6] = permeability_tensor[6];
-                tensor[7] = permeability_tensor[7];
-                tensor[8] = permeability_tensor[8];
+                if (permeability_model == 2)
+                {
+                    // tensor[0] = already set
+                    for (size_t ii = 1; ii < 9; ++ii)
+                        tensor[ii] = _mesh->ele_vector[index]
+                                         ->mat_vector[perm_index + ii];
+                }
+                else
+                {
+                    for (size_t ii = 0; ii < 9; ++ii)
+                        tensor[ii] = permeability_tensor[ii];
+                }
             }
             break;
     }
@@ -5711,22 +5728,22 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
     string mmp_property_mesh;
     MeshLib::CElem* m_ele_geo = NULL;
     bool element_area = false;
-    long i, j, ihet;
+    long i;
     double mmp_property_value;
-    int mat_vector_size = 0;                 // Init WW
     double ddummy, conversion_factor = 1.0;  // init WW
     vector<double> xvals, yvals, zvals, mmpvals;
     vector<double> temp_store;
-    int c_vals;
     double x, y, z, mmpv;
     std::stringstream in;
     // CB
     vector<double> garage;
-    int mat_vec_size = 0;
     int por_index = 0;
     int vol_bio_index = 0;
     string outfile;
     int k;
+
+    // default: scalar property
+    unsigned int n_components{1};
 
     cout << " SetDistributedELEProperties: ";
     //----------------------------------------------------------------------
@@ -5789,6 +5806,42 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
             continue;
         }
         //....................................................................
+        // optional parameter (default is zero)
+        //
+        if (line_string.find("$COMPONENTS") != string::npos)
+        {
+            mmp_property_file >> n_components;
+            if (!mmp_property_name.empty())
+                std::cerr << "Error in CMediumProperties::"
+                          << "SetDistributedELEProperties:\n"
+                          << "$MMP_TYPE hast to be set before $COMPONENTS"
+                          << "\n";
+            for (unsigned int i = 0; i < n_components - 1; ++i)
+            {
+                _mesh->mat_names_vector.push_back(mmp_property_name +
+                                                  std::to_string(i + 1));
+            }
+
+            // check consistencies
+            if (mmp_property_name.find("PERMEABILITY") != string::npos)
+                switch (this->permeability_tensor_type)
+                {
+                    case 0:  // isotropic
+                        assert(n_components == 1);
+                        break;
+                    case 1:  // orthotropic?
+                        assert(n_components == this->geo_dimension);
+                        break;
+                    case 2:  // anisotropic
+                        assert(
+                            (this->geo_dimension == 2 && n_components == 4) ||
+                            (this->geo_dimension == 3 && n_components == 9));
+                        break;
+                    default:
+                        assert(!"PERMEABILITY_TENSOR_TYPE not recognized!");
+                }
+        }
+        //....................................................................
         if (line_string.find("$DIS_TYPE") != string::npos)
         {
             mmp_property_file >> mmp_property_dis_type;
@@ -5807,6 +5860,15 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
             {
                 case 'N':  // Next neighbour
                 case 'G':  // Geometric mean
+                           // add checks since implementation for 'G' is
+                           // broken&unused
+                    if (n_components > 1)
+                    {
+                        std::cerr << "more than one component of heterogeneous"
+                                  << "fields only available with"
+                                  << "$DIS_TYPE ELEMENT!\n";
+                        assert(n_components == 1);  // must fail!
+                    }
                     // Read in all values given, store in vectors for x, y, z
                     // and value
                     i = 0;
@@ -5828,33 +5890,21 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
                     for (i = 0; i < (long)_mesh->ele_vector.size(); i++)
                     {
                         m_ele_geo = _mesh->ele_vector[i];
-                        mat_vector_size = m_ele_geo->mat_vector.Size();
-                        // CB Store old values as they are set to zero after
-                        // resizing
-                        for (j = 0; j < mat_vector_size; j++)
-                            garage.push_back(m_ele_geo->mat_vector(j));
-                        m_ele_geo->mat_vector.resize(mat_vector_size + 1);
-                        // CB Refill old values as they were set to zero after
-                        // resizing
-                        for (j = 0; j < mat_vector_size; j++)
-                            m_ele_geo->mat_vector(j) = garage[j];
-                        garage.clear();
                         if (mmp_property_dis_type[0] == 'N')
                         {
                             // Search for all elements of the mesh, which is the
                             // nearest given value in the input file Return
                             // value ihet is the index of the het. val in the
                             // mmpval-vector
-                            ihet = GetNearestHetVal2(i, _mesh, xvals, yvals,
-                                                     zvals, mmpvals);
-                            m_ele_geo->mat_vector(mat_vector_size) =
-                                mmpvals[ihet];
+                            const long ihet = GetNearestHetVal2(
+                                i, _mesh, xvals, yvals, zvals, mmpvals);
+                            m_ele_geo->mat_vector.push_back(mmpvals[ihet]);
                         }
                         if (mmp_property_dis_type[0] == 'G')
                         {
                             mmpv = GetAverageHetVal2(i, _mesh, xvals, yvals,
                                                      zvals, mmpvals);
-                            m_ele_geo->mat_vector(mat_vector_size) = mmpv;
+                            m_ele_geo->mat_vector.push_back(mmpv);
                         }
                     }
                     break;
@@ -5862,26 +5912,16 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
                     for (i = 0; i < (long)_mesh->ele_vector.size(); i++)
                     {
                         m_ele_geo = _mesh->ele_vector[i];
-                        mmp_property_file >> ddummy >> mmp_property_value;
-                        mat_vector_size = m_ele_geo->mat_vector.Size();
-                        if (mat_vector_size > 0)
+                        mmp_property_file >> ddummy;
+                        if (ddummy != i)
                         {
-                            for (c_vals = 0; c_vals < mat_vector_size; c_vals++)
-                                temp_store.push_back(
-                                    m_ele_geo->mat_vector(c_vals));
-                            m_ele_geo->mat_vector.resize(mat_vector_size + 1);
-                            for (c_vals = 0; c_vals < mat_vector_size; c_vals++)
-                                m_ele_geo->mat_vector(c_vals) =
-                                    temp_store[c_vals];
-                            m_ele_geo->mat_vector(mat_vector_size) =
-                                mmp_property_value;
-                            temp_store.clear();
+                            std::cout << "SetDistributedELEProperties:"
+                                      << "element indices not contiguous!\n";
                         }
-                        else
+                        for (unsigned int c = 0; c < n_components; ++c)
                         {
-                            m_ele_geo->mat_vector.resize(mat_vector_size + 1);
-                            m_ele_geo->mat_vector(mat_vector_size) =
-                                mmp_property_value;
+                            mmp_property_file >> mmp_property_value;
+                            m_ele_geo->mat_vector.push_back(mmp_property_value);
                         }
                         if (element_area)
                             _mesh->ele_vector[i]->SetFluxArea(
@@ -5914,17 +5954,8 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
         for (i = 0; i < (long)_mesh->ele_vector.size(); i++)
         {
             m_ele_geo = _mesh->ele_vector[i];  // Get the element
-            mat_vec_size = m_ele_geo->mat_vector.Size();
-            // CB Store old values as they are set to zero after resizing
-            for (j = 0; j < mat_vec_size; j++)
-                garage.push_back(m_ele_geo->mat_vector(j));
-            m_ele_geo->mat_vector.resize(mat_vec_size + 1);
-            // CB Refill old values as they were set to zero after resizing
-            for (j = 0; j < mat_vec_size; j++)
-                m_ele_geo->mat_vector(j) = garage[j];
-            garage.clear();
             // Set the VOL_BIO value from mmp file input
-            m_ele_geo->mat_vector(mat_vec_size) = this->vol_bio;
+            m_ele_geo->mat_vector.push_back(this->vol_bio);
         }
     }
     if ((mmp_property_name == "POROSITY") && (this->vol_mat_model == 2))
@@ -5944,19 +5975,9 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
         for (i = 0; i < (long)_mesh->ele_vector.size(); i++)
         {
             m_ele_geo = _mesh->ele_vector[i];  // Get the element
-            mat_vec_size = m_ele_geo->mat_vector.Size();
-            // CB Store old values as they are set to zero after resizing
-            for (j = 0; j < mat_vec_size; j++)
-                garage.push_back(m_ele_geo->mat_vector(j));
-            m_ele_geo->mat_vector.resize(mat_vec_size + 1);
-            // CB Refill old values as they were set to zero after resizing
-            for (j = 0; j < mat_vec_size; j++)
-                m_ele_geo->mat_vector(j) = garage[j];
-            garage.clear();
-            // Set the VOL_MAT value from (1-POROSITY-VOL_BIO)
-            m_ele_geo->mat_vector(mat_vec_size) =
-                1 - m_ele_geo->mat_vector(por_index) -
-                m_ele_geo->mat_vector(vol_bio_index);
+            m_ele_geo->mat_vector.push_back(
+                1 - m_ele_geo->mat_vector[por_index] -
+                m_ele_geo->mat_vector[vol_bio_index]);
         }
     }
     //----------------------------------------------------------------------
@@ -5999,7 +6020,7 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
         for (i = 0; i < (long)_mesh->ele_vector.size(); i++)
         {
             m_ele_geo = _mesh->ele_vector[i];
-            mmp_property_file_out << i << "  " << m_ele_geo->mat_vector(k)
+            mmp_property_file_out << i << "  " << m_ele_geo->mat_vector[k]
                                   << "\n";
         }
         mmp_property_file_out << "#STOP"
@@ -6096,7 +6117,7 @@ void CMediumProperties::WriteTecplotDistributedProperties()
             for (k = 0; k < (int)m_nod->getConnectedElementIDs().size(); k++)
             {
                 m_ele = _mesh->ele_vector[m_nod->getConnectedElementIDs()[k]];
-                m_mat_prop_nod += m_ele->mat_vector(j);
+                m_mat_prop_nod += m_ele->mat_vector[j];
             }
             m_mat_prop_nod /= (int)m_nod->getConnectedElementIDs().size();
             mat_file << " " << m_mat_prop_nod;
