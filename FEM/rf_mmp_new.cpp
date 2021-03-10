@@ -5811,7 +5811,7 @@ void CMediumProperties::SetDistributedELEProperties(string file_name)
         if (line_string.find("$COMPONENTS") != string::npos)
         {
             mmp_property_file >> n_components;
-            if (!mmp_property_name.empty())
+            if (mmp_property_name.empty())
                 std::cerr << "Error in CMediumProperties::"
                           << "SetDistributedELEProperties:\n"
                           << "$MMP_TYPE hast to be set before $COMPONENTS"
