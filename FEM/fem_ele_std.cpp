@@ -811,6 +811,10 @@ void CFiniteElementStd::ConfigureCoupling(CRFProcess* pcs, const int* Shift,
                 cpl_pcs = PCSGet("LIQUID_FLOW");
                 if (cpl_pcs == NULL)
                 {
+                    cpl_pcs = PCSGet("DEFORMATION_FLOW");
+                }
+                if (cpl_pcs == NULL)
+                {
                     // OK
                     cpl_pcs = PCSGet("RICHARDS_FLOW");
                     if (cpl_pcs)
