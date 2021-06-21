@@ -78,7 +78,7 @@ jobs:
 
       - name: Build OGS5-FEM
         run: |
-          cmake -B build -S . -DOGS_NO_EXTERNAL_LIBS=ON -DCMAKE_BUILD_TYPE=Release
+          cmake -B build -S . -DCMAKE_CXX_FLAGS=-std=c++11 -DOGS_NO_EXTERNAL_LIBS=ON  -DCMAKE_BUILD_TYPE=Release
           cmake --build build/ --config Release -j
 
       - uses: actions/upload-artifact@v2
