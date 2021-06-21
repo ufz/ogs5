@@ -15,7 +15,7 @@ on:
 jobs:
   build_win:
     name: Build on Windows
-    runs-on: windows-2019
+    runs-on: windows-2016
     strategy:
       fail-fast: false
 
@@ -26,8 +26,6 @@ jobs:
 
       - name: Setup msbuild.exe
         uses: microsoft/setup-msbuild@v1.0.2
-        with:
-          vs-version: '[15.0,16.0)'
 
       - name: Build OGS5
         run: |
