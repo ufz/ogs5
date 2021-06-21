@@ -37,7 +37,8 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          path: ./build/bin/*
+          name: ${{ matrix.os }}
+          path: ./build/bin/
 
   build_linux:
     name: Build on Linux
@@ -60,7 +61,8 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          path: ./build/bin/*
+          name: ${{ matrix.os }}
+          path: ./build/bin/
 
   build_macOS:
     name: Build on macOS
@@ -86,4 +88,5 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          path: ./build/bin/*
+          name: ${{ matrix.os }}
+          path: ./build/bin/
