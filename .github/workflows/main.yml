@@ -77,8 +77,10 @@ jobs:
           submodules: recursive
 
       - name: Build OGS5-FEM
+        env:
+          CC: gcc-9
         run: |
-          CC=gcc-9 cmake -B build -S . -DOGS_NO_EXTERNAL_LIBS=ON  -DCMAKE_BUILD_TYPE=Release
+          cmake -B build -S . -DCMAKE_CXX_FLAGS=-std=c++11 -DOGS_NO_EXTERNAL_LIBS=ON  -DCMAKE_BUILD_TYPE=Release
           cmake --build build/ --config Release -j
 
       - uses: actions/upload-artifact@v2
