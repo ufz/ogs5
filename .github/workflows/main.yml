@@ -15,21 +15,70 @@ on:
 jobs:
   build_win:
     name: Build on Windows
-    runs-on: windows-2016
     strategy:
+      matrix:
+        os: [windows-2016, windows-2019]
       fail-fast: false
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: '0'
+          submodules: recursive
 
       - name: Setup msbuild.exe
         uses: microsoft/setup-msbuild@v1.0.2
 
-      - name: Build OGS5
+      - name: Build OGS5-FEM
         run: |
           cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/ --config Release -j
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./build/bin/*
+
+  build_linux:
+    name: Build on Linux
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '0'
+          submodules: recursive
+
+      - name: Build OGS5-FEM
+        run: |
+          cmake -B build -S . -DOGS_USE_CVODE=ON -DOGS_NO_EXTERNAL_LIBS=ON -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/ --config Release -j
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./build/bin/*
+
+  build_macOS:
+    name: Build on macOS
+    strategy:
+      matrix:
+        os: [macos-10.15]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '0'
+          submodules: recursive
+
+      - name: Build OGS5-FEM
+        run: |
+          cmake -B build -S . -DOGS_NO_EXTERNAL_LIBS=ON -DCMAKE_BUILD_TYPE=Release
           cmake --build build/ --config Release -j
 
       - uses: actions/upload-artifact@v2
