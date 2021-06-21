@@ -12,6 +12,7 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+jobs:
   build_win:
     name: Build on Windows
     runs-on: windows-2019
