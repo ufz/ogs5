@@ -33,12 +33,12 @@ jobs:
       - name: Build OGS5-FEM
         run: |
           cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
-          cmake --build build/ --config Release -j
+          cmake --build build/ --config Release -j --target package
 
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.os }}
-          path: ./build/bin/
+          path: ./build/ogs-*.zip
 
   build_linux:
     name: Build on Linux
@@ -56,13 +56,13 @@ jobs:
 
       - name: Build OGS5-FEM
         run: |
-          cmake -B build -S . -DOGS_USE_CVODE=ON -DOGS_NO_EXTERNAL_LIBS=ON -DCMAKE_BUILD_TYPE=Release
-          cmake --build build/ --config Release -j
+          cmake -B build -S . -DOGS_CPU_ARCHITECTURE=generic -DOGS_USE_CVODE=ON -DOGS_NO_EXTERNAL_LIBS=ON -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/ --config Release -j --target package
 
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.os }}
-          path: ./build/bin/
+          path: ./build/ogs-*.tar.gz
 
   build_macOS:
     name: Build on macOS
@@ -84,9 +84,9 @@ jobs:
           CXX: g++-9
         run: |
           cmake -B build -S . -DOGS_NO_EXTERNAL_LIBS=ON  -DCMAKE_BUILD_TYPE=Release
-          cmake --build build/ --config Release -j
+          cmake --build build/ --config Release -j --target package
 
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.os }}
-          path: ./build/bin/
+          path: ./build/ogs-*.tar.gz
