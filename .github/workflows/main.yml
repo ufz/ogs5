@@ -71,12 +71,9 @@ jobs:
     name: Build on macOS
     strategy:
       matrix:
-        cfg:
-          - { os: macos-10.15, gcc: 10 }
-          - { os: macos-11, gcc: 10 }
-          - { os: macos-12, gcc: 11 }
+        os: [macos-10.15, macos-11, macos-12]
       fail-fast: false
-    runs-on: ${{ matrix.cfg.os }}
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
@@ -86,13 +83,13 @@ jobs:
 
       - name: Build OGS5-FEM
         env:
-          CC: gcc-${{ matrix.cfg.gcc }}
-          CXX: g++-${{ matrix.cfg.gcc }}
+          CC: gcc-11
+          CXX: g++-11
         run: |
-          cmake -B build -S . -DOGS_NO_EXTERNAL_LIBS=ON  -DCMAKE_BUILD_TYPE=Release
+          cmake -B build -S . -DOGS_NO_EXTERNAL_LIBS=ON  -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14
           cmake --build build/ --config Release -j --target package
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.cfg.os }}
+          name: ${{ matrix.os }}
           path: ./build/ogs-*.tar.gz
