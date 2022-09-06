@@ -2536,7 +2536,8 @@ void CFiniteElementStd::CalCoefLaplace(bool Gravity, int ip)
             }
             else
             {
-                tensor = MediaProp->HeatConductivityTensor(Index);
+                tensor = MediaProp->HeatConductivityTensor(
+                    Index, pcs->m_num->ls_theta);
                 for (size_t i = 0; i < dim * dim; i++)
                     mat[i] = tensor[i];  // mat[i*dim+i] = tensor[i];
             }
@@ -3923,8 +3924,8 @@ double CFiniteElementStd::CalcSUPGCoefficient(double* vel, int ip)
     double* dispersion_tensor = NULL;
     if (PcsType == EPT_HEAT_TRANSPORT)  // heat
 
-        dispersion_tensor =
-            MediaProp->HeatConductivityTensor(MeshElement->GetIndex());
+        dispersion_tensor = MediaProp->HeatConductivityTensor(
+            MeshElement->GetIndex(), pcs->m_num->ls_theta);
     // mass
     else if (PcsType == EPT_MASS_TRANSPORT)
         // SB, BG

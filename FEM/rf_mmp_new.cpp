@@ -2831,7 +2831,8 @@ double CMediumProperties::HeatCapacity(long number, double theta,
    ToDo:
    10/2010 TF changed access to process type
 **************************************************************************/
-double* CMediumProperties::HeatConductivityTensor(int number)
+double* CMediumProperties::HeatConductivityTensor(int number,
+                                                  const double theta)
 {
     const int group = m_pcs->m_msh->ele_vector[number]->GetPatchIndex();
     SolidProp::CSolidProperties* const m_msp = msp_vector[group];
@@ -2850,7 +2851,7 @@ double* CMediumProperties::HeatConductivityTensor(int number)
     if (FLOW)  // WW
     {
         CFluidProperties* m_mfp = Fem_Ele_Std->FluidProp;  // WW
-        porosity = this->porosity_model_values[0];
+        porosity = Porosity(number, theta);
         CRFProcess const* cpl_pcs = Fem_Ele_Std->cpl_pcs;
         if (cpl_pcs && cpl_pcs->type == 1212)  // Multi-phase WW
         {
@@ -3010,7 +3011,8 @@ double* CMediumProperties::HeatDispersionTensorNew(int ip)
 
     // Materials
     // MX, add index
-    heat_conductivity_porous_medium = HeatConductivityTensor(index);
+    heat_conductivity_porous_medium =
+        HeatConductivityTensor(index, m_pcs->m_num->ls_theta);
     m_mfp = Fem_Ele_Std->FluidProp;
     fluid_density = m_mfp->Density();
     heat_capacity_fluids = m_mfp->getSpecificHeatCapacity();
