@@ -155,7 +155,7 @@ public:
     double HeatCapacity(long number,
                         double theta,
                         CFiniteElementStd* assem = NULL);
-    double* HeatConductivityTensor(int number);          // MX
+    double* HeatConductivityTensor(int number, const double);  // MX
     double* HeatDispersionTensorNew(int ip);             // CMCD
     double* MassDispersionTensorNew(int ip, int phase);  // CMCD, SB, BG
     double* DispersionTensorMCF(int ip,
