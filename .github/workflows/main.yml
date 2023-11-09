@@ -1,0 +1,95 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - "master"
+    tags:
+      - "*"
+  pull_request:
+    branches:
+      - "master"
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build_win:
+    name: Build on Windows
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '0'
+          submodules: recursive
+
+      - name: Setup msbuild.exe
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Build OGS5-FEM
+        run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/ --config Release -j --target package
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.os }}
+          path: ./build/ogs-*.zip
+
+  build_linux:
+    name: Build on Linux
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '0'
+          submodules: recursive
+
+      - name: Build OGS5-FEM
+        env:
+          CC: gcc-10
+          CXX: g++-10
+        run: |
+          cmake -B build -S . -DOGS_CPU_ARCHITECTURE=generic -DOGS_USE_CVODE=ON -DOGS_NO_EXTERNAL_LIBS=ON -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/ --config Release -j --target package
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.os }}
+          path: ./build/ogs-*.tar.gz
+
+  build_macOS:
+    name: Build on macOS
+    strategy:
+      matrix:
+        os: [macos-10.15, macos-11, macos-12]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '0'
+          submodules: recursive
+
+      - name: Build OGS5-FEM
+        env:
+          CC: gcc-11
+          CXX: g++-11
+        run: |
+          cmake -B build -S . -DOGS_NO_EXTERNAL_LIBS=ON  -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=14
+          cmake --build build/ --config Release -j --target package
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.os }}
+          path: ./build/ogs-*.tar.gz
